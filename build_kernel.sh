@@ -16,6 +16,8 @@ BOARD=beagleboard
 
 DIR=$PWD
 
+mkdir -p ${DIR}/deploy/
+
 mkdir -p ${DIR}/dl
 
 wget -c --directory-prefix=${DIR}/dl/ http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
@@ -194,5 +196,8 @@ make CROSS_COMPILE=${CC} menuconfig
 echo "make uImage"
 make -j2 CROSS_COMPILE=${CC} uImage
 
+cp arch/arm/boot/uImage ${DIR}/deploy/
+
+cd ${DIR}
 
 
