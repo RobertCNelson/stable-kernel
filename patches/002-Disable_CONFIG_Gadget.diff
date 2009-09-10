@@ -1,8 +1,8 @@
 Index: defconfig
 ===================================================================
---- defconfig	(revision 4178)
+--- defconfig	(revision 4404)
 +++ defconfig	(working copy)
-@@ -2110,17 +2110,14 @@
+@@ -2112,17 +2112,14 @@
  # CONFIG_USB_GADGET_GOKU is not set
  # CONFIG_USB_GADGET_DUMMY_HCD is not set
  CONFIG_USB_GADGET_DUALSPEED=y

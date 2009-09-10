@@ -1,8 +1,8 @@
 Index: defconfig
 ===================================================================
---- defconfig	(revision 4178)
+--- defconfig	(revision 4403)
 +++ defconfig	(working copy)
-@@ -2515,7 +2512,7 @@
+@@ -2535,7 +2535,7 @@
  CONFIG_NLS_CODEPAGE_1250=m
  CONFIG_NLS_CODEPAGE_1251=m
  CONFIG_NLS_ASCII=m
