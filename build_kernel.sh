@@ -2,6 +2,7 @@
 #2.6.29-oer45.1
 
 KERNEL_REL=2.6.29
+BUILD=r45.1
 GIT=58cf2f1
 
 #x86 use:
@@ -209,16 +210,17 @@ function make_menuconfig {
 function make_uImage {
 	cd ${DIR}/KERNEL/
 	make -j2 ARCH=arm CROSS_COMPILE=${CC} uImage
-	cp arch/arm/boot/uImage ${DIR}/deploy/
+	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_REL}-${BUILD}.uImage
 	cd ${DIR}
 }
 
 function make_modules {
 	cd ${DIR}/KERNEL/
 	make -j2 ARCH=arm CROSS_COMPILE=${CC} modules
-	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy
-	cd ${DIR}/deploy
-	tar czf modules.tar.gz *
+	mkdir -p ${DIR}/deploy/mod
+	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
+	cd ${DIR}/deploy/mod
+	tar czf ../${KERNEL_REL}-${BUILD}-modules.tar.gz *
 	cd ${DIR}
 }
 
