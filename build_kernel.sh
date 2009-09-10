@@ -1,6 +1,5 @@
 #!/bin/bash
-#2.6.29-oer44.1
-#Just a first pass, the SGX Patches will be added later..
+#2.6.29-oer45.1
 
 KERNEL_REL=2.6.29
 GIT=58cf2f1
@@ -21,10 +20,14 @@ mkdir -p ${DIR}/dl
 
 wget -c --directory-prefix=${DIR}/dl/ http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
 
-tar xjf ${DIR}/dl/linux-${KERNEL_REL}.tar.bz2
+function extract_kernel {
+	tar xjf ${DIR}/dl/linux-${KERNEL_REL}.tar.bz2
+	mv linux-${KERNEL_REL} KERNEL
+}
 
-mv linux-${KERNEL_REL} KERNEL
-cd ./KERNEL
+function patch_kernel {
+
+cd ${DIR}/KERNEL
 
 patch -p1 < ${DIR}/diffs/patch-v${KERNEL_REL}-${GIT}.diff
 
@@ -181,26 +184,49 @@ patch -p1 < ${DIR}/angstrom/${BOARD}/ehci.patch
 patch -p1 < ${DIR}/angstrom/${BOARD}/tincantools-puppy.diff
 patch -p1 < ${DIR}/angstrom/${BOARD}/tincantools-zippy.diff
 
+patch -p1 < ${DIR}/angstrom/beaglebug/beaglebug-full.patch
+
 cp ${DIR}/angstrom/${BOARD}/logo_linux_clut224.ppm ./drivers/video/logo/logo_linux_clut224.ppm
 
 #Clean up omap tag
 patch -p1 < ${DIR}/patches/remove-omap-string.diff
+cd ${DIR}/
+}
 
-make CROSS_COMPILE=${CC} distclean
+function copy_defconfig {
+	cd ${DIR}/KERNEL/
+	make ARCH=arm CROSS_COMPILE=${CC} distclean
+	cp ${DIR}/patches/defconfig .config
+	cd ${DIR}/
+}
 
-echo "copying defconfig"
-cp ${DIR}/patches/defconfig .config
-make CROSS_COMPILE=${CC} menuconfig
+function make_menuconfig {
+	cd ${DIR}/KERNEL/
+	make ARCH=arm CROSS_COMPILE=${CC} menuconfig
+	cd ${DIR}/
+}
 
-echo "make uImage"
-make -j2 CROSS_COMPILE=${CC} uImage
+function make_uImage {
+	cd ${DIR}/KERNEL/
+	make -j2 ARCH=arm CROSS_COMPILE=${CC} uImage
+	cp arch/arm/boot/uImage ${DIR}/deploy/
+	cd ${DIR}
+}
 
-cp arch/arm/boot/uImage ${DIR}/deploy/
+function make_modules {
+	cd ${DIR}/KERNEL/
+	make -j2 ARCH=arm CROSS_COMPILE=${CC} modules
+	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy
+	cd ${DIR}/deploy
+	tar czf modules.tar.gz *
+	cd ${DIR}
+}
 
-make -j2 CROSS_COMPILE=${CC} modules
-
-make CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy
-
-cd ${DIR}
+extract_kernel
+patch_kernel
+copy_defconfig
+make_menuconfig
+make_uImage
+make_modules
 
 
