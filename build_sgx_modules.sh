@@ -4,7 +4,8 @@
 PV=1.3.13.1607
 
 #x86 use:
-CC=~/bin/arm-2009q1-203/bin/arm-none-linux-gnueabi-
+#CC=~/bin/arm-2009q1-203/bin/arm-none-linux-gnueabi-
+CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
 #arm use:
 #CC=
