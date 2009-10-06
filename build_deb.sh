@@ -5,20 +5,22 @@ KERNEL_REL=2.6.29
 BUILD=x45.1
 GIT=58cf2f1
 
+BUILDREV=1.0
+DISTRO=jaunty
+
+echo "This should be run natively on arm"
+
 #x86 use:
 #CC=~/bin/arm-2009q1-203/bin/arm-none-linux-gnueabi-
-CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
+#CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
 #arm use:
-#CC=
+CC=
 
 #USB patches is board specific
 BOARD=beagleboard
 
 DIR=$PWD
-
-echo "checking for uboot-mkimage"
-sudo apt-get install uboot-mkimage
 
 mkdir -p ${DIR}/deploy/
 mkdir -p ${DIR}/dl
@@ -54,20 +56,12 @@ function make_menuconfig {
 	cd ${DIR}/
 }
 
-function make_uImage {
+function make_deb {
 	cd ${DIR}/KERNEL/
-	make -j2 ARCH=arm CROSS_COMPILE=${CC} uImage
-	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_REL}-${BUILD}.uImage
-	cd ${DIR}
-}
+	make-kpkg --arch=arm --cross_compile - clean
+	fakeroot make-kpkg --append-to-version=-${BUILD} --revision=${BUILDREV}${DISTRO} --arch=armel --cross_compile - kernel_image
 
-function make_modules {
-	cd ${DIR}/KERNEL/
-	make -j2 ARCH=arm CROSS_COMPILE=${CC} modules
-	mkdir -p ${DIR}/deploy/mod
-	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
-	cd ${DIR}/deploy/mod
-	tar czf ../${KERNEL_REL}-${BUILD}-modules.tar.gz *
+        cp ${DIR}/*.deb ${DIR}/deploy/
 	cd ${DIR}
 }
 
@@ -75,7 +69,5 @@ extract_kernel
 patch_kernel
 copy_defconfig
 make_menuconfig
-make_uImage
-make_modules
-
+make_deb
 
