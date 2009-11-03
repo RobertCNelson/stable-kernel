@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.6.29-omap1
-# Wed Sep  9 09:58:54 2009
+# Linux kernel version: 2.6.29
+# Tue Nov  3 14:59:29 2009
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -58,7 +58,7 @@ CONFIG_CLASSIC_RCU=y
 # CONFIG_PREEMPT_RCU_TRACE is not set
 CONFIG_IKCONFIG=y
 CONFIG_IKCONFIG_PROC=y
-CONFIG_LOG_BUF_SHIFT=14
+CONFIG_LOG_BUF_SHIFT=16
 CONFIG_GROUP_SCHED=y
 CONFIG_FAIR_GROUP_SCHED=y
 # CONFIG_RT_GROUP_SCHED is not set

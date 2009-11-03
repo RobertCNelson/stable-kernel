@@ -1,8 +1,8 @@
 #!/bin/bash
-#2.6.29-x45.1
+#2.6.29-x45.2
 
 KERNEL_REL=2.6.29
-BUILD=x45.1
+BUILD=x45.2
 GIT=58cf2f1
 
 BUILDREV=1.0
