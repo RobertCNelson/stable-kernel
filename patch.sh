@@ -107,7 +107,7 @@ patch -p1 < ${DIR}/angstrom/musb/0019-musb_host-simplify-check-for-active-URB.pa
 patch -p1 < ${DIR}/angstrom/musb/0020-musb_host-streamline-musb_cleanup_urb-calls.patch
 patch -p1 < ${DIR}/angstrom/musb/0021-twl4030-usb-fix-minor-reporting-goofage.patch
 patch -p1 < ${DIR}/angstrom/musb/0022-musb-use-dma-mode-1-for-TX-if-transfer-size-equals.patch
-patch -p1 < ${DIR}/angstrom/musb/0023-musb-add-high-bandwidth-ISO-support.patch
+#patch -p1 < ${DIR}/angstrom/musb/0023-musb-add-high-bandwidth-ISO-support.patch
 patch -p1 < ${DIR}/angstrom/musb/0024-USB-otg-adding-nop-usb-transceiver.patch
 patch -p1 < ${DIR}/angstrom/musb/0025-nop-usb-xceiv-behave-when-linked-as-a-module.patch
 patch -p1 < ${DIR}/angstrom/musb/0026-musb-proper-hookup-to-transceiver-drivers.patch

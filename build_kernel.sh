@@ -2,7 +2,7 @@
 #2.6.29-x45.1
 
 KERNEL_REL=2.6.29
-BUILD=x45.1
+BUILD=x45.2
 GIT=58cf2f1
 
 #x86 use:
@@ -51,6 +51,7 @@ function copy_defconfig {
 function make_menuconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} menuconfig
+	cp .config ${DIR}/patches/defconfig
 	cd ${DIR}/
 }
 
