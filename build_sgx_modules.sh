@@ -1,7 +1,7 @@
 #!/bin/bash
 #SGX Modules
 
-PV=1.3.13.1607
+. version.sh
 
 #x86 use:
 #CC=~/bin/arm-2009q1-203/bin/arm-none-linux-gnueabi-
