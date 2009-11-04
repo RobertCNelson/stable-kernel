@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 #2.6.29-x45.2
 
 KERNEL_REL=2.6.29
