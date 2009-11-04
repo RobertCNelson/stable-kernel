@@ -1,19 +1,12 @@
 #!/bin/bash
-#2.6.29-x45.1
 
-KERNEL_REL=2.6.29
-BUILD=x45.2
-GIT=58cf2f1
+. version.sh
 
 #x86 use:
-#CC=~/bin/arm-2009q1-203/bin/arm-none-linux-gnueabi-
 CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
 #arm use:
 #CC=
-
-#USB patches is board specific
-BOARD=beagleboard
 
 DIR=$PWD
 
@@ -26,19 +19,16 @@ mkdir -p ${DIR}/dl
 wget -c --directory-prefix=${DIR}/dl/ http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
 
 function extract_kernel {
+	rm -rfd ${DIR}/KERNEL/
 	tar xjf ${DIR}/dl/linux-${KERNEL_REL}.tar.bz2
 	mv linux-${KERNEL_REL} KERNEL
 }
 
 function patch_kernel {
-
-cd ${DIR}/KERNEL
-
-export DIR KERNEL_REL GIT BOARD
-
-/bin/bash ${DIR}/patch.sh
-
-cd ${DIR}/
+	cd ${DIR}/KERNEL
+	export DIR KERNEL_REL GIT BOARD
+	/bin/bash ${DIR}/patch.sh
+	cd ${DIR}/
 }
 
 function copy_defconfig {

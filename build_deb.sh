@@ -1,12 +1,6 @@
 #!/bin/bash
-#2.6.29-x45.2
 
-KERNEL_REL=2.6.29
-BUILD=x45.2
-GIT=58cf2f1
-
-BUILDREV=1.0
-DISTRO=jaunty
+. version.sh
 
 echo "This should be run natively on arm"
 
@@ -18,9 +12,6 @@ REQ_MAKE_KPKG=12024
 
 #arm use:
 CC=
-
-#USB patches is board specific
-BOARD=beagleboard
 
 DIR=$PWD
 
