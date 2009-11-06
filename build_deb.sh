@@ -1,5 +1,8 @@
 #!/bin/bash
 
+unset KERNEL_PATCH
+unset SNAPSHOT
+
 . version.sh
 
 echo "This should be run natively on arm"
@@ -16,14 +19,40 @@ CC=
 DIR=$PWD
 
 mkdir -p ${DIR}/deploy/
-mkdir -p ${DIR}/dl
 
-wget -c --directory-prefix=${DIR}/dl/ http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
+DL_DIR=${DIR}/dl
+
+mkdir -p ${DL_DIR}
+
+wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
+
+if [ "${KERNEL_PATCH}" ] ; then
+wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_PATCH}.bz2
+fi
+
+if [ "${SNAPSHOT}" ] ; then
+wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_SNAPSHOT}.bz2
+fi
 
 function extract_kernel {
+	echo "Cleaning Up"
 	rm -rfd ${DIR}/KERNEL
-	tar xjf ${DIR}/dl/linux-${KERNEL_REL}.tar.bz2
+	echo "Extracting: ${KERNEL_REL} Kernel"
+	tar xjf ${DL_DIR}/linux-${KERNEL_REL}.tar.bz2
 	mv linux-${KERNEL_REL} KERNEL
+if [ "${KERNEL_PATCH}" ] ; then
+	cd ${DIR}/KERNEL
+	echo "Applying: ${KERNEL_PATCH} Patch"
+	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}.bz2 | patch -s -p1
+	cd ${DIR}
+fi
+if [ "${SNAPSHOT}" ] ; then
+	cd ${DIR}/KERNEL
+	echo "Applying: ${KERNEL_PATCH}-${SNAPSHOT} Patch"
+	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}-${SNAPSHOT}.bz2 | patch -s -p1
+	cd ${DIR}
+fi
+	cd ${DIR}
 }
 
 function patch_kernel {
@@ -43,6 +72,7 @@ function copy_defconfig {
 function make_menuconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} menuconfig
+	cp .config ${DIR}/patches/defconfig
 	cd ${DIR}/
 }
 
@@ -50,8 +80,7 @@ function make_deb {
 	cd ${DIR}/KERNEL/
 	make-kpkg --arch=arm --cross_compile - clean
 	fakeroot make-kpkg --append-to-version=-${BUILD} --revision=${BUILDREV}${DISTRO} --arch=armel --cross_compile - kernel_image
-
-        cp ${DIR}/*.deb ${DIR}/deploy/
+	cp ${DIR}/*.deb ${DIR}/deploy/
 	cd ${DIR}
 }
 
