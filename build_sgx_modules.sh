@@ -4,7 +4,6 @@
 . version.sh
 
 #x86 use:
-#CC=~/bin/arm-2009q1-203/bin/arm-none-linux-gnueabi-
 CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
 #arm use:
@@ -15,6 +14,8 @@ DIR=$PWD
 if [ -e ${DIR}/KERNEL/arch/arm/boot/uImage ]; then
 {
 
+rm -rfd omap3-sgx-modules-${PV}
+
 mkdir -p ${DIR}/deploy/sgx-modules
 
 tar xjf ${DIR}/sgx/omap3-sgx-modules-${PV}.tar.bz2
@@ -24,6 +25,7 @@ cd omap3-sgx-modules-${PV}
 patch -p1 < ${DIR}/sgx/0002-Compile-fixes-for-DSS2.patch
 patch -p1 < ${DIR}/sgx/rotation-dss2.patch
 patch -p1 < ${DIR}/sgx/build_es3.x_sgx.patch
+patch -p1 < ${DIR}/sgx/proc-interface.patch
 sed -i -e 's:/home1/pratheesh/workdir/opt/linux/kernel_org/REL_OMAP35x_02.01.00.04/src/kernel/linux-02.01.00.04:'$DIR'/KERNEL/:g' Makefile
 
 PVRBUILD=release
