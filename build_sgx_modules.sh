@@ -31,7 +31,7 @@ sed -i -e 's:/home1/pratheesh/workdir/opt/linux/kernel_org/REL_OMAP35x_02.01.00.
 PVRBUILD=release
 MAKE_TARGETS=BUILD=${PVRBUILD}
 
-make CROSS_COMPILE=${CC}
+make ARCH=arm CROSS_COMPILE=${CC}
 
 cp ./pvrsrvkm.ko ${DIR}/deploy/sgx-modules/
 cp ./services4/3rdparty/dc_omap3430_linux/omaplfb.ko ${DIR}/deploy/sgx-modules/
