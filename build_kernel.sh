@@ -13,9 +13,6 @@ CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
 DIR=$PWD
 
-echo "checking for uboot-mkimage"
-sudo apt-get install uboot-mkimage ncurses-dev ccache
-
 mkdir -p ${DIR}/deploy/
 
 DL_DIR=${DIR}/dl
@@ -115,3 +112,5 @@ make_uImage
 make_modules
 
 
+checking for uboot-mkimage"
+sudo apt-get install uboot-mkimage ncurses-dev ccache
