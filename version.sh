@@ -1,5 +1,16 @@
 #!/bin/bash
 
+#Check for Dependices
+MKIMAGE=`which mkimage 2> /dev/null`
+CCACHE=`which ccache 2> /dev/null`
+NCURSES=`file /usr/lib/libncurses.so | grep -v ERROR 2> /dev/null`
+
+if test "-$MKIMAGE-" = "--" || test "-$CCACHE-" = "--" || test "-$NCURSES-" = "--"
+then
+  echo "Need to install uboot-mkimage, ccache, and libncurses5-dev dependicy"
+  sudo aptitude install uboot-mkimage ccache libncurses5-dev
+fi
+
 KERNEL_REL=2.6.31
 #Stable Kernel
 STABLE_PATCH=7
