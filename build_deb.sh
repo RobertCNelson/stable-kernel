@@ -8,7 +8,7 @@ unset SNAPSHOT
 echo "This should be run natively on arm"
 
 MAKE_KPKG=$(make-kpkg --help | grep Version | awk '{print $2}' | sed 's/\.//g')
-REQ_MAKE_KPKG=12025
+REQ_MAKE_KPKG=12031
 
 #x86 use:
 #CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
@@ -96,7 +96,7 @@ else
 
 echo "Your Version of make-kpkg is too old, please upgrade"
 echo "Debian/Ubuntu"
-echo "wget http://ftp.us.debian.org/debian/pool/main/k/kernel-package/kernel-package_12.025_all.deb"
-echo "sudo dpkg -i kernel-package_12.025_all.deb"
+echo "wget http://ftp.us.debian.org/debian/pool/main/k/kernel-package/kernel-package_12.031_all.deb"
+echo "sudo dpkg -i kernel-package_12.031_all.deb"
 
 fi
