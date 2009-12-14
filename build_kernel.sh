@@ -112,5 +112,3 @@ make_uImage
 make_modules
 
 
-checking for uboot-mkimage"
-sudo apt-get install uboot-mkimage ncurses-dev ccache
