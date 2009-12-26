@@ -1,0 +1,11 @@
+--- a/arch/arm/mach-omap2/board-omap3beagle.c
++++ b/arch/arm/mach-omap2/board-omap3beagle.c
+@@ -402,6 +402,7 @@
+ {
+     omap_register_i2c_bus(1, 2600, beagle_i2c1_boardinfo,
+             ARRAY_SIZE(beagle_i2c1_boardinfo));
++    omap_register_i2c_bus(2, 400, NULL, 0);
+     /* Bus 3 is attached to the DVI port where devices like the pico DLP
+      * projector don't work reliably with 400kHz */
+     omap_register_i2c_bus(3, 100, NULL, 0);
+
