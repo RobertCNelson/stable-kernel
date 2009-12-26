@@ -63,8 +63,10 @@ patch -s -p1 < ${DIR}/patches/angstrom/usb/0001-ARM-OMAP-Fix-beagleboard-EHCI-se
 
 patch -s -p1 < ${DIR}/patches/angstrom/modedb-hd720.patch
 
+echo "DSS2 support"
 #patch -s -p1 < ${DIR}/patches/angstrom/dss2/beagle-dss2-support.patch
 patch -s -p1 < ${DIR}/patches/rcn/beagle-dss2-support-fixup.diff
+patch -s -p1 < ${DIR}/patches/rcn/beagle-enable-i2c-2.diff
 
 #Enable for zippy2 
 #echo "Patching Micrel support into omap3beagle"
