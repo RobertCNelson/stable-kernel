@@ -3,7 +3,6 @@
 unset KERNEL_PATCH
 unset CC
 unset GIT_MODE
-unset SNAPSHOT
 
 . version.sh
 
@@ -26,10 +25,6 @@ function dl_kernel {
 if [ "${KERNEL_PATCH}" ] ; then
 	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_PATCH}.bz2
 fi
-
-if [ "${SNAPSHOT}" ] ; then
-	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_SNAPSHOT}.bz2
-fi
 }
 
 function extract_kernel {
@@ -42,12 +37,6 @@ if [ "${KERNEL_PATCH}" ] ; then
 	cd ${DIR}/KERNEL
 	echo "Applying: ${KERNEL_PATCH} Patch"
 	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}.bz2 | patch -s -p1
-	cd ${DIR}
-fi
-if [ "${SNAPSHOT}" ] ; then
-	cd ${DIR}/KERNEL
-	echo "Applying: ${KERNEL_PATCH}-${SNAPSHOT} Patch"
-	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}-${SNAPSHOT}.bz2 | patch -s -p1
 	cd ${DIR}
 fi
 	cd ${DIR}
