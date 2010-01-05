@@ -61,11 +61,10 @@ function make_menuconfig {
 function make_uImage {
 	cd ${DIR}/KERNEL/
 	make -j2 ARCH=arm CROSS_COMPILE=${CC} uImage
-if [ "${KERNEL_PATCH}" ] ; then
-	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_PATCH}-${BUILD}.uImage
-else
-	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_REL}-${BUILD}.uImage
-fi
+	#for: 2.6.33+
+	#KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/linux/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
 	cd ${DIR}
 }
 
@@ -75,11 +74,7 @@ function make_modules {
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
 	cd ${DIR}/deploy/mod
-if [ "${KERNEL_PATCH}" ] ; then
-	tar czf ../${KERNEL_PATCH}-${BUILD}-modules.tar.gz *
-else
-	tar czf ../${KERNEL_REL}-${BUILD}-modules.tar.gz *
-fi
+	tar czf ../${KERNEL_UTS}-modules.tar.gz *
 	cd ${DIR}
 }
 
