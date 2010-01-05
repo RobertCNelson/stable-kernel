@@ -1,6 +1,8 @@
 #!/bin/bash
 
 unset KERNEL_PATCH
+unset CC
+unset GIT_MODE
 unset SNAPSHOT
 
 . version.sh
@@ -9,12 +11,6 @@ echo "This should be run natively on arm"
 
 MAKE_KPKG=$(make-kpkg --help | grep Version | awk '{print $2}' | sed 's/\.//g')
 REQ_MAKE_KPKG=12031
-
-#x86 use:
-#CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
-
-#arm use:
-CC=
 
 DIR=$PWD
 
@@ -88,12 +84,21 @@ function make_deb {
 
 if [ "$MAKE_KPKG" -ge "$REQ_MAKE_KPKG" ] ; then
 
-dl_kernel
-extract_kernel
-patch_kernel
-copy_defconfig
-make_menuconfig
-make_deb
+if [ -e ${DIR}/system.sh ]; then
+	. system.sh
+
+	dl_kernel
+	extract_kernel
+	patch_kernel
+	copy_defconfig
+	make_menuconfig
+	make_uImage
+	make_modules
+else
+	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
+	echo "cp system.sh.sample system.sh"
+	echo "gedit system.sh"
+fi
 
 else
 
