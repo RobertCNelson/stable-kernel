@@ -19,15 +19,17 @@ DL_DIR=${DIR}/dl
 
 mkdir -p ${DL_DIR}
 
-wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
+function dl_kernel {
+	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
 
 if [ "${KERNEL_PATCH}" ] ; then
-wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_PATCH}.bz2
+	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_PATCH}.bz2
 fi
 
 if [ "${SNAPSHOT}" ] ; then
-wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_SNAPSHOT}.bz2
+	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_SNAPSHOT}.bz2
 fi
+}
 
 function extract_kernel {
 	echo "Cleaning Up"
@@ -104,6 +106,7 @@ fi
 	cd ${DIR}
 }
 
+dl_kernel
 extract_kernel
 patch_kernel
 copy_defconfig
