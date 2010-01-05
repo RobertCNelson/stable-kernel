@@ -28,11 +28,21 @@ function extract_kernel {
 	echo "Extracting: ${KERNEL_REL} Kernel"
 	tar xjf ${DL_DIR}/linux-${KERNEL_REL}.tar.bz2
 	mv linux-${KERNEL_REL} KERNEL
-if [ "${KERNEL_PATCH}" ] ; then
 	cd ${DIR}/KERNEL
+if [ "${GIT_MODE}" ] ; then
+	git init
+	git add .
+        git commit -a -m ''$KERNEL_REL' Kernel'
+        git tag -a $KERNEL_REL -m $KERNEL_REL
+fi
+if [ "${KERNEL_PATCH}" ] ; then
 	echo "Applying: ${KERNEL_PATCH} Patch"
 	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}.bz2 | patch -s -p1
-	cd ${DIR}
+if [ "${GIT_MODE}" ] ; then
+	git add .
+        git commit -a -m ''$KERNEL_PATCH' Kernel'
+        git tag -a $KERNEL_PATCH -m $KERNEL_PATCH
+fi	
 fi
 	cd ${DIR}
 }
@@ -41,6 +51,17 @@ function patch_kernel {
 	cd ${DIR}/KERNEL
 	export DIR KERNEL_REL GIT BOARD
 	/bin/bash -e ${DIR}/patch.sh
+if [ "${GIT_MODE}" ] ; then
+if [ "${KERNEL_PATCH}" ] ; then
+        git add .
+        git commit -a -m ''$KERNEL_PATCH'-'$BUILD''
+        git tag -a $KERNEL_PATCH-$BUILD -m $KERNEL_PATCH-$BUILD
+else
+        git add .
+        git commit -a -m ''$KERNEL_REL'-'$BUILD''
+        git tag -a $KERNEL_REL-$BUILD -m $KERNEL_REL-$BUILD
+fi
+fi
 	cd ${DIR}/
 }
 
