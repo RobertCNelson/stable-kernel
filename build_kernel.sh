@@ -3,7 +3,6 @@
 unset KERNEL_PATCH
 unset CC
 unset GIT_MODE
-unset SNAPSHOT
 
 . version.sh
 
@@ -21,10 +20,6 @@ function dl_kernel {
 if [ "${KERNEL_PATCH}" ] ; then
 	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_PATCH}.bz2
 fi
-
-if [ "${SNAPSHOT}" ] ; then
-	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_SNAPSHOT}.bz2
-fi
 }
 
 function extract_kernel {
@@ -37,12 +32,6 @@ if [ "${KERNEL_PATCH}" ] ; then
 	cd ${DIR}/KERNEL
 	echo "Applying: ${KERNEL_PATCH} Patch"
 	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}.bz2 | patch -s -p1
-	cd ${DIR}
-fi
-if [ "${SNAPSHOT}" ] ; then
-	cd ${DIR}/KERNEL
-	echo "Applying: ${KERNEL_PATCH}-${SNAPSHOT} Patch"
-	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}-${SNAPSHOT}.bz2 | patch -s -p1
 	cd ${DIR}
 fi
 	cd ${DIR}
@@ -72,14 +61,10 @@ function make_menuconfig {
 function make_uImage {
 	cd ${DIR}/KERNEL/
 	make -j2 ARCH=arm CROSS_COMPILE=${CC} uImage
-if [ "${SNAPSHOT}" ] ; then
-	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_PATCH}-${SNAPSHOT}-${BUILD}.uImage
-else
 if [ "${KERNEL_PATCH}" ] ; then
 	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_PATCH}-${BUILD}.uImage
 else
 	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_REL}-${BUILD}.uImage
-fi
 fi
 	cd ${DIR}
 }
@@ -90,14 +75,10 @@ function make_modules {
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
 	cd ${DIR}/deploy/mod
-if [ "${SNAPSHOT}" ] ; then
-	tar czf ../${KERNEL_PATCH}-${SNAPSHOT}-${BUILD}-modules.tar.gz *
-else
 if [ "${KERNEL_PATCH}" ] ; then
 	tar czf ../${KERNEL_PATCH}-${BUILD}-modules.tar.gz *
 else
 	tar czf ../${KERNEL_REL}-${BUILD}-modules.tar.gz *
-fi
 fi
 	cd ${DIR}
 }
