@@ -1,15 +1,11 @@
 #!/bin/bash
 
 unset KERNEL_PATCH
+unset CC
+unset GIT_MODE
 unset SNAPSHOT
 
 . version.sh
-
-#x86 use:
-CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
-
-#arm use:
-#CC=
 
 DIR=$PWD
 
@@ -106,12 +102,19 @@ fi
 	cd ${DIR}
 }
 
-dl_kernel
-extract_kernel
-patch_kernel
-copy_defconfig
-make_menuconfig
-make_uImage
-make_modules
+if [ -e ${DIR}/system.sh ]; then
+	. system.sh
 
+	dl_kernel
+	extract_kernel
+	patch_kernel
+	copy_defconfig
+	make_menuconfig
+	make_uImage
+	make_modules
+else
+	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
+	echo "cp system.sh.sample system.sh"
+	echo "gedit system.sh"
+fi
 
