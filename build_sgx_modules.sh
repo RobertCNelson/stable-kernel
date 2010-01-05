@@ -1,20 +1,19 @@
-#!/bin/bash
+#!/bin/bash -e
 #SGX Modules
+
+unset CC
 
 . version.sh
 
-#x86 use:
-CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
-
-#arm use:
-#CC=
-
 DIR=$PWD
+
+if [ -e ${DIR}/system.sh ]; then
+	. system.sh
 
 if [ -e ${DIR}/KERNEL/arch/arm/boot/uImage ]; then
 {
 
-rm -rfd omap3-sgx-modules-${PV}
+rm -rfd omap3-sgx-modules-${PV} || true
 
 mkdir -p ${DIR}/deploy/sgx-modules
 
@@ -46,4 +45,8 @@ echo "run build_kernel.sh first"
 
 }
 fi
-
+else
+	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
+	echo "cp system.sh.sample system.sh"
+	echo "gedit system.sh"
+fi

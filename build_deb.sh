@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 unset KERNEL_PATCH
 unset CC
@@ -29,7 +29,7 @@ fi
 
 function extract_kernel {
 	echo "Cleaning Up"
-	rm -rfd ${DIR}/KERNEL
+	rm -rfd ${DIR}/KERNEL || true
 	echo "Extracting: ${KERNEL_REL} Kernel"
 	tar xjf ${DL_DIR}/linux-${KERNEL_REL}.tar.bz2
 	mv linux-${KERNEL_REL} KERNEL
@@ -45,7 +45,7 @@ fi
 function patch_kernel {
 	cd ${DIR}/KERNEL
 	export DIR KERNEL_REL GIT BOARD
-	/bin/bash ${DIR}/patch.sh
+	/bin/bash -e ${DIR}/patch.sh
 	cd ${DIR}/
 }
 
