@@ -5,5 +5,5 @@
 CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
 #Allow the usage of git to help create kernel patches
-#GIT_MODE
+#GIT_MODE=1
 
