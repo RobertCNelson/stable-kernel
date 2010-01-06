@@ -46,6 +46,11 @@ function patch_kernel {
 	cd ${DIR}/KERNEL
 	export DIR KERNEL_REL GIT BOARD
 	/bin/bash -e ${DIR}/patch.sh
+if [ "${KERNEL_PATCH}" ] ; then
+	sed -i 's/EXTRAVERSION = .'$STABLE_PATCH'/EXTRAVERSION = .'$STABLE_PATCH'-'$BUILD'/g' ${DIR}/KERNEL/Makefile
+else
+	sed -i 's/EXTRAVERSION = /EXTRAVERSION = -'$BUILD'/g' ${DIR}/KERNEL/Makefile
+fi
 	cd ${DIR}/
 }
 
