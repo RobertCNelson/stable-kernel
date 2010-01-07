@@ -5,6 +5,10 @@ unset CC
 
 . version.sh
 
+#KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+KERNEL_UTS=$(cat ${DIR}/KERNEL/include/linux/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+
+
 DIR=$PWD
 
 if [ -e ${DIR}/system.sh ]; then
@@ -14,8 +18,6 @@ if [ -e ${DIR}/KERNEL/arch/arm/boot/uImage ]; then
 {
 
 rm -rfd omap3-sgx-modules-${PV} || true
-
-mkdir -p ${DIR}/deploy/sgx-modules
 
 tar xjf ${DIR}/sgx/omap3-sgx-modules-${PV}.tar.bz2
 
@@ -32,8 +34,18 @@ MAKE_TARGETS=BUILD=${PVRBUILD}
 
 make ARCH=arm CROSS_COMPILE=${CC}
 
-cp ./pvrsrvkm.ko ${DIR}/deploy/sgx-modules/
-cp ./services4/3rdparty/dc_omap3430_linux/omaplfb.ko ${DIR}/deploy/sgx-modules/
+mkdir -p ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
+
+cp -v ./pvrsrvkm.ko ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
+cp -v ./services4/3rdparty/dc_omap3430_linux/omaplfb.ko ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
+
+cd ${DIR}/deploy/mod
+
+echo "Rebuilding $KERNEL_UTS-modules.tar.gz"
+
+tar czf ../${KERNEL_UTS}-modules.tar.gz *
+
+echo "SGX modules are now in: $KERNEL_UTS-modules.tar.gz"
 
 cd ${DIR}
 

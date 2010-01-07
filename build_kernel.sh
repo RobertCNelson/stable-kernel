@@ -97,6 +97,7 @@ function make_uImage {
 function make_modules {
 	cd ${DIR}/KERNEL/
 	make -j2 ARCH=arm CROSS_COMPILE=${CC} modules
+	rm -rfd ${DIR}/deploy/mod &> /dev/null || true
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
 	cd ${DIR}/deploy/mod
