@@ -1,7 +1,12 @@
 #!/bin/bash
 #copy as "system.sh" and tweak for your system
 
-#x86 use, angstrom cross compiler:
+#Recommended:
+#Use Angstrom's Cross Compiler: http://www.angstrom-distribution.org/building-angstrom (select beagleboard for machine)
+#
+#Otherwise
+#Use CodeSoucery http://www.codesourcery.com/sgpp/lite/arm/portal/subscription?@template=lite (GNU/Linux)
+
 CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
 #Allow the usage of git to help create kernel patches
