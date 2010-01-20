@@ -1,0 +1,13 @@
+diff --git a/drivers/usb/host/ehci-omap.c b/drivers/usb/host/ehci-omap.c
+index 7ba8df3..5cfed78 100644
+--- a/drivers/usb/host/ehci-omap.c
++++ b/drivers/usb/host/ehci-omap.c
+@@ -37,7 +37,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ #include <linux/gpio.h>
+-#include <mach/usb.h>
++#include <plat/usb.h>
+ 
+ /*
+  * OMAP USBHOST Register addresses: VIRTUAL ADDRESSES

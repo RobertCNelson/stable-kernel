@@ -1,0 +1,41 @@
+From c763e2f987013f4a6059fe586231f3424cea6901 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Tue, 22 Sep 2009 13:30:24 +0300
+Subject: [PATCH 19/21] MAINTAINERS: Add OMAP2/3 DSS and OMAPFB maintainer
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ MAINTAINERS |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index a1a2ace..a956115 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3815,6 +3815,23 @@ L:	linux-omap@vger.kernel.org
+ S:	Maintained
+ F:	drivers/video/omap/
+ 
++OMAP DISPLAY SUBSYSTEM SUPPORT (DSS2)
++M:	Tomi Valkeinen <tomi.valkeinen@nokia.com>
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
++L:	linux-omap@vger.kernel.org
++S:	Maintained
++F:	drivers/video/omap2/dss/
++F:	drivers/video/omap2/vrfb.c
++F:	drivers/video/omap2/vram.c
++F:	Documentation/arm/OMAP/DSS
++
++OMAP FRAMEBUFFER SUPPORT (FOR DSS2)
++M:	Tomi Valkeinen <tomi.valkeinen@nokia.com>
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
++L:	linux-omap@vger.kernel.org
++S:	Maintained
++F:	drivers/video/omap2/omapfb/
++
+ OMAP MMC SUPPORT
+ M:	Jarkko Lavinen <jarkko.lavinen@nokia.com>
+ L:	linux-omap@vger.kernel.org
+-- 
+1.6.5
+

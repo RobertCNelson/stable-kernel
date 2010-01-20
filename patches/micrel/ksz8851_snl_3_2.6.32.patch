@@ -1,0 +1,29 @@
+diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks8851.c
+--- linux-2.6.32.old/drivers/net/ks8851.c	2009-11-03 11:37:49.000000000 -0800
++++ linux-2.6.32.new/drivers/net/ks8851.c	2009-12-02 15:31:39.000000000 -0800
+@@ -398,7 +398,6 @@ static irqreturn_t ks8851_irq(int irq, v
+ {
+ 	struct ks8851_net *ks = pw;
+ 
+-	disable_irq_nosync(irq);
+ 	schedule_work(&ks->irq_work);
+ 	return IRQ_HANDLED;
+ }
+@@ -611,8 +610,6 @@ static void ks8851_irq_work(struct work_
+ 	}
+ 
+ 	mutex_unlock(&ks->lock);
+-
+-	enable_irq(ks->netdev->irq);
+ }
+ 
+ /**
+@@ -1284,7 +1281,7 @@ static int __devinit ks8851_probe(struct
+ 	ks8851_init_mac(ks);
+ 	ks->tx_space = ks8851_rdreg16(ks, KS_TXMIR);
+ 
+-	ret = request_irq(spi->irq, ks8851_irq, IRQF_TRIGGER_LOW,
++	ret = request_irq(spi->irq, ks8851_irq, IRQF_TRIGGER_FALLING,
+ 			  ndev->name, ks);
+ 	if (ret < 0) {
+ 		dev_err(&spi->dev, "failed to get irq\n");

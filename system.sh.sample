@@ -3,9 +3,11 @@
 
 #Recommended:
 #Use Angstrom's Cross Compiler: http://www.angstrom-distribution.org/building-angstrom (select beagleboard for machine)
+#Follow all steps upto Step 3, "MACHINE=beagleboard bitbake base-image" Should be enough
 #
 #Otherwise
-#Use CodeSoucery http://www.codesourcery.com/sgpp/lite/arm/portal/subscription?@template=lite (GNU/Linux)
+#Use CodeSourcery: http://www.codesourcery.com/sgpp/lite/arm/portal/subscription?@template=lite (GNU/Linux)
+#Just download and extract...
 
 CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
