@@ -8,6 +8,7 @@ unset GIT_MODE
 
 . version.sh
 
+CCACHE=ccache
 DIR=$PWD
 
 mkdir -p ${DIR}/deploy/
@@ -88,7 +89,7 @@ function make_menuconfig {
 
 function make_uImage {
 	cd ${DIR}/KERNEL/
-	make -j2 ARCH=arm CROSS_COMPILE=${CC} uImage
+	time make -j2 ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" uImage
 	#for: 2.6.33+
 	#KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/linux/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
@@ -98,7 +99,7 @@ function make_uImage {
 
 function make_modules {
 	cd ${DIR}/KERNEL/
-	make -j2 ARCH=arm CROSS_COMPILE=${CC} modules
+	time make -j2 ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" modules
 	rm -rfd ${DIR}/deploy/mod &> /dev/null || true
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
