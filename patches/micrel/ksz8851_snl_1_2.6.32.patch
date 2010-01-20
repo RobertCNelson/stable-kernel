@@ -1,0 +1,18 @@
+diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks8851.c
+--- linux-2.6.32.old/drivers/net/ks8851.c	2009-11-03 11:37:49.000000000 -0800
++++ linux-2.6.32.new/drivers/net/ks8851.c	2009-12-02 15:31:39.000000000 -0800
+@@ -1,4 +1,4 @@
+-/* drivers/net/ks8651.c
++/* drivers/net/ks8851.c
+  *
+  * Copyright 2009 Simtec Electronics
+  *	http://www.simtec.co.uk/
+@@ -714,7 +714,7 @@ static void ks8851_tx_work(struct work_s
+ {
+ 	struct ks8851_net *ks = container_of(work, struct ks8851_net, tx_work);
+ 	struct sk_buff *txb;
+-	bool last = false;
++	bool last = skb_queue_empty(&ks->txq);
+ 
+ 	mutex_lock(&ks->lock);
+ 

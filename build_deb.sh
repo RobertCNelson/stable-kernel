@@ -1,15 +1,11 @@
 #!/bin/bash -e
 
+unset KERNEL_REL
 unset KERNEL_PATCH
+unset BUILD
 unset CC
-unset GIT_MODE
 
 . version.sh
-
-echo "This should be run natively on arm"
-
-MAKE_KPKG=$(make-kpkg --help | grep Version | awk '{print $2}' | sed 's/\.//g')
-REQ_MAKE_KPKG=12031
 
 DIR=$PWD
 
@@ -39,7 +35,7 @@ if [ "${KERNEL_PATCH}" ] ; then
 	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}.bz2 | patch -s -p1
 	cd ${DIR}
 fi
-	cd ${DIR}
+	cd ${DIR}/
 }
 
 function patch_kernel {
@@ -70,13 +66,10 @@ function make_menuconfig {
 
 function make_deb {
 	cd ${DIR}/KERNEL/
-	make-kpkg --arch=arm --cross_compile - clean
-	fakeroot make-kpkg --append-to-version=-${BUILD} --revision=${BUILDREV}${DISTRO} --arch=armel --cross_compile - kernel_image
-	cp ${DIR}/*.deb ${DIR}/deploy/
+	fakeroot make ARCH=arm CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
+	mv ${DIR}/*.deb ${DIR}/deploy/
 	cd ${DIR}
 }
-
-if [ "$MAKE_KPKG" -ge "$REQ_MAKE_KPKG" ] ; then
 
 if [ -e ${DIR}/system.sh ]; then
 	. system.sh
@@ -85,20 +78,11 @@ if [ -e ${DIR}/system.sh ]; then
 	extract_kernel
 	patch_kernel
 	copy_defconfig
-	make_menuconfig
-	make_uImage
-	make_modules
+	#make_menuconfig
+	make_deb
 else
 	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
 	echo "cp system.sh.sample system.sh"
 	echo "gedit system.sh"
 fi
 
-else
-
-echo "Your Version of make-kpkg is too old, please upgrade"
-echo "Debian/Ubuntu"
-echo "wget http://ftp.us.debian.org/debian/pool/main/k/kernel-package/kernel-package_12.031_all.deb"
-echo "sudo dpkg -i kernel-package_12.031_all.deb"
-
-fi

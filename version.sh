@@ -11,16 +11,16 @@ then
   sudo aptitude install uboot-mkimage ccache libncurses5-dev
 fi
 
-KERNEL_REL=2.6.31
+KERNEL_REL=2.6.32
 #Stable Kernel
-STABLE_PATCH=11
+STABLE_PATCH=4
 KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
 DL_PATCH=patch-${KERNEL_PATCH}
 BUILD=x${STABLE_PATCH}.0
 
-GIT=945044d
-
-PV=1.3.13.1607
+BRANCH=master
+REL=v2.6.32
+GIT=v2.6.32-omap1
 
 #USB patches is board specific
 BOARD=beagleboard
@@ -28,4 +28,6 @@ BOARD=beagleboard
 BUILDREV=1.0
 DISTRO=jaunty
 
-export KERNEL_REL STABLE_PATCH KERNEL_PATCH DL_PATCH BUILD GIT BOARD PV BUILDREV DISTRO
+export KERNEL_REL BUILD RC_PATCH KERNEL_PATCH
+export BRANCH REL GIT
+export BOARD BUILDREV DISTRO

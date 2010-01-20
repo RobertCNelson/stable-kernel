@@ -1,0 +1,42 @@
+From 8f9c4a985145c0a820fddbeff31ddea79233cab3 Mon Sep 17 00:00:00 2001
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Thu, 19 Nov 2009 17:40:30 +0200
+Subject: [PATCH 21/21] OMAP2: OMAPFB: fix compilation when DSS2 not in use
+
+Board files may use omapfb_set_platform_data(), which did not exists if
+DSS2 was not compiled in.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ arch/arm/plat-omap/fb.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/plat-omap/fb.c b/arch/arm/plat-omap/fb.c
+index f9049f8..d3eea4f 100644
+--- a/arch/arm/plat-omap/fb.c
++++ b/arch/arm/plat-omap/fb.c
+@@ -55,6 +55,10 @@ static struct platform_device omap_fb_device = {
+ 	.num_resources = 0,
+ };
+ 
++void omapfb_set_platform_data(struct omapfb_platform_data *data)
++{
++}
++
+ static inline int ranges_overlap(unsigned long start1, unsigned long size1,
+ 				 unsigned long start2, unsigned long size2)
+ {
+@@ -367,6 +371,10 @@ unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
+ 
+ #else
+ 
++void omapfb_set_platform_data(struct omapfb_platform_data *data)
++{
++}
++
+ void omapfb_reserve_sdram(void) {}
+ unsigned long omapfb_reserve_sram(unsigned long sram_pstart,
+ 				  unsigned long sram_vstart,
+-- 
+1.6.5
+

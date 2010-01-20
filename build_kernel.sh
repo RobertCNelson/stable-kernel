@@ -1,6 +1,8 @@
 #!/bin/bash -e
 
+unset KERNEL_REL
 unset KERNEL_PATCH
+unset BUILD
 unset CC
 unset GIT_MODE
 
@@ -42,9 +44,9 @@ if [ "${GIT_MODE}" ] ; then
 	git add .
         git commit -a -m ''$KERNEL_PATCH' Kernel'
         git tag -a $KERNEL_PATCH -m $KERNEL_PATCH
-fi	
 fi
-	cd ${DIR}
+fi
+	cd ${DIR}/
 }
 
 function patch_kernel {
