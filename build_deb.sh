@@ -66,6 +66,7 @@ function make_menuconfig {
 
 function make_deb {
 	cd ${DIR}/KERNEL/
+	echo "fakeroot make ARCH=arm CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg"
 	fakeroot make ARCH=arm CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
 	mv ${DIR}/*.deb ${DIR}/deploy/
 	cd ${DIR}
