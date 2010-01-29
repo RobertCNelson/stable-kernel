@@ -11,4 +11,17 @@ Debian Package
 
 ". build_deb.sh"
 
+Defconfig Requirement notes:
 
+Ubuntu Lucid (10.04)
+
+CONFIG_ARM_ERRATA_430973=y
+https://bugs.launchpad.net/ubuntu/+source/fakeroot/+bug/495536
+
+CONFIG_DEVTMPFS=y
+CONFIG_DEVTMPFS_MOUNT=y
+https://bugs.launchpad.net/ubuntu/lucid/+source/mountall/+bug/510130
+https://lists.ubuntu.com/archives/kernel-team/2010-January/008518.html
+
+CONFIG_ARM_THUMBEE=y
+https://lists.ubuntu.com/archives/kernel-team/2010-January/008561.html
