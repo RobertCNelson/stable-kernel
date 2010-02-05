@@ -8,6 +8,8 @@ patch -s -p1 < ${DIR}/patches/${BRANCH}-patch-from-${REL}-to-${GIT}.diff
 function musb {
 echo "musb fifo fix"
 patch -s -p1 < ${DIR}/patches/musb/fifo-change.patch
+patch -s -p1 < ${DIR}/patches/musb/musb-Add-new-fifo-table-for-a-OMAP3-errata.patch
+patch -s -p1 < ${DIR}/patches/musb/enable-fifo_mode_5_for_OMAP34XX.diff
 }
 
 function angstrom {

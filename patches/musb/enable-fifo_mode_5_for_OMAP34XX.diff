@@ -1,0 +1,17 @@
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index e4a010a..b129e69 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -999,9 +999,10 @@ static void musb_shutdown(struct platform_device *pdev)
+  * We don't currently use dynamic fifo setup capability to do anything
+  * more than selecting one of a bunch of predefined configurations.
+  */
+-#if defined(CONFIG_USB_TUSB6010) || \
+-	defined(CONFIG_ARCH_OMAP2430) || defined(CONFIG_ARCH_OMAP34XX)
++#if defined(CONFIG_USB_TUSB6010) || defined(CONFIG_ARCH_OMAP2430)
+ static ushort __initdata fifo_mode = 4;
++#elif defined(CONFIG_ARCH_OMAP34XX)
++static ushort __initdata fifo_mode = 5;
+ #else
+ static ushort __initdata fifo_mode = 2;
+ #endif
