@@ -16,3 +16,6 @@ CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 
 #Use with Caution, mount locations can change... This define's SD/MMC card mount location for load_uImage.sh script.
 #MMC=/dev/sde
+
+#For lucid we need a specific defconfig not compatible with squeeze/jaunty/karmic..
+#IS_LUCID=1
