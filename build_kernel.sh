@@ -5,8 +5,7 @@ unset KERNEL_PATCH
 unset BUILD
 unset CC
 unset GIT_MODE
-
-. version.sh
+unset IS_LUCID
 
 CCACHE=ccache
 DIR=$PWD
@@ -76,14 +75,22 @@ fi
 function copy_defconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} distclean
+if [ "${IS_LUCID}" ] ; then
+	cp ${DIR}/patches/lucid-defconfig .config
+else
 	cp ${DIR}/patches/defconfig .config
+fi
 	cd ${DIR}/
 }
 
 function make_menuconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} menuconfig
+if [ "${IS_LUCID}" ] ; then
+	cp .config ${DIR}/patches/lucid-defconfig
+else
 	cp .config ${DIR}/patches/defconfig
+fi
 	cd ${DIR}/
 }
 
@@ -110,6 +117,7 @@ function make_modules {
 
 if [ -e ${DIR}/system.sh ]; then
 	. system.sh
+	. version.sh
 
 	dl_kernel
 	extract_kernel

@@ -15,6 +15,8 @@ Defconfig Requirement notes:
 
 Ubuntu Lucid (10.04)
 
+Enable "IS_LUCID=1" in system.sh
+
 CONFIG_ARM_ERRATA_430973=y
 https://bugs.launchpad.net/ubuntu/+source/fakeroot/+bug/495536
 
