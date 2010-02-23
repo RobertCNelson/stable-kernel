@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.6.32.8-x8.2
-# Tue Feb 23 09:43:33 2010
+# Linux kernel version: 2.6.32.9-x9.0
+# Tue Feb 23 15:30:44 2010
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -2540,7 +2540,7 @@ CONFIG_XFS_POSIX_ACL=y
 CONFIG_XFS_RT=y
 # CONFIG_XFS_DEBUG is not set
 CONFIG_GFS2_FS=m
-CONFIG_GFS2_FS_LOCKING_DLM=y
+# CONFIG_GFS2_FS_LOCKING_DLM is not set
 CONFIG_OCFS2_FS=m
 CONFIG_OCFS2_FS_O2CB=m
 CONFIG_OCFS2_FS_USERSPACE_CLUSTER=m
