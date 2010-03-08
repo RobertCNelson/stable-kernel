@@ -18,11 +18,17 @@ KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
 DL_PATCH=patch-${KERNEL_PATCH}
 ABI=1
 
-if [ "${IS_LUCID}" ] ; then
-BUILD=l${STABLE_PATCH}.${ABI}
-else
-BUILD=x${STABLE_PATCH}.${ABI}
+if [ "${IS_ZIPPY_TWO}" ] ; then
+BUILD=ZIPPY2.
 fi
+
+if [ "${IS_LUCID}" ] ; then
+BUILD+=l
+else
+BUILD+=x
+fi
+
+BUILD+=${STABLE_PATCH}.${ABI}
 
 BRANCH=master
 REL=v2.6.32

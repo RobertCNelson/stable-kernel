@@ -76,6 +76,8 @@ dss2
 vfp
 memory-hole
 
-#enable micrel for zippy2 support
-#micrel
+if [ "${IS_ZIPPY_TWO}" ] ; then
+	micrel
+fi
+
 

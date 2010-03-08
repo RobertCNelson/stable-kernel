@@ -6,6 +6,7 @@ unset BUILD
 unset CC
 unset GIT_MODE
 unset IS_LUCID
+unset IS_ZIPPY_TWO
 
 DIR=$PWD
 
@@ -29,18 +30,17 @@ function extract_kernel {
 	echo "Extracting: ${KERNEL_REL} Kernel"
 	tar xjf ${DL_DIR}/linux-${KERNEL_REL}.tar.bz2
 	mv linux-${KERNEL_REL} KERNEL
-if [ "${KERNEL_PATCH}" ] ; then
 	cd ${DIR}/KERNEL
+if [ "${KERNEL_PATCH}" ] ; then
 	echo "Applying: ${KERNEL_PATCH} Patch"
 	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}.bz2 | patch -s -p1
-	cd ${DIR}
 fi
 	cd ${DIR}/
 }
 
 function patch_kernel {
 	cd ${DIR}/KERNEL
-	export DIR KERNEL_REL GIT BOARD
+	export DIR KERNEL_REL GIT BOARD IS_ZIPPY_TWO
 	/bin/bash -e ${DIR}/patch.sh
 if [ "${KERNEL_PATCH}" ] ; then
 	sed -i 's/EXTRAVERSION = .'$STABLE_PATCH'/EXTRAVERSION = .'$STABLE_PATCH'-'$BUILD'/g' ${DIR}/KERNEL/Makefile
@@ -83,6 +83,16 @@ function make_deb {
 if [ -e ${DIR}/system.sh ]; then
 	. system.sh
 	. version.sh
+
+if [ "${IS_LUCID}" ] ; then
+	echo ""
+	echo "Building for Lucid (10.04)"
+	echo ""
+else
+	echo ""
+	echo "Building for Debian Lenny/Squeeze/Sid & Ubuntu 9.04/9.10"
+	echo ""
+fi
 
 	dl_kernel
 	extract_kernel
