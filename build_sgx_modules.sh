@@ -56,6 +56,7 @@ function build_sgx_modules {
 	mkdir -p ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
 	cp -v ./pvrsrvkm.ko ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
 	cp -v ./services4/3rdparty/dc_omap3430_linux/omaplfb.ko ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
+	cp -v ./services4/3rdparty/bufferclass_ti/bufferclass_ti.ko ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
 
 	cd ${DIR}
 }
@@ -65,6 +66,7 @@ function copy_sgx_system_files {
 	mkdir -p ${DIR}/deploy/mod/usr/bin/ES2.0
 	mkdir -p ${DIR}/deploy/mod/usr/lib/ES3.0
 	mkdir -p ${DIR}/deploy/mod/usr/bin/ES3.0
+	mkdir -p ${DIR}/deploy/mod/opt/pvr
 
 	sudo cp ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/lib* ${DIR}/deploy/mod/usr/lib/ES2.0
 	sudo cp ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/p[dv]* ${DIR}/deploy/mod/usr/bin/ES2.0
@@ -72,6 +74,7 @@ function copy_sgx_system_files {
 	sudo cp ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/lib* ${DIR}/deploy/mod/usr/lib/ES3.0
 	sudo cp ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/p[dv]* ${DIR}/deploy/mod/usr/bin/ES3.0
 
+	cp -v ${DIR}/tools/pvr ${DIR}/deploy/mod/opt/pvr
 	cd ${DIR}
 }
 
@@ -104,7 +107,7 @@ if [ "$SGX" = "E" ]; then
 	rebuild_system_modules
 	tar_up_examples
 fi
-	
+
 }
 else
 {
