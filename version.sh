@@ -1,5 +1,7 @@
 #!/bin/bash
 
+unset BUILD
+
 #Check for dependencies
 MKIMAGE=`which mkimage 2> /dev/null`
 CCACHE=`which ccache 2> /dev/null`
