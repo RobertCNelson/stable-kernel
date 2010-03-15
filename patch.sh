@@ -56,6 +56,7 @@ patch -s -p1 < ${DIR}/patches/dss2/0020-DSS2-OMAPFB-fix-offset-with-YUV-modes.pa
 patch -s -p1 < ${DIR}/patches/dss2/0021-OMAP2-OMAPFB-fix-compilation-when-DSS2-not-in-use.patch
 patch -s -p1 < ${DIR}/patches/rcn/beagle-dss2-support.diff
 patch -s -p1 < ${DIR}/patches/rcn/beagle-enable-2nd-i2c.diff
+patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo.patch
 }
 
 function vfp {
