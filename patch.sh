@@ -57,6 +57,8 @@ patch -s -p1 < ${DIR}/patches/dss2/0021-OMAP2-OMAPFB-fix-compilation-when-DSS2-n
 patch -s -p1 < ${DIR}/patches/rcn/beagle-dss2-support.diff
 patch -s -p1 < ${DIR}/patches/rcn/beagle-enable-2nd-i2c.diff
 patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo.patch
+patch -s -p1 < ${DIR}/patches/sakoman/audio.diff
+patch -s -p1 < ${DIR}/patches/sakoman/twl4030_codec.diff
 }
 
 function vfp {
