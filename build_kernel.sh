@@ -57,7 +57,7 @@ function patch_kernel {
 if [ "${KERNEL_PATCH}" ] ; then
 	sed -i 's/EXTRAVERSION = .'$STABLE_PATCH'/EXTRAVERSION = .'$STABLE_PATCH'-'$BUILD'/g' ${DIR}/KERNEL/Makefile
 else
-	sed -i 's/EXTRAVERSION = /EXTRAVERSION = -'$BUILD'/g' ${DIR}/KERNEL/Makefile
+	sed -i 's/EXTRAVERSION =/EXTRAVERSION = -'$BUILD'/g' ${DIR}/KERNEL/Makefile
 fi
 if [ "${GIT_MODE}" ] ; then
 if [ "${KERNEL_PATCH}" ] ; then
