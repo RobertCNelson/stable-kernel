@@ -28,6 +28,7 @@ function rcn {
 echo "rcn patches"
 patch -s -p1 < ${DIR}/patches/rcn/ehci-omap-mach-to-plat-fix.diff
 patch -s -p1 < ${DIR}/patches/rcn/Fix-i2c-lockup.diff
+patch -s -p1 < ${DIR}/patches/rcn/CONFIG-enable-arm-rt2870-staging.diff
 }
 
 function dss2 {
