@@ -11,6 +11,8 @@ unset IS_ZIPPY_TWO
 CCACHE=ccache
 DIR=$PWD
 
+CORES=`cat /proc/cpuinfo | grep cpu\ cores | head -1 | awk '{print $4}'`
+
 mkdir -p ${DIR}/deploy/
 
 DL_DIR=${DIR}/dl
@@ -97,7 +99,7 @@ fi
 
 function make_uImage {
 	cd ${DIR}/KERNEL/
-	time make -j2 ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" uImage
+	time make -j${CORES} ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
 	#for: 2.6.33+
 	#KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/linux/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
@@ -107,7 +109,7 @@ function make_uImage {
 
 function make_modules {
 	cd ${DIR}/KERNEL/
-	time make -j2 ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" modules
+	time make -j${CORES} ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" modules
 	rm -rfd ${DIR}/deploy/mod &> /dev/null || true
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
