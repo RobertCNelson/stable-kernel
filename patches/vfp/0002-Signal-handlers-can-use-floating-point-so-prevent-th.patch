@@ -1,23 +1,32 @@
-From 0f0d3b4cd766b1b38b0c4ce5a3f16eed47710bcb Mon Sep 17 00:00:00 2001
-From: Imre Deak <imre.deak@xxxxxxxxx>
-Date: Sun, 3 Jan 2010 15:08:36 -0600
+From 4f71d4f1edea92a579da86b2228b570dbd9396f9 Mon Sep 17 00:00:00 2001
+From: Imre Deak <imre.deak@nokia.com>
+Date: Fri, 2 Apr 2010 14:19:45 -0500
 Subject: [PATCH 2/2] Signal handlers can use floating point, so prevent them to corrupt
  the main thread's VFP context. So far there were two signal stack
- frame formats defined based on the VFP implementation, but recently
- a new user struct was added for ptrace that covers all possibilities,
- so use it for the signal stack too.
+ frame formats defined based on the VFP implementation, but the user
+ struct used for ptrace covers all posibilities, so use it for the
+ signal stack too.
 
-Signed-off-by: Imre Deak <imre.deak@xxxxxxxxx>
+Introduce also a new user struct for VFP exception registers. In
+this too fields not relevant to the current VFP architecture are
+ignored.
+
+Support to save / restore the exception registers was added by
+Will Deacon.
+
+Signed-off-by: Imre Deak <imre.deak@nokia.com>
+Signed-off-by: Will Deacon <will.deacon@arm.com>
 ---
- arch/arm/include/asm/ucontext.h |   20 ++++-------
- arch/arm/kernel/signal.c        |   69 ++++++++++++++++++++++++++++++++++++--
- 2 files changed, 73 insertions(+), 16 deletions(-)
+ arch/arm/include/asm/ucontext.h |   23 +++++-----
+ arch/arm/include/asm/user.h     |   12 +++++-
+ arch/arm/kernel/signal.c        |   93 +++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 111 insertions(+), 17 deletions(-)
 
 diff --git a/arch/arm/include/asm/ucontext.h b/arch/arm/include/asm/ucontext.h
-index bf65e9f..5534653 100644
+index bf65e9f..47f023a 100644
 --- a/arch/arm/include/asm/ucontext.h
 +++ b/arch/arm/include/asm/ucontext.h
-@@ -59,23 +59,19 @@ struct iwmmxt_sigframe {
+@@ -59,23 +59,22 @@ struct iwmmxt_sigframe {
  #endif /* CONFIG_IWMMXT */
  
  #ifdef CONFIG_VFP
@@ -39,16 +48,19 @@ index bf65e9f..5534653 100644
 -	union vfp_state		storage;
 -};
 +	struct user_vfp		ufp;
-+	unsigned long		reserved;
++	struct user_vfp_exc	ufp_exc;
 +} __attribute__((__aligned__(8)));
 +
-+/* 8 byte for magic and size, 260 byte for ufp and 4 byte padding */
++/*
++ *  8 byte for magic and size, 264 byte for ufp, 12 bytes for ufp_exc,
++ *  4 bytes padding.
++ */
 +#define VFP_STORAGE_SIZE	sizeof(struct vfp_sigframe)
 +
  #endif /* CONFIG_VFP */
  
  /*
-@@ -91,7 +87,7 @@ struct aux_sigframe {
+@@ -91,7 +90,7 @@ struct aux_sigframe {
  #ifdef CONFIG_IWMMXT
  	struct iwmmxt_sigframe	iwmmxt;
  #endif
@@ -57,11 +69,46 @@ index bf65e9f..5534653 100644
  	struct vfp_sigframe	vfp;
  #endif
  	/* Something that isn't a valid magic number for any coprocessor.  */
+diff --git a/arch/arm/include/asm/user.h b/arch/arm/include/asm/user.h
+index df95e05..05ac4b0 100644
+--- a/arch/arm/include/asm/user.h
++++ b/arch/arm/include/asm/user.h
+@@ -83,11 +83,21 @@ struct user{
+ 
+ /*
+  * User specific VFP registers. If only VFPv2 is present, registers 16 to 31
+- * are ignored by the ptrace system call.
++ * are ignored by the ptrace system call and the signal handler.
+  */
+ struct user_vfp {
+ 	unsigned long long fpregs[32];
+ 	unsigned long fpscr;
+ };
+ 
++/*
++ * VFP exception registers exposed to user space during signal delivery.
++ * Fields not relavant to the current VFP architecture are ignored.
++ */
++struct user_vfp_exc {
++	unsigned long	fpexc;
++	unsigned long	fpinst;
++	unsigned long	fpinst2;
++};
++
+ #endif /* _ARM_USER_H */
 diff --git a/arch/arm/kernel/signal.c b/arch/arm/kernel/signal.c
-index e7714f3..c84588e 100644
+index e7714f3..907d5a6 100644
 --- a/arch/arm/kernel/signal.c
 +++ b/arch/arm/kernel/signal.c
-@@ -175,6 +175,67 @@ static int restore_iwmmxt_context(struct iwmmxt_sigframe *frame)
+@@ -18,6 +18,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/ucontext.h>
+ #include <asm/unistd.h>
++#include <asm/vfp.h>
+ 
+ #include "ptrace.h"
+ #include "signal.h"
+@@ -175,6 +176,90 @@ static int restore_iwmmxt_context(struct iwmmxt_sigframe *frame)
  
  #endif
  
@@ -75,7 +122,7 @@ index e7714f3..c84588e 100644
 +	const unsigned long size = VFP_STORAGE_SIZE;
 +	int err = 0;
 +
-+	vfp_sync_state(thread);
++	vfp_sync_hwstate(thread);
 +	__put_user_error(magic, &frame->magic, err);
 +	__put_user_error(size, &frame->size, err);
 +
@@ -90,6 +137,13 @@ index e7714f3..c84588e 100644
 +	 */
 +	__put_user_error(h->fpscr, &frame->ufp.fpscr, err);
 +
++	/*
++	 * Copy the exception registers.
++	 */
++	__put_user_error(h->fpexc, &frame->ufp_exc.fpexc, err);
++	__put_user_error(h->fpinst, &frame->ufp_exc.fpinst, err);
++	__put_user_error(h->fpinst2, &frame->ufp_exc.fpinst2, err);
++
 +	return err ? -EFAULT : 0;
 +}
 +
@@ -99,9 +153,9 @@ index e7714f3..c84588e 100644
 +	struct vfp_hard_struct *h = &thread->vfpstate.hard;
 +	unsigned long magic;
 +	unsigned long size;
++	unsigned long fpexc;
 +	int err = 0;
 +
-+	vfp_sync_state(thread);
 +	__get_user_error(magic, &frame->magic, err);
 +	__get_user_error(size, &frame->size, err);
 +
@@ -121,6 +175,22 @@ index e7714f3..c84588e 100644
 +	 */
 +	__get_user_error(h->fpscr, &frame->ufp.fpscr, err);
 +
++	/*
++	 * Sanitise and restore the exception registers.
++	 */
++	__get_user_error(fpexc, &frame->ufp_exc.fpexc, err);
++	/* Ensure the VFP is enabled. */
++	fpexc |= FPEXC_EN;
++	/* Ensure FPINST2 is invalid and the exception flag is cleared. */
++	fpexc &= ~(FPEXC_EX | FPEXC_FP2V);
++	h->fpexc = fpexc;
++
++	__get_user_error(h->fpinst, &frame->ufp_exc.fpinst, err);
++	__get_user_error(h->fpinst2, &frame->ufp_exc.fpinst2, err);
++
++	if (!err)
++		vfp_flush_hwstate(thread);
++
 +	return err ? -EFAULT : 0;
 +}
 +
@@ -129,7 +199,7 @@ index e7714f3..c84588e 100644
  /*
   * Do a signal return; undo the signal stack.  These are aligned to 64-bit.
   */
-@@ -233,8 +294,8 @@ static int restore_sigframe(struct pt_regs *regs, struct sigframe __user *sf)
+@@ -233,8 +318,8 @@ static int restore_sigframe(struct pt_regs *regs, struct sigframe __user *sf)
  		err |= restore_iwmmxt_context(&aux->iwmmxt);
  #endif
  #ifdef CONFIG_VFP
@@ -140,7 +210,7 @@ index e7714f3..c84588e 100644
  #endif
  
  	return err;
-@@ -348,8 +409,8 @@ setup_sigframe(struct sigframe __user *sf, struct pt_regs *regs, sigset_t *set)
+@@ -348,8 +433,8 @@ setup_sigframe(struct sigframe __user *sf, struct pt_regs *regs, sigset_t *set)
  		err |= preserve_iwmmxt_context(&aux->iwmmxt);
  #endif
  #ifdef CONFIG_VFP
@@ -152,5 +222,5 @@ index e7714f3..c84588e 100644
  	__put_user_error(0, &aux->end_magic, err);
  
 -- 
-1.6.5
+1.7.0
 
