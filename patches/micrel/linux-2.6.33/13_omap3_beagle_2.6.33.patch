@@ -1,18 +1,24 @@
---- linux-2.6.32.old/arch/arm/mach-omap2/board-omap3beagle.c	2009-11-03 11:37:49.000000000 -0800
-+++ linux-2.6.32.new/arch/arm/mach-omap2/board-omap3beagle.c	2009-12-03 13:32:42.000000000 -0800
-@@ -45,6 +45,46 @@
- #include <mach/usb.h>
- #include <mach/timer-gp.h>
+--- a/arch/arm/mach-omap2/board-omap3beagle.c	2010-02-24 10:52:17.000000000 -0800
++++ b/arch/arm/mach-omap2/board-omap3beagle.c	2010-03-25 18:58:14.000000000 -0700
+@@ -47,6 +47,53 @@
+ #include "mux.h"
+ #include "mmc-twl4030.h"
  
 +#if defined(CONFIG_KS8851) || defined(CONFIG_KS8851_MODULE)
 +#include <linux/spi/spi.h>
-+#include <mach/mcspi.h>
++#include <plat/mcspi.h>
++#include <linux/interrupt.h>
++#include <linux/ks8851.h>
 +
 +#define KSZ8851_SNL_INT	157
 +
 +static struct omap2_mcspi_device_config ksz8851_mcspi_config = {
 +	.turbo_mode	= 0,
 +	.single_channel	= 1,  /* 0: slave, 1: master */
++};
++
++static struct ks8851_pdata ksz8851_snl_data = {
++	.irq_flags	= IRQF_TRIGGER_FALLING,
 +};
 +
 +static struct spi_board_info ksz8851_snl_info[] __initdata = {
@@ -23,6 +29,7 @@
 +		.max_speed_hz	= 36000000,
 +		.controller_data = &ksz8851_mcspi_config,
 +		.irq		= OMAP_GPIO_IRQ(KSZ8851_SNL_INT),
++		.platform_data	= &ksz8851_snl_data,
 +	},
 +};
 +
@@ -44,14 +51,14 @@
 +static inline void omap3430_spi_init(void) {}
 +#endif
 +
- #include "mmc-twl4030.h"
- 
  #define GPMC_CS0_BASE  0x60
-@@ -414,6 +454,7 @@ static void __init omap3_beagle_init(voi
+ #define GPMC_CS_SIZE   0x30
  
+@@ -446,6 +493,7 @@ static void __init omap3_beagle_init(voi
  	usb_musb_init();
+ 	usb_ehci_init(&ehci_pdata);
  	omap3beagle_flash_init();
 +	omap3430_spi_init();
  
  	/* Ensure SDRC pins are mux'd for self-refresh */
- 	omap_cfg_reg(H16_34XX_SDRC_CKE0);
+ 	omap_mux_init_signal("sdrc_cke0", OMAP_PIN_OUTPUT);

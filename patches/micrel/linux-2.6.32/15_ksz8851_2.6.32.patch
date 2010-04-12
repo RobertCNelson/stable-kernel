@@ -1,7 +1,6 @@
-diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks8851.c
---- linux-2.6.32.old/drivers/net/ks8851.c	2009-11-03 11:37:49.000000000 -0800
-+++ linux-2.6.32.new/drivers/net/ks8851.c	2009-12-02 15:31:39.000000000 -0800
-@@ -111,11 +111,13 @@ struct ks8851_net {
+--- a/drivers/net/ks8851.c	2010-03-29 17:23:59.000000000 -0700
++++ b/drivers/net/ks8851.c	2010-03-29 15:48:23.000000000 -0700
+@@ -107,11 +107,13 @@ struct ks8851_net {
  	struct mii_if_info	mii;
  	struct ks8851_rxctrl	rxctrl;
  
@@ -15,7 +14,7 @@ diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks
  
  	struct spi_message	spi_msg1;
  	struct spi_message	spi_msg2;
-@@ -573,19 +575,6 @@ static void ks8851_irq_work(struct work_
+@@ -647,19 +649,6 @@ static void ks8851_irq_work(struct work_
  	if (status & IRQ_RXPSI)
  		handled |= IRQ_RXPSI;
  
@@ -35,17 +34,17 @@ diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks
  	if (status & IRQ_RXI)
  		handled |= IRQ_RXI;
  
-@@ -623,9 +612,6 @@ static void ks8851_irq_work(struct work_
+@@ -700,9 +689,6 @@ static void ks8851_irq_work(struct work_
  
  	mutex_unlock(&ks->lock);
  
 -	if (status & IRQ_TXI)
 -		netif_wake_queue(ks->netdev);
 -
- 	enable_irq(ks->netdev->irq);
+ 	if (is_level_irq(ks->irq_flags))
+ 		enable_irq(ks->netdev->irq);
  }
- 
-@@ -703,6 +689,17 @@ static void ks8851_done_tx(struct ks8851
+@@ -781,6 +767,17 @@ static void ks8851_done_tx(struct ks8851
  	dev_kfree_skb(txb);
  }
  
@@ -63,7 +62,7 @@ diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks
  /**
   * ks8851_tx_work - process tx packet(s)
   * @work: The work strucutre what was scheduled.
-@@ -814,7 +811,6 @@ static int ks8851_net_open(struct net_de
+@@ -871,7 +868,6 @@ static int ks8851_net_open(struct net_de
  	/* clear then enable interrupts */
  
  #define STD_IRQ (IRQ_LCI |	/* Link Change */	\
@@ -71,15 +70,7 @@ diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks
  		 IRQ_RXI |	/* RX done */		\
  		 IRQ_SPIBEI |	/* SPI bus error */	\
  		 IRQ_TXPSI |	/* TX process stop */	\
-@@ -830,6 +826,7 @@ static int ks8851_net_open(struct net_de
- 		ks_dbg(ks, "network device %s up\n", dev->name);
- 
- 	mutex_unlock(&ks->lock);
-+	ks8851_write_mac_addr(dev);
- 	return 0;
- }
- 
-@@ -854,6 +851,7 @@ static int ks8851_net_stop(struct net_de
+@@ -911,6 +907,7 @@ static int ks8851_net_stop(struct net_de
  
  	/* stop any outstanding work */
  	flush_work(&ks->irq_work);
@@ -87,7 +78,7 @@ diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks
  	flush_work(&ks->tx_work);
  	flush_work(&ks->rxctrl_work);
  
-@@ -912,14 +910,16 @@ static netdev_tx_t ks8851_start_xmit(str
+@@ -969,14 +966,16 @@ static netdev_tx_t ks8851_start_xmit(str
  
  	if (needed > ks->tx_space) {
  		netif_stop_queue(dev);
@@ -105,7 +96,7 @@ diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks
  
  	return ret;
  }
-@@ -1229,6 +1229,7 @@ static int __devinit ks8851_probe(struct
+@@ -1511,6 +1510,7 @@ static int __devinit ks8851_probe(struct
  	mutex_init(&ks->lock);
  	spin_lock_init(&ks->statelock);
  
@@ -113,11 +104,3 @@ diff -urpN linux-2.6.32.old/drivers/net/ks8851.c linux-2.6.32.new/drivers/net/ks
  	INIT_WORK(&ks->tx_work, ks8851_tx_work);
  	INIT_WORK(&ks->irq_work, ks8851_irq_work);
  	INIT_WORK(&ks->rxctrl_work, ks8851_rxctrl_work);
-@@ -1281,6 +1282,7 @@ static int __devinit ks8851_probe(struct
- 
- 	ks8851_read_selftest(ks);
- 	ks8851_init_mac(ks);
-+	ks->tx_space = ks8851_rdreg16(ks, KS_TXMIR);
- 
- 	ret = request_irq(spi->irq, ks8851_irq, IRQF_TRIGGER_LOW,
- 			  ndev->name, ks);

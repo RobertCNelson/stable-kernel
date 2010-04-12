@@ -18,9 +18,23 @@ echo "Angstrom Patches"
 
 function micrel {
 echo "micrel patches"
-patch -s -p1 < ${DIR}/patches/micrel/ksz8851_snl_1_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/ksz8851_snl_2_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/ksz8851_snl_3_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/00_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/01_eeprom_93cx6_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/02_eeprom_93cx6_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/03_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/04_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/05_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/06_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/07_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/08_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/09_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/10_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/11_ksz8851_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/12_ksz8851_2.6.32.patch
+#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/13_omap3_beagle_2.6.32.patch
+#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/14_omap3_beagle_2.6.32.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/15_ksz8851_2.6.32.patch
+
 patch -s -p1 < ${DIR}/patches/micrel/micrel-eth.patch
 }
 
@@ -57,9 +71,7 @@ patch -s -p1 < ${DIR}/patches/dss2/0020-DSS2-OMAPFB-fix-offset-with-YUV-modes.pa
 patch -s -p1 < ${DIR}/patches/dss2/0021-OMAP2-OMAPFB-fix-compilation-when-DSS2-not-in-use.patch
 patch -s -p1 < ${DIR}/patches/rcn/beagle-dss2-support.diff
 patch -s -p1 < ${DIR}/patches/rcn/beagle-enable-2nd-i2c.diff
-patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo.patch
-patch -s -p1 < ${DIR}/patches/sakoman/audio.diff
-patch -s -p1 < ${DIR}/patches/sakoman/twl4030_codec.diff
+patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo-fixup.patch
 }
 
 function vfp {
@@ -83,5 +95,9 @@ memory-hole
 if [ "${IS_ZIPPY_TWO}" ] ; then
 	micrel
 fi
+
+echo "Patching Successful"
+
+
 
 

@@ -94,6 +94,11 @@ else
 	echo ""
 fi
 
+if [ "${IS_ZIPPY_TWO}" ] ; then
+	echo "Building with Zippy2 Support"
+	echo ""
+fi
+
 	dl_kernel
 	extract_kernel
 	patch_kernel

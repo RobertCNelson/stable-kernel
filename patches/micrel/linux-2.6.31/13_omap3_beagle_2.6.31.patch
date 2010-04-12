@@ -1,17 +1,17 @@
-diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-2.6.32.new/arch/arm/configs/omap3_beagle_zippy_defconfig
---- linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.32.new/arch/arm/configs/omap3_beagle_zippy_defconfig	2009-11-05 17:41:37.000000000 -0800
-@@ -0,0 +1,1519 @@
+--- a/arch/arm/configs/omap3_beagle_zippy_defconfig	1969-12-31 16:00:00.000000000 -0800
++++ b/arch/arm/configs/omap3_beagle_zippy_defconfig	2010-03-31 18:47:57.000000000 -0700
+@@ -0,0 +1,1484 @@
 +#
 +# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.32
-+# Thu Nov  5 17:41:37 2009
++# Linux kernel version: 2.6.31
++# Wed Mar 31 18:47:57 2010
 +#
 +CONFIG_ARM=y
 +CONFIG_SYS_SUPPORTS_APM_EMULATION=y
 +CONFIG_GENERIC_GPIO=y
 +CONFIG_GENERIC_TIME=y
 +CONFIG_GENERIC_CLOCKEVENTS=y
++CONFIG_MMU=y
 +CONFIG_GENERIC_HARDIRQS=y
 +CONFIG_STACKTRACE_SUPPORT=y
 +CONFIG_HAVE_LATENCYTOP_SUPPORT=y
@@ -20,7 +20,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +CONFIG_HARDIRQS_SW_RESEND=y
 +CONFIG_GENERIC_IRQ_PROBE=y
 +CONFIG_RWSEM_GENERIC_SPINLOCK=y
-+CONFIG_ARCH_HAS_CPUFREQ=y
 +CONFIG_GENERIC_HWEIGHT=y
 +CONFIG_GENERIC_CALIBRATE_DELAY=y
 +CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
@@ -48,12 +47,14 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +#
 +# RCU Subsystem
 +#
++# CONFIG_CLASSIC_RCU is not set
 +CONFIG_TREE_RCU=y
-+# CONFIG_TREE_PREEMPT_RCU is not set
++# CONFIG_PREEMPT_RCU is not set
 +# CONFIG_RCU_TRACE is not set
 +CONFIG_RCU_FANOUT=32
 +# CONFIG_RCU_FANOUT_EXACT is not set
 +# CONFIG_TREE_RCU_TRACE is not set
++# CONFIG_PREEMPT_RCU_TRACE is not set
 +# CONFIG_IKCONFIG is not set
 +CONFIG_LOG_BUF_SHIFT=14
 +CONFIG_GROUP_SCHED=y
@@ -94,14 +95,16 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +CONFIG_AIO=y
 +
 +#
-+# Kernel Performance Events And Counters
++# Performance Counters
 +#
 +CONFIG_VM_EVENT_COUNTERS=y
++# CONFIG_STRIP_ASM_SYMS is not set
 +CONFIG_COMPAT_BRK=y
 +CONFIG_SLAB=y
 +# CONFIG_SLUB is not set
 +# CONFIG_SLOB is not set
 +# CONFIG_PROFILING is not set
++# CONFIG_MARKERS is not set
 +CONFIG_HAVE_OPROFILE=y
 +# CONFIG_KPROBES is not set
 +CONFIG_HAVE_KPROBES=y
@@ -135,17 +138,16 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +CONFIG_IOSCHED_AS=y
 +CONFIG_IOSCHED_DEADLINE=y
 +CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_AS is not set
 +# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
++CONFIG_DEFAULT_CFQ=y
 +# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
++CONFIG_DEFAULT_IOSCHED="cfq"
 +CONFIG_FREEZER=y
 +
 +#
 +# System Type
 +#
-+CONFIG_MMU=y
 +# CONFIG_ARCH_AAEC2000 is not set
 +# CONFIG_ARCH_INTEGRATOR is not set
 +# CONFIG_ARCH_REALVIEW is not set
@@ -160,7 +162,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_ARCH_STMP3XXX is not set
 +# CONFIG_ARCH_NETX is not set
 +# CONFIG_ARCH_H720X is not set
-+# CONFIG_ARCH_NOMADIK is not set
 +# CONFIG_ARCH_IOP13XX is not set
 +# CONFIG_ARCH_IOP32X is not set
 +# CONFIG_ARCH_IOP33X is not set
@@ -183,13 +184,11 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_ARCH_SA1100 is not set
 +# CONFIG_ARCH_S3C2410 is not set
 +# CONFIG_ARCH_S3C64XX is not set
-+# CONFIG_ARCH_S5PC1XX is not set
 +# CONFIG_ARCH_SHARK is not set
 +# CONFIG_ARCH_LH7A40X is not set
 +# CONFIG_ARCH_U300 is not set
 +# CONFIG_ARCH_DAVINCI is not set
 +CONFIG_ARCH_OMAP=y
-+# CONFIG_ARCH_BCMRING is not set
 +
 +#
 +# TI OMAP Implementations
@@ -216,8 +215,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_OMAP_LL_DEBUG_UART1 is not set
 +CONFIG_OMAP_LL_DEBUG_UART2=y
 +# CONFIG_OMAP_LL_DEBUG_UART3 is not set
-+# CONFIG_OMAP_PM_NONE is not set
-+CONFIG_OMAP_PM_NOOP=y
 +CONFIG_ARCH_OMAP34XX=y
 +CONFIG_ARCH_OMAP3430=y
 +
@@ -241,7 +238,7 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +CONFIG_CPU_V7=y
 +CONFIG_CPU_32v7=y
 +CONFIG_CPU_ABRT_EV7=y
-+CONFIG_CPU_PABRT_V7=y
++CONFIG_CPU_PABRT_IFAR=y
 +CONFIG_CPU_CACHE_V7=y
 +CONFIG_CPU_CACHE_VIPT=y
 +CONFIG_CPU_COPY_V6=y
@@ -259,7 +256,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_CPU_DCACHE_DISABLE is not set
 +# CONFIG_CPU_BPREDICT_DISABLE is not set
 +CONFIG_HAS_TLS_REG=y
-+CONFIG_ARM_L1_CACHE_SHIFT=6
 +# CONFIG_ARM_ERRATA_430973 is not set
 +# CONFIG_ARM_ERRATA_458693 is not set
 +# CONFIG_ARM_ERRATA_460075 is not set
@@ -283,11 +279,8 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_VMSPLIT_2G is not set
 +# CONFIG_VMSPLIT_1G is not set
 +CONFIG_PAGE_OFFSET=0xC0000000
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
 +# CONFIG_PREEMPT is not set
 +CONFIG_HZ=128
-+# CONFIG_THUMB2_KERNEL is not set
 +CONFIG_AEABI=y
 +CONFIG_OABI_COMPAT=y
 +# CONFIG_ARCH_SPARSEMEM_DEFAULT is not set
@@ -306,7 +299,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +CONFIG_VIRT_TO_BUS=y
 +CONFIG_HAVE_MLOCK=y
 +CONFIG_HAVE_MLOCKED_PAGE_BIT=y
-+# CONFIG_KSM is not set
 +CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
 +# CONFIG_LEDS is not set
 +CONFIG_ALIGNMENT_TRAP=y
@@ -359,7 +351,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +CONFIG_SUSPEND=y
 +CONFIG_SUSPEND_FREEZER=y
 +# CONFIG_APM_EMULATION is not set
-+# CONFIG_PM_RUNTIME is not set
 +CONFIG_ARCH_SUSPEND_POSSIBLE=y
 +CONFIG_NET=y
 +
@@ -408,7 +399,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_NETFILTER is not set
 +# CONFIG_IP_DCCP is not set
 +# CONFIG_IP_SCTP is not set
-+# CONFIG_RDS is not set
 +# CONFIG_TIPC is not set
 +# CONFIG_ATM is not set
 +# CONFIG_BRIDGE is not set
@@ -438,14 +428,15 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_AF_RXRPC is not set
 +CONFIG_WIRELESS=y
 +# CONFIG_CFG80211 is not set
-+CONFIG_CFG80211_DEFAULT_PS_VALUE=0
 +# CONFIG_WIRELESS_OLD_REGULATORY is not set
-+# CONFIG_WIRELESS_EXT is not set
++CONFIG_WIRELESS_EXT=y
++CONFIG_WIRELESS_EXT_SYSFS=y
 +# CONFIG_LIB80211 is not set
 +
 +#
 +# CFG80211 needs to be enabled for MAC80211
 +#
++CONFIG_MAC80211_DEFAULT_PS_VALUE=0
 +# CONFIG_WIMAX is not set
 +# CONFIG_RFKILL is not set
 +# CONFIG_NET_9P is not set
@@ -458,7 +449,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# Generic Driver Options
 +#
 +CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+# CONFIG_DEVTMPFS is not set
 +CONFIG_STANDALONE=y
 +CONFIG_PREVENT_FIRMWARE_BUILD=y
 +# CONFIG_FW_LOADER is not set
@@ -468,9 +458,9 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_CONNECTOR is not set
 +CONFIG_MTD=y
 +# CONFIG_MTD_DEBUG is not set
-+# CONFIG_MTD_TESTS is not set
 +# CONFIG_MTD_CONCAT is not set
 +CONFIG_MTD_PARTITIONS=y
++# CONFIG_MTD_TESTS is not set
 +# CONFIG_MTD_REDBOOT_PARTS is not set
 +# CONFIG_MTD_CMDLINE_PARTS is not set
 +# CONFIG_MTD_AFS_PARTS is not set
@@ -519,7 +509,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +#
 +# CONFIG_MTD_DATAFLASH is not set
 +# CONFIG_MTD_M25P80 is not set
-+# CONFIG_MTD_SST25L is not set
 +# CONFIG_MTD_SLRAM is not set
 +# CONFIG_MTD_PHRAM is not set
 +# CONFIG_MTD_MTDRAM is not set
@@ -568,6 +557,7 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_ATA_OVER_ETH is not set
 +# CONFIG_MG_DISK is not set
 +# CONFIG_MISC_DEVICES is not set
++CONFIG_EEPROM_93CX6=y
 +CONFIG_HAVE_IDE=y
 +# CONFIG_IDE is not set
 +
@@ -641,10 +631,12 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_B44 is not set
 +# CONFIG_KS8842 is not set
 +CONFIG_KS8851=y
-+# CONFIG_KS8851_MLL is not set
 +# CONFIG_NETDEV_1000 is not set
 +# CONFIG_NETDEV_10000 is not set
-+CONFIG_WLAN=y
++
++#
++# Wireless LAN
++#
 +# CONFIG_WLAN_PRE80211 is not set
 +# CONFIG_WLAN_80211 is not set
 +
@@ -667,7 +659,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_NETPOLL is not set
 +# CONFIG_NET_POLL_CONTROLLER is not set
 +# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
 +
 +#
 +# Input device support
@@ -741,7 +732,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_TCG_TPM is not set
 +CONFIG_I2C=y
 +CONFIG_I2C_BOARDINFO=y
-+CONFIG_I2C_COMPAT=y
 +CONFIG_I2C_CHARDEV=y
 +CONFIG_I2C_HELPER_AUTO=y
 +
@@ -775,6 +765,9 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# Miscellaneous I2C Chip support
 +#
 +# CONFIG_DS1682 is not set
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_PCF8575 is not set
++# CONFIG_SENSORS_PCA9539 is not set
 +# CONFIG_SENSORS_TSL2550 is not set
 +# CONFIG_I2C_DEBUG_CORE is not set
 +# CONFIG_I2C_DEBUG_ALGO is not set
@@ -796,11 +789,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +#
 +# CONFIG_SPI_SPIDEV is not set
 +# CONFIG_SPI_TLE62X0 is not set
-+
-+#
-+# PPS support
-+#
-+# CONFIG_PPS is not set
 +CONFIG_ARCH_REQUIRE_GPIOLIB=y
 +CONFIG_GPIOLIB=y
 +# CONFIG_DEBUG_GPIO is not set
@@ -827,15 +815,11 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +#
 +# CONFIG_GPIO_MAX7301 is not set
 +# CONFIG_GPIO_MCP23S08 is not set
-+# CONFIG_GPIO_MC33880 is not set
-+
-+#
-+# AC97 GPIO expanders:
-+#
 +# CONFIG_W1 is not set
 +# CONFIG_POWER_SUPPLY is not set
 +# CONFIG_HWMON is not set
 +# CONFIG_THERMAL is not set
++# CONFIG_THERMAL_HWMON is not set
 +# CONFIG_WATCHDOG is not set
 +CONFIG_SSB_POSSIBLE=y
 +
@@ -854,30 +838,16 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_HTC_PASIC3 is not set
 +# CONFIG_TPS65010 is not set
 +CONFIG_TWL4030_CORE=y
-+# CONFIG_TWL4030_POWER is not set
 +# CONFIG_MFD_TMIO is not set
 +# CONFIG_MFD_T7L66XB is not set
 +# CONFIG_MFD_TC6387XB is not set
 +# CONFIG_MFD_TC6393XB is not set
 +# CONFIG_PMIC_DA903X is not set
 +# CONFIG_MFD_WM8400 is not set
-+# CONFIG_MFD_WM831X is not set
 +# CONFIG_MFD_WM8350_I2C is not set
 +# CONFIG_MFD_PCF50633 is not set
-+# CONFIG_MFD_MC13783 is not set
 +# CONFIG_AB3100_CORE is not set
 +# CONFIG_EZX_PCAP is not set
-+CONFIG_REGULATOR=y
-+# CONFIG_REGULATOR_DEBUG is not set
-+# CONFIG_REGULATOR_FIXED_VOLTAGE is not set
-+# CONFIG_REGULATOR_VIRTUAL_CONSUMER is not set
-+# CONFIG_REGULATOR_USERSPACE_CONSUMER is not set
-+# CONFIG_REGULATOR_BQ24022 is not set
-+# CONFIG_REGULATOR_MAX1586 is not set
-+CONFIG_REGULATOR_TWL4030=y
-+# CONFIG_REGULATOR_LP3971 is not set
-+# CONFIG_REGULATOR_TPS65023 is not set
-+# CONFIG_REGULATOR_TPS6507X is not set
 +# CONFIG_MEDIA_SUPPORT is not set
 +
 +#
@@ -929,7 +899,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_USB_OXU210HP_HCD is not set
 +# CONFIG_USB_ISP116X_HCD is not set
 +# CONFIG_USB_ISP1760_HCD is not set
-+# CONFIG_USB_ISP1362_HCD is not set
 +# CONFIG_USB_OHCI_HCD is not set
 +# CONFIG_USB_SL811_HCD is not set
 +# CONFIG_USB_R8A66597_HCD is not set
@@ -1015,7 +984,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_USB_GADGET_LH7A40X is not set
 +# CONFIG_USB_GADGET_OMAP is not set
 +# CONFIG_USB_GADGET_PXA25X is not set
-+# CONFIG_USB_GADGET_R8A66597 is not set
 +# CONFIG_USB_GADGET_PXA27X is not set
 +# CONFIG_USB_GADGET_S3C_HSOTG is not set
 +# CONFIG_USB_GADGET_IMX is not set
@@ -1033,7 +1001,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_USB_AUDIO is not set
 +CONFIG_USB_ETH=m
 +CONFIG_USB_ETH_RNDIS=y
-+# CONFIG_USB_ETH_EEM is not set
 +# CONFIG_USB_GADGETFS is not set
 +# CONFIG_USB_FILE_STORAGE is not set
 +# CONFIG_USB_G_SERIAL is not set
@@ -1067,12 +1034,10 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_MMC_SDHCI is not set
 +# CONFIG_MMC_OMAP is not set
 +CONFIG_MMC_OMAP_HS=y
-+# CONFIG_MMC_AT91 is not set
-+# CONFIG_MMC_ATMELMCI is not set
 +# CONFIG_MMC_SPI is not set
 +# CONFIG_MEMSTICK is not set
-+# CONFIG_NEW_LEDS is not set
 +# CONFIG_ACCESSIBILITY is not set
++# CONFIG_NEW_LEDS is not set
 +CONFIG_RTC_LIB=y
 +CONFIG_RTC_CLASS=y
 +CONFIG_RTC_HCTOSYS=y
@@ -1117,7 +1082,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_RTC_DRV_R9701 is not set
 +# CONFIG_RTC_DRV_RS5C348 is not set
 +# CONFIG_RTC_DRV_DS3234 is not set
-+# CONFIG_RTC_DRV_PCF2123 is not set
 +
 +#
 +# Platform RTC drivers
@@ -1139,11 +1103,16 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +#
 +# CONFIG_DMADEVICES is not set
 +# CONFIG_AUXDISPLAY is not set
++CONFIG_REGULATOR=y
++# CONFIG_REGULATOR_DEBUG is not set
++# CONFIG_REGULATOR_FIXED_VOLTAGE is not set
++# CONFIG_REGULATOR_VIRTUAL_CONSUMER is not set
++# CONFIG_REGULATOR_USERSPACE_CONSUMER is not set
++# CONFIG_REGULATOR_BQ24022 is not set
++# CONFIG_REGULATOR_MAX1586 is not set
++CONFIG_REGULATOR_TWL4030=y
++# CONFIG_REGULATOR_LP3971 is not set
 +# CONFIG_UIO is not set
-+
-+#
-+# TI VLYNQ
-+#
 +# CONFIG_STAGING is not set
 +
 +#
@@ -1165,7 +1134,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_GFS2_FS is not set
 +# CONFIG_OCFS2_FS is not set
 +# CONFIG_BTRFS_FS is not set
-+# CONFIG_NILFS2_FS is not set
 +CONFIG_FILE_LOCKING=y
 +CONFIG_FSNOTIFY=y
 +CONFIG_DNOTIFY=y
@@ -1243,6 +1211,7 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_ROMFS_FS is not set
 +# CONFIG_SYSV_FS is not set
 +# CONFIG_UFS_FS is not set
++# CONFIG_NILFS2_FS is not set
 +CONFIG_NETWORK_FILESYSTEMS=y
 +CONFIG_NFS_FS=y
 +CONFIG_NFS_V3=y
@@ -1335,7 +1304,6 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +CONFIG_ENABLE_MUST_CHECK=y
 +CONFIG_FRAME_WARN=1024
 +CONFIG_MAGIC_SYSRQ=y
-+# CONFIG_STRIP_ASM_SYMS is not set
 +# CONFIG_UNUSED_SYMBOLS is not set
 +CONFIG_DEBUG_FS=y
 +# CONFIG_HEADERS_CHECK is not set
@@ -1371,13 +1339,11 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +# CONFIG_DEBUG_LIST is not set
 +# CONFIG_DEBUG_SG is not set
 +# CONFIG_DEBUG_NOTIFIERS is not set
-+# CONFIG_DEBUG_CREDENTIALS is not set
 +# CONFIG_BOOT_PRINTK_DELAY is not set
 +# CONFIG_RCU_TORTURE_TEST is not set
 +# CONFIG_RCU_CPU_STALL_DETECTOR is not set
 +# CONFIG_BACKTRACE_SELF_TEST is not set
 +# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
-+# CONFIG_DEBUG_FORCE_WEAK_PER_CPU is not set
 +# CONFIG_FAULT_INJECTION is not set
 +# CONFIG_LATENCYTOP is not set
 +# CONFIG_PAGE_POISONING is not set
@@ -1406,7 +1372,7 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +#
 +# Crypto core or helper
 +#
-+# CONFIG_CRYPTO_FIPS is not set
++CONFIG_CRYPTO_FIPS=y
 +CONFIG_CRYPTO_ALGAPI=y
 +CONFIG_CRYPTO_ALGAPI2=y
 +CONFIG_CRYPTO_AEAD2=y
@@ -1449,13 +1415,11 @@ diff -urpN linux-2.6.32.old/arch/arm/configs/omap3_beagle_zippy_defconfig linux-
 +#
 +# CONFIG_CRYPTO_HMAC is not set
 +# CONFIG_CRYPTO_XCBC is not set
-+# CONFIG_CRYPTO_VMAC is not set
 +
 +#
 +# Digest
 +#
 +CONFIG_CRYPTO_CRC32C=y
-+# CONFIG_CRYPTO_GHASH is not set
 +# CONFIG_CRYPTO_MD4 is not set
 +CONFIG_CRYPTO_MD5=y
 +# CONFIG_CRYPTO_MICHAEL_MIC is not set
