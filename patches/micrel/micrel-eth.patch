@@ -1,66 +1,66 @@
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index c539fb4..b84fa0d 100644
+index c539fb4..e363a15 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -21,6 +21,7 @@
- #include <linux/io.h>
- #include <linux/leds.h>
- #include <linux/gpio.h>
-+#include <linux/irq.h>
- #include <linux/input.h>
- #include <linux/gpio_keys.h>
- 
-@@ -54,6 +55,49 @@
+@@ -54,6 +54,57 @@
  
  #define NAND_BLOCK_SIZE		SZ_128K
  
 +#if defined(CONFIG_KS8851) || defined(CONFIG_KS8851_MODULE)
 +
-+#include <plat/mcspi.h>
 +#include <linux/spi/spi.h>
++#include <plat/mcspi.h>
++#include <linux/interrupt.h>
++#include <linux/ks8851.h>
 +
-+#define OMAP3BEAGLE_GPIO_KS8851_IRQ 157
++#define KSZ8851_SNL_INT 157
 +
-+static struct omap2_mcspi_device_config ks8851_spi_chip_info = {
++static struct omap2_mcspi_device_config ksz8851_mcspi_config = {
 +	.turbo_mode	= 0,
 +	.single_channel	= 1,	/* 0: slave, 1: master */
 +};
 +
-+static struct spi_board_info omap3beagle_spi_board_info[] __initdata = {
++static struct ks8851_pdata ksz8851_snl_data = {
++	.irq_flags	= IRQF_TRIGGER_FALLING,
++};
++
++static struct spi_board_info ksz8851_snl_info[] __initdata = {
 +	{
 +		.modalias		= "ks8851",
 +		.bus_num		= 4,
 +		.chip_select		= 0,
 +		.max_speed_hz		= 36000000,
-+		.controller_data	= &ks8851_spi_chip_info,
++		.controller_data = &ksz8851_mcspi_config,
++		.irq		= OMAP_GPIO_IRQ(KSZ8851_SNL_INT),
++		.platform_data	= &ksz8851_snl_data,
 +	},
 +};
 +
-+static void __init omap3beagle_ks8851_init(void)
++static int __init omap3430_spi_init(void)
 +{
-+	if ((gpio_request(OMAP3BEAGLE_GPIO_KS8851_IRQ, "KS8851_IRQ") == 0) &&
-+	    (gpio_direction_input(OMAP3BEAGLE_GPIO_KS8851_IRQ) == 0)) {
-+		gpio_export(OMAP3BEAGLE_GPIO_KS8851_IRQ, 0);
-+		omap3beagle_spi_board_info[0].irq	= OMAP_GPIO_IRQ(OMAP3BEAGLE_GPIO_KS8851_IRQ);
-+		set_irq_type(omap3beagle_spi_board_info[0].irq, IRQ_TYPE_EDGE_FALLING);
-+	} else {
-+		printk(KERN_ERR "could not obtain gpio for KS8851_IRQ\n");
-+		return;
-+	}
++	int irq = irq_to_gpio(ksz8851_snl_info[0].irq);
 +
-+	spi_register_board_info(omap3beagle_spi_board_info,
-+			ARRAY_SIZE(omap3beagle_spi_board_info));
++	if (gpio_request(irq, "spi4_intr") < 0) {
++		printk(KERN_ERR "Failed to request GPIO %d for "
++			"SPI4 interrupt\n", irq);
++		return 1;
++	}
++	gpio_direction_input(irq);
++	spi_register_board_info(ksz8851_snl_info,
++		ARRAY_SIZE(ksz8851_snl_info));
++	return 0;
++
 +}
 +
 +#else
-+static inline void __init omap3beagle_ks8851_init(void) { return; }
++static inline void omap3430_spi_init(void) {}
 +#endif
 +
 +
  static struct mtd_partition omap3beagle_nand_partitions[] = {
  	/* All the partition sizes are listed in terms of NAND block size */
  	{
-@@ -116,6 +160,14 @@ static struct twl4030_hsmmc_info mmc[] = {
+@@ -116,6 +167,14 @@ static struct twl4030_hsmmc_info mmc[] = {
  		.wires		= 8,
  		.gpio_wp	= 29,
  	},
@@ -75,7 +75,7 @@ index c539fb4..b84fa0d 100644
  	{}	/* Terminator */
  };
  
-@@ -407,11 +459,22 @@ static struct i2c_board_info __initdata beagle_i2c1_boardinfo[] = {
+@@ -407,11 +466,22 @@ static struct i2c_board_info __initdata beagle_i2c1_boardinfo[] = {
      },
  };
  
@@ -99,12 +99,11 @@ index c539fb4..b84fa0d 100644
      /* Bus 3 is attached to the DVI port where devices like the pico DLP
       * projector don't work reliably with 400kHz */
      omap_register_i2c_bus(3, 100, NULL, 0);
-@@ -498,6 +561,8 @@ static void __init omap3_beagle_init(void)
- 	/* REVISIT leave DVI powered down until it's needed ... */
- 	gpio_direction_output(170, true);
- 
-+	omap3beagle_ks8851_init();
-+
+@@ -501,6 +571,7 @@ static void __init omap3_beagle_init(void)
  	usb_musb_init();
  	usb_ehci_init(&ehci_pdata);
  	omap3beagle_flash_init();
++	omap3430_spi_init();
+ 
+ 	beagle_display_init();
+ 
