@@ -76,8 +76,18 @@ patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo-fixup.patch
 
 function vfp {
 echo "Apply vfp patches, should help pixman"
-patch -s -p1 < ${DIR}/patches/vfp/0001-So-far-vfp_sync_state-worked-only-for-threads-other-.patch
-patch -s -p1 < ${DIR}/patches/vfp/0002-Signal-handlers-can-use-floating-point-so-prevent-th.patch
+
+if [ "${GIT_MODE}" ] ; then
+ git am ${DIR}/patches/vfp/0001-ARM-vfp-fix-vfp_sync_state.patch
+ git am ${DIR}/patches/vfp/0001-ARM-vfp-ptrace-no-point-flushing-hw-context-for-PTRA.patch
+ git am ${DIR}/patches/vfp/0001-Recently-the-UP-versions-of-these-functions-were-ref.patch
+ git am ${DIR}/patches/vfp/0002-Signal-handlers-can-use-floating-point-so-prevent-th.patch
+else
+ patch -s -p1 < ${DIR}/patches/vfp/0001-ARM-vfp-fix-vfp_sync_state.patch
+ patch -s -p1 < ${DIR}/patches/vfp/0001-ARM-vfp-ptrace-no-point-flushing-hw-context-for-PTRA.patch
+ patch -s -p1 < ${DIR}/patches/vfp/0001-Recently-the-UP-versions-of-these-functions-were-ref.patch
+ patch -s -p1 < ${DIR}/patches/vfp/0002-Signal-handlers-can-use-floating-point-so-prevent-th.patch
+fi
 }
 
 function memory-hole {
