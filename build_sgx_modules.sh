@@ -4,6 +4,7 @@
 unset DIR
 unset SGX
 unset CC
+unset GIT_MODE
 
 . version.sh
 
@@ -13,6 +14,11 @@ DIR=$PWD
 KERNEL_UTS=$(cat ${DIR}/KERNEL/include/linux/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 
 SGX_VERSION=3_01_00_02
+
+#Currently Unsupported:
+#bc_cat.c:490: error: implicit declaration of function ‘omap_rev_lt_3_0’
+#SGX_VERSION=3_01_00_06
+
 SGX_BIN=OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}.bin
 
 function sgx_setup {
@@ -45,11 +51,36 @@ function build_sgx_modules {
 	mkdir ${DIR}/omap3-sgx-modules
 	cp -r ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/GFX_Linux_KM/* ${DIR}/omap3-sgx-modules
 	cd ${DIR}/omap3-sgx-modules
+
+if [ "${GIT_MODE}" ] ; then
+	git init
+	git add .
+        git commit -a -m 'OMAP35x_Graphics_SDK_setuplinux_'$SGX_VERSION''
+        git tag -a OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION} -m OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}
+fi
+
+if test "-$SGX_VERSION-" = "-3_01_00_02-"
+then
 	patch -s -p1 < ${DIR}/sgx/0001-Compile-fixes-for-recent-kernels.patch
 	sed -i -e 's:/opt/oe/stuff/build/tmp/work/beagleboard-angstrom-linux-gnueabi/linux-omap-2.6.29-r44/git/:'$DIR'/KERNEL/:g' Makefile
 
-	PVRBUILD=release
+	PVRBUILD = "release"
 	MAKE_TARGETS=BUILD=${PVRBUILD}
+fi
+
+if test "-$SGX_VERSION-" = "-3_01_00_06-"
+then
+	sed -i -e 's:/opt/oe/stuff/build/tmp/work/beagleboard-angstrom-linux-gnueabi/linux-omap-2.6.29-r44/git/:'$DIR'/KERNEL/:g' Makefile
+
+	PVRBUILD = "release"
+	MAKE_TARGETS = " BUILD=${PVRBUILD} TI_PLATFORM=omap3630"
+fi
+
+if [ "${GIT_MODE}" ] ; then
+	git add .
+        git commit -a -m 'sgx patches'
+        git tag -a OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}-patch -m OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}-patch
+fi
 
 	make ARCH=arm CROSS_COMPILE=${CC}
 
