@@ -6,19 +6,20 @@ unset BUILD
 MKIMAGE=`which mkimage 2> /dev/null`
 CCACHE=`which ccache 2> /dev/null`
 NCURSES=`file /usr/lib/libncurses.so | grep -v ERROR 2> /dev/null`
+GIT=`which git 2> /dev/null`
 
-if test "-$MKIMAGE-" = "--" || test "-$CCACHE-" = "--" || test "-$NCURSES-" = "--"
+if test "-$MKIMAGE-" = "--" || test "-$CCACHE-" = "--" || test "-$NCURSES-" = "--" || test "-$GIT-" = "--"
 then
   echo "Need to install uboot-mkimage, ccache, and libncurses5-dev dependencies"
-  sudo aptitude install uboot-mkimage ccache libncurses5-dev
+  sudo aptitude install uboot-mkimage ccache libncurses5-dev git-core
 fi
 
-KERNEL_REL=2.6.32
+KERNEL_REL=2.6.33
 #Stable Kernel
-STABLE_PATCH=11
+STABLE_PATCH=2
 KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
 DL_PATCH=patch-${KERNEL_PATCH}
-ABI=13
+ABI=0
 
 if [ "${IS_ZIPPY_TWO}" ] ; then
 BUILD=zippy2.

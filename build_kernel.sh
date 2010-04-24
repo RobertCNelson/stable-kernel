@@ -54,7 +54,7 @@ fi
 
 function patch_kernel {
 	cd ${DIR}/KERNEL
-	export DIR KERNEL_REL GIT BOARD IS_ZIPPY_TWO
+	export DIR KERNEL_REL GIT_MODE BOARD IS_ZIPPY_TWO
 	/bin/bash -e ${DIR}/patch.sh
 if [ "${KERNEL_PATCH}" ] ; then
 	sed -i 's/EXTRAVERSION = .'$STABLE_PATCH'/EXTRAVERSION = .'$STABLE_PATCH'-'$BUILD'/g' ${DIR}/KERNEL/Makefile
@@ -72,6 +72,8 @@ else
         git tag -a $KERNEL_REL-$BUILD -m $KERNEL_REL-$BUILD
 fi
 fi
+#Test Patches:
+
 	cd ${DIR}/
 }
 
@@ -100,9 +102,7 @@ fi
 function make_uImage {
 	cd ${DIR}/KERNEL/
 	time make -j${CORES} ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
-	#for: 2.6.33+
-	#KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
-	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/linux/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
 	cd ${DIR}
 }
