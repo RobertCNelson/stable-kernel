@@ -1,18 +1,10 @@
-From: Steve Sakoman <steve@sakoman.com>
-Date: Fri, 18 Dec 2009 14:39:24 +0000 (-0800)
-Subject: OMAP: DSS: Add DSS2 support for Overo
-X-Git-Url: http://www.sakoman.com/cgi-bin/gitweb.cgi?p=linux-omap-2.6.git;a=commitdiff_plain;h=6b135653505a2a5da42c92cfa31c3ab22e2b130f;hp=c7412fa6dec1460ac0d1895f16421732e5174406
-
-OMAP: DSS: Add DSS2 support for Overo
----
-
 diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
-index 52dfd51..9d54f42 100644
+index d192dd9..0c58359 100644
 --- a/arch/arm/mach-omap2/board-overo.c
 +++ b/arch/arm/mach-omap2/board-overo.c
 @@ -28,6 +28,7 @@
  #include <linux/platform_device.h>
- #include <linux/i2c/twl4030.h>
+ #include <linux/i2c/twl.h>
  #include <linux/regulator/machine.h>
 +#include <linux/spi/spi.h>
  
@@ -28,9 +20,9 @@ index 52dfd51..9d54f42 100644
  #include <mach/hardware.h>
  #include <plat/nand.h>
 +#include <plat/mcspi.h>
- #include <plat/mux.h>
  #include <plat/usb.h>
  
+ #include "mux.h"
 @@ -67,8 +70,6 @@
  #if defined(CONFIG_TOUCHSCREEN_ADS7846) || \
  	defined(CONFIG_TOUCHSCREEN_ADS7846_MODULE)
@@ -317,7 +309,7 @@ index 52dfd51..9d54f42 100644
  };
  
  static struct ehci_hcd_omap_platform_data ehci_pdata __initconst = {
-@@ -414,8 +582,9 @@ static void __init overo_init(void)
+@@ -422,8 +590,9 @@ static void __init overo_init(void)
  	overo_flash_init();
  	usb_musb_init();
  	usb_ehci_init(&ehci_pdata);
@@ -327,5 +319,4 @@ index 52dfd51..9d54f42 100644
 +	overo_display_init();
  
  	/* Ensure SDRC pins are mux'd for self-refresh */
- 	omap_cfg_reg(H16_34XX_SDRC_CKE0);
-
+ 	omap_mux_init_signal("sdrc_cke0", OMAP_PIN_OUTPUT);

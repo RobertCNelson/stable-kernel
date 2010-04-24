@@ -1,76 +1,44 @@
 #!/bin/bash
 # Split out, so build_kernel.sh and build_deb.sh can share..
 
-function linux-omap {
-patch -s -p1 < ${DIR}/patches/${BRANCH}-patch-from-${REL}-to-${GIT}.diff
-}
-
 function musb {
-echo "musb fifo fix"
-patch -s -p1 < ${DIR}/patches/musb/fifo-change.patch
+echo "musb fifo tweaks"
 patch -s -p1 < ${DIR}/patches/musb/musb-Add-new-fifo-table-for-a-OMAP3-errata.patch
 patch -s -p1 < ${DIR}/patches/musb/enable-fifo_mode_5_for_OMAP34XX.diff
 }
 
-function angstrom {
-echo "Angstrom Patches"
-}
-
 function micrel {
 echo "micrel patches"
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/00_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/01_eeprom_93cx6_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/02_eeprom_93cx6_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/03_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/04_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/05_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/06_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/07_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/08_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/09_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/10_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/11_ksz8851_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/12_ksz8851_2.6.32.patch
-#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/13_omap3_beagle_2.6.32.patch
-#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/14_omap3_beagle_2.6.32.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.32/15_ksz8851_2.6.32.patch
 
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/01_eeprom_93cx6_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/02_eeprom_93cx6_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/03_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/04_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/05_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/06_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/07_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/08_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/09_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/10_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/11_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/12_ksz8851_2.6.33.patch
+#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/13_omap3_beagle_2.6.33.patch
+#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/14_omap3_beagle_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/15_ksz8851_2.6.33.patch
+patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/16_compressed_2.6.33.patch
 patch -s -p1 < ${DIR}/patches/micrel/micrel-eth.patch
 }
 
 function rcn {
 echo "rcn patches"
-patch -s -p1 < ${DIR}/patches/rcn/ehci-omap-mach-to-plat-fix.diff
-patch -s -p1 < ${DIR}/patches/rcn/Fix-i2c-lockup.diff
 patch -s -p1 < ${DIR}/patches/rcn/CONFIG-enable-arm-rt2870-staging.diff
 }
 
 function dss2 {
 echo "dss2 patches"
-#patch -s -p1 < ${DIR}/patches/dss2/0001-OMAP2-Add-funcs-for-writing-SMS_ROT_-registers.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0002-OMAP-OMAPFB-split-omapfb.h.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0003-OMAP-OMAPFB-add-omapdss-device.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0004-OMAP-Add-VRAM-manager.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0005-OMAP-Add-support-for-VRFB-rotation-engine.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0006-OMAP-DSS2-Documentation-for-DSS2.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0007-OMAP-DSS2-Display-Subsystem-Driver-core.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0008-OMAP-DSS2-Add-more-core-files.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0009-OMAP-DSS2-DISPC.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0010-OMAP-DSS2-DPI-driver.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0011-OMAP-DSS2-Video-encoder-driver.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0012-OMAP-DSS2-RFBI-driver.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0013-OMAP-DSS2-SDI-driver.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0014-OMAP-DSS2-DSI-driver.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0015-OMAP-DSS2-omapfb-driver.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0016-OMAP-DSS2-Add-DPI-panel-drivers.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0017-OMAP-DSS2-Taal-DSI-command-mode-panel-driver.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0018-OMAP-SDP-Enable-DSS2-for-OMAP3-SDP-board.patch
-#patch -s -p1 < ${DIR}/patches/dss2/0019-MAINTAINERS-Add-OMAP2-3-DSS-and-OMAPFB-maintainer.patch
-
-patch -s -p1 < ${DIR}/patches/dss2/0020-DSS2-OMAPFB-fix-offset-with-YUV-modes.patch
-patch -s -p1 < ${DIR}/patches/dss2/0021-OMAP2-OMAPFB-fix-compilation-when-DSS2-not-in-use.patch
-patch -s -p1 < ${DIR}/patches/rcn/beagle-dss2-support.diff
+patch -s -p1 < ${DIR}/patches/dss2/DSS2-koen-beagle.diff
 patch -s -p1 < ${DIR}/patches/rcn/beagle-enable-2nd-i2c.diff
+patch -s -p1 < ${DIR}/patches/rcn/0001-OMAP-DSS2-fix-irq-stats-compilation.patch
 patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo-fixup.patch
 }
 
@@ -90,17 +58,10 @@ else
 fi
 }
 
-function memory-hole {
-echo "Applying memory hole patch"
-patch -s -p1 < ${DIR}/patches/omap/0001-ARCH-OMAP-enable-ARCH_HAS_HOLES_MEMORYMODEL-for-OMAP.patch
-}
-
-linux-omap
 musb
 rcn
 dss2
 vfp
-memory-hole
 
 if [ "${IS_ZIPPY_TWO}" ] ; then
 	micrel
