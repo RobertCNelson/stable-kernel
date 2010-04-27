@@ -13,7 +13,7 @@ DIR=$PWD
 # Check if the host is X86_64
 PLATFORM=`uname -m 2>/dev/null`
 if [ "$PLATFORM" == "x86_64" ]; then
-  IA32=`file /usr/share/doc/ia32-libs/Manifest.ia32-libs.gz | grep -v ERROR 2> /dev/null`
+  IA32=`file /usr/share/lintian/overrides/ia32-libs | grep -v ERROR 2> /dev/null`
   if test "-$IA32-" = "--"
   then
     echo "Missing ia32-libs"
