@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.6.33.2-l0
-# Sat Apr 24 09:58:11 2010
+# Linux kernel version: 2.6.33.3-l0
+# Tue Apr 27 00:40:19 2010
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -1340,6 +1340,7 @@ CONFIG_AR9170_USB=m
 CONFIG_AR9170_LEDS=y
 CONFIG_B43=m
 # CONFIG_B43_SDIO is not set
+CONFIG_B43_PIO=y
 CONFIG_B43_PHY_LP=y
 CONFIG_B43_LEDS=y
 CONFIG_B43_HWRNG=y
@@ -1826,6 +1827,7 @@ CONFIG_SSB_POSSIBLE=y
 # Sonics Silicon Backplane
 #
 CONFIG_SSB=y
+CONFIG_SSB_BLOCKIO=y
 CONFIG_SSB_SDIOHOST_POSSIBLE=y
 # CONFIG_SSB_SDIOHOST is not set
 # CONFIG_SSB_DEBUG is not set
