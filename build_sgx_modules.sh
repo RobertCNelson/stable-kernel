@@ -10,6 +10,17 @@ unset GIT_MODE
 
 DIR=$PWD
 
+# Check if the host is X86_64
+PLATFORM=`uname -m 2>/dev/null`
+if [ "$PLATFORM" == "x86_64" ]; then
+  IA32=`file /usr/share/doc/ia32-libs/Manifest.ia32-libs.gz | grep -v ERROR 2> /dev/null`
+  if test "-$IA32-" = "--"
+  then
+    echo "Missing ia32-libs"
+    sudo apt-get -y install ia32-libs
+  fi
+fi
+
 KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 
 SGX_VERSION=3_01_00_02
@@ -39,7 +50,9 @@ else
   echo ""
   echo "${SGX_BIN} not found"
   echo "Download ${SGX_BIN}"
-  echo "DL From: http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/latest/index_FDS.html" 
+  # echo "DL From: http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/latest/index_FDS.html" 
+  # Version 3_01_00_06 is not supported at this moment. 
+  echo "DL From: http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/3_01_00_02/index_FDS.html"
   echo "Copy to: ${DIR}/dl"
   echo ""
 fi
