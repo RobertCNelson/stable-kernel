@@ -23,11 +23,8 @@ fi
 
 KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 
-SGX_VERSION=3_01_00_02
-
-#Currently Unsupported:
-#bc_cat.c:490: error: implicit declaration of function ‘omap_rev_lt_3_0’
-#SGX_VERSION=3_01_00_06
+#SGX_VERSION=3_01_00_02
+SGX_VERSION=3_01_00_06
 
 SGX_BIN=OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}.bin
 
@@ -78,15 +75,6 @@ then
 
 	PVRBUILD = "release"
 	MAKE_TARGETS=BUILD=${PVRBUILD}
-fi
-
-if test "-$SGX_VERSION-" = "-3_01_00_06-"
-then
-	sed -i -e 's:/opt/oe/stuff/build/tmp/work/beagleboard-angstrom-linux-gnueabi/linux-omap-2.6.29-r44/git/:'$DIR'/KERNEL/:g' Makefile
-
-	PVRBUILD = "release"
-	MAKE_TARGETS = " BUILD=${PVRBUILD} TI_PLATFORM=omap3630"
-fi
 
 if [ "${GIT_MODE}" ] ; then
 	git add .
@@ -95,6 +83,21 @@ if [ "${GIT_MODE}" ] ; then
 fi
 
 	make ARCH=arm CROSS_COMPILE=${CC}
+
+fi
+
+if test "-$SGX_VERSION-" = "-3_01_00_06-"
+then
+	sed -i -e 's:/opt/oe/stuff/build/tmp/work/beagleboard-angstrom-linux-gnueabi/linux-omap-2.6.29-r44/git/:'$DIR'/KERNEL/:g' Makefile
+
+if [ "${GIT_MODE}" ] ; then
+	git add .
+        git commit -a -m 'sgx patches'
+        git tag -a OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}-patch -m OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}-patch
+fi
+
+	make BUILD=release TI_PLATFORM=omap3630 ARCH=arm CROSS_COMPILE=${CC}
+fi
 
 	mkdir -p ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
 	cp -v ./pvrsrvkm.ko ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/

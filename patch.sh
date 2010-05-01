@@ -58,10 +58,17 @@ else
 fi
 }
 
+function sgx_xm {
+echo "sgx_xm patches"
+patch -p1 -s < ${DIR}/patches/psp/omap3-add-macros.diff
+patch -p1 -s < ${DIR}/patches/psp/0001-OMAP3-SRF-Generic-shared-resource-f-w.patch
+}
+
 musb
 rcn
 dss2
 vfp
+sgx_xm
 
 if [ "${IS_ZIPPY_TWO}" ] ; then
 	micrel
