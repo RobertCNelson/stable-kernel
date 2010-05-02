@@ -7,6 +7,7 @@ fi
 
 if [ "$1" = "stop" -o  "$1" = "restart" ]; then
 	echo Stopping PVR
+	rmmod bufferclass_ti 2>/dev/null
 	rmmod omaplfb 2>/dev/null
 	rmmod pvrsrvkm 2>/dev/null
 fi
@@ -26,6 +27,7 @@ if [ -e /dev/pvrsrvkm ] ; then
 	rm -f /dev/pvrsrvkm
 fi
 
+#remove with 06
 if [ -e /dev/bc_cat ] ; then 
 	rm -f /dev/bc_cat
 fi
@@ -33,6 +35,7 @@ fi
 mknod /dev/pvrsrvkm c $pvr_maj 0 
 chmod 666 /dev/pvrsrvkm
 
+#remove with 06
 mknod /dev/bc_cat c $bc_maj 0
 chmod 666 /dev/bc_cat
 

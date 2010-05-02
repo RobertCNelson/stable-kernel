@@ -23,8 +23,9 @@ fi
 
 KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 
-#SGX_VERSION=3_01_00_02
-SGX_VERSION=3_01_00_06
+SGX_VERSION=3_01_00_02
+#SGX_VERSION=3_01_00_06
+#06 still broken
 
 SGX_BIN=OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}.bin
 
@@ -96,7 +97,7 @@ if [ "${GIT_MODE}" ] ; then
         git tag -a OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}-patch -m OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}-patch
 fi
 
-	make BUILD=release TI_PLATFORM=omap3630 ARCH=arm CROSS_COMPILE=${CC}
+	make BUILD=debug TI_PLATFORM=omap3630 ARCH=arm CROSS_COMPILE=${CC}
 fi
 
 	mkdir -p ${DIR}/deploy/mod/lib/modules/${KERNEL_UTS}/kernel/drivers/gpu/pvr/
