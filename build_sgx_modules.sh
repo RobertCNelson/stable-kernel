@@ -74,16 +74,13 @@ then
 	patch -s -p1 < ${DIR}/sgx/0001-Compile-fixes-for-recent-kernels.patch
 	sed -i -e 's:/opt/oe/stuff/build/tmp/work/beagleboard-angstrom-linux-gnueabi/linux-omap-2.6.29-r44/git/:'$DIR'/KERNEL/:g' Makefile
 
-	PVRBUILD = "release"
-	MAKE_TARGETS=BUILD=${PVRBUILD}
-
 if [ "${GIT_MODE}" ] ; then
 	git add .
         git commit -a -m 'sgx patches'
         git tag -a OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}-patch -m OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}-patch
 fi
 
-	make ARCH=arm CROSS_COMPILE=${CC}
+	make BUILD=release ARCH=arm CROSS_COMPILE=${CC}
 
 fi
 
