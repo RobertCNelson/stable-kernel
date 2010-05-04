@@ -8,10 +8,20 @@ unset GIT_MODE
 unset IS_LUCID
 unset IS_ZIPPY_TWO
 
+ARCH=$(uname -m)
 CCACHE=ccache
 DIR=$PWD
 
-CORES=`cat /proc/cpuinfo | grep cpu\ cores | head -1 | awk '{print $4}'`
+CORES=1
+if test "-$ARCH-" = "-x86_64-" || test "-$ARCH-" = "-i686-"
+then
+ CACHE=$(cat /proc/cpuinfo | grep "cache size" | head -1 | awk '{print $4}')
+ #FIXME: work around for a user's pc that reported 1691 cores...
+ #his /proc/cpuinfo had a unique cache size: "cache size      : 0 KB"
+ if [ ${CACHE} != 0 ] ; then
+  CORES=$(cat /proc/cpuinfo | grep "cpu cores" | head -1 | awk '{print $4}')
+ fi
+fi
 
 mkdir -p ${DIR}/deploy/
 
