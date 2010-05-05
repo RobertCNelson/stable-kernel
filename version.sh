@@ -21,10 +21,6 @@ KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
 DL_PATCH=patch-${KERNEL_PATCH}
 ABI=1
 
-if [ "${IS_ZIPPY_TWO}" ] ; then
-BUILD=zippy2.
-fi
-
 if [ "${IS_LUCID}" ] ; then
 BUILD+=l${ABI}
 else

@@ -26,7 +26,7 @@ patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/12_ksz8851_2.6.33.patch
 #patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/14_omap3_beagle_2.6.33.patch
 patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/15_ksz8851_2.6.33.patch
 patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.33/16_compressed_2.6.33.patch
-patch -s -p1 < ${DIR}/patches/micrel/micrel-eth.patch
+#patch -s -p1 < ${DIR}/patches/micrel/micrel-eth.patch
 }
 
 function rcn {
@@ -37,7 +37,7 @@ patch -s -p1 < ${DIR}/patches/rcn/CONFIG-enable-arm-rt2870-staging.diff
 function dss2 {
 echo "dss2 patches"
 patch -s -p1 < ${DIR}/patches/dss2/DSS2-koen-beagle.diff
-patch -s -p1 < ${DIR}/patches/rcn/beagle-enable-2nd-i2c.diff
+#patch -s -p1 < ${DIR}/patches/rcn/beagle-enable-2nd-i2c.diff
 patch -s -p1 < ${DIR}/patches/rcn/0001-OMAP-DSS2-fix-irq-stats-compilation.patch
 patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo-fixup.patch
 }
@@ -64,15 +64,20 @@ patch -p1 -s < ${DIR}/patches/psp/omap3-add-macros.diff
 patch -p1 -s < ${DIR}/patches/psp/0001-OMAP3-SRF-Generic-shared-resource-f-w.patch
 }
 
+function zippy {
+echo "zippy support"
+patch -s -p1 < ${DIR}/patches/angstrom/0003-ARM-OMAP-add-support-for-TCT-Zippy-to-Beagle-board-f.patch
+patch -s -p1 < ${DIR}/patches/angstrom/0043-ARM-OMAP-beagleboard-Add-infrastructure-to-do-fixups.patch
+patch -s -p1 < ${DIR}/patches/rcn/beagle-zippy-dont-load-i2c-on-boards-with-nozippy.diff
+}
+
 musb
 rcn
 dss2
 vfp
 sgx_xm
-
-if [ "${IS_ZIPPY_TWO}" ] ; then
-	micrel
-fi
+micrel
+zippy
 
 echo "Patching Successful"
 
