@@ -15,14 +15,8 @@ DIR=$PWD
 CORES=1
 if test "-$ARCH-" = "-x86_64-" || test "-$ARCH-" = "-i686-"
 then
- CPUINFO_CORE=$(cat /proc/cpuinfo | grep "cpu cores" | head -1 | awk '{print $2}')
- if test "-$CPUINFO_CORE-" = "-cores-"
- then
-  CORES=$(cat /proc/cpuinfo | grep "cpu cores" | head -1 | awk '{print $4}')
- else
- #FIXME:
-  echo "FIXME: try counting cores"
- fi
+ CORES=$(cat /proc/cpuinfo | grep processor | wc -l)
+ let CORES=$CORES+1
 fi
 
 mkdir -p ${DIR}/deploy/
