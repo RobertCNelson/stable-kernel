@@ -20,5 +20,3 @@ CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
 #For lucid we need a specific defconfig not compatible with squeeze/jaunty/karmic..
 #IS_LUCID=1
 
-#Enable for Zippy2 Support, currently a zippy2 enabled kernel will not boot on a non zippy2 beagle...
-#IS_ZIPPY_TWO=1

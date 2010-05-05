@@ -6,7 +6,6 @@ unset BUILD
 unset CC
 unset GIT_MODE
 unset IS_LUCID
-unset IS_ZIPPY_TWO
 
 DIR=$PWD
 
@@ -40,7 +39,7 @@ fi
 
 function patch_kernel {
 	cd ${DIR}/KERNEL
-	export DIR KERNEL_REL GIT BOARD IS_ZIPPY_TWO
+	export DIR KERNEL_REL GIT BOARD
 	/bin/bash -e ${DIR}/patch.sh
 if [ "${KERNEL_PATCH}" ] ; then
 	sed -i 's/EXTRAVERSION = .'$STABLE_PATCH'/EXTRAVERSION = .'$STABLE_PATCH'-'$BUILD'/g' ${DIR}/KERNEL/Makefile
@@ -91,11 +90,6 @@ if [ "${IS_LUCID}" ] ; then
 else
 	echo ""
 	echo "Building for Debian Lenny/Squeeze/Sid & Ubuntu 9.04/9.10"
-	echo ""
-fi
-
-if [ "${IS_ZIPPY_TWO}" ] ; then
-	echo "Building with Zippy2 Support"
 	echo ""
 fi
 
