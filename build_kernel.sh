@@ -7,16 +7,36 @@ unset CC
 unset GIT_MODE
 unset IS_LUCID
 
-#Check for dependencies
-MKIMAGE=`which mkimage 2> /dev/null`
-CCACHE=`which ccache 2> /dev/null`
-NCURSES=`file /usr/lib/libncurses.so | grep -v ERROR 2> /dev/null`
-GIT=`which git 2> /dev/null`
+unset PACKAGE
+unset APT
 
-if test "-$MKIMAGE-" = "--" || test "-$CCACHE-" = "--" || test "-$NCURSES-" = "--" || test "-$GIT-" = "--"
-then
-  echo "Need to install uboot-mkimage, ccache, and libncurses5-dev dependencies"
-  sudo aptitude install uboot-mkimage ccache libncurses5-dev git-core
+if [ ! $(which mkimage) ];then
+ echo "Missing uboot-mkimage"
+ PACKAGE="uboot-mkimage "
+ APT=1
+fi
+
+if [ ! $(which ccache) ];then
+ echo "Missing ccache"
+ PACKAGE+="ccache "
+ APT=1
+fi
+
+if [ ! $(which git) ];then
+ echo "Missing git"
+ PACKAGE+="git-core "
+ APT=1
+fi
+
+if [ ! $(file /usr/lib/libncurses.so | grep -v ERROR | awk '{print $1}') ];then
+ echo "Missing ncurses"
+ PACKAGE+="libncurses5-dev "
+ APT=1
+fi
+
+if [ "${APT}" ];then
+ echo "Installing Dependicies"
+ sudo aptitude install $PACKAGE
 fi
 
 ARCH=$(uname -m)
