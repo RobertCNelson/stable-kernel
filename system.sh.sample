@@ -1,6 +1,8 @@
 #!/bin/bash
 #copy as "system.sh" and tweak for your system
 
+ARCH=$(uname -m)
+
 #Recommended:
 #Use Angstrom's Cross Compiler: http://www.angstrom-distribution.org/building-angstrom (select beagleboard for machine)
 #Follow all steps upto Step 3, "MACHINE=beagleboard bitbake base-image" Should be enough
@@ -9,7 +11,14 @@
 #Use CodeSourcery: http://www.codesourcery.com/sgpp/lite/arm/portal/subscription?@template=lite (GNU/Linux)
 #Just download and extract...
 
-CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
+if test "-$ARCH-" = "-armv7l-"
+then
+ #using native gcc
+ CC=
+else
+ #using Cross Compiler
+ CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
+fi
 
 #Allow the usage of git to help create kernel patches
 #GIT_MODE=1
