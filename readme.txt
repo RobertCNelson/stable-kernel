@@ -27,3 +27,8 @@ https://lists.ubuntu.com/archives/kernel-team/2010-January/008518.html
 
 CONFIG_ARM_THUMBEE=y
 https://lists.ubuntu.com/archives/kernel-team/2010-January/008561.html
+
+Breaks Lucid, kernel unbootable...
+5/8/2010 (2.6.33.3-l1)
+CONFIG_TOUCHSCREEN_USB_COMPOSITE=m
+
