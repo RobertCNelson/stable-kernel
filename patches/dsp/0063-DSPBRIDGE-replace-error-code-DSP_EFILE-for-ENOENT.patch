@@ -1,0 +1,51 @@
+From 538702f7fb2bd029d053c923445e88bbb7a946eb Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:52 -0500
+Subject: [PATCH 063/135] DSPBRIDGE: replace error code DSP_EFILE for -ENOENT
+
+This patch replaces DSP_EFILE with -ENOENT.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/proc.h |    4 ++--
+ drivers/dsp/bridge/rmgr/proc.c              |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/proc.h b/arch/arm/plat-omap/include/dspbridge/proc.h
+index 050b5b4..053aa22 100644
+--- a/arch/arm/plat-omap/include/dspbridge/proc.h
++++ b/arch/arm/plat-omap/include/dspbridge/proc.h
+@@ -63,7 +63,7 @@ extern dsp_status proc_attach(u32 processor_id,
+  *      hdev_obj  :   Handle to the Device
+  *  Returns:
+  *      DSP_SOK     :   On Successful Loading
+- *      DSP_EFILE   :   No DSP exec file found.
++ *      -ENOENT   :   No DSP exec file found.
+  *      -EPERM   :   General Failure
+  *  Requires:
+  *      hdev_obj != NULL.
+@@ -318,7 +318,7 @@ extern dsp_status proc_get_trace(void *hprocessor, u8 * pbuf, u32 max_size);
+  *      user_envp:       An Array of Environment settings(Unicode Strings)
+  *  Returns:
+  *      DSP_SOK:       Success.
+- *      DSP_EFILE:       The DSP Execuetable was not found.
++ *      -ENOENT:       The DSP Execuetable was not found.
+  *      -EFAULT:       Invalid processor handle.
+  *      DSP_ECORRUTFILE:    Unable to Parse the DSP Execuetable
+  *      DSP_EATTACHED:      Abort because a GPP Client is attached to the
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index 59a38fd..528fbd3 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -256,7 +256,7 @@ static dsp_status get_exec_file(struct cfg_devnode *dev_node_obj,
+ 			return DSP_SOK;
+ 		}
+ 	}
+-	return DSP_EFILE;
++	return -ENOENT;
+ }
+ 
+ /*
+-- 
+1.7.0.4
+

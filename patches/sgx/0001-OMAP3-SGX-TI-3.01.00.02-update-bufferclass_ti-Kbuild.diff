@@ -1,0 +1,14 @@
+diff --git a/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/Kbuild b/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/Kbuild
+index 52a6c65..52e5ba7 100644
+--- a/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/Kbuild
++++ b/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/Kbuild
+@@ -1,6 +1,6 @@
+-EXTRA_CFLAGS =	-DLINUX \
+-               -I$(PVR_BUILD_DIR)/include4 \
+-               -I$(PVR_BUILD_DIR)/services4/include
++ccflags-y += -DLINUX
++ccflags-y += -Idrivers/staging/omap3-sgx/include4
++ccflags-y += -Idrivers/staging/omap3-sgx/services4/include
+ 
+ obj-m :=  bufferclass_ti.o
+ bufferclass_ti-y := bc_cat.o

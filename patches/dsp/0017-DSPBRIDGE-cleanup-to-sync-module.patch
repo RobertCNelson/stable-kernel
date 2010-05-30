@@ -1,0 +1,492 @@
+From 00d5a7e13c72ab40f29032ba02cf9f24e270892c Mon Sep 17 00:00:00 2001
+From: Fernando Guzman Lugo <x0095840@ti.com>
+Date: Tue, 23 Mar 2010 19:54:24 -0600
+Subject: [PATCH 017/135] DSPBRIDGE: cleanup to sync module
+
+This patch cleanup sync module removing everything is not needed
+anymore.
+
+Signed-off-by: Fernando Guzman Lugo <x0095840@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/_chnl_sm.h |    2 -
+ arch/arm/plat-omap/include/dspbridge/chnlpriv.h |    4 -
+ arch/arm/plat-omap/include/dspbridge/sync.h     |  136 +--------------
+ drivers/dsp/bridge/services/services.c          |    9 +-
+ drivers/dsp/bridge/services/sync.c              |  212 +----------------------
+ 5 files changed, 7 insertions(+), 356 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h b/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
+index d961578..f394ba6 100644
+--- a/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
++++ b/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
+@@ -141,8 +141,6 @@ struct chnl_object {
+ 	bhandle user_event;
+ 	/* Abstract syncronization object */
+ 	struct sync_object *sync_event;
+-	/* Name of Sync event */
+-	char sz_event_name[SYNC_MAXNAMELENGTH + 1];
+ 	u32 process;		/* Process which created this channel */
+ 	u32 pcb_arg;		/* Argument to use with callback */
+ 	struct lst_list *pio_requests;	/* List of IOR's to driver */
+diff --git a/arch/arm/plat-omap/include/dspbridge/chnlpriv.h b/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
+index 0793e0d..9fe7a74 100644
+--- a/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
++++ b/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
+@@ -83,10 +83,6 @@ struct chnl_info {
+ 	u32 cio_cs;		/* Number of IOCs in queue. */
+ 	u32 cio_reqs;		/* Number of IO Requests in queue. */
+ 	u32 process;		/* Process owning this channel. */
+-	/*
+-	 * Name of channel I/O completion event. Not required in Linux
+-	 */
+-	char sz_event_name[CHNL_MAXEVTNAMELEN + 1];
+ };
+ 
+ /* Channel manager info: */
+diff --git a/arch/arm/plat-omap/include/dspbridge/sync.h b/arch/arm/plat-omap/include/dspbridge/sync.h
+index c3c68e1..9f8786e 100644
+--- a/arch/arm/plat-omap/include/dspbridge/sync.h
++++ b/arch/arm/plat-omap/include/dspbridge/sync.h
+@@ -20,15 +20,12 @@
+ #define _SYNC_H
+ 
+ #include <dspbridge/errbase.h>
+-#define SIGNATURECS     0x53435953	/* "SYCS" (in reverse) */
+-#define SIGNATUREDPCCS  0x53445953	/* "SYDS" (in reverse) */
++#include <dspbridge/dbdefs.h>
++
+ 
+ /* Special timeout value indicating an infinite wait: */
+ #define SYNC_INFINITE  0xffffffff
+ 
+-/* Maximum string length of a named event */
+-#define SYNC_MAXNAMELENGTH 32
+-
+ /**
+  * struct sync_object - the basic sync_object structure
+  * @comp:	use to signal events
+@@ -40,118 +37,6 @@ struct sync_object{
+ 	struct completion *multi_comp;
+ };
+ 
+-/* Generic SYNC CS object: */
+-struct sync_csobject {
+-	u32 dw_signature;	/* used for object validation */
+-	struct semaphore sem;
+-};
+-
+-/* SYNC object attributes: */
+-struct sync_attrs {
+-	bhandle user_event;	/* Platform's User Mode synch. object. */
+-	bhandle kernel_event;	/* Platform's Kernel Mode sync. object. */
+-	u32 dw_reserved1;	/* For future expansion. */
+-	u32 dw_reserved2;	/* For future expansion. */
+-};
+-
+-/*
+- *  ======== sync_delete_cs ========
+- *  Purpose:
+- *      Delete a critical section.
+- *  Parameters:
+- *      hcs_obj: critical section handle.
+- *  Returns:
+- *      DSP_SOK:        Success.
+- *      DSP_EHANDLE:    Invalid handle.
+- *  Requires:
+- *  Ensures:
+- */
+-extern dsp_status sync_delete_cs(IN struct sync_csobject *hcs_obj);
+-
+-/*
+- *  ======== sync_enter_cs ========
+- *  Purpose:
+- *      Enter the critical section.
+- *  Parameters:
+- *      hcs_obj: critical section handle.
+- *  Returns:
+- *      DSP_SOK:        Success.
+- *      DSP_EHANDLE:    Invalid handle.
+- *  Requires:
+- *  Ensures:
+- */
+-extern dsp_status sync_enter_cs(IN struct sync_csobject *hcs_obj);
+-
+-/*
+- *  ======== sync_exit ========
+- *  Purpose:
+- *      Discontinue usage of module; free resources when reference count
+- *      reaches 0.
+- *  Parameters:
+- *  Returns:
+- *  Requires:
+- *      SYNC initialized.
+- *  Ensures:
+- *      Resources used by module are freed when cRef reaches zero.
+- */
+-extern void sync_exit(void);
+-
+-/*
+- *  ======== sync_init ========
+- *  Purpose:
+- *      Initializes private state of SYNC module.
+- *  Parameters:
+- *  Returns:
+- *      TRUE if initialized; FALSE if error occured.
+- *  Requires:
+- *  Ensures:
+- *      SYNC initialized.
+- */
+-extern bool sync_init(void);
+-
+-/*
+- *  ======== sync_initialize_cs ========
+- *  Purpose:
+- *      Initialize the critical section.
+- *  Parameters:
+- *      hcs_obj: critical section handle.
+- *  Returns:
+- *      DSP_SOK:        Success.
+- *      DSP_EMEMORY:    Out of memory.
+- *  Requires:
+- *  Ensures:
+- */
+-extern dsp_status sync_initialize_cs(OUT struct sync_csobject **phCSObj);
+-
+-/*
+- *  ======== sync_initialize_dpccs ========
+- *  Purpose:
+- *      Initialize the critical section between process context and DPC.
+- *  Parameters:
+- *      hcs_obj: critical section handle.
+- *  Returns:
+- *      DSP_SOK:        Success.
+- *      DSP_EMEMORY:    Out of memory.
+- *  Requires:
+- *  Ensures:
+- */
+-extern dsp_status sync_initialize_dpccs(OUT struct sync_csobject
+-					**phCSObj);
+-
+-/*
+- *  ======== sync_leave_cs ========
+- *  Purpose:
+- *      Leave the critical section.
+- *  Parameters:
+- *      hcs_obj: critical section handle.
+- *  Returns:
+- *      DSP_SOK:        Success.
+- *      DSP_EHANDLE:    Invalid handle.
+- *  Requires:
+- *  Ensures:
+- */
+-extern dsp_status sync_leave_cs(IN struct sync_csobject *hcs_obj);
+-
+ /**
+  * sync_init_event() - set initial state for a sync_event element
+  * @event:	event to be initialized.
+@@ -165,23 +50,6 @@ static inline void sync_init_event(struct sync_object *event)
+ 	event->multi_comp = NULL;
+ }
+ 
+-/*
+- * ========= sync_post_message ========
+- *  Purpose:
+- *      To post a windows message
+- *  Parameters:
+- *      hWindow:    Handle to the window
+- *      uMsg:       Message to be posted
+- *  Returns:
+- *      DSP_SOK:        Success
+- *      DSP_EFAIL:      Post message failed
+- *      DSP_EHANDLE:    Invalid Window handle
+- *  Requires:
+- *      SYNC initialized
+- *  Ensures
+- */
+-extern dsp_status sync_post_message(IN bhandle hWindow, IN u32 uMsg);
+-
+ /**
+  * sync_reset_event() - reset a sync_event element
+  * @event:	event to be reset.
+diff --git a/drivers/dsp/bridge/services/services.c b/drivers/dsp/bridge/services/services.c
+index 5bc392a..ccc4e93 100644
+--- a/drivers/dsp/bridge/services/services.c
++++ b/drivers/dsp/bridge/services/services.c
+@@ -46,7 +46,6 @@ void services_exit(void)
+ {
+ 	/* Uninitialize all SERVICES modules here */
+ 	ntfy_exit();
+-	sync_exit();
+ 	clk_exit();
+ 	reg_exit();
+ 	cfg_exit();
+@@ -62,25 +61,21 @@ bool services_init(void)
+ {
+ 	bool ret = true;
+ 	bool fcfg, fmem;
+-	bool freg, fsync, fclk, fntfy;
++	bool freg, fclk, fntfy;
+ 
+ 	/* Perform required initialization of SERVICES modules. */
+ 	fmem = services_mem_init();
+ 	freg = reg_init();
+ 	fcfg = cfg_init();
+-	fsync = sync_init();
+ 	fclk = services_clk_init();
+ 	fntfy = ntfy_init();
+ 
+-	ret = fcfg && fmem && freg && fsync && fclk;
++	ret = fcfg && fmem && freg && fclk;
+ 
+ 	if (!ret) {
+ 		if (fntfy)
+ 			ntfy_exit();
+ 
+-		if (fsync)
+-			sync_exit();
+-
+ 		if (fclk)
+ 			clk_exit();
+ 
+diff --git a/drivers/dsp/bridge/services/sync.c b/drivers/dsp/bridge/services/sync.c
+index 10482bb..e54b500 100644
+--- a/drivers/dsp/bridge/services/sync.c
++++ b/drivers/dsp/bridge/services/sync.c
+@@ -19,76 +19,11 @@
+ /*  ----------------------------------- Host OS */
+ #include <dspbridge/host_os.h>
+ 
+-/*  ----------------------------------- DSP/BIOS Bridge */
+-#include <dspbridge/std.h>
+-#include <dspbridge/dbdefs.h>
+-#include <dspbridge/errbase.h>
+-
+-/*  ----------------------------------- Trace & Debug */
+-#include <dspbridge/dbc.h>
+-
+-/*  ----------------------------------- OS Adaptation Layer */
+-#include <dspbridge/mem.h>
+-
+ /*  ----------------------------------- This */
+ #include <dspbridge/sync.h>
+ 
+ DEFINE_SPINLOCK(sync_lock);
+ 
+-/*  ----------------------------------- Defines, Data Structures, Typedefs */
+-#define SIGNATURE       0x434e5953	/* "SYNC" (in reverse) */
+-
+-enum wait_state {
+-	WO_WAITING,
+-	WO_SIGNALLED
+-};
+-
+-enum sync_state {
+-	SO_RESET,
+-	SO_SIGNALLED
+-};
+-
+-struct wait_object {
+-	enum wait_state state;
+-	struct sync_object *signalling_event;
+-	struct semaphore sem;
+-};
+-
+-struct sync_dpccsobject {
+-	u32 dw_signature;	/* used for object validation */
+-	spinlock_t sync_dpccs_lock;
+-	s32 count;
+-};
+-
+-static int test_and_set(volatile void *ptr, int val)
+-{
+-	int ret = val;
+-	asm volatile (" swp %0, %0, [%1]" : "+r" (ret) : "r"(ptr) : "memory");
+-	return ret;
+-}
+-
+-static void timeout_callback(unsigned long hWaitObj);
+-
+-/*
+- *  ======== sync_exit ========
+- *  Purpose:
+- *      Cleanup SYNC module.
+- */
+-void sync_exit(void)
+-{
+-	/* Do nothing */
+-}
+-
+-/*
+- *  ======== sync_init ========
+- *  Purpose:
+- *      Initialize SYNC module.
+- */
+-bool sync_init(void)
+-{
+-	return true;
+-}
+-
+ /**
+  * sync_set_event() - set or signal and specified event
+  * @event:	Event to be set..
+@@ -130,6 +65,9 @@ dsp_status sync_wait_on_multiple_events(struct sync_object **events,
+ 
+ 	init_completion(&m_comp);
+ 
++	if (SYNC_INFINITE == timeout)
++		timeout = MAX_SCHEDULE_TIMEOUT;
++
+ 	spin_lock_bh(&sync_lock);
+ 	for (i = 0; i < count; i++) {
+ 		if (completion_done(&events[i]->comp)) {
+@@ -164,147 +102,3 @@ func_end:
+ 	return status;
+ }
+ 
+-static void timeout_callback(unsigned long hWaitObj)
+-{
+-	struct wait_object *wait_obj = (struct wait_object *)hWaitObj;
+-	if (test_and_set(&wait_obj->state, WO_SIGNALLED) == WO_WAITING)
+-		up(&wait_obj->sem);
+-
+-}
+-
+-/*
+- *  ======== sync_delete_cs ========
+- */
+-dsp_status sync_delete_cs(struct sync_csobject *hcs_obj)
+-{
+-	dsp_status status = DSP_SOK;
+-	struct sync_csobject *pcs_obj = (struct sync_csobject *)hcs_obj;
+-
+-	if (MEM_IS_VALID_HANDLE(hcs_obj, SIGNATURECS)) {
+-		if (down_trylock(&pcs_obj->sem) != 0)
+-			DBC_ASSERT(0);
+-
+-		MEM_FREE_OBJECT(hcs_obj);
+-	} else if (MEM_IS_VALID_HANDLE(hcs_obj, SIGNATUREDPCCS)) {
+-		struct sync_dpccsobject *pdpccs_obj =
+-		    (struct sync_dpccsobject *)hcs_obj;
+-		if (pdpccs_obj->count != 1)
+-			DBC_ASSERT(0);
+-
+-		MEM_FREE_OBJECT(pdpccs_obj);
+-	} else {
+-		status = DSP_EHANDLE;
+-	}
+-
+-	return status;
+-}
+-
+-/*
+- *  ======== sync_enter_cs ========
+- */
+-dsp_status sync_enter_cs(struct sync_csobject *hcs_obj)
+-{
+-	dsp_status status = DSP_SOK;
+-	struct sync_csobject *pcs_obj = (struct sync_csobject *)hcs_obj;
+-
+-	if (MEM_IS_VALID_HANDLE(hcs_obj, SIGNATURECS)) {
+-		if (in_interrupt()) {
+-			status = DSP_EFAIL;
+-			DBC_ASSERT(0);
+-		} else if (down_interruptible(&pcs_obj->sem)) {
+-			status = DSP_EFAIL;
+-		}
+-	} else if (MEM_IS_VALID_HANDLE(hcs_obj, SIGNATUREDPCCS)) {
+-		struct sync_dpccsobject *pdpccs_obj =
+-		    (struct sync_dpccsobject *)hcs_obj;
+-		spin_lock_bh(&pdpccs_obj->sync_dpccs_lock);
+-		pdpccs_obj->count--;
+-		if (pdpccs_obj->count != 0) {
+-			/* FATAL ERROR : Failed to acquire DPC CS */
+-			spin_unlock_bh(&pdpccs_obj->sync_dpccs_lock);
+-			DBC_ASSERT(0);
+-		}
+-	} else {
+-		status = DSP_EHANDLE;
+-	}
+-
+-	return status;
+-}
+-
+-/*
+- *  ======== sync_initialize_cs ========
+- */
+-dsp_status sync_initialize_cs(OUT struct sync_csobject **phCSObj)
+-{
+-	dsp_status status = DSP_SOK;
+-	struct sync_csobject *pcs_obj = NULL;
+-
+-	/* Allocate memory for sync CS object */
+-	MEM_ALLOC_OBJECT(pcs_obj, struct sync_csobject, SIGNATURECS);
+-	if (pcs_obj != NULL)
+-		init_MUTEX(&pcs_obj->sem);
+-	else
+-		status = DSP_EMEMORY;
+-
+-	/* return CS object */
+-	*phCSObj = pcs_obj;
+-	DBC_ASSERT(DSP_FAILED(status) || (pcs_obj));
+-	return status;
+-}
+-
+-dsp_status sync_initialize_dpccs(OUT struct sync_csobject **phCSObj)
+-{
+-	dsp_status status = DSP_SOK;
+-	struct sync_dpccsobject *pcs_obj = NULL;
+-
+-	DBC_REQUIRE(phCSObj);
+-
+-	if (phCSObj) {
+-		/* Allocate memory for sync CS object */
+-		MEM_ALLOC_OBJECT(pcs_obj, struct sync_dpccsobject,
+-				 SIGNATUREDPCCS);
+-		if (pcs_obj != NULL) {
+-			pcs_obj->count = 1;
+-			spin_lock_init(&pcs_obj->sync_dpccs_lock);
+-		} else {
+-			status = DSP_EMEMORY;
+-		}
+-
+-		/* return CS object */
+-		*phCSObj = (struct sync_csobject *)pcs_obj;
+-	} else {
+-		status = DSP_EPOINTER;
+-	}
+-
+-	DBC_ASSERT(DSP_FAILED(status) || (pcs_obj));
+-
+-	return status;
+-}
+-
+-/*
+- *  ======== sync_leave_cs ========
+- */
+-dsp_status sync_leave_cs(struct sync_csobject *hcs_obj)
+-{
+-	dsp_status status = DSP_SOK;
+-	struct sync_csobject *pcs_obj = (struct sync_csobject *)hcs_obj;
+-
+-	if (MEM_IS_VALID_HANDLE(hcs_obj, SIGNATURECS)) {
+-		up(&pcs_obj->sem);
+-	} else if (MEM_IS_VALID_HANDLE(hcs_obj, SIGNATUREDPCCS)) {
+-		struct sync_dpccsobject *pdpccs_obj =
+-		    (struct sync_dpccsobject *)hcs_obj;
+-		pdpccs_obj->count++;
+-		if (pdpccs_obj->count != 1) {
+-			/* FATAL ERROR : Invalid DPC CS count */
+-			spin_unlock_bh(&pdpccs_obj->sync_dpccs_lock);
+-			DBC_ASSERT(0);
+-			spin_lock_bh(&pdpccs_obj->sync_dpccs_lock);
+-		}
+-		spin_unlock_bh(&pdpccs_obj->sync_dpccs_lock);
+-	} else {
+-		status = DSP_EHANDLE;
+-	}
+-
+-	return status;
+-}
+-- 
+1.7.0.4
+

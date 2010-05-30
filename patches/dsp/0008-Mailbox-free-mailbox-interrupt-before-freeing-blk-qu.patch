@@ -1,0 +1,33 @@
+From 22356d27471454101a218077464ce5e2101af43d Mon Sep 17 00:00:00 2001
+From: Omar Ramirez Luna <omar.ramirez@ti.com>
+Date: Thu, 20 May 2010 18:08:47 -0500
+Subject: [PATCH 008/135] Mailbox: free mailbox interrupt before freeing blk queue
+
+Free interrupt before freeing blk_queue to avoid
+any attempt of access to blk_queue after it was freed.
+
+Signed-off-by: Fernando Guzman Lugo <x0095840@ti.com>
+
+Conflicts:
+
+	arch/arm/plat-omap/mailbox.c
+---
+ arch/arm/plat-omap/mailbox.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/plat-omap/mailbox.c b/arch/arm/plat-omap/mailbox.c
+index e544a51..836177d 100644
+--- a/arch/arm/plat-omap/mailbox.c
++++ b/arch/arm/plat-omap/mailbox.c
+@@ -313,8 +313,6 @@ static int omap_mbox_startup(struct omap_mbox *mbox)
+ static void omap_mbox_fini(struct omap_mbox *mbox)
+ {
+ 	free_irq(mbox->irq, mbox);
+-	tasklet_kill(&mbox->txq->tasklet);
+-	flush_work(&mbox->rxq->work);
+ 	mbox_queue_free(mbox->txq);
+ 	mbox_queue_free(mbox->rxq);
+ 
+-- 
+1.7.0.4
+

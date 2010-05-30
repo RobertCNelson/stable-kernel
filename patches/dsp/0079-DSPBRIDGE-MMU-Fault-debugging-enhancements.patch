@@ -1,0 +1,1165 @@
+From fc27cdb896d3961b05143c41d2dd78f6dd66ab94 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Mon, 12 Apr 2010 01:30:19 -0500
+Subject: [PATCH 079/135] DSPBRIDGE: MMU-Fault debugging enhancements
+
+These changes allow for DSP task information to be printed
+by the MPU dspbridge when DSP MMU fault ocurrs.
+
+Signed-off-by: Cris Jansson <cjansson@ti.com>
+[change to open source coding style]
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/cod.h   |    1 +
+ arch/arm/plat-omap/include/dspbridge/dbll.h  |    3 +-
+ arch/arm/plat-omap/include/dspbridge/gh.h    |    2 +
+ arch/arm/plat-omap/include/dspbridge/io_sm.h |    5 +
+ arch/arm/plat-omap/include/dspbridge/nldr.h  |    2 +
+ arch/arm/plat-omap/include/dspbridge/node.h  |   15 +
+ drivers/dsp/bridge/Makefile                  |    1 +
+ drivers/dsp/bridge/gen/gh.c                  |   24 ++
+ drivers/dsp/bridge/pmgr/dbll.c               |   84 ++++
+ drivers/dsp/bridge/rmgr/nldr.c               |   80 ++++
+ drivers/dsp/bridge/rmgr/node.c               |   31 ++
+ drivers/dsp/bridge/wmd/io_sm.c               |  567 +++++++++++++++++++++-----
+ drivers/dsp/bridge/wmd/ue_deh.c              |   68 +++-
+ 13 files changed, 773 insertions(+), 110 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/cod.h b/arch/arm/plat-omap/include/dspbridge/cod.h
+index 4d83e3d..c7efe97 100644
+--- a/arch/arm/plat-omap/include/dspbridge/cod.h
++++ b/arch/arm/plat-omap/include/dspbridge/cod.h
+@@ -26,6 +26,7 @@
+ #define COD_MAXPATHLENGTH       255
+ #define COD_TRACEBEG            "SYS_PUTCBEG"
+ #define COD_TRACEEND            "SYS_PUTCEND"
++#define COD_TRACECURPOS	"BRIDGE_SYS_PUTC_current"
+ #define COD_TRACESECT           "trace"
+ #define COD_TRACEBEGOLD         "PUTCBEG"
+ #define COD_TRACEENDOLD         "PUTCEND"
+diff --git a/arch/arm/plat-omap/include/dspbridge/dbll.h b/arch/arm/plat-omap/include/dspbridge/dbll.h
+index daf8a0a..01c4647 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dbll.h
++++ b/arch/arm/plat-omap/include/dspbridge/dbll.h
+@@ -51,5 +51,6 @@ extern void dbll_set_attrs(struct dbll_tar_obj *target,
+ extern void dbll_unload(struct dbll_library_obj *lib, struct dbll_attrs *attrs);
+ extern dsp_status dbll_unload_sect(struct dbll_library_obj *lib,
+ 				   char *sectName, struct dbll_attrs *attrs);
+-
++bool dbll_find_dsp_symbol(struct dbll_library_obj *zl_lib, u32 address,
++		u32 offset_range, u32 *sym_addr_output, char *name_output);
+ #endif /* DBLL_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/gh.h b/arch/arm/plat-omap/include/dspbridge/gh.h
+index e4da0f2..55c0489 100644
+--- a/arch/arm/plat-omap/include/dspbridge/gh.h
++++ b/arch/arm/plat-omap/include/dspbridge/gh.h
+@@ -27,4 +27,6 @@ extern void gh_exit(void);
+ extern void *gh_find(struct gh_t_hash_tab *hash_tab, void *key);
+ extern void gh_init(void);
+ extern void *gh_insert(struct gh_t_hash_tab *hash_tab, void *key, void *value);
++void gh_iterate(struct gh_t_hash_tab *hash_tab,
++	void (*callback)(void *, void *), void *user_data);
+ #endif /* GH_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/io_sm.h b/arch/arm/plat-omap/include/dspbridge/io_sm.h
+index e2e4848..153bf06 100644
+--- a/arch/arm/plat-omap/include/dspbridge/io_sm.h
++++ b/arch/arm/plat-omap/include/dspbridge/io_sm.h
+@@ -293,4 +293,9 @@ extern void io_sm_init(void);
+ extern dsp_status print_dsp_trace_buffer(struct wmd_dev_context
+ 					 *hwmd_context);
+ 
++dsp_status dump_dsp_stack(struct wmd_dev_context *wmd_context);
++
++void dump_dl_modules(struct wmd_dev_context *wmd_context);
++
++
+ #endif /* IOSM_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/nldr.h b/arch/arm/plat-omap/include/dspbridge/nldr.h
+index 2ec928a..2b930d1 100644
+--- a/arch/arm/plat-omap/include/dspbridge/nldr.h
++++ b/arch/arm/plat-omap/include/dspbridge/nldr.h
+@@ -49,5 +49,7 @@ extern dsp_status nldr_load(struct nldr_nodeobject *nldr_node_obj,
+ 			    enum nldr_phase phase);
+ extern dsp_status nldr_unload(struct nldr_nodeobject *nldr_node_obj,
+ 			      enum nldr_phase phase);
++dsp_status nldr_find_addr(struct nldr_nodeobject *nldr_node, u32 sym_addr,
++	u32 offset_range, void *offset_output, char *sym_name);
+ 
+ #endif /* NLDR_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/node.h b/arch/arm/plat-omap/include/dspbridge/node.h
+index 114a43d..7d228aa 100644
+--- a/arch/arm/plat-omap/include/dspbridge/node.h
++++ b/arch/arm/plat-omap/include/dspbridge/node.h
+@@ -566,4 +566,19 @@ extern dsp_status node_get_uuid_props(void *hprocessor,
+ 				      OUT struct dsp_ndbprops
+ 				      *node_props);
+ 
++/**
++ * node_find_addr() - Find the closest symbol to the given address.
++ *
++ * @node_mgr:		Node manager handle
++ * @sym_addr:		Given address to find the closest symbol
++ * @offset_range:		offset range to look fo the closest symbol
++ * @sym_addr_output:	Symbol Output address
++ * @sym_name:		String with the symbol name of the closest symbol
++ *
++ * 	This function finds the closest symbol to the address where a MMU
++ *	Fault occurred on the DSP side.
++ */
++dsp_status node_find_addr(struct node_mgr *node_mgr, u32 sym_addr,
++				u32 offset_range, void *sym_addr_output,
++				char *sym_name);
+ #endif /* NODE_ */
+diff --git a/drivers/dsp/bridge/Makefile b/drivers/dsp/bridge/Makefile
+index 5a28374..75a6d69 100644
+--- a/drivers/dsp/bridge/Makefile
++++ b/drivers/dsp/bridge/Makefile
+@@ -30,5 +30,6 @@ ccflags-y += -Idrivers/dsp/bridge/services
+ ccflags-y += -Idrivers/dsp/bridge/wmd
+ ccflags-y += -Idrivers/dsp/bridge/pmgr
+ ccflags-y += -Idrivers/dsp/bridge/rmgr
++ccflags-y += -Idrivers/dsp/bridge/dynload
+ ccflags-y += -Idrivers/dsp/bridge/hw
+ ccflags-y += -Iarch/arm
+diff --git a/drivers/dsp/bridge/gen/gh.c b/drivers/dsp/bridge/gen/gh.c
+index dc211ae..d1e7b38 100644
+--- a/drivers/dsp/bridge/gen/gh.c
++++ b/drivers/dsp/bridge/gen/gh.c
+@@ -187,3 +187,27 @@ static void myfree(void *ptr, s32 size)
+ {
+ 	gs_free(ptr);
+ }
++
++/**
++ * gh_iterate() - This function goes through all the elements in the hash table
++ *		looking for the dsp symbols.
++ * @hash_tab:	Hash table
++ * @callback:	pointer to callback function
++ * @user_data:	User data, contains the find_symbol_context pointer
++ *
++ */
++void gh_iterate(struct gh_t_hash_tab *hash_tab,
++		void (*callback)(void *, void *), void *user_data)
++{
++	struct element *elem;
++	u32 i;
++
++	if (hash_tab && hash_tab->buckets)
++		for (i = 0; i < hash_tab->max_bucket; i++) {
++			elem = hash_tab->buckets[i];
++			while (elem) {
++				callback(&elem->data, user_data);
++				elem = elem->next;
++			}
++		}
++}
+diff --git a/drivers/dsp/bridge/pmgr/dbll.c b/drivers/dsp/bridge/pmgr/dbll.c
+index b1cef68..3b94f54 100644
+--- a/drivers/dsp/bridge/pmgr/dbll.c
++++ b/drivers/dsp/bridge/pmgr/dbll.c
+@@ -1515,3 +1515,87 @@ static int execute(struct dynamic_loader_initialize *this, ldr_addr start)
+ static void release(struct dynamic_loader_initialize *this)
+ {
+ }
++
++/**
++ *  find_symbol_context - Basic symbol context structure
++ * @address:		Symbol Adress
++ * @offset_range:		Offset range where the search for the DSP symbol
++ *			started.
++ * @cur_best_offset:	Best offset to start looking for the DSP symbol
++ * @sym_addr:		Address of the DSP symbol
++ * @name:		Symbol name
++ *
++ */
++struct find_symbol_context {
++	/* input */
++	u32 address;
++	u32 offset_range;
++	/* state */
++	u32 cur_best_offset;
++	/* output */
++	u32 sym_addr;
++	char name[120];
++};
++
++/**
++ * find_symbol_callback() - Validates symbol address and copies the symbol name
++ *			to the user data.
++ * @elem:		dsp library context
++ * @user_data:		Find symbol context
++ *
++ */
++void find_symbol_callback(void *elem, void *user_data)
++{
++	struct dbll_symbol *symbol = elem;
++	struct find_symbol_context *context = user_data;
++	u32 symbol_addr = symbol->value.value;
++	u32 offset = context->address - symbol_addr;
++
++	/*
++	 * Address given should be greater than symbol address,
++	 * symbol address should be  within specified range
++	 * and the offset should be better than previous one
++	 */
++	if (context->address >= symbol_addr && symbol_addr < (u32)-1 &&
++		offset < context->cur_best_offset) {
++		context->cur_best_offset = offset;
++		context->sym_addr = symbol_addr;
++		strncpy(context->name, symbol->name, sizeof(context->name));
++	}
++
++	return;
++}
++
++/**
++ * dbll_find_dsp_symbol() - This function retrieves the dsp symbol from the dsp binary.
++ * @zl_lib:		DSP binary obj library pointer
++ * @address:		Given address to find the dsp symbol
++ * @offset_range:		offset range to look for dsp symbol
++ * @sym_addr_output:	Symbol Output address
++ * @name_output:		String with the dsp symbol
++ *
++ * 	This function retrieves the dsp symbol from the dsp binary.
++ */
++bool dbll_find_dsp_symbol(struct dbll_library_obj *zl_lib, u32 address,
++				u32 offset_range, u32 *sym_addr_output,
++				char *name_output)
++{
++	bool status = false;
++	struct find_symbol_context context;
++
++	context.address = address;
++	context.offset_range = offset_range;
++	context.cur_best_offset = offset_range;
++	context.sym_addr = 0;
++	context.name[0] = '\0';
++
++	gh_iterate(zl_lib->sym_tab, find_symbol_callback, &context);
++
++	if (context.name[0]) {
++		status = true;
++		strcpy(name_output, context.name);
++		*sym_addr_output = context.sym_addr;
++	}
++
++	return status;
++}
+diff --git a/drivers/dsp/bridge/rmgr/nldr.c b/drivers/dsp/bridge/rmgr/nldr.c
+index 3cb8cc4..7ea6ff7 100644
+--- a/drivers/dsp/bridge/rmgr/nldr.c
++++ b/drivers/dsp/bridge/rmgr/nldr.c
+@@ -1931,3 +1931,83 @@ static u32 find_gcf(u32 a, u32 b)
+ 	}
+ 	return b;
+ }
++
++/**
++ * nldr_find_addr() - Find the closest symbol to the given address based on
++ *		dynamic node object.
++ *
++ * @nldr_node:		Dynamic node object
++ * @sym_addr:		Given address to find the dsp symbol
++ * @offset_range:		offset range to look for dsp symbol
++ * @offset_output:		Symbol Output address
++ * @sym_name:		String with the dsp symbol
++ *
++ * 	This function finds the node library for a given address and
++ *	retrieves the dsp symbol by calling dbll_find_dsp_symbol.
++ */
++dsp_status nldr_find_addr(struct nldr_nodeobject *nldr_node, u32 sym_addr,
++			u32 offset_range, void *offset_output, char *sym_name)
++{
++	dsp_status status = DSP_SOK;
++	bool status1 = false;
++	s32 i = 0;
++	struct lib_node root = { NULL, 0, NULL };
++	DBC_REQUIRE(refs > 0);
++	DBC_REQUIRE(MEM_IS_VALID_HANDLE(nldr_node, NLDR_NODESIGNATURE));
++	DBC_REQUIRE(offset_output != NULL);
++	DBC_REQUIRE(sym_name != NULL);
++	pr_debug("%s(0x%x, 0x%x, 0x%x, 0x%x,  %s)\n", __func__, (u32) nldr_node,
++			sym_addr, offset_range, (u32) offset_output, sym_name);
++
++	if (nldr_node->dynamic && *nldr_node->pf_phase_split) {
++		switch (nldr_node->phase) {
++		case NLDR_CREATE:
++			root = nldr_node->create_lib;
++			break;
++		case NLDR_EXECUTE:
++			root = nldr_node->execute_lib;
++			break;
++		case NLDR_DELETE:
++			root = nldr_node->delete_lib;
++			break;
++		default:
++			DBC_ASSERT(false);
++			break;
++		}
++	} else {
++		/* for Overlay nodes or non-split Dynamic nodes */
++		root = nldr_node->root;
++	}
++
++	status1 = dbll_find_dsp_symbol(root.lib, sym_addr,
++			offset_range, offset_output, sym_name);
++
++	/* If symbol not found, check dependent libraries */
++	if (!status1)
++		for (i = 0; i < root.dep_libs; i++) {
++			status1 = dbll_find_dsp_symbol(
++				root.dep_libs_tree[i].lib, sym_addr,
++				offset_range, offset_output, sym_name);
++			if (status1)
++				/* Symbol found */
++				break;
++		}
++	/* Check persistent libraries */
++	if (!status1)
++		for (i = 0; i < nldr_node->pers_libs; i++) {
++			status1 = dbll_find_dsp_symbol(
++				nldr_node->pers_lib_table[i].lib, sym_addr,
++				offset_range, offset_output, sym_name);
++			if (status1)
++				/* Symbol found */
++				break;
++		}
++
++	if (!status1) {
++		pr_debug("%s: Address 0x%x not found in range %d.\n",
++					__func__, sym_addr, offset_range);
++		status = DSP_ESYMBOL;
++	}
++
++	return status;
++}
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index 7250733..eda3d5e 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -3206,3 +3206,34 @@ static u32 mem_write(void *priv_ref, u32 ulDspAddr, void *pbuf,
+ 
+ 	return ul_num_bytes;
+ }
++
++/*
++ *  ======== node_find_addr ========
++ */
++dsp_status node_find_addr(struct node_mgr *node_mgr, u32 sym_addr,
++		u32 offset_range, void *sym_addr_output, char *sym_name)
++{
++	struct node_object *node_obj;
++	dsp_status status = DSP_ENOTFOUND;
++	u32 n;
++
++	pr_debug("%s(0x%x, 0x%x, 0x%x, 0x%x,  %s)\n", __func__,
++			(unsigned int) node_mgr,
++			sym_addr, offset_range,
++			(unsigned int) sym_addr_output, sym_name);
++
++	node_obj = (struct node_object *)(node_mgr->node_list->head.next);
++
++	for (n = 0; n < node_mgr->num_nodes; n++) {
++		status = nldr_find_addr(node_obj->nldr_node_obj, sym_addr,
++			offset_range, sym_addr_output, sym_name);
++
++		if (DSP_SUCCEEDED(status))
++			break;
++
++		node_obj = (struct node_object *) (node_obj->list_elem.next);
++	}
++
++	return status;
++}
++
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index cba8366..1a5f794 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -58,6 +58,7 @@
+ 
+ /* Platform Manager */
+ #include <dspbridge/cod.h>
++#include <dspbridge/node.h>
+ #include <dspbridge/dev.h>
+ 
+ /* Others */
+@@ -65,6 +66,7 @@
+ #include <dspbridge/mgr.h>
+ #include <dspbridge/drv.h>
+ #include "_cmm.h"
++#include "module_list.h"
+ 
+ /* This */
+ #include <dspbridge/io_sm.h>
+@@ -81,6 +83,11 @@
+ 
+ #define MAX_PM_REQS 32
+ 
++#define MMU_FAULT_HEAD1 0xa5a5a5a5
++#define MMU_FAULT_HEAD2 0x96969696
++#define POLL_MAX 1000
++#define MAX_MMU_DBGBUFF 10240
++
+ /* IO Manager: only one created per board */
+ struct io_mgr {
+ 	/* These four fields must be the first fields in a io_mgr_ struct */
+@@ -949,9 +956,13 @@ void io_dpc(IN OUT unsigned long pRefData)
+ 		if ((pio_mgr->intr_val > DEH_BASE) &&
+ 		    (pio_mgr->intr_val < DEH_LIMIT)) {
+ 			/* Notify DSP/BIOS exception */
+-			if (hdeh_mgr)
++			if (hdeh_mgr) {
++#ifndef DSP_TRACE_BUF_DISABLED
++				print_dsp_debug_trace(pio_mgr);
++#endif
+ 				bridge_deh_notify(hdeh_mgr, DSP_SYSERROR,
+ 						  pio_mgr->intr_val);
++			}
+ 		}
+ 		io_dispatch_chnl(pio_mgr, NULL, IO_SERVICE);
+ #ifdef CHNL_MESSAGES
+@@ -1866,71 +1877,6 @@ void print_dsp_debug_trace(struct io_mgr *hio_mgr)
+ #endif
+ 
+ /*
+- *  ======== pack_trace_buffer ========
+- *      Removes extra nulls from the trace buffer returned from the DSP.
+- *      Works even on buffers that already are packed (null removed); but has
+- *      one bug in that case -- loses the last character (replaces with '\0').
+- *      Continues through conversion for full set of bytes input characters.
+- *  Parameters:
+- *    lpBuf:            Pointer to input/output buffer
+- *    bytes:           Number of characters in the buffer
+- *    ul_num_words:	Number of DSP words in the buffer. Indicates potential
+- *                      number of extra carriage returns to generate.
+- *  Returns:
+- *      DSP_SOK:        Success.
+- *      -ENOMEM:    Unable to allocate memory.
+- *  Requires:
+- *      lpBuf must be a fully allocated writable block of at least bytes.
+- *      There are no more than ul_num_words extra characters needed (the number
+- *      of linefeeds minus the number of NULLS in the input buffer).
+- */
+-static dsp_status pack_trace_buffer(char *lpBuf, u32 bytes, u32 ul_num_words)
+-{
+-	dsp_status status = DSP_SOK;
+-	char *lp_tmp_buf;
+-	char *lp_buf_start;
+-	char *lp_tmp_start;
+-	u32 i;
+-	char this_char;
+-
+-	/* Tmp workspace, 1 KB longer than input buf */
+-	lp_tmp_buf = mem_calloc((bytes + ul_num_words), MEM_PAGED);
+-	if (lp_tmp_buf == NULL)
+-		status = -ENOMEM;
+-
+-	if (DSP_SUCCEEDED(status)) {
+-		lp_buf_start = lpBuf;
+-		lp_tmp_start = lp_tmp_buf;
+-		for (i = bytes; i > 0; i--) {
+-			this_char = *lpBuf++;
+-			switch (this_char) {
+-			case '\0':	/* Skip null bytes */
+-				break;
+-			case '\n':	/* Convert \n to \r\n */
+-				/*
+-				 * NOTE: do not reverse order; Some OS
+-				 * editors control doesn't understand "\n\r"
+-				 */
+-				*lp_tmp_buf++ = '\r';
+-				*lp_tmp_buf++ = '\n';
+-				break;
+-			default:	/* Copy in the actual ascii byte */
+-				*lp_tmp_buf++ = this_char;
+-				break;
+-			}
+-		}
+-		*lp_tmp_buf = '\0';	/* Temp buf MUST be null terminated */
+-		/* Cut output down to input buf size */
+-		strncpy(lp_buf_start, lp_tmp_start, bytes);
+-		/* Make sure output is null terminated */
+-		lp_buf_start[bytes - 1] = '\0';
+-		kfree(lp_tmp_start);
+-	}
+-
+-	return status;
+-}
+-
+-/*
+  *  ======== print_dsp_trace_buffer ========
+  *      Prints the trace buffer returned from the DSP (if DBG_Trace is enabled).
+  *  Parameters:
+@@ -1948,72 +1894,485 @@ dsp_status print_dsp_trace_buffer(struct wmd_dev_context *hwmd_context)
+ 	struct cod_manager *cod_mgr;
+ 	u32 ul_trace_end;
+ 	u32 ul_trace_begin;
++	u32 trace_cur_pos;
+ 	u32 ul_num_bytes = 0;
+ 	u32 ul_num_words = 0;
+ 	u32 ul_word_size = 2;
+-	CONST u32 max_size = 512;
+ 	char *psz_buf;
+-	u16 *lpsz_buf;
++	char *str_beg;
++	char *trace_end;
++	char *buf_end;
++	char *new_line;
+ 
+-	struct wmd_dev_context *pwmd_context = (struct wmd_dev_context *)
+-	    hwmd_context;
++	struct wmd_dev_context *pwmd_context = hwmd_context;
+ 	struct bridge_drv_interface *intf_fxns;
+ 	struct dev_object *dev_obj = (struct dev_object *)
+ 	    pwmd_context->hdev_obj;
+ 
+ 	status = dev_get_cod_mgr(dev_obj, &cod_mgr);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (DSP_SUCCEEDED(status))
+ 		/* Look for SYS_PUTCBEG/SYS_PUTCEND */
+ 		status =
+ 		    cod_get_sym_value(cod_mgr, COD_TRACEBEG, &ul_trace_begin);
+-	}
++
+ 	if (DSP_SUCCEEDED(status))
+ 		status =
+ 		    cod_get_sym_value(cod_mgr, COD_TRACEEND, &ul_trace_end);
+ 
++	if (DSP_SUCCEEDED(status))
++		/* trace_cur_pos will hold the address of a DSP pointer */
++		status = cod_get_sym_value(cod_mgr, COD_TRACECURPOS,
++							&trace_cur_pos);
++
++	if (DSP_FAILED(status))
++		goto func_end;
++
++	ul_num_bytes = (ul_trace_end - ul_trace_begin);
++
++	ul_num_words = ul_num_bytes * ul_word_size;
++	status = dev_get_intf_fxns(dev_obj, &intf_fxns);
++
++	if (DSP_FAILED(status))
++		goto func_end;
++
++	psz_buf = mem_calloc(ul_num_bytes + 2, MEM_NONPAGED);
++	if (psz_buf != NULL) {
++		/* Read trace buffer data */
++		status = (*intf_fxns->pfn_brd_read)(pwmd_context,
++			(u8 *)psz_buf, (u32)ul_trace_begin,
++			ul_num_bytes, 0);
++
++		if (DSP_FAILED(status))
++			goto func_end;
++
++		/* Pack and do newline conversion */
++		pr_debug("PrintDspTraceBuffer: "
++			"before pack and unpack.\n");
++		pr_debug("%s: DSP Trace Buffer Begin:\n"
++			"=======================\n%s\n",
++			__func__, psz_buf);
++
++		/* Read the value at the DSP address in trace_cur_pos. */
++		status = (*intf_fxns->pfn_brd_read)(pwmd_context,
++				(u8 *)&trace_cur_pos, (u32)trace_cur_pos,
++				4, 0);
++		if (DSP_FAILED(status))
++			goto func_end;
++		/* Pack and do newline conversion */
++		pr_info("%s: DSP Trace Buffer Begin:\n"
++			"=======================\n%s\n",
++			__func__, psz_buf);
++
++
++		/* convert to offset */
++		trace_cur_pos = trace_cur_pos - ul_trace_begin;
++
++		if (ul_num_bytes) {
++			/*
++			 * The buffer is not full, find the end of the
++			 * data -- buf_end will be >= pszBuf after
++			 * while.
++			 */
++			buf_end = &psz_buf[ul_num_bytes+1];
++			/* DSP print position */
++			trace_end = &psz_buf[trace_cur_pos];
++
++			/*
++			 * Search buffer for a new_line and replace it
++			 * with '\0', then print as string.
++			 * Continue until end of buffer is reached.
++			 */
++			str_beg = trace_end;
++			ul_num_bytes = buf_end - str_beg;
++
++			while (str_beg < buf_end) {
++				new_line = strnchr(str_beg, ul_num_bytes,
++								'\n');
++				if (new_line && new_line < buf_end) {
++					*new_line = 0;
++					pr_debug("%s\n", str_beg);
++					str_beg = ++new_line;
++					ul_num_bytes = buf_end - str_beg;
++				} else {
++					/*
++					 * Assume buffer empty if it contains
++					 * a zero
++					 */
++					if (*str_beg != '\0') {
++						str_beg[ul_num_bytes] = 0;
++						pr_debug("%s\n", str_beg);
++					}
++					str_beg = buf_end;
++					ul_num_bytes = 0;
++				}
++			}
++			/*
++			 * Search buffer for a nNewLine and replace it
++			 * with '\0', then print as string.
++			 * Continue until buffer is exhausted.
++			 */
++			str_beg = psz_buf;
++			ul_num_bytes = trace_end - str_beg;
++
++			while (str_beg < trace_end) {
++				new_line = strnchr(str_beg, ul_num_bytes, '\n');
++				if (new_line != NULL && new_line < trace_end) {
++					*new_line = 0;
++					pr_debug("%s\n", str_beg);
++					str_beg = ++new_line;
++					ul_num_bytes = trace_end - str_beg;
++				} else {
++					/*
++					 * Assume buffer empty if it contains
++					 * a zero
++					 */
++					if (*str_beg != '\0') {
++						str_beg[ul_num_bytes] = 0;
++						pr_debug("%s\n", str_beg);
++					}
++					str_beg = trace_end;
++					ul_num_bytes = 0;
++				}
++			}
++		}
++		pr_info("\n=======================\n"
++			"DSP Trace Buffer End:\n");
++		kfree(psz_buf);
++	} else {
++		status = -ENOMEM;
++	}
++func_end:
++	if (DSP_FAILED(status))
++		dev_dbg(bridge, "%s Failed, status 0x%x\n", __func__, status);
++	return status;
++}
++
++void io_sm_init(void)
++{
++	/* Do nothing */
++}
++/**
++ * dump_dsp_stack() - This function dumps the data on the DSP stack.
++ * @wmd_context:	Mini driver's device context pointer.
++ *
++ */
++dsp_status dump_dsp_stack(struct wmd_dev_context *wmd_context)
++{
++	dsp_status status = DSP_SOK;
++	struct cod_manager *code_mgr;
++	struct node_mgr *node_mgr;
++	u32 trace_begin;
++	char name[256];
++	struct {
++		u32 head[2];
++		u32 size;
++	} mmu_fault_dbg_info;
++	u32 *buffer;
++	u32 *buffer_end;
++	u32 exc_type;
++	u32 i;
++	u32 offset_output;
++	u32 total_size;
++	u32 poll_cnt;
++	const char *dsp_regs[] = {"EFR", "IERR", "ITSR", "NTSR",
++				"IRP", "NRP", "AMR", "SSR",
++				"ILC", "RILC", "IER", "CSR"};
++	struct bridge_drv_interface *intf_fxns;
++	struct dev_object *dev_object = wmd_context->hdev_obj;
++
++	status = dev_get_cod_mgr(dev_object, &code_mgr);
++	if (!code_mgr) {
++		pr_debug("%s: Failed on dev_get_cod_mgr.\n", __func__);
++		status = -EFAULT;
++	}
++
+ 	if (DSP_SUCCEEDED(status)) {
+-		ul_num_bytes = (ul_trace_end - ul_trace_begin) * ul_word_size;
+-		/*
+-		 * If the chip type is 55 then the addresses will be
+-		 * byte addresses; convert them to word addresses.
+-		 */
+-		if (ul_num_bytes > max_size)
+-			ul_num_bytes = max_size;
++		status = dev_get_node_manager(dev_object, &node_mgr);
++		if (!node_mgr) {
++			pr_debug("%s: Failed on dev_get_node_manager.\n",
++								__func__);
++			status = -EFAULT;
++		}
++	}
+ 
+-		/* Make sure the data we request fits evenly */
+-		ul_num_bytes = (ul_num_bytes / ul_word_size) * ul_word_size;
+-		ul_num_words = ul_num_bytes * ul_word_size;
+-		status = dev_get_intf_fxns(dev_obj, &intf_fxns);
++	if (DSP_SUCCEEDED(status)) {
++		/* Look for SYS_PUTCBEG/SYS_PUTCEND: */
++		status =
++			cod_get_sym_value(code_mgr, COD_TRACEBEG, &trace_begin);
++		pr_debug("%s: trace_begin Value 0x%x\n",
++			__func__, trace_begin);
++		if (DSP_FAILED(status))
++			pr_debug("%s: Failed on cod_get_sym_value.\n",
++								__func__);
++	}
++	if (DSP_SUCCEEDED(status))
++		status = dev_get_intf_fxns(dev_object, &intf_fxns);
++	/*
++	 * Check for the "magic number" in the trace buffer.  If it has
++	 * yet to appear then poll the trace buffer to wait for it.  Its
++	 * appearance signals that the DSP has finished dumping its state.
++	 */
++	mmu_fault_dbg_info.head[0] = 0;
++	mmu_fault_dbg_info.head[1] = 0;
++	if (DSP_SUCCEEDED(status)) {
++		poll_cnt = 0;
++		while ((mmu_fault_dbg_info.head[0] != MMU_FAULT_HEAD1 ||
++			mmu_fault_dbg_info.head[1] != MMU_FAULT_HEAD2) &&
++			poll_cnt < POLL_MAX) {
++
++			/* Read DSP dump size from the DSP trace buffer... */
++			status = (*intf_fxns->pfn_brd_read)(wmd_context,
++				(u8 *)&mmu_fault_dbg_info, (u32)trace_begin,
++				sizeof(mmu_fault_dbg_info), 0);
++
++			if (DSP_FAILED(status))
++				break;
++
++			poll_cnt++;
++		}
++
++		if (mmu_fault_dbg_info.head[0] != MMU_FAULT_HEAD1 &&
++			mmu_fault_dbg_info.head[1] != MMU_FAULT_HEAD2) {
++			status = -ETIME;
++			pr_err("%s:No DSP MMU-Fault information available.\n",
++							__func__);
++		}
+ 	}
+ 
+ 	if (DSP_SUCCEEDED(status)) {
+-		psz_buf = mem_calloc(max_size, MEM_NONPAGED);
+-		lpsz_buf = mem_calloc(ul_num_bytes * 2, MEM_NONPAGED);
+-		if (psz_buf != NULL) {
+-			/* Read bytes from the DSP trace buffer... */
+-			status = (*intf_fxns->pfn_brd_read) (hwmd_context,
+-							     (u8 *) psz_buf,
+-							     (u32)
+-							     ul_trace_begin,
+-							     ul_num_bytes, 0);
+-
+-			if (DSP_SUCCEEDED(status)) {
+-				/* Pack and do newline conversion */
+-				pack_trace_buffer(psz_buf, ul_num_bytes,
+-						  ul_num_words);
+-				pr_info("%s:\n%s\n", __func__, psz_buf);
+-			}
+-			kfree(psz_buf);
+-			kfree(lpsz_buf);
+-		} else {
++		total_size = mmu_fault_dbg_info.size;
++		/* Limit the size in case DSP went crazy */
++		if (total_size > MAX_MMU_DBGBUFF)
++			total_size = MAX_MMU_DBGBUFF;
++
++		buffer = mem_calloc(total_size, MEM_NONPAGED);
++		buffer_end =  buffer + total_size / 4;
++
++		if (!buffer) {
+ 			status = -ENOMEM;
++			pr_debug("%s: Failed to "
++				"allocate stack dump buffer.\n", __func__);
++			goto func_end;
++		}
++
++		/* Read bytes from the DSP trace buffer... */
++		status = (*intf_fxns->pfn_brd_read)(wmd_context,
++				(u8 *)buffer, (u32)trace_begin,
++				total_size, 0);
++		if (DSP_FAILED(status)) {
++			pr_debug("%s: Failed to Read Trace Buffer.\n",
++								__func__);
++			goto func_end;
+ 		}
++
++		pr_err("Aproximate Crash Position:\n");
++		pr_err("--------------------------\n");
++
++		exc_type = buffer[3];
++		if (!exc_type)
++			i = buffer[79];         /* IRP */
++		else
++			i = buffer[80];         /* NRP */
++
++		if ((*buffer > 0x01000000) && (node_find_addr(node_mgr, i,
++			0x1000, &offset_output, name) == DSP_SOK))
++			pr_err("0x%-8x [\"%s\" + 0x%x]\n", i, name,
++							i - offset_output);
++		else
++			pr_err("0x%-8x [Unable to match to a symbol.]\n", i);
++
++		pr_err("Execution Info:\n");
++		pr_err("---------------\n");
++
++		for (i = 0; i < 32; i++) {
++			if (i == 4 || i == 6 || i == 8)
++				pr_err("A%d 0x%-8x [Function Argument %d]\n",
++							i, *buffer++, i-3);
++			else if (i == 15)
++				pr_err("A15 0x%-8x [Frame Pointer]\n",
++								*buffer++);
++			else
++				pr_err("A%d 0x%x\n", i, *buffer++);
++		}
++
++		pr_err("\nB0 0x%x\n", *buffer++);
++		pr_err("B1 0x%x\n", *buffer++);
++		pr_err("B2 0x%x\n", *buffer++);
++
++		if ((*buffer > 0x01000000) && (node_find_addr(node_mgr, *buffer,
++			0x1000, &offset_output, name) == DSP_SOK))
++
++			pr_err("B3 0x%-8x [Function Return Pointer:"
++				" \"%s\" + 0x%x]\n", *buffer, name,
++				*buffer - offset_output);
++		else
++			pr_err("B3 0x%-8x [Function Return Pointer:"
++				"Unable to match to a symbol.]\n", *buffer);
++
++		buffer++;
++
++		for (i = 4; i < 32; i++) {
++			if (i == 4 || i == 6 || i == 8)
++				pr_err("B%d 0x%-8x [Function Argument %d]\n",
++							i, *buffer++, i-2);
++			else if (i == 15)
++				pr_err("B14 0x%-8x [Data Page Pointer]\n",
++								*buffer++);
++			else
++				pr_err("B%d 0x%x\n", i, *buffer++);
++		}
++
++		for (i = 0; i < ARRAY_SIZE(dsp_regs); i++)
++			pr_err("%s 0x%x\n", dsp_regs[i], *buffer++);
++
++		for (i = 0; buffer < buffer_end; i++, buffer++) {
++			if ((*buffer > 0x01000000) && (node_find_addr(node_mgr,
++				*buffer , 0x600, &offset_output, name) ==
++				DSP_SOK))
++				pr_err("[%d] 0x%-8x [\"%s\" + 0x%x]\n",
++					i, *buffer, name,
++					*buffer - offset_output);
++			else
++				pr_err("[%d] 0x%x\n", i, *buffer);
++		}
++		kfree(buffer - total_size / 4);
+ 	}
++func_end:
+ 	return status;
+ }
+ 
+-void io_sm_init(void)
++/**
++ * dump_dl_modules() - This functions dumps the _DLModules loaded in DSP side
++ * @wmd_context:		Mini driver's device context pointer.
++ *
++ */
++void dump_dl_modules(struct wmd_dev_context *wmd_context)
+ {
+-	/* Do nothing */
++	struct cod_manager *code_mgr;
++	struct bridge_drv_interface *intf_fxns;
++	struct wmd_dev_context *wmd_ctxt = wmd_context;
++	struct dev_object *dev_object = wmd_ctxt->hdev_obj;
++	struct modules_header modules_hdr;
++	struct dll_module *module_struct = NULL;
++	u32 module_dsp_addr;
++	u32 module_size;
++	u32 module_struct_size = 0;
++	u32 sect_ndx;
++	char *sect_str ;
++	dsp_status status = DSP_SOK;
++
++	status = dev_get_intf_fxns(dev_object, &intf_fxns);
++	if (DSP_FAILED(status)) {
++		pr_debug("%s: Failed on dev_get_intf_fxns.\n", __func__);
++		goto func_end;
++	}
++
++	status = dev_get_cod_mgr(dev_object, &code_mgr);
++	if (!code_mgr) {
++		pr_debug("%s: Failed on dev_get_cod_mgr.\n", __func__);
++		status = -EFAULT;
++		goto func_end;
++	}
++
++	/* Lookup  the address of the modules_header structure */
++	status = cod_get_sym_value(code_mgr, "_DLModules", &module_dsp_addr);
++	if (DSP_FAILED(status)) {
++		pr_debug("%s: Failed on cod_get_sym_value for _DLModules.\n",
++			__func__);
++		goto func_end;
++	}
++
++	pr_debug("%s: _DLModules at 0x%x\n", __func__, module_dsp_addr);
++
++	/* Copy the modules_header structure from DSP memory. */
++	status = (*intf_fxns->pfn_brd_read)(wmd_context, (u8 *) &modules_hdr,
++				(u32) module_dsp_addr, sizeof(modules_hdr), 0);
++
++	if (DSP_FAILED(status)) {
++		pr_debug("%s: Failed failed to read modules header.\n",
++								__func__);
++		goto func_end;
++	}
++
++	module_dsp_addr = modules_hdr.first_module;
++	module_size = modules_hdr.first_module_size;
++
++	pr_debug("%s: dll_module_header 0x%x %d\n", __func__, module_dsp_addr,
++								module_size);
++
++	pr_err("%s: \nDynamically Loaded Modules:\n"
++		"---------------------------\n", __func__);
++
++	/* For each dll_module structure in the list... */
++	while (module_size) {
++		/*
++		 * Allocate/re-allocate memory to hold the dll_module
++		 * structure. The memory is re-allocated only if the existing
++		 * allocation is too small.
++		 */
++		if (module_size > module_struct_size) {
++			kfree(module_struct);
++			module_struct = mem_calloc(module_size+128,
++							MEM_NONPAGED);
++			module_struct_size = module_size+128;
++			pr_debug("%s: allocated module struct %p %d\n",
++				__func__, module_struct, module_struct_size);
++			if (!module_struct)
++				goto func_end;
++		}
++		/* Copy the dll_module structure from DSP memory */
++		status = (*intf_fxns->pfn_brd_read)(wmd_context,
++			(u8 *)module_struct, module_dsp_addr, module_size, 0);
++
++		if (DSP_FAILED(status)) {
++			pr_debug(
++			"%s: Failed to read dll_module stuct for 0x%x.\n",
++			__func__, module_dsp_addr);
++			break;
++		}
++
++		/* Update info regarding the _next_ module in the list. */
++		module_dsp_addr = module_struct->next_module;
++		module_size = module_struct->next_module_size;
++
++		pr_debug("%s: next module 0x%x %d, this module num sects %d\n",
++			__func__, module_dsp_addr, module_size,
++			module_struct->num_sects);
++
++		/*
++		 * The section name strings start immedialty following
++		 * the array of dll_sect structures.
++		 */
++		sect_str = (char *) &module_struct->
++					sects[module_struct->num_sects];
++		pr_err("%s\n", sect_str);
++
++		/*
++		 * Advance to the first section name string.
++		 * Each string follows the one before.
++		 */
++		sect_str += strlen(sect_str) + 1;
++
++		/* Access each dll_sect structure and its name string. */
++		for (sect_ndx = 0;
++			sect_ndx < module_struct->num_sects; sect_ndx++) {
++			pr_err("    Section: 0x%x ",
++				module_struct->sects[sect_ndx].sect_load_adr);
++
++			if (((u32) sect_str - (u32) module_struct) <
++				module_struct_size) {
++				pr_err("%s\n", sect_str);
++				/* Each string follows the one before. */
++				sect_str += strlen(sect_str)+1;
++			} else {
++				pr_err("<string error>\n");
++				pr_debug("%s: section name sting address "
++					"is invalid %p\n", __func__, sect_str);
++			}
++		}
++	}
++func_end:
++	kfree(module_struct);
+ }
++
+diff --git a/drivers/dsp/bridge/wmd/ue_deh.c b/drivers/dsp/bridge/wmd/ue_deh.c
+index 451ee3c..36f6372 100644
+--- a/drivers/dsp/bridge/wmd/ue_deh.c
++++ b/drivers/dsp/bridge/wmd/ue_deh.c
+@@ -18,6 +18,7 @@
+ 
+ /*  ----------------------------------- Host OS */
+ #include <dspbridge/host_os.h>
++#include <plat/dmtimer.h>
+ 
+ /*  ----------------------------------- DSP/BIOS Bridge */
+ #include <dspbridge/std.h>
+@@ -55,6 +56,13 @@
+ 
+ #define ALIGN_DOWN(x, a)  ((x)&(~((a)-1)))
+ 
++/* GP Timer number to trigger interrupt for MMU-fault ISR on DSP */
++#define GPTIMER_FOR_DSP_MMU_FAULT      8
++/* Bit mask to enable overflow interrupt */
++#define GPTIMER_IRQ_OVERFLOW           2
++/* Max time to check for GP Timer IRQ */
++#define GPTIMER_IRQ_WAIT_MAX_CNT       1000
++
+ static struct hw_mmu_map_attrs_t map_attrs = { HW_LITTLE_ENDIAN,
+ 	HW_ELEM_SIZE16BIT,
+ 	HW_MMU_CPUES
+@@ -62,6 +70,8 @@ static struct hw_mmu_map_attrs_t map_attrs = { HW_LITTLE_ENDIAN,
+ 
+ static void *dummy_va_addr;
+ 
++static struct omap_dm_timer *timer;
++
+ dsp_status bridge_deh_create(struct deh_mgr **ret_deh_mgr,
+ 		struct dev_object *hdev_obj)
+ {
+@@ -127,6 +137,15 @@ err:
+ 		/* If create failed, cleanup */
+ 		bridge_deh_destroy(deh_mgr);
+ 		deh_mgr = NULL;
++	} else {
++		timer = omap_dm_timer_request_specific(
++					GPTIMER_FOR_DSP_MMU_FAULT);
++		if (timer) {
++			omap_dm_timer_disable(timer);
++		} else {
++			pr_err("%s: GPTimer not available\n", __func__);
++			return -ENODEV;
++		}
+ 	}
+ 
+ leave:
+@@ -156,6 +175,10 @@ dsp_status bridge_deh_destroy(struct deh_mgr *deh_mgr)
+ 	/* Deallocate the DEH manager object */
+ 	MEM_FREE_OBJECT(deh_mgr);
+ 
++	/* The GPTimer is no longer needed */
++	omap_dm_timer_free(timer);
++	timer = NULL;
++
+ 	return DSP_SOK;
+ }
+ 
+@@ -186,6 +209,7 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 	extern u32 fault_addr;
+ 	struct cfg_hostres resources;
+ 	hw_status hw_status_obj;
++	u32 cnt = 0;
+ 
+ 	status = cfg_get_host_resources((struct cfg_devnode *)
+ 					drv_get_first_dev_extension(),
+@@ -207,6 +231,8 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 		deh_mgr->err_info.dw_val1 = dwErrInfo;
+ 		dev_err(bridge, "%s: %s, err_info = 0x%x\n",
+ 				__func__, "DSP_SYSERROR", dwErrInfo);
++		dump_dl_modules(dev_context);
++		dump_dsp_stack(dev_context);
+ 		break;
+ 	case DSP_MMUFAULT:
+ 		/* MMU fault routine should have set err info structure. */
+@@ -224,6 +250,9 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 		dev_context = (struct wmd_dev_context *)
+ 			deh_mgr->hwmd_context;
+ 
++		print_dsp_trace_buffer(dev_context);
++		dump_dl_modules(dev_context);
++
+ 		/*
+ 		 * Reset the dynamic mmu index to fixed count if it exceeds
+ 		 * 31. So that the dynmmuindex is always between the range of
+@@ -241,12 +270,43 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 						HW_PAGE_SIZE4KB, 1,
+ 						&map_attrs, HW_SET, HW_SET);
+ 		}
+-		/* send an interrupt to DSP */
+-		omap_mbox_msg_send(dev_context->mbox,
+-				MBX_DEH_CLASS | MBX_DEH_EMMU);
++
++		/*
++		 * Send a GP Timer interrupt to DSP.
++		 * The DSP expects a GP timer interrupt after an
++		 * MMU-Fault Request GPTimer.
++		 */
++		if (timer) {
++			omap_dm_timer_enable(timer);
++			/* Enable overflow interrupt */
++			omap_dm_timer_set_int_enable(timer,
++						     GPTIMER_IRQ_OVERFLOW);
++			/*
++			 * Set counter value to overflow counter after
++			 * one tick and start timer.
++			 */
++			omap_dm_timer_set_load_start(timer, 0, 0xfffffffe);
++
++			/* Wait 80us for timer to overflow */
++			udelay(80);
++
++			/* Check interrupt status and wait for interrupt */
++			cnt = 0;
++			while (!(omap_dm_timer_read_status(timer) &
++				GPTIMER_IRQ_OVERFLOW)) {
++				if (cnt++ >= GPTIMER_IRQ_WAIT_MAX_CNT) {
++					pr_err("%s: GPTimer interrupt failed\n",
++								__func__);
++					break;
++				}
++			}
++		}
++
+ 		/* Clear MMU interrupt */
+ 		hw_mmu_event_ack(resources.dw_dmmu_base,
+ 				HW_MMU_TRANSLATION_FAULT);
++		dump_dsp_stack(deh_mgr->hwmd_context);
++		omap_dm_timer_disable(timer);
+ 		break;
+ #ifdef CONFIG_BRIDGE_NTFY_PWRERR
+ 	case DSP_PWRERROR:
+@@ -285,8 +345,6 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 	dev_context->dw_brd_state = BRD_ERROR;
+ 	/* Disable all the clocks that were enabled by DSP */
+ 	dsp_peripheral_clocks_disable(dev_context, NULL);
+-	/* Call DSP Trace Buffer */
+-	print_dsp_trace_buffer(deh_mgr->hwmd_context);
+ 	/*
+ 	 * Avoid the subsequent WDT if it happens once,
+ 	 * also if fatal error occurs.
+-- 
+1.7.0.4
+

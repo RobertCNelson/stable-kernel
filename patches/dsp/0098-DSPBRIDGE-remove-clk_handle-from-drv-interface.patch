@@ -1,0 +1,49 @@
+From e229db9014c3679e44859719016bbbe6503d04c3 Mon Sep 17 00:00:00 2001
+From: Omar Ramirez Luna <omar.ramirez@ti.com>
+Date: Thu, 8 Apr 2010 23:15:50 +0000
+Subject: [PATCH 098/135] DSPBRIDGE: remove clk_handle from drv interface
+
+Since it is not used, remove.
+
+Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com>
+---
+ drivers/dsp/bridge/rmgr/drv_interface.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/dsp/bridge/rmgr/drv_interface.c b/drivers/dsp/bridge/rmgr/drv_interface.c
+index 2f92278..ea2a5f3 100644
+--- a/drivers/dsp/bridge/rmgr/drv_interface.c
++++ b/drivers/dsp/bridge/rmgr/drv_interface.c
+@@ -149,7 +149,6 @@ static struct file_operations bridge_fops = {
+ #ifdef CONFIG_PM
+ static u32 time_out = 1000;
+ #ifdef CONFIG_BRIDGE_DVFS
+-static struct clk *clk_handle;
+ s32 dsp_max_opps = VDD1_OPP5;
+ #endif
+ 
+@@ -324,10 +323,6 @@ static int __devinit omap34_xx_bridge_probe(struct platform_device *pdev)
+ 		for (i = 0; i < 6; i++)
+ 			pdata->mpu_speed[i] = vdd1_rate_table_bridge[i].rate;
+ 
+-		clk_handle = clk_get(NULL, "iva2_ck");
+-		if (!clk_handle)
+-			pr_err("%s: clk_get failed to get iva2_ck\n", __func__);
+-
+ 		if (!cpufreq_register_notifier(&iva_clk_notifier,
+ 						CPUFREQ_TRANSITION_NOTIFIER))
+ 			pr_err("%s: clk_notifier_register failed for iva2_ck\n",
+@@ -383,10 +378,6 @@ static int __devexit omap34_xx_bridge_remove(struct platform_device *pdev)
+ 		driver_context = 0;
+ 		DBC_ASSERT(ret == true);
+ 	}
+-#ifdef CONFIG_BRIDGE_DVFS
+-	clk_put(clk_handle);
+-	clk_handle = NULL;
+-#endif /* #ifdef CONFIG_BRIDGE_DVFS */
+ 
+ func_cont:
+ 	mem_ext_phys_pool_release();
+-- 
+1.7.0.4
+

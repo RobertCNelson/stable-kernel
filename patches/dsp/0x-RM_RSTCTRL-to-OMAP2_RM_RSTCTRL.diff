@@ -1,0 +1,62 @@
+diff --git a/drivers/dsp/bridge/core/tiomap3430.c b/drivers/dsp/bridge/core/tiomap3430.c
+index fdd5ef8..f627186 100644
+--- a/drivers/dsp/bridge/core/tiomap3430.c
++++ b/drivers/dsp/bridge/core/tiomap3430.c
+@@ -299,7 +299,7 @@ static dsp_status bridge_brd_monitor(struct bridge_dev_context *hDevContext)
+ 					OMAP3430_IVA2_MOD, OMAP2_CM_CLKSTCTRL);
+ 	}
+ 	(*pdata->dsp_prm_rmw_bits)(OMAP3430_RST2_IVA2, 0,
+-					OMAP3430_IVA2_MOD, RM_RSTCTRL);
++					OMAP3430_IVA2_MOD, OMAP2_RM_RSTCTRL);
+ 	dsp_clk_enable(DSP_CLK_IVA2);
+ 
+ 	if (DSP_SUCCEEDED(status)) {
+@@ -426,7 +426,7 @@ static dsp_status bridge_brd_start(struct bridge_dev_context *hDevContext,
+ 		if (DSP_SUCCEEDED(status)) {
+ 			(*pdata->dsp_prm_rmw_bits)(OMAP3430_RST1_IVA2,
+ 					OMAP3430_RST1_IVA2, OMAP3430_IVA2_MOD,
+-					RM_RSTCTRL);
++					OMAP2_RM_RSTCTRL);
+ 			/* Mask address with 1K for compatibility */
+ 			__raw_writel(dwDSPAddr & OMAP3_IVA2_BOOTADDR_MASK,
+ 					OMAP343X_CTRL_REGADDR(
+@@ -443,10 +443,10 @@ static dsp_status bridge_brd_start(struct bridge_dev_context *hDevContext,
+ 		/* Reset and Unreset the RST2, so that BOOTADDR is copied to
+ 		 * IVA2 SYSC register */
+ 		(*pdata->dsp_prm_rmw_bits)(OMAP3430_RST2_IVA2,
+-			OMAP3430_RST1_IVA2, OMAP3430_IVA2_MOD, RM_RSTCTRL);
++			OMAP3430_RST1_IVA2, OMAP3430_IVA2_MOD, OMAP2_RM_RSTCTRL);
+ 		udelay(100);
+ 		(*pdata->dsp_prm_rmw_bits)(OMAP3430_RST2_IVA2, 0,
+-					OMAP3430_IVA2_MOD, RM_RSTCTRL);
++					OMAP3430_IVA2_MOD, OMAP2_RM_RSTCTRL);
+ 		udelay(100);
+ 
+ 		/* Disbale the DSP MMU */
+@@ -605,7 +605,7 @@ static dsp_status bridge_brd_start(struct bridge_dev_context *hDevContext,
+ 				    HW_MMU_ALL_INTERRUPTS);
+ 		/* release the RST1, DSP starts executing now .. */
+ 		(*pdata->dsp_prm_rmw_bits)(OMAP3430_RST1_IVA2, 0,
+-					OMAP3430_IVA2_MOD, RM_RSTCTRL);
++					OMAP3430_IVA2_MOD, OMAP2_RM_RSTCTRL);
+ 
+ 		dev_dbg(bridge, "Waiting for Sync @ 0x%x\n", dw_sync_addr);
+ 		dev_dbg(bridge, "DSP c_int00 Address =  0x%x\n", dwDSPAddr);
+@@ -708,7 +708,7 @@ static dsp_status bridge_brd_stop(struct bridge_dev_context *hDevContext)
+ 	}
+ 	/* Reset IVA2 clocks*/
+ 	(*pdata->dsp_prm_write)(OMAP3430_RST1_IVA2 | OMAP3430_RST2_IVA2 |
+-			OMAP3430_RST3_IVA2, OMAP3430_IVA2_MOD, RM_RSTCTRL);
++			OMAP3430_RST3_IVA2, OMAP3430_IVA2_MOD, OMAP2_RM_RSTCTRL);
+ 
+ 	return status;
+ }
+@@ -763,7 +763,7 @@ static dsp_status bridge_brd_delete(struct bridge_dev_context *hDevContext)
+ 	}
+ 	/* Reset IVA2 clocks*/
+ 	(*pdata->dsp_prm_write)(OMAP3430_RST1_IVA2 | OMAP3430_RST2_IVA2 |
+-			OMAP3430_RST3_IVA2, OMAP3430_IVA2_MOD, RM_RSTCTRL);
++			OMAP3430_RST3_IVA2, OMAP3430_IVA2_MOD, OMAP2_RM_RSTCTRL);
+ 
+ 	return status;
+ }

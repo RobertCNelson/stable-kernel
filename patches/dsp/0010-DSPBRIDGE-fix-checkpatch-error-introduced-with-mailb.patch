@@ -1,0 +1,31 @@
+From d532bd3c98d8f0734d6079fbcd8b3cf876ed172d Mon Sep 17 00:00:00 2001
+From: omar ramirez <omar.ramirez@ti.com>
+Date: Tue, 23 Mar 2010 22:48:28 +0000
+Subject: [PATCH 010/135] DSPBRIDGE: fix checkpatch error introduced with mailbox patches
+
+This fixes:
+ERROR: "foo* bar" should be "foo *bar"
+218: FILE: drivers/dsp/bridge/wmd/_tiomap.h:374:
++dsp_status sm_interrupt_dsp(struct wmd_dev_context* dev_context, u16 mb_val);
+
+Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com>
+Acked-by: Deepak Chitriki <deepak.chitriki@ti.com>
+---
+ drivers/dsp/bridge/wmd/_tiomap.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/dsp/bridge/wmd/_tiomap.h b/drivers/dsp/bridge/wmd/_tiomap.h
+index 7a884f4..e853777 100644
+--- a/drivers/dsp/bridge/wmd/_tiomap.h
++++ b/drivers/dsp/bridge/wmd/_tiomap.h
+@@ -371,6 +371,6 @@ extern dsp_status wmd_tlb_dsp_va_to_mpu_pa(struct wmd_dev_context *dev_context,
+  *  Requires:
+  *  Ensures:
+  */
+-dsp_status sm_interrupt_dsp(struct wmd_dev_context* dev_context, u16 mb_val);
++dsp_status sm_interrupt_dsp(struct wmd_dev_context *dev_context, u16 mb_val);
+ 
+ #endif /* _TIOMAP_ */
+-- 
+1.7.0.4
+

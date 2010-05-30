@@ -1,0 +1,29 @@
+From c51dabb222e88a90e6704c1705abd7b487b4e1f2 Mon Sep 17 00:00:00 2001
+From: Armando Uribe De Leon <x0095078@ti.com>
+Date: Thu, 6 May 2010 18:03:44 -0500
+Subject: [PATCH 121/135] DSPBRIDGE: Removes checkpatch error with file_operations
+
+This patch removes the checptach error sue to the missing
+const modifier in file_operations.
+
+Signed-off-by: Armando Uribe De Leon <x0095078@ti.com>
+---
+ drivers/dsp/bridge/rmgr/drv_interface.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/dsp/bridge/rmgr/drv_interface.c b/drivers/dsp/bridge/rmgr/drv_interface.c
+index eb7efd3..bcae545 100644
+--- a/drivers/dsp/bridge/rmgr/drv_interface.c
++++ b/drivers/dsp/bridge/rmgr/drv_interface.c
+@@ -140,7 +140,7 @@ MODULE_VERSION(DSPBRIDGE_VERSION);
+ 
+ static char *driver_name = DRIVER_NAME;
+ 
+-static struct file_operations bridge_fops = {
++static const struct file_operations bridge_fops = {
+ 	.open = bridge_open,
+ 	.release = bridge_release,
+ 	.unlocked_ioctl = bridge_ioctl,
+-- 
+1.7.0.4
+

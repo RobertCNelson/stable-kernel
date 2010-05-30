@@ -91,7 +91,7 @@ fi
 
 function patch_kernel {
 	cd ${DIR}/KERNEL
-	export DIR KERNEL_REL GIT_MODE BOARD
+	export DIR GIT_MODE
 	/bin/bash -e ${DIR}/patch.sh
 if [ "${KERNEL_PATCH}" ] ; then
 	sed -i 's/EXTRAVERSION = .'$STABLE_PATCH'/EXTRAVERSION = .'$STABLE_PATCH'-'$BUILD'/g' ${DIR}/KERNEL/Makefile
@@ -161,7 +161,7 @@ if [ -e ${DIR}/system.sh ]; then
 
 if [ "${IS_LUCID}" ] ; then
 	echo ""
-	echo "Building for Lucid (10.04)"
+	echo "Building for Lucid (10.04) & Maverick (10.10)"
 	echo ""
 else
 	echo ""

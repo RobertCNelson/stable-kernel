@@ -1,0 +1,86 @@
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index 9ab633d..08d1408 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -647,6 +647,36 @@ out:
+ 	return ret;
+ }
+ 
++static int memory_regain_ownership(struct dmm_map_object *map_obj,
++		unsigned long start, ssize_t len, enum dma_data_direction dir)
++{
++	int ret = 0;
++	unsigned long first_data_page = start >> PAGE_SHIFT;
++	unsigned long last_data_page = ((u32)(start + len - 1) >> PAGE_SHIFT);
++	/* calculating the number of pages this area spans */
++	unsigned long num_pages = last_data_page - first_data_page + 1;
++	struct bridge_dma_map_info *dma_info = &map_obj->dma_info;
++
++	if (!dma_info->sg)
++		goto out;
++
++	if (dma_info->dir != dir || dma_info->num_pages != num_pages) {
++		pr_err("%s: dma info doesn't match given params\n", __func__);
++		return -EINVAL;
++	}
++
++	dma_unmap_sg(bridge, dma_info->sg, num_pages, dma_info->dir);
++
++	pr_debug("%s: dma_map_sg unmapped\n", __func__);
++
++	kfree(dma_info->sg);
++
++	map_obj->dma_info.sg = NULL;
++
++out:
++	return ret;
++}
++
+ /* Cache operation against kernel address instead of users */
+ static int memory_give_ownership(struct dmm_map_object *map_obj,
+ 		unsigned long start, ssize_t len, enum dma_data_direction dir)
+@@ -743,6 +773,44 @@ err_out:
+ 	return status;
+ }
+ 
++static int proc_end_dma(void *hprocessor, void *pmpu_addr, u32 ul_size,
++			enum dma_data_direction dir)
++{
++	/* Keep STATUS here for future additions to this function */
++	int status = 0;
++	struct process_context *pr_ctxt = (struct process_context *) hprocessor;
++	struct dmm_map_object *map_obj;
++
++	DBC_REQUIRE(refs > 0);
++
++	if (!pr_ctxt) {
++		status = -EFAULT;
++		goto err_out;
++	}
++
++	pr_debug("%s: addr 0x%x, size 0x%x, type %d\n", __func__,
++							(u32)pmpu_addr,
++							ul_size, dir);
++
++	/* find requested memory are in cached mapping information */
++	map_obj = find_containing_mapping(pr_ctxt, (u32) pmpu_addr, ul_size);
++	if (!map_obj) {
++		pr_err("%s: find_containing_mapping failed\n", __func__);
++		status = -EFAULT;
++		goto err_out;
++	}
++
++	if (memory_regain_ownership(map_obj, (u32) pmpu_addr, ul_size, dir)) {
++		pr_err("%s: InValid address parameters %p %x\n",
++		       __func__, pmpu_addr, ul_size);
++		status = -EFAULT;
++		goto err_out;
++	}
++
++err_out:
++	return status;
++}
++
+ /*
+  *  ======== proc_flush_memory ========
+  *  Purpose:

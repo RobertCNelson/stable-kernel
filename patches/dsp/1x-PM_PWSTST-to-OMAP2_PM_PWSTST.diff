@@ -1,0 +1,40 @@
+diff --git a/drivers/dsp/bridge/core/tiomap3430_pwr.c b/drivers/dsp/bridge/core/tiomap3430_pwr.c
+index 1897c50..df5acf1 100644
+--- a/drivers/dsp/bridge/core/tiomap3430_pwr.c
++++ b/drivers/dsp/bridge/core/tiomap3430_pwr.c
+@@ -86,7 +86,7 @@ dsp_status handle_hibernation_from_dsp(struct bridge_dev_context *dev_context)
+ 	struct dspbridge_platform_data *pdata =
+ 	    omap_dspbridge_dev->dev.platform_data;
+ 
+-	pwr_state = (*pdata->dsp_prm_read)(OMAP3430_IVA2_MOD, PM_PWSTST) &
++	pwr_state = (*pdata->dsp_prm_read)(OMAP3430_IVA2_MOD, OMAP2_PM_PWSTST) &
+ 						OMAP_POWERSTATEST_MASK;
+ 	/* Wait for DSP to move into OFF state */
+ 	while ((pwr_state != PWRDM_POWER_OFF) && --timeout) {
+@@ -95,7 +95,7 @@ dsp_status handle_hibernation_from_dsp(struct bridge_dev_context *dev_context)
+ 			return -EPERM;
+ 		}
+ 		pwr_state = (*pdata->dsp_prm_read)(OMAP3430_IVA2_MOD,
+-					PM_PWSTST) & OMAP_POWERSTATEST_MASK;
++					OMAP2_PM_PWSTST) & OMAP_POWERSTATEST_MASK;
+ 	}
+ 	if (timeout == 0) {
+ 		pr_err("%s: Timed out waiting for DSP off mode\n", __func__);
+@@ -193,7 +193,7 @@ dsp_status sleep_dsp(struct bridge_dev_context *dev_context, IN u32 dw_cmd,
+ 	}
+ 
+ 	/* Get the PRCM DSP power domain status */
+-	pwr_state = (*pdata->dsp_prm_read)(OMAP3430_IVA2_MOD, PM_PWSTST) &
++	pwr_state = (*pdata->dsp_prm_read)(OMAP3430_IVA2_MOD, OMAP2_PM_PWSTST) &
+ 						OMAP_POWERSTATEST_MASK;
+ 
+ 	/* Wait for DSP to move into target power state */
+@@ -203,7 +203,7 @@ dsp_status sleep_dsp(struct bridge_dev_context *dev_context, IN u32 dw_cmd,
+ 			return -EPERM;
+ 		}
+ 		pwr_state = (*pdata->dsp_prm_read)(OMAP3430_IVA2_MOD,
+-					PM_PWSTST) & OMAP_POWERSTATEST_MASK;
++					OMAP2_PM_PWSTST) & OMAP_POWERSTATEST_MASK;
+ 	}
+ 
+ 	if (!timeout) {

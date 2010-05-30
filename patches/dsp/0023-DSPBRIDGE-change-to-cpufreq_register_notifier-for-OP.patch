@@ -1,0 +1,81 @@
+From 05bb7cf3bbf5e03dd2c9252b09e0ab72364e8ae1 Mon Sep 17 00:00:00 2001
+From: Fernando Guzman Lugo <x0095840@ti.com>
+Date: Mon, 23 Nov 2009 19:00:40 -0600
+Subject: [PATCH 023/135] DSPBRIDGE: change to cpufreq_register_notifier for OPP changes
+
+This patch changes clk_notifier_unregister with
+cpufreq_unregister_notifier, which is used for OPP change
+notifications
+
+Signed-off-by: Fernando Guzman Lugo <x0095840@ti.com>
+Acked-by: Ameya Palande <ameya.palande@nokia.com>
+---
+ drivers/dsp/bridge/Kconfig              |    2 +-
+ drivers/dsp/bridge/rmgr/drv_interface.c |   19 +++++++++++++------
+ 2 files changed, 14 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/dsp/bridge/Kconfig b/drivers/dsp/bridge/Kconfig
+index c8f60f1..684b323 100644
+--- a/drivers/dsp/bridge/Kconfig
++++ b/drivers/dsp/bridge/Kconfig
+@@ -16,7 +16,7 @@ menuconfig MPU_BRIDGE
+ 
+ config BRIDGE_DVFS
+ 	bool "Enable Bridge Dynamic Voltage and Frequency Scaling (DVFS)"
+-	depends on MPU_BRIDGE && OMAP_PM_SRF
++	depends on MPU_BRIDGE && OMAP_PM_SRF && CPU_FREQ
+ 	default n
+ 	help
+ 	  DVFS allows DSP Bridge to initiate the operating point change to
+diff --git a/drivers/dsp/bridge/rmgr/drv_interface.c b/drivers/dsp/bridge/rmgr/drv_interface.c
+index 5f01ab9..61aa13a 100644
+--- a/drivers/dsp/bridge/rmgr/drv_interface.c
++++ b/drivers/dsp/bridge/rmgr/drv_interface.c
+@@ -226,15 +226,20 @@ void bridge_recover_schedule(void)
+ }
+ #endif
+ #ifdef CONFIG_BRIDGE_DVFS
+-static int dspbridge_post_scale(struct notifier_block *op, unsigned long level,
+-				void *ptr)
++static int dspbridge_scale_notification(struct notifier_block *op,
++		unsigned long val, void *ptr)
+ {
+-	pwr_pm_post_scale(PRCM_VDD1, level);
++	struct dspbridge_platform_data *pdata =
++					omap_dspbridge_dev->dev.platform_data;
++
++	if (CPUFREQ_POSTCHANGE == val && pdata->dsp_get_opp)
++		pwr_pm_post_scale(PRCM_VDD1, pdata->dsp_get_opp());
++
+ 	return 0;
+ }
+ 
+ static struct notifier_block iva_clk_notifier = {
+-	.notifier_call = dspbridge_post_scale,
++	.notifier_call = dspbridge_scale_notification,
+ 	NULL,
+ };
+ #endif
+@@ -346,7 +351,8 @@ static int __devinit omap34_xx_bridge_probe(struct platform_device *pdev)
+ 		if (!clk_handle)
+ 			pr_err("%s: clk_get failed to get iva2_ck\n", __func__);
+ 
+-		if (clk_notifier_register(clk_handle, &iva_clk_notifier))
++		if (!cpufreq_register_notifier(&iva_clk_notifier,
++						CPUFREQ_TRANSITION_NOTIFIER))
+ 			pr_err("%s: clk_notifier_register failed for iva2_ck\n",
+ 			       __func__);
+ #endif
+@@ -387,7 +393,8 @@ static int __devexit omap34_xx_bridge_remove(struct platform_device *pdev)
+ 		goto func_cont;
+ 
+ #ifdef CONFIG_BRIDGE_DVFS
+-	if (clk_notifier_unregister(clk_handle, &iva_clk_notifier))
++	if (!cpufreq_unregister_notifier(&iva_clk_notifier,
++						CPUFREQ_TRANSITION_NOTIFIER))
+ 		pr_err("%s: clk_notifier_unregister failed for iva2_ck\n",
+ 		       __func__);
+ #endif /* #ifdef CONFIG_BRIDGE_DVFS */
+-- 
+1.7.0.4
+

@@ -1,0 +1,1850 @@
+From 9606aeeb4803b7b7ec82481a154c4675c324cba8 Mon Sep 17 00:00:00 2001
+From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+Date: Thu, 25 Mar 2010 11:24:19 -0600
+Subject: [PATCH 092/135] DSPBRIDGE: Check pointer instead of using MEM_IS_VALID_HANDLE macro
+
+The patch "Replace MEM_ALLOC_OBJECT macro by kzalloc function" removed
+the initialization of dw_signature, so now the check for signature has
+to be eliminated.
+
+Signed-off-by: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+---
+ drivers/dsp/bridge/pmgr/cmm.c      |   27 ++++++------
+ drivers/dsp/bridge/pmgr/dbll.c     |   65 ++++++++++++++----------------
+ drivers/dsp/bridge/pmgr/dev.c      |    6 +-
+ drivers/dsp/bridge/pmgr/dmm.c      |    4 +-
+ drivers/dsp/bridge/pmgr/msg.c      |    2 +-
+ drivers/dsp/bridge/rmgr/disp.c     |   17 ++++----
+ drivers/dsp/bridge/rmgr/drv.c      |   13 +++---
+ drivers/dsp/bridge/rmgr/mgr.c      |   14 +++----
+ drivers/dsp/bridge/rmgr/nldr.c     |   27 +++++-------
+ drivers/dsp/bridge/rmgr/node.c     |   79 +++++++++++++++++-------------------
+ drivers/dsp/bridge/rmgr/proc.c     |   46 ++++++++++-----------
+ drivers/dsp/bridge/rmgr/rmm.c      |    9 ++--
+ drivers/dsp/bridge/rmgr/strm.c     |   32 +++++++--------
+ drivers/dsp/bridge/wmd/chnl_sm.c   |   29 ++++++-------
+ drivers/dsp/bridge/wmd/io_sm.c     |   23 +++++-----
+ drivers/dsp/bridge/wmd/mmu_fault.c |    4 +-
+ drivers/dsp/bridge/wmd/msg_sm.c    |   23 ++++------
+ drivers/dsp/bridge/wmd/ue_deh.c    |    9 ++--
+ 18 files changed, 197 insertions(+), 232 deletions(-)
+
+diff --git a/drivers/dsp/bridge/pmgr/cmm.c b/drivers/dsp/bridge/pmgr/cmm.c
+index 18eeb27..cf5c9e1 100644
+--- a/drivers/dsp/bridge/pmgr/cmm.c
++++ b/drivers/dsp/bridge/pmgr/cmm.c
+@@ -191,7 +191,7 @@ void *cmm_calloc_buf(struct cmm_object *hcmm_mgr, u32 usize,
+ 	if (pp_buf_va != NULL)
+ 		*pp_buf_va = NULL;
+ 
+-	if ((MEM_IS_VALID_HANDLE(cmm_mgr_obj, CMMSIGNATURE)) && (usize != 0)) {
++	if (cmm_mgr_obj && (usize != 0)) {
+ 		if (pattrs->ul_seg_id > 0) {
+ 			/* SegId > 0 is SM */
+ 			/* get the allocator object for this segment id */
+@@ -323,7 +323,7 @@ dsp_status cmm_destroy(struct cmm_object *hcmm_mgr, bool bForce)
+ 	struct cmm_mnode *pnode;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	if (!MEM_IS_VALID_HANDLE(hcmm_mgr, CMMSIGNATURE)) {
++	if (!hcmm_mgr) {
+ 		status = -EFAULT;
+ 		return status;
+ 	}
+@@ -403,8 +403,7 @@ dsp_status cmm_free_buf(struct cmm_object *hcmm_mgr, void *buf_pa,
+ 		pattrs = &cmm_dfltalctattrs;
+ 		ul_seg_id = pattrs->ul_seg_id;
+ 	}
+-	if (!(MEM_IS_VALID_HANDLE(hcmm_mgr, CMMSIGNATURE)) ||
+-	    !(ul_seg_id > 0)) {
++	if (!hcmm_mgr || !(ul_seg_id > 0)) {
+ 		status = -EFAULT;
+ 		return status;
+ 	}
+@@ -474,7 +473,7 @@ dsp_status cmm_get_info(struct cmm_object *hcmm_mgr,
+ 
+ 	DBC_REQUIRE(cmm_info_obj != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hcmm_mgr, CMMSIGNATURE)) {
++	if (!hcmm_mgr) {
+ 		status = -EFAULT;
+ 		return status;
+ 	}
+@@ -569,7 +568,7 @@ dsp_status cmm_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+ 		"dw_dsp_base %x ul_dsp_size %x dw_gpp_base_va %x\n", __func__,
+ 		dw_gpp_base_pa, ul_size, dwDSPAddrOffset, dw_dsp_base,
+ 		ul_dsp_size, dw_gpp_base_va);
+-	if (!MEM_IS_VALID_HANDLE(hcmm_mgr, CMMSIGNATURE)) {
++	if (!hcmm_mgr) {
+ 		status = -EFAULT;
+ 		return status;
+ 	}
+@@ -671,7 +670,7 @@ dsp_status cmm_un_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+ 	u32 ul_id = ul_seg_id;
+ 
+ 	DBC_REQUIRE(ul_seg_id > 0);
+-	if (MEM_IS_VALID_HANDLE(hcmm_mgr, CMMSIGNATURE)) {
++	if (hcmm_mgr) {
+ 		if (ul_seg_id == CMM_ALLSEGMENTS)
+ 			ul_id = 1;
+ 
+@@ -946,7 +945,7 @@ static struct cmm_allocator *get_allocator(struct cmm_object *cmm_mgr_obj,
+ 	allocator = cmm_mgr_obj->pa_gppsm_seg_tab[ul_seg_id - 1];
+ 	if (allocator != NULL) {
+ 		/* make sure it's for real */
+-		if (!MEM_IS_VALID_HANDLE(allocator, SMEMSIGNATURE)) {
++		if (!allocator) {
+ 			allocator = NULL;
+ 			DBC_ASSERT(false);
+ 		}
+@@ -1007,7 +1006,7 @@ dsp_status cmm_xlator_delete(struct cmm_xlatorobject *xlator, bool bForce)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (MEM_IS_VALID_HANDLE(xlator_obj, CMMXLATESIGNATURE)) {
++	if (xlator_obj) {
+ 		kfree(xlator_obj);
+ 	} else {
+ 		status = -EFAULT;
+@@ -1033,7 +1032,7 @@ void *cmm_xlator_alloc_buf(struct cmm_xlatorobject *xlator, void *pVaBuf,
+ 	DBC_REQUIRE(uPaSize > 0);
+ 	DBC_REQUIRE(xlator_obj->ul_seg_id > 0);
+ 
+-	if (MEM_IS_VALID_HANDLE(xlator_obj, CMMXLATESIGNATURE)) {
++	if (xlator_obj) {
+ 		attrs.ul_seg_id = xlator_obj->ul_seg_id;
+ 		*(volatile u32 *)pVaBuf = 0;
+ 		/* Alloc SM */
+@@ -1066,7 +1065,7 @@ dsp_status cmm_xlator_free_buf(struct cmm_xlatorobject *xlator, void *pBufVa)
+ 	DBC_REQUIRE(pBufVa != NULL);
+ 	DBC_REQUIRE(xlator_obj->ul_seg_id > 0);
+ 
+-	if (MEM_IS_VALID_HANDLE(xlator_obj, CMMXLATESIGNATURE)) {
++	if (xlator_obj) {
+ 		/* convert Va to Pa so we can free it. */
+ 		buf_pa = cmm_xlator_translate(xlator, pBufVa, CMM_VA2PA);
+ 		if (buf_pa) {
+@@ -1097,7 +1096,7 @@ dsp_status cmm_xlator_info(struct cmm_xlatorobject *xlator, IN OUT u8 ** paddr,
+ 	DBC_REQUIRE(paddr != NULL);
+ 	DBC_REQUIRE((uSegId > 0) && (uSegId <= CMM_MAXGPPSEGS));
+ 
+-	if (MEM_IS_VALID_HANDLE(xlator_obj, CMMXLATESIGNATURE)) {
++	if (xlator_obj) {
+ 		if (set_info) {
+ 			/* set translators virtual address range */
+ 			xlator_obj->dw_virt_base = (u32) *paddr;
+@@ -1127,14 +1126,14 @@ void *cmm_xlator_translate(struct cmm_xlatorobject *xlator, void *paddr,
+ 	DBC_REQUIRE(paddr != NULL);
+ 	DBC_REQUIRE((xType >= CMM_VA2PA) && (xType <= CMM_DSPPA2PA));
+ 
+-	if (!MEM_IS_VALID_HANDLE(xlator_obj, CMMXLATESIGNATURE))
++	if (!xlator_obj)
+ 		goto loop_cont;
+ 
+ 	cmm_mgr_obj = (struct cmm_object *)xlator_obj->hcmm_mgr;
+ 	/* get this translator's default SM allocator */
+ 	DBC_ASSERT(xlator_obj->ul_seg_id > 0);
+ 	allocator = cmm_mgr_obj->pa_gppsm_seg_tab[xlator_obj->ul_seg_id - 1];
+-	if (!MEM_IS_VALID_HANDLE(allocator, SMEMSIGNATURE))
++	if (!allocator)
+ 		goto loop_cont;
+ 
+ 	if ((xType == CMM_VA2DSPPA) || (xType == CMM_VA2PA) ||
+diff --git a/drivers/dsp/bridge/pmgr/dbll.c b/drivers/dsp/bridge/pmgr/dbll.c
+index ff8d302..baa0366 100644
+--- a/drivers/dsp/bridge/pmgr/dbll.c
++++ b/drivers/dsp/bridge/pmgr/dbll.c
+@@ -213,7 +213,7 @@ void dbll_close(struct dbll_library_obj *zl_lib)
+ 	struct dbll_tar_obj *zl_target;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(zl_lib);
+ 	DBC_REQUIRE(zl_lib->open_ref > 0);
+ 	zl_target = zl_lib->target_obj;
+ 	zl_lib->open_ref--;
+@@ -265,11 +265,8 @@ dsp_status dbll_create(struct dbll_tar_obj **target_obj,
+ 			pzl_target->attrs = *pattrs;
+ 			*target_obj = (struct dbll_tar_obj *)pzl_target;
+ 		}
+-		DBC_ENSURE((DSP_SUCCEEDED(status) &&
+-			    MEM_IS_VALID_HANDLE(((struct dbll_tar_obj
+-						  *)(*target_obj)),
+-						DBLL_TARGSIGNATURE))
+-			   || (DSP_FAILED(status) && *target_obj == NULL));
++		DBC_ENSURE((DSP_SUCCEEDED(status) && *target_obj) ||
++				(DSP_FAILED(status) && *target_obj == NULL));
+ 	}
+ 
+ 	return status;
+@@ -283,7 +280,7 @@ void dbll_delete(struct dbll_tar_obj *target)
+ 	struct dbll_tar_obj *zl_target = (struct dbll_tar_obj *)target;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_target, DBLL_TARGSIGNATURE));
++	DBC_REQUIRE(zl_target);
+ 
+ 	if (zl_target != NULL)
+ 		kfree(zl_target);
+@@ -317,7 +314,7 @@ bool dbll_get_addr(struct dbll_library_obj *zl_lib, char *name,
+ 	bool status = false;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(zl_lib);
+ 	DBC_REQUIRE(name != NULL);
+ 	DBC_REQUIRE(ppSym != NULL);
+ 	DBC_REQUIRE(zl_lib->sym_tab != NULL);
+@@ -342,7 +339,7 @@ void dbll_get_attrs(struct dbll_tar_obj *target, struct dbll_attrs *pattrs)
+ 	struct dbll_tar_obj *zl_target = (struct dbll_tar_obj *)target;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_target, DBLL_TARGSIGNATURE));
++	DBC_REQUIRE(zl_target);
+ 	DBC_REQUIRE(pattrs != NULL);
+ 
+ 	if ((pattrs != NULL) && (zl_target != NULL))
+@@ -362,7 +359,7 @@ bool dbll_get_c_addr(struct dbll_library_obj *zl_lib, char *name,
+ 	bool status = false;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(zl_lib);
+ 	DBC_REQUIRE(ppSym != NULL);
+ 	DBC_REQUIRE(zl_lib->sym_tab != NULL);
+ 	DBC_REQUIRE(name != NULL);
+@@ -400,7 +397,7 @@ dsp_status dbll_get_sect(struct dbll_library_obj *lib, char *name, u32 *paddr,
+ 	DBC_REQUIRE(name != NULL);
+ 	DBC_REQUIRE(paddr != NULL);
+ 	DBC_REQUIRE(psize != NULL);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(zl_lib);
+ 
+ 	/* If DOFF file is not open, we open it. */
+ 	if (zl_lib != NULL) {
+@@ -471,7 +468,7 @@ dsp_status dbll_load(struct dbll_library_obj *lib, dbll_flags flags,
+ 	dsp_status status = DSP_SOK;
+ 	bool opened_doff = false;
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(zl_lib);
+ 	DBC_REQUIRE(pEntry != NULL);
+ 	DBC_REQUIRE(attrs != NULL);
+ 
+@@ -587,7 +584,7 @@ dsp_status dbll_load(struct dbll_library_obj *lib, dbll_flags flags,
+ dsp_status dbll_load_sect(struct dbll_library_obj *zl_lib, char *sectName,
+ 			  struct dbll_attrs *attrs)
+ {
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(zl_lib);
+ 
+ 	return -ENOSYS;
+ }
+@@ -604,7 +601,7 @@ dsp_status dbll_open(struct dbll_tar_obj *target, char *file, dbll_flags flags,
+ 	dsp_status status = DSP_SOK;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_target, DBLL_TARGSIGNATURE));
++	DBC_REQUIRE(zl_target);
+ 	DBC_REQUIRE(zl_target->attrs.fopen != NULL);
+ 	DBC_REQUIRE(file != NULL);
+ 	DBC_REQUIRE(pLib != NULL);
+@@ -725,10 +722,8 @@ func_cont:
+ 			dbll_close((struct dbll_library_obj *)zl_lib);
+ 
+ 	}
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && (zl_lib->open_ref > 0) &&
+-		    MEM_IS_VALID_HANDLE(((struct dbll_library_obj *)(*pLib)),
+-					DBLL_LIBSIGNATURE))
+-		   || (DSP_FAILED(status) && *pLib == NULL));
++	DBC_ENSURE((DSP_SUCCEEDED(status) && (zl_lib->open_ref > 0) && *pLib)
++				|| (DSP_FAILED(status) && *pLib == NULL));
+ 
+ 	dev_dbg(bridge, "%s: target: %p file: %s pLib: %p, status 0x%x\n",
+ 		__func__, target, file, pLib, status);
+@@ -751,7 +746,7 @@ dsp_status dbll_read_sect(struct dbll_library_obj *lib, char *name,
+ 	dsp_status status = DSP_SOK;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(zl_lib);
+ 	DBC_REQUIRE(name != NULL);
+ 	DBC_REQUIRE(pContent != NULL);
+ 	DBC_REQUIRE(size != 0);
+@@ -816,7 +811,7 @@ void dbll_set_attrs(struct dbll_tar_obj *target, struct dbll_attrs *pattrs)
+ {
+ 	struct dbll_tar_obj *zl_target = (struct dbll_tar_obj *)target;
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_target, DBLL_TARGSIGNATURE));
++	DBC_REQUIRE(zl_target);
+ 	DBC_REQUIRE(pattrs != NULL);
+ 
+ 	if ((pattrs != NULL) && (zl_target != NULL))
+@@ -833,7 +828,7 @@ void dbll_unload(struct dbll_library_obj *lib, struct dbll_attrs *attrs)
+ 	s32 err = 0;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(zl_lib);
+ 	DBC_REQUIRE(zl_lib->load_ref > 0);
+ 	dev_dbg(bridge, "%s: lib: %p\n", __func__, lib);
+ 	zl_lib->load_ref--;
+@@ -998,7 +993,7 @@ static int dbll_read_buffer(struct dynamic_loader_stream *this, void *buffer,
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = pstream->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 
+ 	if (lib != NULL) {
+ 		bytes_read =
+@@ -1020,7 +1015,7 @@ static int dbll_set_file_posn(struct dynamic_loader_stream *this,
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = pstream->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 
+ 	if (lib != NULL) {
+ 		status = (*(lib->target_obj->attrs.fseek)) (lib->fp, (long)pos,
+@@ -1046,7 +1041,7 @@ static struct dynload_symbol *dbll_find_symbol(struct dynamic_loader_sym *this,
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = ldr_sym->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 
+ 	if (lib != NULL) {
+ 		if (lib->target_obj->attrs.sym_lookup) {
+@@ -1094,7 +1089,7 @@ static struct dynload_symbol *find_in_symbol_table(struct dynamic_loader_sym
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = ldr_sym->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 	DBC_REQUIRE(lib->sym_tab != NULL);
+ 
+ 	sym = (struct dbll_symbol *)gh_find(lib->sym_tab, (char *)name);
+@@ -1120,7 +1115,7 @@ static struct dynload_symbol *dbll_add_to_symbol_table(struct dynamic_loader_sym
+ 	DBC_REQUIRE(this != NULL);
+ 	DBC_REQUIRE(name);
+ 	lib = ldr_sym->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 
+ 	/* Check to see if symbol is already defined in symbol table */
+ 	if (!(lib->target_obj->attrs.base_image)) {
+@@ -1171,7 +1166,7 @@ static void dbll_purge_symbol_table(struct dynamic_loader_sym *this,
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = ldr_sym->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 
+ 	/* May not need to do anything */
+ }
+@@ -1187,7 +1182,7 @@ static void *allocate(struct dynamic_loader_sym *this, unsigned memsize)
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = ldr_sym->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 
+ 	buf = kzalloc(memsize, GFP_KERNEL);
+ 
+@@ -1204,7 +1199,7 @@ static void deallocate(struct dynamic_loader_sym *this, void *memPtr)
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = ldr_sym->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 
+ 	kfree(memPtr);
+ }
+@@ -1221,7 +1216,7 @@ static void dbll_err_report(struct dynamic_loader_sym *this, const char *errstr,
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = ldr_sym->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 	vsnprintf((char *)temp_buf, MAXEXPR, (char *)errstr, args);
+ 	dev_dbg(bridge, "%s\n", temp_buf);
+ }
+@@ -1255,7 +1250,7 @@ static int dbll_rmm_alloc(struct dynamic_loader_allocate *this,
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = dbll_alloc_obj->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 
+ 	mem_sect_type =
+ 	    (stype == DLOAD_TEXT) ? DBLL_CODE : (stype ==
+@@ -1367,7 +1362,7 @@ static void rmm_dealloc(struct dynamic_loader_allocate *this,
+ 	    DBLL_DATA;
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = dbll_alloc_obj->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 	/* segid was set by alloc function */
+ 	segid = (u32) info->context;
+ 	if (mem_sect_type == DBLL_CODE)
+@@ -1407,7 +1402,7 @@ static int read_mem(struct dynamic_loader_initialize *this, void *buf,
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = init_obj->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 	/* Need bridge_brd_read function */
+ 	return bytes_read;
+ }
+@@ -1428,7 +1423,7 @@ static int write_mem(struct dynamic_loader_initialize *this, void *buf,
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = init_obj->lib;
+-	if (!MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE))
++	if (!lib)
+ 		return false;
+ 
+ 	target_obj = lib->target_obj;
+@@ -1499,7 +1494,7 @@ static int execute(struct dynamic_loader_initialize *this, ldr_addr start)
+ 
+ 	DBC_REQUIRE(this != NULL);
+ 	lib = init_obj->lib;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(lib, DBLL_LIBSIGNATURE));
++	DBC_REQUIRE(lib);
+ 	/* Save entry point */
+ 	if (lib != NULL)
+ 		lib->entry = (u32) start;
+diff --git a/drivers/dsp/bridge/pmgr/dev.c b/drivers/dsp/bridge/pmgr/dev.c
+index 7f92265..a0ee17a 100644
+--- a/drivers/dsp/bridge/pmgr/dev.c
++++ b/drivers/dsp/bridge/pmgr/dev.c
+@@ -531,7 +531,7 @@ dsp_status dev_get_deh_mgr(struct dev_object *hdev_obj,
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(phDehMgr != NULL);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hdev_obj, SIGNATURE));
++	DBC_REQUIRE(hdev_obj);
+ 	if (IS_VALID_HANDLE(hdev_obj)) {
+ 		*phDehMgr = hdev_obj->hdeh_mgr;
+ 	} else {
+@@ -621,7 +621,7 @@ dsp_status dev_get_io_mgr(struct dev_object *hdev_obj,
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(phIOMgr != NULL);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hdev_obj, SIGNATURE));
++	DBC_REQUIRE(hdev_obj);
+ 
+ 	if (IS_VALID_HANDLE(hdev_obj)) {
+ 		*phIOMgr = hdev_obj->hio_mgr;
+@@ -660,7 +660,7 @@ void dev_get_msg_mgr(struct dev_object *hdev_obj, OUT struct msg_mgr **phMsgMgr)
+ {
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(phMsgMgr != NULL);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hdev_obj, SIGNATURE));
++	DBC_REQUIRE(hdev_obj);
+ 
+ 	*phMsgMgr = hdev_obj->hmsg_mgr;
+ }
+diff --git a/drivers/dsp/bridge/pmgr/dmm.c b/drivers/dsp/bridge/pmgr/dmm.c
+index 777a348..f0b4688 100644
+--- a/drivers/dsp/bridge/pmgr/dmm.c
++++ b/drivers/dsp/bridge/pmgr/dmm.c
+@@ -159,7 +159,7 @@ dsp_status dmm_destroy(struct dmm_object *dmm_mgr)
+ 	dsp_status status = DSP_SOK;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	if (MEM_IS_VALID_HANDLE(dmm_mgr, DMMSIGNATURE)) {
++	if (dmm_mgr) {
+ 		status = dmm_delete_tables(dmm_obj);
+ 		if (DSP_SUCCEEDED(status))
+ 			kfree(dmm_obj);
+@@ -180,7 +180,7 @@ dsp_status dmm_delete_tables(struct dmm_object *dmm_mgr)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	/* Delete all DMM tables */
+-	if (MEM_IS_VALID_HANDLE(dmm_mgr, DMMSIGNATURE))
++	if (dmm_mgr)
+ 		vfree(virtual_mapping_table);
+ 	else
+ 		status = -EFAULT;
+diff --git a/drivers/dsp/bridge/pmgr/msg.c b/drivers/dsp/bridge/pmgr/msg.c
+index a025295..04dc540 100644
+--- a/drivers/dsp/bridge/pmgr/msg.c
++++ b/drivers/dsp/bridge/pmgr/msg.c
+@@ -96,7 +96,7 @@ void msg_delete(struct msg_mgr *hmsg_mgr)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (MEM_IS_VALID_HANDLE(msg_mgr_obj, MSGMGR_SIGNATURE)) {
++	if (msg_mgr_obj) {
+ 		intf_fxns = msg_mgr_obj->intf_fxns;
+ 
+ 		/* Let WMD message module destroy the msg_mgr: */
+diff --git a/drivers/dsp/bridge/rmgr/disp.c b/drivers/dsp/bridge/rmgr/disp.c
+index 86a9717..3a8ea5d 100644
+--- a/drivers/dsp/bridge/rmgr/disp.c
++++ b/drivers/dsp/bridge/rmgr/disp.c
+@@ -175,8 +175,7 @@ func_cont:
+ 		delete_disp(disp_obj);
+ 
+ 	DBC_ENSURE(((DSP_FAILED(status)) && ((*phDispObject == NULL))) ||
+-		   ((DSP_SUCCEEDED(status)) &&
+-		    (MEM_IS_VALID_HANDLE((*phDispObject), DISP_SIGNATURE))));
++				((DSP_SUCCEEDED(status)) && *phDispObject));
+ 	return status;
+ }
+ 
+@@ -187,11 +186,11 @@ func_cont:
+ void disp_delete(struct disp_object *disp_obj)
+ {
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(disp_obj, DISP_SIGNATURE));
++	DBC_REQUIRE(disp_obj);
+ 
+ 	delete_disp(disp_obj);
+ 
+-	DBC_ENSURE(!MEM_IS_VALID_HANDLE(disp_obj, DISP_SIGNATURE));
++	DBC_ENSURE(!disp_obj);
+ }
+ 
+ /*
+@@ -237,7 +236,7 @@ dsp_status disp_node_change_priority(struct disp_object *disp_obj,
+ 	dsp_status status = DSP_SOK;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(disp_obj, DISP_SIGNATURE));
++	DBC_REQUIRE(disp_obj);
+ 	DBC_REQUIRE(hnode != NULL);
+ 
+ 	/* Send message to RMS to change priority */
+@@ -286,7 +285,7 @@ dsp_status disp_node_create(struct disp_object *disp_obj,
+ 	u8 dev_type;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(disp_obj, DISP_SIGNATURE));
++	DBC_REQUIRE(disp_obj);
+ 	DBC_REQUIRE(hnode != NULL);
+ 	DBC_REQUIRE(node_get_type(hnode) != NODE_DEVICE);
+ 	DBC_REQUIRE(pNodeEnv != NULL);
+@@ -501,7 +500,7 @@ dsp_status disp_node_delete(struct disp_object *disp_obj,
+ 	u8 dev_type;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(disp_obj, DISP_SIGNATURE));
++	DBC_REQUIRE(disp_obj);
+ 	DBC_REQUIRE(hnode != NULL);
+ 
+ 	status = dev_get_dev_type(disp_obj->hdev_obj, &dev_type);
+@@ -554,7 +553,7 @@ dsp_status disp_node_run(struct disp_object *disp_obj,
+ 	dsp_status status = DSP_SOK;
+ 	u8 dev_type;
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(disp_obj, DISP_SIGNATURE));
++	DBC_REQUIRE(disp_obj);
+ 	DBC_REQUIRE(hnode != NULL);
+ 
+ 	status = dev_get_dev_type(disp_obj->hdev_obj, &dev_type);
+@@ -603,7 +602,7 @@ static void delete_disp(struct disp_object *disp_obj)
+ 	dsp_status status = DSP_SOK;
+ 	struct bridge_drv_interface *intf_fxns;
+ 
+-	if (MEM_IS_VALID_HANDLE(disp_obj, DISP_SIGNATURE)) {
++	if (disp_obj) {
+ 		intf_fxns = disp_obj->intf_fxns;
+ 
+ 		/* Free Node Dispatcher resources */
+diff --git a/drivers/dsp/bridge/rmgr/drv.c b/drivers/dsp/bridge/rmgr/drv.c
+index 7ad528a..d155c57 100644
+--- a/drivers/dsp/bridge/rmgr/drv.c
++++ b/drivers/dsp/bridge/rmgr/drv.c
+@@ -475,8 +475,7 @@ dsp_status drv_create(OUT struct drv_object **phDRVObject)
+ 		kfree(pdrv_object);
+ 	}
+ 
+-	DBC_ENSURE(DSP_FAILED(status) ||
+-		   MEM_IS_VALID_HANDLE(pdrv_object, SIGNATURE));
++	DBC_ENSURE(DSP_FAILED(status) || pdrv_object);
+ 	return status;
+ }
+ 
+@@ -505,7 +504,7 @@ dsp_status drv_destroy(struct drv_object *hDRVObject)
+ 	struct drv_object *pdrv_object = (struct drv_object *)hDRVObject;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(pdrv_object, SIGNATURE));
++	DBC_REQUIRE(pdrv_object);
+ 
+ 	/*
+ 	 *  Delete the List if it exists.Should not come here
+@@ -517,7 +516,7 @@ dsp_status drv_destroy(struct drv_object *hDRVObject)
+ 	kfree(pdrv_object);
+ 	/* Update the DRV Object in Registry to be 0 */
+ 	(void)cfg_set_object(0, REG_DRV_OBJECT);
+-	DBC_ENSURE(!MEM_IS_VALID_HANDLE(pdrv_object, SIGNATURE));
++	DBC_ENSURE(!pdrv_object);
+ 	return status;
+ }
+ 
+@@ -536,7 +535,7 @@ dsp_status drv_get_dev_object(u32 index, struct drv_object *hdrv_obj,
+ #endif
+ 	struct dev_object *dev_obj;
+ 	u32 i;
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(pdrv_obj, SIGNATURE));
++	DBC_REQUIRE(pdrv_obj);
+ 	DBC_REQUIRE(phDevObject != NULL);
+ 	DBC_REQUIRE(index >= 0);
+ 	DBC_REQUIRE(refs > 0);
+@@ -685,7 +684,7 @@ dsp_status drv_insert_dev_object(struct drv_object *hDRVObject,
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(hdev_obj != NULL);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(pdrv_object, SIGNATURE));
++	DBC_REQUIRE(pdrv_object);
+ 	DBC_ASSERT(pdrv_object->dev_list);
+ 
+ 	lst_put_tail(pdrv_object->dev_list, (struct list_head *)hdev_obj);
+@@ -710,7 +709,7 @@ dsp_status drv_remove_dev_object(struct drv_object *hDRVObject,
+ 	struct list_head *cur_elem;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(pdrv_object, SIGNATURE));
++	DBC_REQUIRE(pdrv_object);
+ 	DBC_REQUIRE(hdev_obj != NULL);
+ 
+ 	DBC_REQUIRE(pdrv_object->dev_list != NULL);
+diff --git a/drivers/dsp/bridge/rmgr/mgr.c b/drivers/dsp/bridge/rmgr/mgr.c
+index 83402c1..cbabfb6 100644
+--- a/drivers/dsp/bridge/rmgr/mgr.c
++++ b/drivers/dsp/bridge/rmgr/mgr.c
+@@ -85,8 +85,7 @@ dsp_status mgr_create(OUT struct mgr_object **phMgrObject,
+ 		status = -ENOMEM;
+ 	}
+ 
+-	DBC_ENSURE(DSP_FAILED(status) ||
+-		   MEM_IS_VALID_HANDLE(pmgr_obj, SIGNATURE));
++	DBC_ENSURE(DSP_FAILED(status) || pmgr_obj);
+ 	return status;
+ }
+ 
+@@ -100,7 +99,7 @@ dsp_status mgr_destroy(struct mgr_object *hmgr_obj)
+ 	struct mgr_object *pmgr_obj = (struct mgr_object *)hmgr_obj;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hmgr_obj, SIGNATURE));
++	DBC_REQUIRE(hmgr_obj);
+ 
+ 	/* Free resources */
+ 	if (hmgr_obj->hdcd_mgr)
+@@ -110,8 +109,7 @@ dsp_status mgr_destroy(struct mgr_object *hmgr_obj)
+ 	/* Update the Registry with NULL for MGR Object */
+ 	(void)cfg_set_object(0, REG_MGR_OBJECT);
+ 
+-	DBC_ENSURE(DSP_FAILED(status) ||
+-		   !MEM_IS_VALID_HANDLE(hmgr_obj, SIGNATURE));
++	DBC_ENSURE(DSP_FAILED(status) || !hmgr_obj);
+ 
+ 	return status;
+ }
+@@ -142,7 +140,7 @@ dsp_status mgr_enum_node_info(u32 node_id, OUT struct dsp_ndbprops *pndb_props,
+ 	if (DSP_FAILED(status))
+ 		goto func_cont;
+ 
+-	DBC_ASSERT(MEM_IS_VALID_HANDLE(pmgr_obj, SIGNATURE));
++	DBC_ASSERT(pmgr_obj);
+ 	/* Forever loop till we hit failed or no more items in the
+ 	 * Enumeration. We will exit the loop other than DSP_SOK; */
+ 	while (status == DSP_SOK) {
+@@ -232,7 +230,7 @@ dsp_status mgr_enum_processor_info(u32 processor_id,
+ 		dev_dbg(bridge, "%s: Failed to get MGR Object\n", __func__);
+ 		goto func_end;
+ 	}
+-	DBC_ASSERT(MEM_IS_VALID_HANDLE(pmgr_obj, SIGNATURE));
++	DBC_ASSERT(pmgr_obj);
+ 	/* Forever loop till we hit no more items in the
+ 	 * Enumeration. We will exit the loop other than DSP_SOK; */
+ 	while (status1 == DSP_SOK) {
+@@ -322,7 +320,7 @@ dsp_status mgr_get_dcd_handle(struct mgr_object *hMGRHandle,
+ 	DBC_REQUIRE(phDCDHandle != NULL);
+ 
+ 	*phDCDHandle = (u32) NULL;
+-	if (MEM_IS_VALID_HANDLE(pmgr_obj, SIGNATURE)) {
++	if (pmgr_obj) {
+ 		*phDCDHandle = (u32) pmgr_obj->hdcd_mgr;
+ 		status = DSP_SOK;
+ 	}
+diff --git a/drivers/dsp/bridge/rmgr/nldr.c b/drivers/dsp/bridge/rmgr/nldr.c
+index 5b57fe9..e984faf 100644
+--- a/drivers/dsp/bridge/rmgr/nldr.c
++++ b/drivers/dsp/bridge/rmgr/nldr.c
+@@ -342,7 +342,7 @@ dsp_status nldr_allocate(struct nldr_object *nldr_obj, void *priv_ref,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(node_props != NULL);
+ 	DBC_REQUIRE(phNldrNode != NULL);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(nldr_obj, NLDR_SIGNATURE));
++	DBC_REQUIRE(nldr_obj);
+ 
+ 	/* Initialize handle in case of failure */
+ 	*phNldrNode = NULL;
+@@ -424,9 +424,7 @@ dsp_status nldr_allocate(struct nldr_object *nldr_obj, void *priv_ref,
+ 	if (DSP_FAILED(status) && nldr_node_obj)
+ 		kfree(nldr_node_obj);
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) &&
+-		    MEM_IS_VALID_HANDLE(((struct nldr_nodeobject
+-					  *)(*phNldrNode)), NLDR_NODESIGNATURE))
++	DBC_ENSURE((DSP_SUCCEEDED(status) && *phNldrNode)
+ 		   || (DSP_FAILED(status) && *phNldrNode == NULL));
+ 	return status;
+ }
+@@ -609,9 +607,7 @@ dsp_status nldr_create(OUT struct nldr_object **phNldr,
+ 		*phNldr = NULL;
+ 	}
+ 	/* FIXME:Temp. Fix. Must be removed */
+-	DBC_ENSURE((DSP_SUCCEEDED(status) &&
+-		    MEM_IS_VALID_HANDLE(((struct nldr_object *)*phNldr),
+-					NLDR_SIGNATURE))
++	DBC_ENSURE((DSP_SUCCEEDED(status) && *phNldr)
+ 		   || (DSP_FAILED(status) && (*phNldr == NULL)));
+ 	return status;
+ }
+@@ -625,7 +621,7 @@ void nldr_delete(struct nldr_object *nldr_obj)
+ 	struct ovly_sect *next;
+ 	u16 i;
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(nldr_obj, NLDR_SIGNATURE));
++	DBC_REQUIRE(nldr_obj);
+ 
+ 	nldr_obj->ldr_fxns.exit_fxn();
+ 	if (nldr_obj->rmm)
+@@ -670,7 +666,7 @@ void nldr_delete(struct nldr_object *nldr_obj)
+ 		kfree(nldr_obj->ovly_table);
+ 	}
+ 	kfree(nldr_obj);
+-	DBC_ENSURE(!MEM_IS_VALID_HANDLE(nldr_obj, NLDR_SIGNATURE));
++	DBC_ENSURE(!nldr_obj);
+ }
+ 
+ /*
+@@ -702,7 +698,7 @@ dsp_status nldr_get_fxn_addr(struct nldr_nodeobject *nldr_node_obj,
+ 	s32 i = 0;
+ 	struct lib_node root = { NULL, 0, NULL };
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(nldr_node_obj, NLDR_NODESIGNATURE));
++	DBC_REQUIRE(nldr_node_obj);
+ 	DBC_REQUIRE(pulAddr != NULL);
+ 	DBC_REQUIRE(pstrFxn != NULL);
+ 
+@@ -792,7 +788,7 @@ dsp_status nldr_get_rmm_manager(struct nldr_object *hNldrObject,
+ 	struct nldr_object *nldr_obj = hNldrObject;
+ 	DBC_REQUIRE(phRmmMgr != NULL);
+ 
+-	if (MEM_IS_VALID_HANDLE(hNldrObject, NLDR_SIGNATURE)) {
++	if (hNldrObject) {
+ 		*phRmmMgr = nldr_obj->rmm;
+ 	} else {
+ 		*phRmmMgr = NULL;
+@@ -833,7 +829,7 @@ dsp_status nldr_load(struct nldr_nodeobject *nldr_node_obj,
+ 	dsp_status status = DSP_SOK;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(nldr_node_obj, NLDR_NODESIGNATURE));
++	DBC_REQUIRE(nldr_node_obj);
+ 
+ 	nldr_obj = nldr_node_obj->nldr_obj;
+ 
+@@ -895,7 +891,7 @@ dsp_status nldr_unload(struct nldr_nodeobject *nldr_node_obj,
+ 	s32 i = 0;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(nldr_node_obj, NLDR_NODESIGNATURE));
++	DBC_REQUIRE(nldr_node_obj);
+ 
+ 	if (nldr_node_obj != NULL) {
+ 		if (nldr_node_obj->dynamic) {
+@@ -1650,7 +1646,7 @@ static dsp_status remote_alloc(void **pRef, u16 space, u32 size,
+ 	struct rmm_addr *rmm_addr_obj = (struct rmm_addr *)dspAddr;
+ 	bool mem_load_req = false;
+ 	dsp_status status = -ENOMEM;	/* Set to fail */
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hnode, NLDR_NODESIGNATURE));
++	DBC_REQUIRE(hnode);
+ 	DBC_REQUIRE(space == DBLL_CODE || space == DBLL_DATA ||
+ 		    space == DBLL_BSS);
+ 	nldr_obj = hnode->nldr_obj;
+@@ -1763,7 +1759,7 @@ static dsp_status remote_free(void **pRef, u16 space, u32 dspAddr,
+ 	u32 word_size;
+ 	dsp_status status = -ENOMEM;	/* Set to fail */
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(nldr_obj, NLDR_SIGNATURE));
++	DBC_REQUIRE(nldr_obj);
+ 
+ 	rmm = nldr_obj->rmm;
+ 
+@@ -1952,7 +1948,6 @@ dsp_status nldr_find_addr(struct nldr_nodeobject *nldr_node, u32 sym_addr,
+ 	s32 i = 0;
+ 	struct lib_node root = { NULL, 0, NULL };
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(nldr_node, NLDR_NODESIGNATURE));
+ 	DBC_REQUIRE(offset_output != NULL);
+ 	DBC_REQUIRE(sym_name != NULL);
+ 	pr_debug("%s(0x%x, 0x%x, 0x%x, 0x%x,  %s)\n", __func__, (u32) nldr_node,
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index ee9afb5..9b26d23 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -285,7 +285,7 @@ static struct node_ldr_fxns nldr_fxns = {
+ enum node_state node_get_state(bhandle hnode)
+ {
+ 	struct node_object *pnode = (struct node_object *)hnode;
+-	if (!MEM_IS_VALID_HANDLE(pnode, NODE_SIGNATURE))
++	if (!pnode)
+ 		return -1;
+ 	else
+ 		return pnode->node_state;
+@@ -677,8 +677,7 @@ func_cont:
+ 		drv_proc_node_update_status(node_res, true);
+ 	}
+ 	DBC_ENSURE((DSP_FAILED(status) && (*ph_node == NULL)) ||
+-		   (DSP_SUCCEEDED(status)
+-		    && MEM_IS_VALID_HANDLE((*ph_node), NODE_SIGNATURE)));
++			(DSP_SUCCEEDED(status) && *ph_node));
+ func_end:
+ 	dev_dbg(bridge, "%s: hprocessor: %p pNodeId: %p pargs: %p attr_in: %p "
+ 		"ph_node: %p status: 0x%x\n", __func__, hprocessor,
+@@ -706,7 +705,7 @@ DBAPI node_alloc_msg_buf(struct node_object *hnode, u32 usize,
+ 
+ 	DBC_REQUIRE(usize > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(pnode, NODE_SIGNATURE))
++	if (!pnode)
+ 		status = -EFAULT;
+ 	else if (node_get_type(pnode) == NODE_DEVICE)
+ 		status = -EPERM;
+@@ -789,7 +788,7 @@ dsp_status node_change_priority(struct node_object *hnode, s32 prio)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE) || !hnode->hnode_mgr) {
++	if (!hnode || !hnode->hnode_mgr) {
+ 		status = -EFAULT;
+ 	} else {
+ 		hnode_mgr = hnode->hnode_mgr;
+@@ -860,10 +859,8 @@ dsp_status node_connect(struct node_object *hNode1, u32 uStream1,
+ 	dsp_status status = DSP_SOK;
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if ((hNode1 != (struct node_object *)DSP_HGPPNODE &&
+-	     !MEM_IS_VALID_HANDLE(hNode1, NODE_SIGNATURE)) ||
+-	    (hNode2 != (struct node_object *)DSP_HGPPNODE &&
+-	     !MEM_IS_VALID_HANDLE(hNode2, NODE_SIGNATURE)))
++	if ((hNode1 != (struct node_object *)DSP_HGPPNODE && !hNode1) ||
++	    (hNode2 != (struct node_object *)DSP_HGPPNODE && !hNode2))
+ 		status = -EFAULT;
+ 
+ 	if (DSP_SUCCEEDED(status)) {
+@@ -1169,7 +1166,7 @@ dsp_status node_create(struct node_object *hnode)
+ #endif
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	if (!MEM_IS_VALID_HANDLE(pnode, NODE_SIGNATURE)) {
++	if (!pnode) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1431,8 +1428,7 @@ dsp_status node_create_mgr(OUT struct node_mgr **phNodeMgr,
+ 		delete_node_mgr(node_mgr_obj);
+ 
+ 	DBC_ENSURE((DSP_FAILED(status) && (*phNodeMgr == NULL)) ||
+-		   (DSP_SUCCEEDED(status) &&
+-		    MEM_IS_VALID_HANDLE((*phNodeMgr), NODEMGR_SIGNATURE)));
++			(DSP_SUCCEEDED(status) && *phNodeMgr));
+ 
+ 	return status;
+ }
+@@ -1465,7 +1461,7 @@ dsp_status node_delete(struct node_object *hnode,
+ 	struct dsp_processorstate proc_state;
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1609,7 +1605,7 @@ dsp_status node_delete_mgr(struct node_mgr *hnode_mgr)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (MEM_IS_VALID_HANDLE(hnode_mgr, NODEMGR_SIGNATURE))
++	if (hnode_mgr)
+ 		delete_node_mgr(hnode_mgr);
+ 	else
+ 		status = -EFAULT;
+@@ -1634,7 +1630,7 @@ dsp_status node_enum_nodes(struct node_mgr *hnode_mgr, void **node_tab,
+ 	DBC_REQUIRE(pu_num_nodes != NULL);
+ 	DBC_REQUIRE(pu_allocated != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode_mgr, NODEMGR_SIGNATURE)) {
++	if (!hnode_mgr) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1649,8 +1645,7 @@ dsp_status node_enum_nodes(struct node_mgr *hnode_mgr, void **node_tab,
+ 		hnode = (struct node_object *)lst_first(hnode_mgr->
+ 			node_list);
+ 		for (i = 0; i < hnode_mgr->num_nodes; i++) {
+-			DBC_ASSERT(MEM_IS_VALID_HANDLE(hnode,
+-				  NODE_SIGNATURE));
++			DBC_ASSERT(hnode);
+ 			node_tab[i] = hnode;
+ 			hnode = (struct node_object *)lst_next
+ 				(hnode_mgr->node_list,
+@@ -1695,7 +1690,7 @@ dsp_status node_free_msg_buf(struct node_object *hnode, IN u8 * pbuffer,
+ 	DBC_REQUIRE(pnode != NULL);
+ 	DBC_REQUIRE(pnode->xlator != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1735,7 +1730,7 @@ dsp_status node_get_attr(struct node_object *hnode,
+ 	DBC_REQUIRE(pattr != NULL);
+ 	DBC_REQUIRE(attr_size >= sizeof(struct dsp_nodeattr));
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 	} else {
+ 		hnode_mgr = hnode->hnode_mgr;
+@@ -1779,7 +1774,7 @@ dsp_status node_get_channel_id(struct node_object *hnode, u32 dir, u32 index,
+ 	DBC_REQUIRE(dir == DSP_TONODE || dir == DSP_FROMNODE);
+ 	DBC_REQUIRE(pulId != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 		return status;
+ 	}
+@@ -1826,7 +1821,7 @@ dsp_status node_get_message(struct node_object *hnode,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(pmsg != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1895,7 +1890,7 @@ dsp_status node_get_nldr_obj(struct node_mgr *hnode_mgr,
+ 	struct node_mgr *node_mgr_obj = hnode_mgr;
+ 	DBC_REQUIRE(phNldrObj != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode_mgr, NODEMGR_SIGNATURE))
++	if (!hnode_mgr)
+ 		status = -EFAULT;
+ 	else
+ 		*phNldrObj = node_mgr_obj->nldr_obj;
+@@ -1917,7 +1912,7 @@ dsp_status node_get_strm_mgr(struct node_object *hnode,
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE))
++	if (!hnode)
+ 		status = -EFAULT;
+ 	else
+ 		*phStrmMgr = hnode->hnode_mgr->strm_mgr_obj;
+@@ -1931,8 +1926,8 @@ dsp_status node_get_strm_mgr(struct node_object *hnode,
+ enum nldr_loadtype node_get_load_type(struct node_object *hnode)
+ {
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE));
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	DBC_REQUIRE(hnode);
++	if (!hnode) {
+ 		dev_dbg(bridge, "%s: Failed. hnode: %p\n", __func__, hnode);
+ 		return -1;
+ 	} else {
+@@ -1948,8 +1943,8 @@ enum nldr_loadtype node_get_load_type(struct node_object *hnode)
+ u32 node_get_timeout(struct node_object *hnode)
+ {
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE));
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	DBC_REQUIRE(hnode);
++	if (!hnode) {
+ 		dev_dbg(bridge, "%s: failed. hnode: %p\n", __func__, hnode);
+ 		return 0;
+ 	} else {
+@@ -1969,7 +1964,7 @@ enum node_type node_get_type(struct node_object *hnode)
+ 	if (hnode == (struct node_object *)DSP_HGPPNODE)
+ 		node_type = NODE_GPP;
+ 	else {
+-		if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE))
++		if (!hnode)
+ 			node_type = -1;
+ 		else
+ 			node_type = hnode->ntype;
+@@ -1998,7 +1993,7 @@ bool node_init(void)
+  */
+ void node_on_exit(struct node_object *hnode, s32 nStatus)
+ {
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE))
++	if (!hnode)
+ 		return;
+ 
+ 	/* Set node state to done */
+@@ -2035,7 +2030,7 @@ dsp_status node_pause(struct node_object *hnode)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 	} else {
+ 		node_type = node_get_type(hnode);
+@@ -2120,7 +2115,7 @@ dsp_status node_put_message(struct node_object *hnode,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(pmsg != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -2212,7 +2207,7 @@ dsp_status node_register_notify(struct node_object *hnode, u32 event_mask,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(hnotification != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 	} else {
+ 		/* Check if event mask is a valid node related event */
+@@ -2272,7 +2267,7 @@ dsp_status node_run(struct node_object *hnode)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++	if (!hnode) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -2293,7 +2288,7 @@ dsp_status node_run(struct node_object *hnode)
+ 		goto func_end;
+ 
+ 	hnode_mgr = hnode->hnode_mgr;
+-	if (!MEM_IS_VALID_HANDLE(hnode_mgr, NODEMGR_SIGNATURE)) {
++	if (!hnode_mgr) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -2392,7 +2387,7 @@ dsp_status node_terminate(struct node_object *hnode, OUT dsp_status *pstatus)
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(pstatus != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE) || !hnode->hnode_mgr) {
++	if (!hnode || !hnode->hnode_mgr) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -2502,7 +2497,7 @@ func_cont:
+ 		 * deleted. */
+ 		mutex_lock(&hnode_mgr->node_mgr_lock);
+ 		/* Make sure node wasn't deleted while we blocked */
+-		if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
++		if (!hnode) {
+ 			status = -EPERM;
+ 		} else {
+ 			*pstatus = hnode->exit_status;
+@@ -2537,10 +2532,10 @@ static void delete_node(struct node_object *hnode,
+ 	    (struct proc_object *)hnode->hprocessor;
+ #endif
+ 	dsp_status status;
+-	if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE))
++	if (!hnode)
+ 		goto func_end;
+ 	hnode_mgr = hnode->hnode_mgr;
+-	if (!MEM_IS_VALID_HANDLE(hnode_mgr, NODEMGR_SIGNATURE))
++	if (!hnode_mgr)
+ 		goto func_end;
+ 	xlator = hnode->xlator;
+ 	node_type = node_get_type(hnode);
+@@ -2659,7 +2654,7 @@ static void delete_node_mgr(struct node_mgr *hnode_mgr)
+ {
+ 	struct node_object *hnode;
+ 
+-	if (MEM_IS_VALID_HANDLE(hnode_mgr, NODEMGR_SIGNATURE)) {
++	if (hnode_mgr) {
+ 		/* Free resources */
+ 		if (hnode_mgr->hdcd_mgr)
+ 			dcd_destroy_manager(hnode_mgr->hdcd_mgr);
+@@ -2881,7 +2876,7 @@ void get_node_info(struct node_object *hnode, struct dsp_nodeinfo *pNodeInfo)
+ {
+ 	u32 i;
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE));
++	DBC_REQUIRE(hnode);
+ 	DBC_REQUIRE(pNodeInfo != NULL);
+ 
+ 	pNodeInfo->cb_struct = sizeof(struct dsp_nodeinfo);
+@@ -3156,7 +3151,7 @@ static u32 ovly(void *priv_ref, u32 ulDspRunAddr, u32 ulDspLoadAddr,
+ 	struct wmd_dev_context *hwmd_context;
+ 	struct bridge_drv_interface *intf_fxns;	/* Function interface to WMD */
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE));
++	DBC_REQUIRE(hnode);
+ 
+ 	hnode_mgr = hnode->hnode_mgr;
+ 
+@@ -3198,7 +3193,7 @@ static u32 mem_write(void *priv_ref, u32 ulDspAddr, void *pbuf,
+ 	struct wmd_dev_context *hwmd_context;
+ 	struct bridge_drv_interface *intf_fxns;	/* Function interface to WMD */
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE));
++	DBC_REQUIRE(hnode);
+ 	DBC_REQUIRE(nMemSpace & DBLL_CODE || nMemSpace & DBLL_DATA);
+ 
+ 	hnode_mgr = hnode->hnode_mgr;
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index 574381b..4e8cf80 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -230,10 +230,8 @@ proc_attach(u32 processor_id,
+ 	}
+ func_end:
+ 	DBC_ENSURE((status == -EPERM && *ph_processor == NULL) ||
+-		   (DSP_SUCCEEDED(status) &&
+-		    MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) ||
+-		   (status == DSP_SALREADYATTACHED &&
+-		    MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)));
++		   (DSP_SUCCEEDED(status) && p_proc_object) ||
++		   (status == DSP_SALREADYATTACHED && p_proc_object));
+ 
+ 	return status;
+ }
+@@ -351,7 +349,7 @@ dsp_status proc_ctrl(void *hprocessor, u32 dw_cmd, IN struct dsp_cbdata * arg)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (p_proc_object) {
+ 		/* intercept PWR deep sleep command */
+ 		if (dw_cmd == WMDIOCTL_DEEPSLEEP) {
+ 			timeout = arg->cb_data;
+@@ -402,7 +400,7 @@ dsp_status proc_detach(struct process_context *pr_ctxt)
+ 
+ 	p_proc_object = (struct proc_object *)pr_ctxt->hprocessor;
+ 
+-	if (MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (p_proc_object) {
+ 		/* Notify the Client */
+ 		ntfy_notify(p_proc_object->ntfy_obj, DSP_PROCESSORDETACH);
+ 		/* Remove the notification memory */
+@@ -445,7 +443,7 @@ dsp_status proc_enum_nodes(void *hprocessor, void **node_tab,
+ 	DBC_REQUIRE(pu_num_nodes != NULL);
+ 	DBC_REQUIRE(pu_allocated != NULL);
+ 
+-	if (MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (p_proc_object) {
+ 		if (DSP_SUCCEEDED(dev_get_node_manager(p_proc_object->hdev_obj,
+ 						       &hnode_mgr))) {
+ 			if (hnode_mgr) {
+@@ -544,7 +542,7 @@ static dsp_status proc_memory_sync(void *hprocessor, void *pmpu_addr,
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto err_out;
+ 	}
+@@ -611,7 +609,7 @@ dsp_status proc_get_resource_info(void *hprocessor, u32 resource_type,
+ 	DBC_REQUIRE(resource_info != NULL);
+ 	DBC_REQUIRE(resource_info_size >= sizeof(struct dsp_resourceinfo));
+ 
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -687,7 +685,7 @@ dsp_status proc_get_dev_object(void *hprocessor,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(phDevObject != NULL);
+ 
+-	if (MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (p_proc_object) {
+ 		*phDevObject = p_proc_object->hdev_obj;
+ 		status = DSP_SOK;
+ 	} else {
+@@ -719,7 +717,7 @@ dsp_status proc_get_state(void *hprocessor,
+ 	DBC_REQUIRE(proc_state_obj != NULL);
+ 	DBC_REQUIRE(state_info_size >= sizeof(struct dsp_processorstate));
+ 
+-	if (MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (p_proc_object) {
+ 		/* First, retrieve BRD state information */
+ 		status = (*p_proc_object->intf_fxns->pfn_brd_status)
+ 		    (p_proc_object->hwmd_context, &brd_status);
+@@ -843,7 +841,7 @@ dsp_status proc_load(void *hprocessor, IN CONST s32 argc_index,
+ 	do_gettimeofday(&tv1);
+ #endif
+ 	/* Call the WMD_BRD_Load fxn */
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1099,7 +1097,7 @@ dsp_status proc_map(void *hprocessor, void *pmpu_addr, u32 ul_size,
+ 	size_align = PG_ALIGN_HIGH(ul_size + (u32) pmpu_addr - pa_align,
+ 				   PG_SIZE4K);
+ 
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1168,7 +1166,7 @@ dsp_status proc_register_notify(void *hprocessor, u32 event_mask,
+ 	DBC_REQUIRE(refs > 0);
+ 
+ 	/* Check processor handle */
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1242,7 +1240,7 @@ dsp_status proc_reserve_memory(void *hprocessor, u32 ul_size,
+ 	struct proc_object *p_proc_object = (struct proc_object *)hprocessor;
+ 	struct dmm_rsv_object *rsv_obj;
+ 
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1289,7 +1287,7 @@ dsp_status proc_start(void *hprocessor)
+ 	int brd_state;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1365,7 +1363,7 @@ dsp_status proc_stop(void *hprocessor)
+ 	int brd_state;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1432,7 +1430,7 @@ dsp_status proc_un_map(void *hprocessor, void *map_addr,
+ 	struct dmm_map_object *map_obj;
+ 
+ 	va_align = PG_ALIGN_LOW((u32) map_addr, PG_SIZE4K);
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1491,7 +1489,7 @@ dsp_status proc_un_reserve_memory(void *hprocessor, void *prsv_addr,
+ 	struct proc_object *p_proc_object = (struct proc_object *)hprocessor;
+ 	struct dmm_rsv_object *rsv_obj;
+ 
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1549,7 +1547,7 @@ static dsp_status proc_monitor(struct proc_object *p_proc_object)
+ 	int brd_state;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE));
++	DBC_REQUIRE(p_proc_object);
+ 
+ 	/* This is needed only when Device is loaded when it is
+ 	 * already 'ACTIVE' */
+@@ -1632,10 +1630,10 @@ dsp_status proc_notify_clients(void *hProc, u32 uEvents)
+ 	dsp_status status = DSP_SOK;
+ 	struct proc_object *p_proc_object = (struct proc_object *)hProc;
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE));
++	DBC_REQUIRE(p_proc_object);
+ 	DBC_REQUIRE(IS_VALID_PROC_EVENT(uEvents));
+ 	DBC_REQUIRE(refs > 0);
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1659,7 +1657,7 @@ dsp_status proc_notify_all_clients(void *hProc, u32 uEvents)
+ 	DBC_REQUIRE(IS_VALID_PROC_EVENT(uEvents));
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE)) {
++	if (!p_proc_object) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -1680,7 +1678,7 @@ dsp_status proc_get_processor_id(void *hProc, u32 * procID)
+ 	dsp_status status = DSP_SOK;
+ 	struct proc_object *p_proc_object = (struct proc_object *)hProc;
+ 
+-	if (MEM_IS_VALID_HANDLE(p_proc_object, PROC_SIGNATURE))
++	if (p_proc_object)
+ 		*procID = p_proc_object->processor_id;
+ 	else
+ 		status = -EFAULT;
+diff --git a/drivers/dsp/bridge/rmgr/rmm.c b/drivers/dsp/bridge/rmgr/rmm.c
+index b498d91..c50d98c 100644
+--- a/drivers/dsp/bridge/rmgr/rmm.c
++++ b/drivers/dsp/bridge/rmgr/rmm.c
+@@ -105,7 +105,7 @@ dsp_status rmm_alloc(struct rmm_target_obj *target, u32 segid, u32 size,
+ 	u32 addr;
+ 	dsp_status status = DSP_SOK;
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(target, RMM_TARGSIGNATURE));
++	DBC_REQUIRE(target);
+ 	DBC_REQUIRE(dspAddr != NULL);
+ 	DBC_REQUIRE(size > 0);
+ 	DBC_REQUIRE(reserve || (target->num_segs > 0));
+@@ -252,8 +252,7 @@ func_cont:
+ 
+ 	}
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && MEM_IS_VALID_HANDLE((*target_obj),
+-							RMM_TARGSIGNATURE))
++	DBC_ENSURE((DSP_SUCCEEDED(status) && *target_obj)
+ 		   || (DSP_FAILED(status) && *target_obj == NULL));
+ 
+ 	return status;
+@@ -269,7 +268,7 @@ void rmm_delete(struct rmm_target_obj *target)
+ 	struct rmm_header *next;
+ 	u32 i;
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(target, RMM_TARGSIGNATURE));
++	DBC_REQUIRE(target);
+ 
+ 	kfree(target->seg_tab);
+ 
+@@ -319,7 +318,7 @@ bool rmm_free(struct rmm_target_obj *target, u32 segid, u32 addr, u32 size,
+ 	struct rmm_ovly_sect *sect;
+ 	bool ret = true;
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(target, RMM_TARGSIGNATURE));
++	DBC_REQUIRE(target);
+ 
+ 	DBC_REQUIRE(reserved || segid < target->num_segs);
+ 	DBC_REQUIRE(reserved || (addr >= target->seg_tab[segid].base &&
+diff --git a/drivers/dsp/bridge/rmgr/strm.c b/drivers/dsp/bridge/rmgr/strm.c
+index 77553fc..467d0e4 100644
+--- a/drivers/dsp/bridge/rmgr/strm.c
++++ b/drivers/dsp/bridge/rmgr/strm.c
+@@ -115,7 +115,7 @@ dsp_status strm_allocate_buffer(struct strm_object *hStrm, u32 usize,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(ap_buffer != NULL);
+ 
+-	if (MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE)) {
++	if (hStrm) {
+ 		/*
+ 		 * Allocate from segment specified at time of stream open.
+ 		 */
+@@ -168,7 +168,7 @@ dsp_status strm_close(struct strm_object *hStrm,
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE)) {
++	if (!hStrm) {
+ 		status = -EFAULT;
+ 	} else {
+ 		/* Have all buffers been reclaimed? If not, return
+@@ -239,8 +239,7 @@ dsp_status strm_create(OUT struct strm_mgr **phStrmMgr,
+ 		delete_strm_mgr(strm_mgr_obj);
+ 
+ 	DBC_ENSURE(DSP_SUCCEEDED(status) &&
+-		   (MEM_IS_VALID_HANDLE((*phStrmMgr), STRMMGR_SIGNATURE) ||
+-		    (DSP_FAILED(status) && *phStrmMgr == NULL)));
++		(*phStrmMgr || (DSP_FAILED(status) && *phStrmMgr == NULL)));
+ 
+ 	return status;
+ }
+@@ -253,11 +252,11 @@ dsp_status strm_create(OUT struct strm_mgr **phStrmMgr,
+ void strm_delete(struct strm_mgr *strm_mgr_obj)
+ {
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(strm_mgr_obj, STRMMGR_SIGNATURE));
++	DBC_REQUIRE(strm_mgr_obj);
+ 
+ 	delete_strm_mgr(strm_mgr_obj);
+ 
+-	DBC_ENSURE(!MEM_IS_VALID_HANDLE(strm_mgr_obj, STRMMGR_SIGNATURE));
++	DBC_ENSURE(!strm_mgr_obj);
+ }
+ 
+ /*
+@@ -290,7 +289,7 @@ dsp_status strm_free_buffer(struct strm_object *hStrm, u8 ** ap_buffer,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(ap_buffer != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE))
++	if (!hStrm)
+ 		status = -EFAULT;
+ 
+ 	if (DSP_SUCCEEDED(status)) {
+@@ -328,7 +327,7 @@ dsp_status strm_get_info(struct strm_object *hStrm,
+ 	DBC_REQUIRE(stream_info != NULL);
+ 	DBC_REQUIRE(stream_info_size >= sizeof(struct stream_info));
+ 
+-	if (!MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE)) {
++	if (!hStrm) {
+ 		status = -EFAULT;
+ 	} else {
+ 		if (stream_info_size < sizeof(struct stream_info)) {
+@@ -389,7 +388,7 @@ dsp_status strm_idle(struct strm_object *hStrm, bool fFlush)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE)) {
++	if (!hStrm) {
+ 		status = -EFAULT;
+ 	} else {
+ 		intf_fxns = hStrm->strm_mgr_obj->intf_fxns;
+@@ -437,7 +436,7 @@ dsp_status strm_issue(struct strm_object *hStrm, IN u8 *pbuf, u32 ul_bytes,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(pbuf != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE)) {
++	if (!hStrm) {
+ 		status = -EFAULT;
+ 	} else {
+ 		intf_fxns = hStrm->strm_mgr_obj->intf_fxns;
+@@ -607,8 +606,7 @@ func_cont:
+ 	}
+ 
+ 	/* ensure we return a documented error code */
+-	DBC_ENSURE((DSP_SUCCEEDED(status) &&
+-		    MEM_IS_VALID_HANDLE((*phStrm), STRM_SIGNATURE)) ||
++	DBC_ENSURE((DSP_SUCCEEDED(status) && *phStrm) ||
+ 		   (*phStrm == NULL && (status == -EFAULT ||
+ 					status == -EPERM
+ 					|| status == -EINVAL
+@@ -638,7 +636,7 @@ dsp_status strm_reclaim(struct strm_object *hStrm, OUT u8 ** buf_ptr,
+ 	DBC_REQUIRE(pulBytes != NULL);
+ 	DBC_REQUIRE(pdw_arg != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE)) {
++	if (!hStrm) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -717,7 +715,7 @@ dsp_status strm_register_notify(struct strm_object *hStrm, u32 event_mask,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(hnotification != NULL);
+ 
+-	if (!MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE)) {
++	if (!hStrm) {
+ 		status = -EFAULT;
+ 	} else if ((event_mask & ~((DSP_STREAMIOCOMPLETION) |
+ 				   DSP_STREAMDONE)) != 0) {
+@@ -765,7 +763,7 @@ dsp_status strm_select(IN struct strm_object **strm_tab, u32 nStrms,
+ 
+ 	*pmask = 0;
+ 	for (i = 0; i < nStrms; i++) {
+-		if (!MEM_IS_VALID_HANDLE(strm_tab[i], STRM_SIGNATURE)) {
++		if (!strm_tab[i]) {
+ 			status = -EFAULT;
+ 			break;
+ 		}
+@@ -838,7 +836,7 @@ static dsp_status delete_strm(struct strm_object *hStrm)
+ 	struct bridge_drv_interface *intf_fxns;
+ 	dsp_status status = DSP_SOK;
+ 
+-	if (MEM_IS_VALID_HANDLE(hStrm, STRM_SIGNATURE)) {
++	if (hStrm) {
+ 		if (hStrm->chnl_obj) {
+ 			intf_fxns = hStrm->strm_mgr_obj->intf_fxns;
+ 			/* Channel close can fail only if the channel handle
+@@ -867,6 +865,6 @@ static dsp_status delete_strm(struct strm_object *hStrm)
+  */
+ static void delete_strm_mgr(struct strm_mgr *strm_mgr_obj)
+ {
+-	if (MEM_IS_VALID_HANDLE(strm_mgr_obj, STRMMGR_SIGNATURE))
++	if (strm_mgr_obj)
+ 		kfree(strm_mgr_obj);
+ }
+diff --git a/drivers/dsp/bridge/wmd/chnl_sm.c b/drivers/dsp/bridge/wmd/chnl_sm.c
+index 52f2890..758899b 100644
+--- a/drivers/dsp/bridge/wmd/chnl_sm.c
++++ b/drivers/dsp/bridge/wmd/chnl_sm.c
+@@ -111,7 +111,7 @@ dsp_status bridge_chnl_add_io_req(struct chnl_object *chnl_obj, void *pHostBuf,
+ 	/* Validate args */
+ 	if (!pHostBuf) {
+ 		status = -EFAULT;
+-	} else if (!MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE)) {
++	} else if (!pchnl) {
+ 		status = -EFAULT;
+ 	} else if (is_eos && CHNL_IS_INPUT(pchnl->chnl_mode)) {
+ 		status = CHNL_E_NOEOS;
+@@ -262,7 +262,7 @@ dsp_status bridge_chnl_cancel_io(struct chnl_object *chnl_obj)
+ 	struct chnl_mgr *chnl_mgr_obj = NULL;
+ 
+ 	/* Check args: */
+-	if (MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE) && pchnl->chnl_mgr_obj) {
++	if (pchnl && pchnl->chnl_mgr_obj) {
+ 		chnl_id = pchnl->chnl_id;
+ 		chnl_mode = pchnl->chnl_mode;
+ 		chnl_mgr_obj = pchnl->chnl_mgr_obj;
+@@ -323,7 +323,7 @@ dsp_status bridge_chnl_close(struct chnl_object *chnl_obj)
+ 	struct chnl_object *pchnl = (struct chnl_object *)chnl_obj;
+ 
+ 	/* Check args: */
+-	if (!MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE)) {
++	if (!pchnl) {
+ 		status = -EFAULT;
+ 		goto func_cont;
+ 	}
+@@ -376,8 +376,7 @@ func_cont:
+ 		kfree(pchnl);
+ 		pchnl = NULL;
+ 	}
+-	DBC_ENSURE(DSP_FAILED(status) ||
+-		   !MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE));
++	DBC_ENSURE(DSP_FAILED(status) || !pchnl);
+ 	return status;
+ }
+ 
+@@ -455,7 +454,7 @@ dsp_status bridge_chnl_destroy(struct chnl_mgr *hchnl_mgr)
+ 	struct chnl_mgr *chnl_mgr_obj = hchnl_mgr;
+ 	u32 chnl_id;
+ 
+-	if (MEM_IS_VALID_HANDLE(hchnl_mgr, CHNL_MGRSIGNATURE)) {
++	if (hchnl_mgr) {
+ 		/* Close all open channels: */
+ 		for (chnl_id = 0; chnl_id < chnl_mgr_obj->max_channels;
+ 		     chnl_id++) {
+@@ -493,7 +492,7 @@ dsp_status bridge_chnl_flush_io(struct chnl_object *chnl_obj, u32 dwTimeOut)
+ 	struct chnl_mgr *chnl_mgr_obj;
+ 	struct chnl_ioc chnl_ioc_obj;
+ 	/* Check args: */
+-	if (MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE)) {
++	if (pchnl) {
+ 		if ((dwTimeOut == CHNL_IOCNOWAIT)
+ 		    && CHNL_IS_OUTPUT(pchnl->chnl_mode)) {
+ 			status = -EINVAL;
+@@ -544,7 +543,7 @@ dsp_status bridge_chnl_get_info(struct chnl_object *chnl_obj,
+ 	dsp_status status = DSP_SOK;
+ 	struct chnl_object *pchnl = (struct chnl_object *)chnl_obj;
+ 	if (pInfo != NULL) {
+-		if (MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE)) {
++		if (pchnl) {
+ 			/* Return the requested information: */
+ 			pInfo->hchnl_mgr = pchnl->chnl_mgr_obj;
+ 			pInfo->event_obj = pchnl->user_event;
+@@ -588,7 +587,7 @@ dsp_status bridge_chnl_get_ioc(struct chnl_object *chnl_obj, u32 dwTimeOut,
+ 	/* Check args: */
+ 	if (pIOC == NULL) {
+ 		status = -EFAULT;
+-	} else if (!MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE)) {
++	} else if (!pchnl) {
+ 		status = -EFAULT;
+ 	} else if (dwTimeOut == CHNL_IOCNOWAIT) {
+ 		if (LST_IS_EMPTY(pchnl->pio_completions))
+@@ -725,7 +724,7 @@ dsp_status bridge_chnl_get_mgr_info(struct chnl_mgr *hchnl_mgr, u32 uChnlID,
+ 
+ 	if (pMgrInfo != NULL) {
+ 		if (uChnlID <= CHNL_MAXCHANNELS) {
+-			if (MEM_IS_VALID_HANDLE(hchnl_mgr, CHNL_MGRSIGNATURE)) {
++			if (hchnl_mgr) {
+ 				/* Return the requested information: */
+ 				pMgrInfo->chnl_obj =
+ 				    chnl_mgr_obj->ap_channel[uChnlID];
+@@ -759,7 +758,7 @@ dsp_status bridge_chnl_idle(struct chnl_object *chnl_obj, u32 dwTimeOut,
+ 	struct chnl_mgr *chnl_mgr_obj;
+ 	dsp_status status = DSP_SOK;
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(chnl_obj, CHNL_SIGNATURE));
++	DBC_REQUIRE(chnl_obj);
+ 
+ 	chnl_mode = chnl_obj->chnl_mode;
+ 	chnl_mgr_obj = chnl_obj->chnl_mgr_obj;
+@@ -799,7 +798,7 @@ dsp_status bridge_chnl_open(OUT struct chnl_object **phChnl,
+ 	if (pattrs->uio_reqs == 0) {
+ 		status = -EINVAL;
+ 	} else {
+-		if (!MEM_IS_VALID_HANDLE(hchnl_mgr, CHNL_MGRSIGNATURE)) {
++		if (!hchnl_mgr) {
+ 			status = -EFAULT;
+ 		} else {
+ 			if (uChnlId != CHNL_PICKFREE) {
+@@ -905,9 +904,7 @@ dsp_status bridge_chnl_open(OUT struct chnl_object **phChnl,
+ 		*phChnl = pchnl;
+ 	}
+ func_end:
+-	DBC_ENSURE((DSP_SUCCEEDED(status) &&
+-		    MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE)) ||
+-		   (*phChnl == NULL));
++	DBC_ENSURE((DSP_SUCCEEDED(status) && pchnl) || (*phChnl == NULL));
+ 	return status;
+ }
+ 
+@@ -1012,7 +1009,7 @@ static dsp_status search_free_channel(struct chnl_mgr *chnl_mgr_obj,
+ 	dsp_status status = CHNL_E_OUTOFSTREAMS;
+ 	u32 i;
+ 
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(chnl_mgr_obj, CHNL_MGRSIGNATURE));
++	DBC_REQUIRE(chnl_mgr_obj);
+ 
+ 	for (i = 0; i < chnl_mgr_obj->max_channels; i++) {
+ 		if (chnl_mgr_obj->ap_channel[i] == NULL) {
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index e54f782..a787724 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -273,7 +273,7 @@ func_end:
+ dsp_status bridge_io_destroy(struct io_mgr *hio_mgr)
+ {
+ 	dsp_status status = DSP_SOK;
+-	if (MEM_IS_VALID_HANDLE(hio_mgr, IO_MGRSIGNATURE)) {
++	if (hio_mgr) {
+ 		/* Free IO DPC object */
+ 		tasklet_kill(&hio_mgr->dpc_tasklet);
+ 
+@@ -355,8 +355,7 @@ dsp_status bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	/* The message manager is destroyed when the board is stopped. */
+ 	dev_get_msg_mgr(hio_mgr->hdev_obj, &hio_mgr->hmsg_mgr);
+ 	hmsg_mgr = hio_mgr->hmsg_mgr;
+-	if (!MEM_IS_VALID_HANDLE(hchnl_mgr, CHNL_MGRSIGNATURE) ||
+-	    !MEM_IS_VALID_HANDLE(hmsg_mgr, MSGMGR_SIGNATURE)) {
++	if (!hchnl_mgr || !hmsg_mgr) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -815,7 +814,7 @@ func_end:
+  */
+ u32 io_buf_size(struct io_mgr *hio_mgr)
+ {
+-	if (MEM_IS_VALID_HANDLE(hio_mgr, IO_MGRSIGNATURE))
++	if (hio_mgr)
+ 		return hio_mgr->usm_buf_size;
+ 	else
+ 		return 0;
+@@ -830,7 +829,7 @@ void io_cancel_chnl(struct io_mgr *hio_mgr, u32 ulChnl)
+ 	struct io_mgr *pio_mgr = (struct io_mgr *)hio_mgr;
+ 	struct shm *sm;
+ 
+-	if (!MEM_IS_VALID_HANDLE(hio_mgr, IO_MGRSIGNATURE))
++	if (!hio_mgr)
+ 		goto func_end;
+ 	sm = hio_mgr->shared_mem;
+ 
+@@ -850,7 +849,7 @@ func_end:
+ static void io_dispatch_chnl(IN struct io_mgr *pio_mgr,
+ 				IN OUT struct chnl_object *pchnl, u8 iMode)
+ {
+-	if (!MEM_IS_VALID_HANDLE(pio_mgr, IO_MGRSIGNATURE))
++	if (!pio_mgr)
+ 		goto func_end;
+ 
+ 	/* See if there is any data available for transfer */
+@@ -870,7 +869,7 @@ func_end:
+  */
+ static void io_dispatch_msg(IN struct io_mgr *pio_mgr, struct msg_mgr *hmsg_mgr)
+ {
+-	if (!MEM_IS_VALID_HANDLE(pio_mgr, IO_MGRSIGNATURE))
++	if (!pio_mgr)
+ 		goto func_end;
+ 
+ 	/* We are performing both input and output processing. */
+@@ -937,12 +936,12 @@ void io_dpc(IN OUT unsigned long pRefData)
+ 	u32 requested;
+ 	u32 serviced;
+ 
+-	if (!MEM_IS_VALID_HANDLE(pio_mgr, IO_MGRSIGNATURE))
++	if (!pio_mgr)
+ 		goto func_end;
+ 	chnl_mgr_obj = pio_mgr->hchnl_mgr;
+ 	dev_get_msg_mgr(pio_mgr->hdev_obj, &msg_mgr_obj);
+ 	dev_get_deh_mgr(pio_mgr->hdev_obj, &hdeh_mgr);
+-	if (!MEM_IS_VALID_HANDLE(chnl_mgr_obj, CHNL_MGRSIGNATURE))
++	if (!chnl_mgr_obj)
+ 		goto func_end;
+ 
+ 	requested = pio_mgr->dpc_req;
+@@ -967,7 +966,7 @@ void io_dpc(IN OUT unsigned long pRefData)
+ 		}
+ 		io_dispatch_chnl(pio_mgr, NULL, IO_SERVICE);
+ #ifdef CHNL_MESSAGES
+-		if (MEM_IS_VALID_HANDLE(msg_mgr_obj, MSGMGR_SIGNATURE))
++		if (msg_mgr_obj)
+ 			io_dispatch_msg(pio_mgr, msg_mgr_obj);
+ #endif
+ #ifndef DSP_TRACEBUF_DISABLED
+@@ -1070,7 +1069,7 @@ void iosm_schedule(struct io_mgr *pio_mgr)
+ {
+ 	unsigned long flags;
+ 
+-	if (!MEM_IS_VALID_HANDLE(pio_mgr, IO_MGRSIGNATURE))
++	if (!pio_mgr)
+ 		return;
+ 
+ 	/* Increment count of DPC's pending. */
+@@ -1377,7 +1376,7 @@ static void notify_chnl_complete(struct chnl_object *pchnl,
+ {
+ 	bool signal_event;
+ 
+-	if (!MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE) || !pchnl->sync_event ||
++	if (!pchnl || !pchnl->sync_event ||
+ 	    !pchnl->pio_completions || !chnl_packet_obj)
+ 		goto func_end;
+ 
+diff --git a/drivers/dsp/bridge/wmd/mmu_fault.c b/drivers/dsp/bridge/wmd/mmu_fault.c
+index 69244ce..5d6ce8b 100644
+--- a/drivers/dsp/bridge/wmd/mmu_fault.c
++++ b/drivers/dsp/bridge/wmd/mmu_fault.c
+@@ -72,9 +72,9 @@ irqreturn_t mmu_fault_isr(int irq, IN void *pRefData)
+ 	struct cfg_hostres *resources;
+ 
+ 	DBC_REQUIRE(irq == INT_DSP_MMU_IRQ);
+-	DBC_REQUIRE(MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE));
++	DBC_REQUIRE(deh_mgr_obj);
+ 
+-	if (MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE)) {
++	if (deh_mgr_obj) {
+ 
+ 		dev_context =
+ 		    (struct wmd_dev_context *)deh_mgr_obj->hwmd_context;
+diff --git a/drivers/dsp/bridge/wmd/msg_sm.c b/drivers/dsp/bridge/wmd/msg_sm.c
+index 5ee1296..eb835a1 100644
+--- a/drivers/dsp/bridge/wmd/msg_sm.c
++++ b/drivers/dsp/bridge/wmd/msg_sm.c
+@@ -133,8 +133,7 @@ dsp_status bridge_msg_create_queue(struct msg_mgr *hmsg_mgr,
+ 	struct msg_queue *msg_q;
+ 	dsp_status status = DSP_SOK;
+ 
+-	if (!MEM_IS_VALID_HANDLE(hmsg_mgr, MSGMGR_SIGNATURE) ||
+-	    phMsgQueue == NULL || !hmsg_mgr->msg_free_list) {
++	if (!hmsg_mgr || phMsgQueue == NULL || !hmsg_mgr->msg_free_list) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -244,7 +243,7 @@ func_end:
+  */
+ void bridge_msg_delete(struct msg_mgr *hmsg_mgr)
+ {
+-	if (MEM_IS_VALID_HANDLE(hmsg_mgr, MSGMGR_SIGNATURE))
++	if (hmsg_mgr)
+ 		delete_msg_mgr(hmsg_mgr);
+ }
+ 
+@@ -257,8 +256,7 @@ void bridge_msg_delete_queue(struct msg_queue *msg_queue_obj)
+ 	struct msg_mgr *hmsg_mgr;
+ 	u32 io_msg_pend;
+ 
+-	if (!MEM_IS_VALID_HANDLE(msg_queue_obj, MSGQ_SIGNATURE) ||
+-	    !msg_queue_obj->hmsg_mgr)
++	if (!msg_queue_obj || !msg_queue_obj->hmsg_mgr)
+ 		goto func_end;
+ 
+ 	hmsg_mgr = msg_queue_obj->hmsg_mgr;
+@@ -302,8 +300,7 @@ dsp_status bridge_msg_get(struct msg_queue *msg_queue_obj,
+ 	u32 index;
+ 	dsp_status status = DSP_SOK;
+ 
+-	if (!MEM_IS_VALID_HANDLE(msg_queue_obj, MSGQ_SIGNATURE) ||
+-	    pmsg == NULL) {
++	if (!msg_queue_obj || pmsg == NULL) {
+ 		status = -ENOMEM;
+ 		goto func_end;
+ 	}
+@@ -400,8 +397,7 @@ dsp_status bridge_msg_put(struct msg_queue *msg_queue_obj,
+ 	u32 index;
+ 	dsp_status status = DSP_SOK;
+ 
+-	if (!MEM_IS_VALID_HANDLE(msg_queue_obj, MSGQ_SIGNATURE) || !pmsg ||
+-	    !msg_queue_obj->hmsg_mgr) {
++	if (!msg_queue_obj || !pmsg || !msg_queue_obj->hmsg_mgr) {
+ 		status = -ENOMEM;
+ 		goto func_end;
+ 	}
+@@ -508,8 +504,7 @@ dsp_status bridge_msg_register_notify(struct msg_queue *msg_queue_obj,
+ {
+ 	dsp_status status = DSP_SOK;
+ 
+-	if (!MEM_IS_VALID_HANDLE(msg_queue_obj, MSGQ_SIGNATURE)
+-	    || !hnotification) {
++	if (!msg_queue_obj || !hnotification) {
+ 		status = -ENOMEM;
+ 		goto func_end;
+ 	}
+@@ -553,7 +548,7 @@ void bridge_msg_set_queue_id(struct msg_queue *msg_queue_obj, u32 msgq_id)
+ 	 *  node is created, we need this function to set msg_queue_obj->msgq_id
+ 	 *  to the node environment, after the node is created.
+ 	 */
+-	if (MEM_IS_VALID_HANDLE(msg_queue_obj, MSGQ_SIGNATURE))
++	if (msg_queue_obj)
+ 		msg_queue_obj->msgq_id = msgq_id;
+ }
+ 
+@@ -582,7 +577,7 @@ static dsp_status add_new_msg(struct lst_list *msgList)
+  */
+ static void delete_msg_mgr(struct msg_mgr *hmsg_mgr)
+ {
+-	if (!MEM_IS_VALID_HANDLE(hmsg_mgr, MSGMGR_SIGNATURE))
++	if (!hmsg_mgr)
+ 		goto func_end;
+ 
+ 	if (hmsg_mgr->queue_list) {
+@@ -618,7 +613,7 @@ static void delete_msg_queue(struct msg_queue *msg_queue_obj, u32 uNumToDSP)
+ 	struct msg_frame *pmsg;
+ 	u32 i;
+ 
+-	if (!MEM_IS_VALID_HANDLE(msg_queue_obj, MSGQ_SIGNATURE) ||
++	if (!msg_queue_obj ||
+ 	    !msg_queue_obj->hmsg_mgr || !msg_queue_obj->hmsg_mgr->msg_free_list)
+ 		goto func_end;
+ 
+diff --git a/drivers/dsp/bridge/wmd/ue_deh.c b/drivers/dsp/bridge/wmd/ue_deh.c
+index 2e75e6b..eb3466f 100644
+--- a/drivers/dsp/bridge/wmd/ue_deh.c
++++ b/drivers/dsp/bridge/wmd/ue_deh.c
+@@ -144,7 +144,7 @@ leave:
+ 
+ dsp_status bridge_deh_destroy(struct deh_mgr *deh_mgr)
+ {
+-	if (!MEM_IS_VALID_HANDLE(deh_mgr, SIGNATURE))
++	if (!deh_mgr)
+ 		return -EFAULT;
+ 
+ 	/* Release dummy VA buffer */
+@@ -176,7 +176,7 @@ dsp_status bridge_deh_register_notify(struct deh_mgr *deh_mgr, u32 event_mask,
+ {
+ 	dsp_status status = DSP_SOK;
+ 
+-	if (!MEM_IS_VALID_HANDLE(deh_mgr, SIGNATURE))
++	if (!deh_mgr)
+ 		return -EFAULT;
+ 
+ 	if (event_mask)
+@@ -199,8 +199,7 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 	hw_status hw_status_obj;
+ 	u32 cnt = 0;
+ 
+-
+-	if (!MEM_IS_VALID_HANDLE(deh_mgr, SIGNATURE))
++	if (!deh_mgr)
+ 		return;
+ 
+ 	dev_info(bridge, "%s: device exception\n", __func__);
+@@ -344,7 +343,7 @@ dsp_status bridge_deh_get_info(struct deh_mgr *deh_mgr,
+ 	DBC_REQUIRE(deh_mgr);
+ 	DBC_REQUIRE(pErrInfo);
+ 
+-	if (!MEM_IS_VALID_HANDLE(deh_mgr, SIGNATURE))
++	if (!deh_mgr)
+ 		return -EFAULT;
+ 
+ 	/* Copy DEH error info structure to PROC error info structure. */
+-- 
+1.7.0.4
+

@@ -1,0 +1,1031 @@
+From dc4dd8282dc3532d292e89ae82e823703fd94250 Mon Sep 17 00:00:00 2001
+From: Fernando Guzman Lugo <x0095840@ti.com>
+Date: Fri, 19 Mar 2010 13:42:19 -0600
+Subject: [PATCH 014/135] DSPBRIDGE: replace sync_enter/leave_cs with mutexts or spinlocks
+
+This patch replaces  sync_enter/leave_cs functions used before as
+mutext with mutex_lock/unlock functions or with spin_lock/unlock in case of
+small CS or removes them in case of they are not needed.
+
+Signed-off-by: Fernando Guzman Lugo <x0095840@ti.com>
+---
+ drivers/dsp/bridge/pmgr/cmm.c       |   30 ++--
+ drivers/dsp/bridge/pmgr/dmm.c       |   47 +++----
+ drivers/dsp/bridge/rmgr/node.c      |  269 +++++++++++++++--------------------
+ drivers/dsp/bridge/rmgr/proc.c      |   16 +--
+ drivers/dsp/bridge/rmgr/strm.c      |   10 +--
+ drivers/dsp/bridge/wmd/io_sm.c      |    4 -
+ drivers/dsp/bridge/wmd/tiomap3430.c |   22 +--
+ 7 files changed, 160 insertions(+), 238 deletions(-)
+
+diff --git a/drivers/dsp/bridge/pmgr/cmm.c b/drivers/dsp/bridge/pmgr/cmm.c
+index 798f601..7523361 100644
+--- a/drivers/dsp/bridge/pmgr/cmm.c
++++ b/drivers/dsp/bridge/pmgr/cmm.c
+@@ -108,7 +108,7 @@ struct cmm_object {
+ 	/*
+ 	 * Cmm Lock is used to serialize access mem manager for multi-threads.
+ 	 */
+-	struct sync_csobject *cmm_lock;	/* Lock to access cmm mgr */
++	struct mutex cmm_lock;	/* Lock to access cmm mgr */
+ 	struct lst_list *node_free_list_head;	/* Free list of memory nodes */
+ 	u32 ul_min_block_size;	/* Min SM block; default 16 bytes */
+ 	u32 dw_page_size;	/* Memory Page size (1k/4k) */
+@@ -202,7 +202,7 @@ void *cmm_calloc_buf(struct cmm_object *hcmm_mgr, u32 usize,
+ 			    ((usize - 1) & ~(cmm_mgr_obj->ul_min_block_size -
+ 					     1))
+ 			    + cmm_mgr_obj->ul_min_block_size;
+-			sync_enter_cs(cmm_mgr_obj->cmm_lock);
++			mutex_lock(&cmm_mgr_obj->cmm_lock);
+ 			pnode = get_free_block(allocator, usize);
+ 		}
+ 		if (pnode) {
+@@ -240,7 +240,7 @@ void *cmm_calloc_buf(struct cmm_object *hcmm_mgr, u32 usize,
+ 				*pp_buf_va = (void *)pnode->dw_va;
+ 			}
+ 		}
+-		sync_leave_cs(cmm_mgr_obj->cmm_lock);
++		mutex_unlock(&cmm_mgr_obj->cmm_lock);
+ 	}
+ 	return buf_pa;
+ }
+@@ -296,7 +296,7 @@ dsp_status cmm_create(OUT struct cmm_object **ph_cmm_mgr,
+ 					       node_free_list_head->head);
+ 		}
+ 		if (DSP_SUCCEEDED(status))
+-			status = sync_initialize_cs(&cmm_obj->cmm_lock);
++			mutex_init(&cmm_obj->cmm_lock);
+ 
+ 		if (DSP_SUCCEEDED(status))
+ 			*ph_cmm_mgr = cmm_obj;
+@@ -327,7 +327,7 @@ dsp_status cmm_destroy(struct cmm_object *hcmm_mgr, bool bForce)
+ 		status = DSP_EHANDLE;
+ 		return status;
+ 	}
+-	sync_enter_cs(cmm_mgr_obj->cmm_lock);
++	mutex_lock(&cmm_mgr_obj->cmm_lock);
+ 	/* If not force then fail if outstanding allocations exist */
+ 	if (!bForce) {
+ 		/* Check for outstanding memory allocations */
+@@ -360,10 +360,10 @@ dsp_status cmm_destroy(struct cmm_object *hcmm_mgr, bool bForce)
+ 		/* delete NodeFreeList list */
+ 		kfree(cmm_mgr_obj->node_free_list_head);
+ 	}
+-	sync_leave_cs(cmm_mgr_obj->cmm_lock);
++	mutex_unlock(&cmm_mgr_obj->cmm_lock);
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* delete CS & cmm mgr object */
+-		sync_delete_cs(cmm_mgr_obj->cmm_lock);
++		mutex_destroy(&cmm_mgr_obj->cmm_lock);
+ 		MEM_FREE_OBJECT(cmm_mgr_obj);
+ 	}
+ 	return status;
+@@ -411,7 +411,7 @@ dsp_status cmm_free_buf(struct cmm_object *hcmm_mgr, void *buf_pa,
+ 	/* get the allocator for this segment id */
+ 	allocator = get_allocator(cmm_mgr_obj, ul_seg_id);
+ 	if (allocator != NULL) {
+-		sync_enter_cs(cmm_mgr_obj->cmm_lock);
++		mutex_lock(&cmm_mgr_obj->cmm_lock);
+ 		mnode_obj =
+ 		    (struct cmm_mnode *)lst_first(allocator->in_use_list_head);
+ 		while (mnode_obj) {
+@@ -429,7 +429,7 @@ dsp_status cmm_free_buf(struct cmm_object *hcmm_mgr, void *buf_pa,
+ 			    lst_next(allocator->in_use_list_head,
+ 				     (struct list_head *)mnode_obj);
+ 		}
+-		sync_leave_cs(cmm_mgr_obj->cmm_lock);
++		mutex_unlock(&cmm_mgr_obj->cmm_lock);
+ 	}
+ 	return status;
+ }
+@@ -478,7 +478,7 @@ dsp_status cmm_get_info(struct cmm_object *hcmm_mgr,
+ 		status = DSP_EHANDLE;
+ 		return status;
+ 	}
+-	sync_enter_cs(cmm_mgr_obj->cmm_lock);
++	mutex_lock(&cmm_mgr_obj->cmm_lock);
+ 	cmm_info_obj->ul_num_gppsm_segs = 0;	/* # of SM segments */
+ 	/* Total # of outstanding alloc */
+ 	cmm_info_obj->ul_total_in_use_cnt = 0;
+@@ -519,7 +519,7 @@ dsp_status cmm_get_info(struct cmm_object *hcmm_mgr,
+ 			}
+ 		}
+ 	}			/* end for */
+-	sync_leave_cs(cmm_mgr_obj->cmm_lock);
++	mutex_unlock(&cmm_mgr_obj->cmm_lock);
+ 	return status;
+ }
+ 
+@@ -574,7 +574,7 @@ dsp_status cmm_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+ 		return status;
+ 	}
+ 	/* make sure we have room for another allocator */
+-	sync_enter_cs(cmm_mgr_obj->cmm_lock);
++	mutex_lock(&cmm_mgr_obj->cmm_lock);
+ 	slot_seg = get_slot(cmm_mgr_obj);
+ 	if (slot_seg < 0) {
+ 		/* get a slot number */
+@@ -655,7 +655,7 @@ dsp_status cmm_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+ 		cmm_mgr_obj->pa_gppsm_seg_tab[slot_seg] = psma;
+ 
+ func_end:
+-	sync_leave_cs(cmm_mgr_obj->cmm_lock);
++	mutex_unlock(&cmm_mgr_obj->cmm_lock);
+ 	return status;
+ }
+ 
+@@ -679,7 +679,7 @@ dsp_status cmm_un_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+ 
+ 		if ((ul_id > 0) && (ul_id <= CMM_MAXGPPSEGS)) {
+ 			while (ul_id <= CMM_MAXGPPSEGS) {
+-				sync_enter_cs(cmm_mgr_obj->cmm_lock);
++				mutex_lock(&cmm_mgr_obj->cmm_lock);
+ 				/* slot = seg_id-1 */
+ 				psma = cmm_mgr_obj->pa_gppsm_seg_tab[ul_id - 1];
+ 				if (psma != NULL) {
+@@ -691,7 +691,7 @@ dsp_status cmm_un_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+ 				} else if (ul_seg_id != CMM_ALLSEGMENTS) {
+ 					status = DSP_EFAIL;
+ 				}
+-				sync_leave_cs(cmm_mgr_obj->cmm_lock);
++				mutex_unlock(&cmm_mgr_obj->cmm_lock);
+ 				if (ul_seg_id != CMM_ALLSEGMENTS)
+ 					break;
+ 
+diff --git a/drivers/dsp/bridge/pmgr/dmm.c b/drivers/dsp/bridge/pmgr/dmm.c
+index c8979cc..be84c1e 100644
+--- a/drivers/dsp/bridge/pmgr/dmm.c
++++ b/drivers/dsp/bridge/pmgr/dmm.c
+@@ -57,7 +57,7 @@ struct dmm_object {
+ 	u32 dw_signature;	/* Used for object validation */
+ 	/* Dmm Lock is used to serialize access mem manager for
+ 	 * multi-threads. */
+-	struct sync_csobject *dmm_lock;	/* Lock to access dmm mgr */
++	spinlock_t dmm_lock;	/* Lock to access dmm mgr */
+ };
+ 
+ /*  ----------------------------------- Globals */
+@@ -98,7 +98,6 @@ dsp_status dmm_create_tables(struct dmm_object *dmm_mgr, u32 addr, u32 size)
+ 
+ 	status = dmm_delete_tables(dmm_obj);
+ 	if (DSP_SUCCEEDED(status)) {
+-		sync_enter_cs(dmm_obj->dmm_lock);
+ 		dyn_mem_map_beg = addr;
+ 		table_size = PG_ALIGN_HIGH(size, PG_SIZE4K) / PG_SIZE4K;
+ 		/*  Create the free list */
+@@ -113,7 +112,6 @@ dsp_status dmm_create_tables(struct dmm_object *dmm_mgr, u32 addr, u32 size)
+ 			free_size = table_size * PG_SIZE4K;
+ 			virtual_mapping_table[0].region_size = table_size;
+ 		}
+-		sync_leave_cs(dmm_obj->dmm_lock);
+ 	}
+ 
+ 	if (DSP_FAILED(status))
+@@ -140,11 +138,8 @@ dsp_status dmm_create(OUT struct dmm_object **phDmmMgr,
+ 	/* create, zero, and tag a cmm mgr object */
+ 	MEM_ALLOC_OBJECT(dmm_obj, struct dmm_object, DMMSIGNATURE);
+ 	if (dmm_obj != NULL) {
+-		status = sync_initialize_cs(&dmm_obj->dmm_lock);
+-		if (DSP_SUCCEEDED(status))
+-			*phDmmMgr = dmm_obj;
+-		else
+-			dmm_destroy(dmm_obj);
++		spin_lock_init(&dmm_obj->dmm_lock);
++		*phDmmMgr = dmm_obj;
+ 	} else {
+ 		status = DSP_EMEMORY;
+ 	}
+@@ -165,11 +160,8 @@ dsp_status dmm_destroy(struct dmm_object *dmm_mgr)
+ 	DBC_REQUIRE(refs > 0);
+ 	if (MEM_IS_VALID_HANDLE(dmm_mgr, DMMSIGNATURE)) {
+ 		status = dmm_delete_tables(dmm_obj);
+-		if (DSP_SUCCEEDED(status)) {
+-			/* Delete CS & dmm mgr object */
+-			sync_delete_cs(dmm_obj->dmm_lock);
++		if (DSP_SUCCEEDED(status))
+ 			MEM_FREE_OBJECT(dmm_obj);
+-		}
+ 	} else
+ 		status = DSP_EHANDLE;
+ 
+@@ -183,18 +175,13 @@ dsp_status dmm_destroy(struct dmm_object *dmm_mgr)
+  */
+ dsp_status dmm_delete_tables(struct dmm_object *dmm_mgr)
+ {
+-	struct dmm_object *dmm_obj = (struct dmm_object *)dmm_mgr;
+ 	dsp_status status = DSP_SOK;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	if (MEM_IS_VALID_HANDLE(dmm_mgr, DMMSIGNATURE)) {
+-		/* Delete all DMM tables */
+-		sync_enter_cs(dmm_obj->dmm_lock);
+-
++	/* Delete all DMM tables */
++	if (MEM_IS_VALID_HANDLE(dmm_mgr, DMMSIGNATURE))
+ 		vfree(virtual_mapping_table);
+-
+-		sync_leave_cs(dmm_obj->dmm_lock);
+-	} else
++	else
+ 		status = DSP_EHANDLE;
+ 	return status;
+ }
+@@ -272,7 +259,7 @@ dsp_status dmm_map_memory(struct dmm_object *dmm_mgr, u32 addr, u32 size)
+ 	struct map_page *chunk;
+ 	dsp_status status = DSP_SOK;
+ 
+-	sync_enter_cs(dmm_obj->dmm_lock);
++	spin_lock(&dmm_obj->dmm_lock);
+ 	/* Find the Reserved memory chunk containing the DSP block to
+ 	 * be mapped */
+ 	chunk = (struct map_page *)get_region(addr);
+@@ -282,7 +269,7 @@ dsp_status dmm_map_memory(struct dmm_object *dmm_mgr, u32 addr, u32 size)
+ 		chunk->mapped_size = (size / PG_SIZE4K);
+ 	} else
+ 		status = DSP_ENOTFOUND;
+-	sync_leave_cs(dmm_obj->dmm_lock);
++	spin_unlock(&dmm_obj->dmm_lock);
+ 
+ 	dev_dbg(bridge, "%s dmm_mgr %p, addr %x, size %x\n\tstatus %x, "
+ 		"chunk %p", __func__, dmm_mgr, addr, size, status, chunk);
+@@ -304,7 +291,7 @@ dsp_status dmm_reserve_memory(struct dmm_object *dmm_mgr, u32 size,
+ 	u32 rsv_addr = 0;
+ 	u32 rsv_size = 0;
+ 
+-	sync_enter_cs(dmm_obj->dmm_lock);
++	spin_lock(&dmm_obj->dmm_lock);
+ 
+ 	/* Try to get a DSP chunk from the free list */
+ 	node = get_free_region(size);
+@@ -333,7 +320,7 @@ dsp_status dmm_reserve_memory(struct dmm_object *dmm_mgr, u32 size,
+ 		/*dSP chunk of given size is not available */
+ 		status = DSP_EMEMORY;
+ 
+-	sync_leave_cs(dmm_obj->dmm_lock);
++	spin_unlock(&dmm_obj->dmm_lock);
+ 
+ 	dev_dbg(bridge, "%s dmm_mgr %p, size %x, prsv_addr %p\n\tstatus %x, "
+ 		"rsv_addr %x, rsv_size %x\n", __func__, dmm_mgr, size,
+@@ -353,7 +340,7 @@ dsp_status dmm_un_map_memory(struct dmm_object *dmm_mgr, u32 addr, u32 *psize)
+ 	struct map_page *chunk;
+ 	dsp_status status = DSP_SOK;
+ 
+-	sync_enter_cs(dmm_obj->dmm_lock);
++	spin_lock(&dmm_obj->dmm_lock);
+ 	chunk = get_mapped_region(addr);
+ 	if (chunk == NULL)
+ 		status = DSP_ENOTFOUND;
+@@ -364,7 +351,7 @@ dsp_status dmm_un_map_memory(struct dmm_object *dmm_mgr, u32 addr, u32 *psize)
+ 		chunk->mapped = false;
+ 		chunk->mapped_size = 0;
+ 	}
+-	sync_leave_cs(dmm_obj->dmm_lock);
++	spin_unlock(&dmm_obj->dmm_lock);
+ 
+ 	dev_dbg(bridge, "%s: dmm_mgr %p, addr %x, psize %p\n\tstatus %x, "
+ 		"chunk %p\n", __func__, dmm_mgr, addr, psize, status, chunk);
+@@ -385,7 +372,7 @@ dsp_status dmm_un_reserve_memory(struct dmm_object *dmm_mgr, u32 rsv_addr)
+ 	dsp_status status = DSP_SOK;
+ 	u32 chunk_size;
+ 
+-	sync_enter_cs(dmm_obj->dmm_lock);
++	spin_lock(&dmm_obj->dmm_lock);
+ 
+ 	/* Find the chunk containing the reserved address */
+ 	chunk = get_mapped_region(rsv_addr);
+@@ -413,7 +400,7 @@ dsp_status dmm_un_reserve_memory(struct dmm_object *dmm_mgr, u32 rsv_addr)
+ 		 *the whole mapping table
+ 		 */
+ 	}
+-	sync_leave_cs(dmm_obj->dmm_lock);
++	spin_unlock(&dmm_obj->dmm_lock);
+ 
+ 	dev_dbg(bridge, "%s: dmm_mgr %p, rsv_addr %x\n\tstatus %x chunk %p",
+ 		__func__, dmm_mgr, rsv_addr, status, chunk);
+@@ -518,7 +505,7 @@ u32 dmm_mem_map_dump(struct dmm_object *dmm_mgr)
+ 	u32 freemem = 0;
+ 	u32 bigsize = 0;
+ 
+-	sync_enter_cs(dmm_mgr->dmm_lock);
++	spin_lock(&dmm_mgr->dmm_lock);
+ 
+ 	if (virtual_mapping_table != NULL) {
+ 		for (i = 0; i < table_size; i +=
+@@ -541,13 +528,13 @@ u32 dmm_mem_map_dump(struct dmm_object *dmm_mgr)
+ 			}
+ 		}
+ 	}
++	spin_unlock(&dmm_mgr->dmm_lock);
+ 	printk(KERN_INFO "Total DSP VA FREE memory = %d Mbytes\n",
+ 	       freemem / (1024 * 1024));
+ 	printk(KERN_INFO "Total DSP VA USED memory= %d Mbytes \n",
+ 	       (((table_size * PG_SIZE4K) - freemem)) / (1024 * 1024));
+ 	printk(KERN_INFO "DSP VA - Biggest FREE block = %d Mbytes \n\n",
+ 	       (bigsize * PG_SIZE4K / (1024 * 1024)));
+-	sync_leave_cs(dmm_mgr->dmm_lock);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index 825ca60..4afd73b 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -139,7 +139,7 @@ struct node_mgr {
+ 	struct gb_t_map *dma_chnl_map;	/* DMA Channel allocation bit map */
+ 	struct gb_t_map *zc_chnl_map;	/* Zero-Copy Channel alloc bit map */
+ 	struct ntfy_object *ntfy_obj;	/* Manages registered notifications */
+-	struct sync_csobject *sync_obj;	/* For critical sections */
++	struct mutex node_mgr_lock;	/* For critical sections */
+ 	u32 ul_fxn_addrs[NUMRMSFXNS];	/* RMS function addresses */
+ 	struct msg_mgr *msg_mgr_obj;
+ 
+@@ -388,10 +388,7 @@ dsp_status node_allocate(struct proc_object *hprocessor,
+ 	}
+ 	pnode->hnode_mgr = hnode_mgr;
+ 	/* This critical section protects get_node_props */
+-	status = sync_enter_cs(hnode_mgr->sync_obj);
+-
+-	if (DSP_FAILED(status))
+-		goto func_end;
++	mutex_lock(&hnode_mgr->node_mgr_lock);
+ 
+ 	/* Get dsp_ndbprops from node database */
+ 	status = get_node_props(hnode_mgr->hdcd_mgr, pnode, pNodeId,
+@@ -467,7 +464,7 @@ dsp_status node_allocate(struct proc_object *hprocessor,
+ 		    (u32) mapped_addr;
+ 
+ func_cont:
+-	(void)sync_leave_cs(hnode_mgr->sync_obj);
++	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 	if (attr_in != NULL) {
+ 		/* Overrides of NBD properties */
+ 		pnode->utimeout = attr_in->utimeout;
+@@ -632,16 +629,13 @@ func_cont:
+ 		lst_init_elem((struct list_head *)pnode);
+ 		NODE_SET_STATE(pnode, NODE_ALLOCATED);
+ 
+-		status = sync_enter_cs(hnode_mgr->sync_obj);
++		mutex_lock(&hnode_mgr->node_mgr_lock);
+ 
+-		if (DSP_SUCCEEDED(status)) {
+-			lst_put_tail(hnode_mgr->node_list,
+-				     (struct list_head *)pnode);
++		lst_put_tail(hnode_mgr->node_list, (struct list_head *) pnode);
+ 			++(hnode_mgr->num_nodes);
+-		}
+ 
+ 		/* Exit critical section */
+-		(void)sync_leave_cs(hnode_mgr->sync_obj);
++		mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 
+ 		/* Preset this to assume phases are split
+ 		 * (for overlay and dll) */
+@@ -791,9 +785,7 @@ dsp_status node_change_priority(struct node_object *hnode, s32 prio)
+ 		goto func_end;
+ 
+ 	/* Enter critical section */
+-	status = sync_enter_cs(hnode_mgr->sync_obj);
+-	if (DSP_FAILED(status))
+-		goto func_end;
++	mutex_lock(&hnode_mgr->node_mgr_lock);
+ 
+ 	state = node_get_state(hnode);
+ 	if (state == NODE_ALLOCATED || state == NODE_PAUSED) {
+@@ -818,7 +810,7 @@ dsp_status node_change_priority(struct node_object *hnode, s32 prio)
+ 	}
+ func_cont:
+ 	/* Leave critical section */
+-	(void)sync_leave_cs(hnode_mgr->sync_obj);
++	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ func_end:
+ 	return status;
+ }
+@@ -914,9 +906,7 @@ dsp_status node_connect(struct node_object *hNode1, u32 uStream1,
+ 		hnode_mgr = hNode2->hnode_mgr;
+ 	}
+ 	/* Enter critical section */
+-	status = sync_enter_cs(hnode_mgr->sync_obj);
+-	if (DSP_FAILED(status))
+-		goto func_cont;
++	mutex_lock(&hnode_mgr->node_mgr_lock);
+ 
+ 	/* Nodes must be in the allocated state */
+ 	if (node1_type != NODE_GPP && node_get_state(hNode1) != NODE_ALLOCATED)
+@@ -1128,10 +1118,9 @@ func_cont2:
+ 		}
+ 		fill_stream_connect(hNode1, hNode2, uStream1, uStream2);
+ 	}
+-func_cont:
+ 	/* end of sync_enter_cs */
+ 	/* Exit critical section */
+-	(void)sync_leave_cs(hnode_mgr->sync_obj);
++	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ func_end:
+ 	dev_dbg(bridge, "%s: hNode1: %p uStream1: %d hNode2: %p uStream2: %d"
+ 		"pattrs: %p status: 0x%x\n", __func__, hNode1,
+@@ -1184,9 +1173,7 @@ dsp_status node_create(struct node_object *hnode)
+ 	hnode_mgr = hnode->hnode_mgr;
+ 	intf_fxns = hnode_mgr->intf_fxns;
+ 	/* Get access to node dispatcher */
+-	status = sync_enter_cs(hnode_mgr->sync_obj);
+-	if (DSP_FAILED(status))
+-		goto func_end;
++	mutex_lock(&hnode_mgr->node_mgr_lock);
+ 
+ 	/* Check node state */
+ 	if (node_get_state(hnode) != NODE_ALLOCATED)
+@@ -1288,7 +1275,7 @@ func_cont2:
+ 	}
+ func_cont:
+ 	/* Free access to node dispatcher */
+-	(void)sync_leave_cs(hnode_mgr->sync_obj);
++	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ func_end:
+ 	if (DSP_SUCCEEDED(status)) {
+ 		proc_notify_clients(hnode->hprocessor, DSP_NODESTATECHANGE);
+@@ -1370,9 +1357,7 @@ dsp_status node_create_mgr(OUT struct node_mgr **phNodeMgr,
+ 		dev_get_intf_fxns(hdev_obj, &node_mgr_obj->intf_fxns);
+ 		/* Get msg_ctrl queue manager */
+ 		dev_get_msg_mgr(hdev_obj, &node_mgr_obj->msg_mgr_obj);
+-		status = sync_initialize_cs(&node_mgr_obj->sync_obj);
+-	}
+-	if (DSP_SUCCEEDED(status)) {
++		mutex_init(&node_mgr_obj->node_mgr_lock);
+ 		node_mgr_obj->chnl_map = gb_create(node_mgr_obj->ul_num_chnls);
+ 		/* dma chnl map. ul_num_chnls is # per transport */
+ 		node_mgr_obj->dma_chnl_map =
+@@ -1470,9 +1455,7 @@ dsp_status node_delete(struct node_object *hnode,
+ 	node_type = node_get_type(hnode);
+ 	intf_fxns = hnode_mgr->intf_fxns;
+ 	/* Enter critical section */
+-	status = sync_enter_cs(hnode_mgr->sync_obj);
+-	if (DSP_FAILED(status))
+-		goto func_end;
++	mutex_lock(&hnode_mgr->node_mgr_lock);
+ 
+ 	state = node_get_state(hnode);
+ 	/*  Execute delete phase code for non-device node in all cases
+@@ -1586,7 +1569,7 @@ func_cont1:
+ 
+ 	drv_remove_node_res_element(node_res, pr_ctxt);
+ 	/* Exit critical section */
+-	(void)sync_leave_cs(hnode_mgr->sync_obj);
++	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 	proc_notify_clients(hprocessor, DSP_NODESTATECHANGE);
+ func_end:
+ 	dev_dbg(bridge, "%s: hnode: %p status 0x%x\n", __func__, hnode, status);
+@@ -1634,29 +1617,28 @@ dsp_status node_enum_nodes(struct node_mgr *hnode_mgr, void **node_tab,
+ 		goto func_end;
+ 	}
+ 	/* Enter critical section */
+-	status = sync_enter_cs(hnode_mgr->sync_obj);
+-	if (DSP_SUCCEEDED(status)) {
+-		if (hnode_mgr->num_nodes > node_tab_size) {
+-			*pu_allocated = hnode_mgr->num_nodes;
+-			*pu_num_nodes = 0;
+-			status = DSP_ESIZE;
+-		} else {
+-			hnode = (struct node_object *)
+-			    lst_first(hnode_mgr->node_list);
+-			for (i = 0; i < hnode_mgr->num_nodes; i++) {
+-				DBC_ASSERT(MEM_IS_VALID_HANDLE(hnode,
+-							       NODE_SIGNATURE));
+-				node_tab[i] = hnode;
+-				hnode = (struct node_object *)lst_next
+-				    (hnode_mgr->node_list,
+-				     (struct list_head *)hnode);
+-			}
+-			*pu_allocated = *pu_num_nodes = hnode_mgr->num_nodes;
+-		}
++	mutex_lock(&hnode_mgr->node_mgr_lock);
++
++	if (hnode_mgr->num_nodes > node_tab_size) {
++		*pu_allocated = hnode_mgr->num_nodes;
++		*pu_num_nodes = 0;
++		status = DSP_ESIZE;
++	} else {
++		hnode = (struct node_object *)lst_first(hnode_mgr->
++			node_list);
++		for (i = 0; i < hnode_mgr->num_nodes; i++) {
++			DBC_ASSERT(MEM_IS_VALID_HANDLE(hnode,
++				  NODE_SIGNATURE));
++			node_tab[i] = hnode;
++			hnode = (struct node_object *)lst_next
++				(hnode_mgr->node_list,
++				(struct list_head *)hnode);
++		}
++		*pu_allocated = *pu_num_nodes = hnode_mgr->num_nodes;
+ 	}
+ 	/* end of sync_enter_cs */
+ 	/* Exit critical section */
+-	(void)sync_leave_cs(hnode_mgr->sync_obj);
++	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ func_end:
+ 	return status;
+ }
+@@ -1738,26 +1720,24 @@ dsp_status node_get_attr(struct node_object *hnode,
+ 		/* Enter hnode_mgr critical section (since we're accessing
+ 		 * data that could be changed by node_change_priority() and
+ 		 * node_connect(). */
+-		status = sync_enter_cs(hnode_mgr->sync_obj);
+-		if (DSP_SUCCEEDED(status)) {
+-			pattr->cb_struct = sizeof(struct dsp_nodeattr);
+-			/* dsp_nodeattrin */
+-			pattr->in_node_attr_in.cb_struct =
+-			    sizeof(struct dsp_nodeattrin);
+-			pattr->in_node_attr_in.prio = hnode->prio;
+-			pattr->in_node_attr_in.utimeout = hnode->utimeout;
+-			pattr->in_node_attr_in.heap_size =
+-			    hnode->create_args.asa.task_arg_obj.heap_size;
+-			pattr->in_node_attr_in.pgpp_virt_addr = (void *)
+-			    hnode->create_args.asa.task_arg_obj.ugpp_heap_addr;
+-			pattr->node_attr_inputs = hnode->num_gpp_inputs;
+-			pattr->node_attr_outputs = hnode->num_gpp_outputs;
+-			/* dsp_nodeinfo */
+-			get_node_info(hnode, &(pattr->node_info));
+-		}
++		mutex_lock(&hnode_mgr->node_mgr_lock);
++		pattr->cb_struct = sizeof(struct dsp_nodeattr);
++		/* dsp_nodeattrin */
++		pattr->in_node_attr_in.cb_struct =
++				 sizeof(struct dsp_nodeattrin);
++		pattr->in_node_attr_in.prio = hnode->prio;
++		pattr->in_node_attr_in.utimeout = hnode->utimeout;
++		pattr->in_node_attr_in.heap_size =
++			hnode->create_args.asa.task_arg_obj.heap_size;
++		pattr->in_node_attr_in.pgpp_virt_addr = (void *)
++			hnode->create_args.asa.task_arg_obj.ugpp_heap_addr;
++		pattr->node_attr_inputs = hnode->num_gpp_inputs;
++		pattr->node_attr_outputs = hnode->num_gpp_outputs;
++		/* dsp_nodeinfo */
++		get_node_info(hnode, &(pattr->node_info));
+ 		/* end of sync_enter_cs */
+ 		/* Exit critical section */
+-		(void)sync_leave_cs(hnode_mgr->sync_obj);
++		mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 	}
+ 	return status;
+ }
+@@ -2052,45 +2032,38 @@ dsp_status node_pause(struct node_object *hnode)
+ 		hnode_mgr = hnode->hnode_mgr;
+ 
+ 		/* Enter critical section */
+-		status = sync_enter_cs(hnode_mgr->sync_obj);
++		mutex_lock(&hnode_mgr->node_mgr_lock);
++		state = node_get_state(hnode);
++		/* Check node state */
++		if (state != NODE_RUNNING)
++			status = DSP_EWRONGSTATE;
+ 
+-		if (DSP_SUCCEEDED(status)) {
+-			state = node_get_state(hnode);
+-			/* Check node state */
+-			if (state != NODE_RUNNING)
+-				status = DSP_EWRONGSTATE;
++		if (DSP_FAILED(status))
++			goto func_cont;
++		hprocessor = hnode->hprocessor;
++		status = proc_get_state(hprocessor, &proc_state,
++				sizeof(struct dsp_processorstate));
++		if (DSP_FAILED(status))
++			goto func_cont;
++		/* If processor is in error state then don't attempt
++		   to send the message */
++		if (proc_state.proc_state == PROC_ERROR) {
++			status = DSP_EFAIL;
++			goto func_cont;
++		}
+ 
+-			if (DSP_FAILED(status))
+-				goto func_cont;
+-			hprocessor = hnode->hprocessor;
+-			status = proc_get_state(hprocessor, &proc_state,
+-						sizeof(struct
+-						       dsp_processorstate));
+-			if (DSP_FAILED(status))
+-				goto func_cont;
+-			/* If processor is in error state then don't attempt
+-			   to send the message */
+-			if (proc_state.proc_state == PROC_ERROR) {
+-				status = DSP_EFAIL;
+-				goto func_cont;
+-			}
+-			if (DSP_SUCCEEDED(status)) {
+-				status =
+-				    disp_node_change_priority
+-				    (hnode_mgr->disp_obj, hnode,
+-				     hnode_mgr->ul_fxn_addrs
+-				     [RMSCHANGENODEPRIORITY], hnode->node_env,
+-				     NODE_SUSPENDEDPRI);
+-			}
++		status = disp_node_change_priority(hnode_mgr->disp_obj, hnode,
++			hnode_mgr->ul_fxn_addrs[RMSCHANGENODEPRIORITY],
++			hnode->node_env, NODE_SUSPENDEDPRI);
++
++		/* Update state */
++		if (DSP_SUCCEEDED(status))
++			NODE_SET_STATE(hnode, NODE_PAUSED);
+ 
+-			/* Update state */
+-			if (DSP_SUCCEEDED(status))
+-				NODE_SET_STATE(hnode, NODE_PAUSED);
+-		}
+ func_cont:
+ 		/* End of sync_enter_cs */
+ 		/* Leave critical section */
+-		(void)sync_leave_cs(hnode_mgr->sync_obj);
++		mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 		if (DSP_SUCCEEDED(status)) {
+ 			proc_notify_clients(hnode->hprocessor,
+ 					    DSP_NODESTATECHANGE);
+@@ -2151,18 +2124,16 @@ dsp_status node_put_message(struct node_object *hnode,
+ 		 *  we've sent the RMS_EXIT command. There is still the
+ 		 *  possibility that node_terminate can be called after we've
+ 		 *  checked the state. Could add another SYNC object to
+-		 *  prevent this (can't use hnode_mgr->sync_obj, since we don't
++		 *  prevent this (can't use node_mgr_lock, since we don't
+ 		 *  want to block other NODE functions). However, the node may
+ 		 *  still exit on its own, before this message is sent. */
+-		status = sync_enter_cs(hnode_mgr->sync_obj);
+-		if (DSP_SUCCEEDED(status)) {
+-			state = node_get_state(hnode);
+-			if (state == NODE_TERMINATING || state == NODE_DONE)
+-				status = DSP_EWRONGSTATE;
++		mutex_lock(&hnode_mgr->node_mgr_lock);
++		state = node_get_state(hnode);
++		if (state == NODE_TERMINATING || state == NODE_DONE)
++			status = DSP_EWRONGSTATE;
+ 
+-		}
+ 		/* end of sync_enter_cs */
+-		(void)sync_leave_cs(hnode_mgr->sync_obj);
++		mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 	}
+ 	if (DSP_FAILED(status))
+ 		goto func_end;
+@@ -2306,9 +2277,7 @@ dsp_status node_run(struct node_object *hnode)
+ 	}
+ 	intf_fxns = hnode_mgr->intf_fxns;
+ 	/* Enter critical section */
+-	status = sync_enter_cs(hnode_mgr->sync_obj);
+-	if (DSP_FAILED(status))
+-		goto func_cont;
++	mutex_lock(&hnode_mgr->node_mgr_lock);
+ 
+ 	state = node_get_state(hnode);
+ 	if (state != NODE_CREATED && state != NODE_PAUSED)
+@@ -2369,8 +2338,7 @@ func_cont1:
+ 		NODE_SET_STATE(hnode, state);
+ 	/*End of sync_enter_cs */
+ 	/* Exit critical section */
+-func_cont:
+-	(void)sync_leave_cs(hnode_mgr->sync_obj);
++	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 	if (DSP_SUCCEEDED(status)) {
+ 		proc_notify_clients(hnode->hprocessor, DSP_NODESTATECHANGE);
+ 		ntfy_notify(hnode->ntfy_obj, DSP_NODESTATECHANGE);
+@@ -2420,22 +2388,20 @@ dsp_status node_terminate(struct node_object *hnode, OUT dsp_status *pstatus)
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* Check node state */
+-		status = sync_enter_cs(hnode_mgr->sync_obj);
+-		if (DSP_SUCCEEDED(status)) {
+-			state = node_get_state(hnode);
+-			if (state != NODE_RUNNING) {
+-				status = DSP_EWRONGSTATE;
+-				/* Set the exit status if node terminated on
+-				 * its own. */
+-				if (state == NODE_DONE)
+-					*pstatus = hnode->exit_status;
++		mutex_lock(&hnode_mgr->node_mgr_lock);
++		state = node_get_state(hnode);
++		if (state != NODE_RUNNING) {
++			status = DSP_EWRONGSTATE;
++			/* Set the exit status if node terminated on
++			 * its own. */
++			if (state == NODE_DONE)
++				*pstatus = hnode->exit_status;
+ 
+-			} else {
+-				NODE_SET_STATE(hnode, NODE_TERMINATING);
+-			}
++		} else {
++			NODE_SET_STATE(hnode, NODE_TERMINATING);
+ 		}
+ 		/* end of sync_enter_cs */
+-		(void)sync_leave_cs(hnode_mgr->sync_obj);
++		mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/*
+@@ -2512,7 +2478,7 @@ func_cont:
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* Enter CS before getting exit status, in case node was
+ 		 * deleted. */
+-		status = sync_enter_cs(hnode_mgr->sync_obj);
++		mutex_lock(&hnode_mgr->node_mgr_lock);
+ 		/* Make sure node wasn't deleted while we blocked */
+ 		if (!MEM_IS_VALID_HANDLE(hnode, NODE_SIGNATURE)) {
+ 			status = DSP_EFAIL;
+@@ -2521,7 +2487,7 @@ func_cont:
+ 			dev_dbg(bridge, "%s: hnode: %p env 0x%x status 0x%x\n",
+ 				__func__, hnode, hnode->node_env, status);
+ 		}
+-		(void)sync_leave_cs(hnode_mgr->sync_obj);
++		mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 	}			/*End of sync_enter_cs */
+ func_end:
+ 	return status;
+@@ -2684,6 +2650,7 @@ static void delete_node_mgr(struct node_mgr *hnode_mgr)
+ 			DBC_ASSERT(LST_IS_EMPTY(hnode_mgr->node_list));
+ 			kfree(hnode_mgr->node_list);
+ 		}
++		mutex_destroy(&hnode_mgr->node_mgr_lock);
+ 		if (hnode_mgr->ntfy_obj)
+ 			ntfy_delete(hnode_mgr->ntfy_obj);
+ 
+@@ -2705,9 +2672,6 @@ static void delete_node_mgr(struct node_mgr *hnode_mgr)
+ 		if (hnode_mgr->disp_obj)
+ 			disp_delete(hnode_mgr->disp_obj);
+ 
+-		if (hnode_mgr->sync_obj)
+-			sync_delete_cs(hnode_mgr->sync_obj);
+-
+ 		if (hnode_mgr->strm_mgr_obj)
+ 			strm_delete(hnode_mgr->strm_mgr_obj);
+ 
+@@ -3074,32 +3038,29 @@ dsp_status node_get_uuid_props(void *hprocessor,
+ 	 * which needs to be protected in order to not corrupt the zlib manager
+ 	 * (COD).
+ 	 */
+-	status = sync_enter_cs(hnode_mgr->sync_obj);
++	mutex_lock(&hnode_mgr->node_mgr_lock);
++
++	dcd_node_props.pstr_create_phase_fxn = NULL;
++	dcd_node_props.pstr_execute_phase_fxn = NULL;
++	dcd_node_props.pstr_delete_phase_fxn = NULL;
++	dcd_node_props.pstr_i_alg_name = NULL;
++
++	status = dcd_get_object_def(hnode_mgr->hdcd_mgr,
++		(struct dsp_uuid *)pNodeId, DSP_DCDNODETYPE,
++		(struct dcd_genericobj *)&dcd_node_props);
+ 
+ 	if (DSP_SUCCEEDED(status)) {
+-		dcd_node_props.pstr_create_phase_fxn = NULL;
+-		dcd_node_props.pstr_execute_phase_fxn = NULL;
+-		dcd_node_props.pstr_delete_phase_fxn = NULL;
+-		dcd_node_props.pstr_i_alg_name = NULL;
+-
+-		status = dcd_get_object_def(hnode_mgr->hdcd_mgr,
+-					    (struct dsp_uuid *)pNodeId,
+-					    DSP_DCDNODETYPE,
+-					    (struct dcd_genericobj *)
+-					    &dcd_node_props);
+-		if (DSP_SUCCEEDED(status)) {
+-			*node_props = dcd_node_props.ndb_props;
+-			kfree(dcd_node_props.pstr_create_phase_fxn);
++		*node_props = dcd_node_props.ndb_props;
++		kfree(dcd_node_props.pstr_create_phase_fxn);
+ 
+-			kfree(dcd_node_props.pstr_execute_phase_fxn);
++		kfree(dcd_node_props.pstr_execute_phase_fxn);
+ 
+-			kfree(dcd_node_props.pstr_delete_phase_fxn);
++		kfree(dcd_node_props.pstr_delete_phase_fxn);
+ 
+-			kfree(dcd_node_props.pstr_i_alg_name);
+-		}
+-		/*  Leave the critical section, we're done. */
+-		(void)sync_leave_cs(hnode_mgr->sync_obj);
++		kfree(dcd_node_props.pstr_i_alg_name);
+ 	}
++	/*  Leave the critical section, we're done. */
++	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ func_end:
+ 	return status;
+ }
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index d798365..23dc111 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -98,7 +98,7 @@ struct proc_object {
+ 
+ static u32 refs;
+ 
+-struct sync_csobject *proc_lock;	/* For critical sections */
++DEFINE_MUTEX(proc_lock);	/* For critical sections */
+ 
+ /*  ----------------------------------- Function Prototypes */
+ static dsp_status proc_monitor(struct proc_object *hprocessor);
+@@ -650,9 +650,6 @@ void proc_exit(void)
+ {
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (proc_lock)
+-		(void)sync_delete_cs(proc_lock);
+-
+ 	refs--;
+ 
+ 	DBC_ENSURE(refs >= 0);
+@@ -775,9 +772,6 @@ bool proc_init(void)
+ 
+ 	DBC_REQUIRE(refs >= 0);
+ 
+-	if (refs == 0)
+-		(void)sync_initialize_cs(&proc_lock);
+-
+ 	if (ret)
+ 		refs++;
+ 
+@@ -1075,7 +1069,7 @@ dsp_status proc_map(void *hprocessor, void *pmpu_addr, u32 ul_size,
+ 		goto func_end;
+ 	}
+ 	/* Critical section */
+-	(void)sync_enter_cs(proc_lock);
++	mutex_lock(&proc_lock);
+ 	status = dmm_get_handle(p_proc_object, &dmm_mgr);
+ 	if (DSP_SUCCEEDED(status))
+ 		status = dmm_map_memory(dmm_mgr, va_align, size_align);
+@@ -1094,7 +1088,7 @@ dsp_status proc_map(void *hprocessor, void *pmpu_addr, u32 ul_size,
+ 	} else {
+ 		dmm_un_map_memory(dmm_mgr, va_align, &size_align);
+ 	}
+-	(void)sync_leave_cs(proc_lock);
++	mutex_unlock(&proc_lock);
+ 
+ 	if (DSP_FAILED(status))
+ 		goto func_end;
+@@ -1411,7 +1405,7 @@ dsp_status proc_un_map(void *hprocessor, void *map_addr,
+ 		goto func_end;
+ 
+ 	/* Critical section */
+-	(void)sync_enter_cs(proc_lock);
++	mutex_lock(&proc_lock);
+ 	/*
+ 	 * Update DMM structures. Get the size to unmap.
+ 	 * This function returns error if the VA is not mapped
+@@ -1422,7 +1416,7 @@ dsp_status proc_un_map(void *hprocessor, void *map_addr,
+ 		status = (*p_proc_object->intf_fxns->pfn_brd_mem_un_map)
+ 		    (p_proc_object->hwmd_context, va_align, size_align);
+ 	}
+-	(void)sync_leave_cs(proc_lock);
++	mutex_unlock(&proc_lock);
+ 	if (DSP_FAILED(status))
+ 		goto func_end;
+ 
+diff --git a/drivers/dsp/bridge/rmgr/strm.c b/drivers/dsp/bridge/rmgr/strm.c
+index ed62925..74d5988 100644
+--- a/drivers/dsp/bridge/rmgr/strm.c
++++ b/drivers/dsp/bridge/rmgr/strm.c
+@@ -63,7 +63,6 @@ struct strm_mgr {
+ 	struct dev_object *dev_obj;	/* Device for this processor */
+ 	struct chnl_mgr *hchnl_mgr;	/* Channel manager */
+ 	struct bridge_drv_interface *intf_fxns;	/* Function interface to WMD */
+-	struct sync_csobject *sync_obj;	/* For critical sections */
+ };
+ 
+ /*
+@@ -233,8 +232,6 @@ dsp_status strm_create(OUT struct strm_mgr **phStrmMgr,
+ 			DBC_ASSERT(strm_mgr_obj->intf_fxns != NULL);
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status))
+-		status = sync_initialize_cs(&strm_mgr_obj->sync_obj);
+ 
+ 	if (DSP_SUCCEEDED(status))
+ 		*phStrmMgr = strm_mgr_obj;
+@@ -870,11 +867,6 @@ static dsp_status delete_strm(struct strm_object *hStrm)
+  */
+ static void delete_strm_mgr(struct strm_mgr *strm_mgr_obj)
+ {
+-	if (MEM_IS_VALID_HANDLE(strm_mgr_obj, STRMMGR_SIGNATURE)) {
+-
+-		if (strm_mgr_obj->sync_obj)
+-			sync_delete_cs(strm_mgr_obj->sync_obj);
+-
++	if (MEM_IS_VALID_HANDLE(strm_mgr_obj, STRMMGR_SIGNATURE))
+ 		MEM_FREE_OBJECT(strm_mgr_obj);
+-	}
+ }
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index 7010f53..1b5d977 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -102,7 +102,6 @@ struct io_mgr {
+ 	u8 *msg_output;		/* Address of output messages */
+ 	u32 usm_buf_size;	/* Size of a shared memory I/O channel */
+ 	bool shared_irq;	/* Is this IRQ shared? */
+-	struct sync_csobject *hcs_obj;	/* Critical section object handle */
+ 	u32 word_size;		/* Size in bytes of DSP word */
+ 	u16 intr_val;		/* Interrupt value */
+ 	/* Private extnd proc info; mmu setup */
+@@ -223,8 +222,6 @@ dsp_status bridge_io_create(OUT struct io_mgr **phIOMgr,
+ 	pio_mgr->hchnl_mgr = hchnl_mgr;
+ 	pio_mgr->word_size = pMgrAttrs->word_size;
+ 	pio_mgr->shared_mem = shared_mem;
+-	if (DSP_SUCCEEDED(status))
+-		status = sync_initialize_cs(&pio_mgr->hcs_obj);
+ 
+ 	if (dev_type == DSP_UNIT) {
+ 		/* Create an IO DPC */
+@@ -282,7 +279,6 @@ dsp_status bridge_io_destroy(struct io_mgr *hio_mgr)
+ #ifndef DSP_TRACEBUF_DISABLED
+ 		kfree(hio_mgr->pmsg);
+ #endif
+-		sync_delete_cs(hio_mgr->hcs_obj);	/* Leak Fix. */
+ 		/* Free this IO manager object */
+ 		MEM_FREE_OBJECT(hio_mgr);
+ 	} else {
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430.c b/drivers/dsp/bridge/wmd/tiomap3430.c
+index a972ea2..ed51875 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430.c
+@@ -168,7 +168,7 @@ struct page_info {
+ 
+ /* Attributes used to manage the DSP MMU page tables */
+ struct pg_table_attrs {
+-	struct sync_csobject *hcs_obj;	/* Critical section object handle */
++	spinlock_t pg_lock;	/* Critical section object handle */
+ 
+ 	u32 l1_base_pa;		/* Physical address of the L1 PT */
+ 	u32 l1_base_va;		/* Virtual  address of the L1 PT */
+@@ -1058,10 +1058,8 @@ static dsp_status bridge_dev_create(OUT struct wmd_dev_context **ppDevContext,
+ 	else
+ 		status = DSP_EMEMORY;
+ 
+-	if (DSP_SUCCEEDED(status))
+-		status = sync_initialize_cs(&pt_attrs->hcs_obj);
+-
+ 	if (DSP_SUCCEEDED(status)) {
++		spin_lock_init(&pt_attrs->pg_lock);
+ 		/* Set the Endianism Register *//* Need to set this */
+ 		/* Retrieve the TC u16 SWAP Option */
+ 		status = reg_get_value(TCWORDSWAP, (u8 *) &tc_word_swap,
+@@ -1083,9 +1081,6 @@ static dsp_status bridge_dev_create(OUT struct wmd_dev_context **ppDevContext,
+ 		*ppDevContext = dev_context;
+ 	} else {
+ 		if (pt_attrs != NULL) {
+-			if (pt_attrs->hcs_obj)
+-				sync_delete_cs(pt_attrs->hcs_obj);
+-
+ 			kfree(pt_attrs->pg_info);
+ 
+ 			if (pt_attrs->l2_tbl_alloc_va) {
+@@ -1181,9 +1176,6 @@ static dsp_status bridge_dev_destroy(struct wmd_dev_context *hDevContext)
+ 	wmd_brd_delete(dev_context);
+ 	if (dev_context->pt_attrs) {
+ 		pt_attrs = dev_context->pt_attrs;
+-		if (pt_attrs->hcs_obj)
+-			sync_delete_cs(pt_attrs->hcs_obj);
+-
+ 		kfree(pt_attrs->pg_info);
+ 
+ 		if (pt_attrs->l2_tbl_alloc_va) {
+@@ -1618,7 +1610,7 @@ static dsp_status bridge_brd_mem_un_map(struct wmd_dev_context *hDevContext,
+ 			va_curr += pte_size;
+ 			pte_addr_l2 += (pte_size >> 12) * sizeof(u32);
+ 		}
+-		sync_enter_cs(pt->hcs_obj);
++		spin_lock(&pt->pg_lock);
+ 		if (rem_bytes_l2 == 0) {
+ 			pt->pg_info[l2_page_num].num_entries -= pte_count;
+ 			if (pt->pg_info[l2_page_num].num_entries == 0) {
+@@ -1631,7 +1623,7 @@ static dsp_status bridge_brd_mem_un_map(struct wmd_dev_context *hDevContext,
+ 					status = DSP_SOK;
+ 				else {
+ 					status = DSP_EFAIL;
+-					sync_leave_cs(pt->hcs_obj);
++					spin_unlock(&pt->pg_lock);
+ 					goto EXIT_LOOP;
+ 				}
+ 			}
+@@ -1639,7 +1631,7 @@ static dsp_status bridge_brd_mem_un_map(struct wmd_dev_context *hDevContext,
+ 		} else
+ 			status = DSP_EFAIL;
+ 
+-		sync_leave_cs(pt->hcs_obj);
++		spin_unlock(&pt->pg_lock);
+ 		continue;
+ skip_coarse_page:
+ 		/* va_curr aligned to pte_size? */
+@@ -1802,7 +1794,7 @@ static dsp_status pte_set(struct pg_table_attrs *pt, u32 pa, u32 va,
+ 		} else {
+ 			return DSP_EFAIL;
+ 		}
+-		sync_enter_cs(pt->hcs_obj);
++		spin_lock(&pt->pg_lock);
+ 		if (pte_size == HW_MMU_COARSE_PAGE_SIZE) {
+ 			/* Get the L2 PA from the L1 PTE, and find
+ 			 * corresponding L2 VA */
+@@ -1850,7 +1842,7 @@ static dsp_status pte_set(struct pg_table_attrs *pt, u32 pa, u32 va,
+ 				l2_base_pa, l2_page_num,
+ 				pt->pg_info[l2_page_num].num_entries);
+ 		}
+-		sync_leave_cs(pt->hcs_obj);
++		spin_unlock(&pt->pg_lock);
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+ 		dev_dbg(bridge, "PTE: pg_tbl_va %x, pa %x, va %x, size %x\n",
+-- 
+1.7.0.4
+

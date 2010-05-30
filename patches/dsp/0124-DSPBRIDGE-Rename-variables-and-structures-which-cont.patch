@@ -1,0 +1,321 @@
+From 2cbc40a5c2dc720e9e4f3d794294beb0deb956b1 Mon Sep 17 00:00:00 2001
+From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+Date: Fri, 7 May 2010 18:09:29 -0500
+Subject: [PATCH 124/135] DSPBRIDGE: Rename variables and structures which contain "wmd"
+
+This patch removes code that refers to Windows OS (wmd = windows
+mini driver). The following are renamed:
+
+wmd_interface ==> bridge_interface
+sz_wmd_file_name ==> bridge_file_name
+dw_wmd_version ==> bridge_version
+wmdioctl_extproc ==> bridge_ioctl_extproc
+pstrWMDFileName ==> driver_file_name
+
+Signed-off-by: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/dev.h      |   12 ++++----
+ arch/arm/plat-omap/include/dspbridge/wmd.h      |    2 +-
+ arch/arm/plat-omap/include/dspbridge/wmdioctl.h |    2 +-
+ drivers/dsp/bridge/pmgr/dev.c                   |   35 ++++++++++++-----------
+ drivers/dsp/bridge/wmd/_tiomap.h                |    4 +-
+ drivers/dsp/bridge/wmd/io_sm.c                  |    2 +-
+ drivers/dsp/bridge/wmd/tiomap3430.c             |    9 +++--
+ 7 files changed, 34 insertions(+), 32 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/dev.h b/arch/arm/plat-omap/include/dspbridge/dev.h
+index 074ea3f..967ba3d 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dev.h
++++ b/arch/arm/plat-omap/include/dspbridge/dev.h
+@@ -65,7 +65,7 @@ extern u32 dev_brd_write_fxn(void *pArb,
+  *      'Bridge device.
+  *  Parameters:
+  *      phDevObject:    Ptr to location to receive the device object handle.
+- *      pstrWMDFileName: Name of WMD PE DLL file to load.  If the absolute
++ *      driver_file_name: Name of WMD PE DLL file to load.  If the absolute
+  *                      path is not provided, the file is loaded through
+  *                      'Bridge's module search path.
+  *      pHostConfig:    Host configuration information, to be passed down
+@@ -88,7 +88,7 @@ extern u32 dev_brd_write_fxn(void *pArb,
+  *  Requires:
+  *      DEV Initialized.
+  *      phDevObject != NULL.
+- *      pstrWMDFileName != NULL.
++ *      driver_file_name != NULL.
+  *      pHostConfig != NULL.
+  *      pDspConfig != NULL.
+  *  Ensures:
+@@ -98,7 +98,7 @@ extern u32 dev_brd_write_fxn(void *pArb,
+  */
+ extern dsp_status dev_create_device(OUT struct dev_object
+ 				    **phDevObject,
+-				    IN CONST char *pstrWMDFileName,
++				    IN CONST char *driver_file_name,
+ 				    struct cfg_devnode *dev_node_obj);
+ 
+ /*
+@@ -107,7 +107,7 @@ extern dsp_status dev_create_device(OUT struct dev_object
+  *      Called by the operating system to load the 'Bridge Mini Driver for IVA.
+  *  Parameters:
+  *      phDevObject:    Ptr to location to receive the device object handle.
+- *      pstrWMDFileName: Name of WMD PE DLL file to load.  If the absolute
++ *      driver_file_name: Name of WMD PE DLL file to load.  If the absolute
+  *                      path is not provided, the file is loaded through
+  *                      'Bridge's module search path.
+  *      pHostConfig:    Host configuration information, to be passed down
+@@ -130,7 +130,7 @@ extern dsp_status dev_create_device(OUT struct dev_object
+  *  Requires:
+  *      DEV Initialized.
+  *      phDevObject != NULL.
+- *      pstrWMDFileName != NULL.
++ *      driver_file_name != NULL.
+  *      pHostConfig != NULL.
+  *      pDspConfig != NULL.
+  *  Ensures:
+@@ -140,7 +140,7 @@ extern dsp_status dev_create_device(OUT struct dev_object
+  */
+ extern dsp_status dev_create_iva_device(OUT struct dev_object
+ 					**phDevObject,
+-					IN CONST char *pstrWMDFileName,
++					IN CONST char *driver_file_name,
+ 					IN CONST struct cfg_hostres
+ 					*pHostConfig,
+ 					struct cfg_devnode *dev_node_obj);
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmd.h b/arch/arm/plat-omap/include/dspbridge/wmd.h
+index fd54a1a..3c65208 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmd.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmd.h
+@@ -1129,6 +1129,6 @@ struct bridge_drv_interface {
+  *      Win95: Called during the Device_Init phase.
+  */
+ void bridge_drv_entry(OUT struct bridge_drv_interface **ppDrvInterface,
+-		   IN CONST char *pstrWMDFileName);
++		   IN CONST char *driver_file_name);
+ 
+ #endif /* WMD_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmdioctl.h b/arch/arm/plat-omap/include/dspbridge/wmdioctl.h
+index 6547e38..ba921bc 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmdioctl.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmdioctl.h
+@@ -59,7 +59,7 @@
+ /* Number of actual DSP-MMU TLB entrries */
+ #define WMDIOCTL_NUMOFMMUTLB        32
+ 
+-struct wmdioctl_extproc {
++struct bridge_ioctl_extproc {
+ 	u32 ul_dsp_va;		/* DSP virtual address */
+ 	u32 ul_gpp_pa;		/* GPP physical address */
+ 	/* GPP virtual address. __va does not work for ioremapped addresses */
+diff --git a/drivers/dsp/bridge/pmgr/dev.c b/drivers/dsp/bridge/pmgr/dev.c
+index f841576..5530123 100644
+--- a/drivers/dsp/bridge/pmgr/dev.c
++++ b/drivers/dsp/bridge/pmgr/dev.c
+@@ -65,8 +65,8 @@ struct dev_object {
+ 	u8 dev_type;		/* Device Type */
+ 	struct cfg_devnode *dev_node_obj;	/* Platform specific dev id */
+ 	struct bridge_dev_context *hbridge_context;	/* WMD Context Handle */
+-	/* Function interface to WMD. */
+-	struct bridge_drv_interface wmd_interface;
++	/* Function interface to Bridge driver. */
++	struct bridge_drv_interface bridge_interface;
+ 	struct brd_object *lock_owner;	/* Client with exclusive access. */
+ 	struct cod_manager *cod_mgr;	/* Code manager handle. */
+ 	struct chnl_mgr *hchnl_mgr;	/* Channel manager. */
+@@ -110,7 +110,7 @@ u32 dev_brd_write_fxn(void *pArb, u32 ulDspAddr, void *pHostBuf,
+ 	if (dev_obj) {
+ 		/* Require of BrdWrite() */
+ 		DBC_ASSERT(dev_obj->hbridge_context != NULL);
+-		status = (*dev_obj->wmd_interface.pfn_brd_write) (
++		status = (*dev_obj->bridge_interface.pfn_brd_write) (
+ 					dev_obj->hbridge_context, pHostBuf,
+ 					ulDspAddr, ul_num_bytes, nMemSpace);
+ 		/* Special case of getting the address only */
+@@ -130,7 +130,7 @@ u32 dev_brd_write_fxn(void *pArb, u32 ulDspAddr, void *pHostBuf,
+  *      PM board (device).
+  */
+ dsp_status dev_create_device(OUT struct dev_object **phDevObject,
+-			     IN CONST char *pstrWMDFileName,
++			     IN CONST char *driver_file_name,
+ 			     struct cfg_devnode *dev_node_obj)
+ {
+ 	struct cfg_hostres *host_res;
+@@ -144,7 +144,7 @@ dsp_status dev_create_device(OUT struct dev_object **phDevObject,
+ 	dsp_status status = DSP_SOK;
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(phDevObject != NULL);
+-	DBC_REQUIRE(pstrWMDFileName != NULL);
++	DBC_REQUIRE(driver_file_name != NULL);
+ 
+ 	status = drv_request_bridge_res_dsp((void *)&host_res);
+ 
+@@ -153,7 +153,7 @@ dsp_status dev_create_device(OUT struct dev_object **phDevObject,
+ 			__func__);
+ 
+ 	/*  Get the WMD interface functions */
+-	bridge_drv_entry(&drv_fxns, pstrWMDFileName);
++	bridge_drv_entry(&drv_fxns, driver_file_name);
+ 	if (DSP_FAILED(cfg_get_object((u32 *) &hdrv_obj, REG_DRV_OBJECT))) {
+ 		/* don't propogate CFG errors from this PROC function */
+ 		status = -EPERM;
+@@ -176,11 +176,12 @@ dsp_status dev_create_device(OUT struct dev_object **phDevObject,
+ 			dev_obj->dev_type = DSP_UNIT;
+ 			/* Store this WMD's interface functions, based on its
+ 			 * version. */
+-			store_interface_fxns(drv_fxns, &dev_obj->wmd_interface);
++			store_interface_fxns(drv_fxns,
++						&dev_obj->bridge_interface);
+ 
+ 			/* Call fxn_dev_create() to get the WMD's device
+ 			 * context handle. */
+-			status = (dev_obj->wmd_interface.pfn_dev_create)
++			status = (dev_obj->bridge_interface.pfn_dev_create)
+ 			    (&dev_obj->hbridge_context, dev_obj,
+ 			     host_res);
+ 			/* Assert bridge_dev_create()'s ensure clause: */
+@@ -233,7 +234,7 @@ dsp_status dev_create_device(OUT struct dev_object **phDevObject,
+ 		/* Only create DEH manager if we have an IO manager */
+ 		if (DSP_SUCCEEDED(status)) {
+ 			/* Instantiate the DEH module */
+-			status = (*dev_obj->wmd_interface.pfn_deh_create)
++			status = (*dev_obj->bridge_interface.pfn_deh_create)
+ 			    (&dev_obj->hdeh_mgr, dev_obj);
+ 		}
+ 		/* Create DMM mgr . */
+@@ -369,7 +370,7 @@ dsp_status dev_destroy_device(struct dev_object *hdev_obj)
+ 
+ 		if (dev_obj->hdeh_mgr) {
+ 			/* Uninitialize DEH module. */
+-			(*dev_obj->wmd_interface.pfn_deh_destroy)
++			(*dev_obj->bridge_interface.pfn_deh_destroy)
+ 			    (dev_obj->hdeh_mgr);
+ 			dev_obj->hdeh_mgr = NULL;
+ 		}
+@@ -386,7 +387,7 @@ dsp_status dev_destroy_device(struct dev_object *hdev_obj)
+ 		/* Call the driver's bridge_dev_destroy() function: */
+ 		/* Require of DevDestroy */
+ 		if (dev_obj->hbridge_context) {
+-			status = (*dev_obj->wmd_interface.pfn_dev_destroy)
++			status = (*dev_obj->bridge_interface.pfn_dev_destroy)
+ 			    (dev_obj->hbridge_context);
+ 			dev_obj->hbridge_context = NULL;
+ 		} else
+@@ -596,7 +597,7 @@ dsp_status dev_get_intf_fxns(struct dev_object *hdev_obj,
+ 	DBC_REQUIRE(ppIntfFxns != NULL);
+ 
+ 	if (hdev_obj) {
+-		*ppIntfFxns = &dev_obj->wmd_interface;
++		*ppIntfFxns = &dev_obj->bridge_interface;
+ 	} else {
+ 		*ppIntfFxns = NULL;
+ 		status = -EFAULT;
+@@ -881,14 +882,14 @@ dsp_status dev_start_device(struct cfg_devnode *dev_node_obj)
+ {
+ 	struct dev_object *hdev_obj = NULL;	/* handle to 'Bridge Device */
+ 	/* wmd filename */
+-	char sz_wmd_file_name[CFG_MAXSEARCHPATHLEN] = "UMA";
++	char bridge_file_name[CFG_MAXSEARCHPATHLEN] = "UMA";
+ 	dsp_status status;
+ 	struct mgr_object *hmgr_obj = NULL;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+ 	/* Given all resources, create a device object. */
+-	status = dev_create_device(&hdev_obj, sz_wmd_file_name,
++	status = dev_create_device(&hdev_obj, bridge_file_name,
+ 				   dev_node_obj);
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* Store away the hdev_obj with the DEVNODE */
+@@ -1072,7 +1073,7 @@ dsp_status dev_get_dev_type(struct dev_object *hdevObject, u8 *dev_type)
+ static void store_interface_fxns(struct bridge_drv_interface *drv_fxns,
+ 				 OUT struct bridge_drv_interface *intf_fxns)
+ {
+-	u32 dw_wmd_version;
++	u32 bridge_version;
+ 
+ 	/* Local helper macro: */
+ #define  STORE_FXN(cast, pfn) \
+@@ -1083,12 +1084,12 @@ static void store_interface_fxns(struct bridge_drv_interface *drv_fxns,
+ 	DBC_REQUIRE(drv_fxns != NULL);
+ 	DBC_REQUIRE(MAKEVERSION(drv_fxns->dw_wcd_major_version,
+ 				drv_fxns->dw_wcd_minor_version) <= WCDVERSION);
+-	dw_wmd_version = MAKEVERSION(drv_fxns->dw_wcd_major_version,
++	bridge_version = MAKEVERSION(drv_fxns->dw_wcd_major_version,
+ 				     drv_fxns->dw_wcd_minor_version);
+ 	intf_fxns->dw_wcd_major_version = drv_fxns->dw_wcd_major_version;
+ 	intf_fxns->dw_wcd_minor_version = drv_fxns->dw_wcd_minor_version;
+ 	/* Install functions up to WCD version .80 (first alpha): */
+-	if (dw_wmd_version > 0) {
++	if (bridge_version > 0) {
+ 		STORE_FXN(fxn_dev_create, pfn_dev_create);
+ 		STORE_FXN(fxn_dev_destroy, pfn_dev_destroy);
+ 		STORE_FXN(fxn_dev_ctrl, pfn_dev_cntrl);
+diff --git a/drivers/dsp/bridge/wmd/_tiomap.h b/drivers/dsp/bridge/wmd/_tiomap.h
+index c5942a9..0d5da15 100644
+--- a/drivers/dsp/bridge/wmd/_tiomap.h
++++ b/drivers/dsp/bridge/wmd/_tiomap.h
+@@ -25,7 +25,7 @@
+ #include <mach-omap2/cm-regbits-34xx.h>
+ #include <dspbridge/devdefs.h>
+ #include <hw_defs.h>
+-#include <dspbridge/wmdioctl.h>	/* for wmdioctl_extproc defn */
++#include <dspbridge/wmdioctl.h>	/* for bridge_ioctl_extproc defn */
+ #include <dspbridge/sync.h>
+ #include <dspbridge/clk.h>
+ 
+@@ -338,7 +338,7 @@ struct bridge_dev_context {
+ 	 * [See WMD_BRD_Ctrl()]  PROC info contains DSP-MMU TLB entries.
+ 	 */
+ 	/* DMMU TLB entries */
+-	struct wmdioctl_extproc atlb_entry[WMDIOCTL_NUMOFMMUTLB];
++	struct bridge_ioctl_extproc atlb_entry[WMDIOCTL_NUMOFMMUTLB];
+ 	u32 dw_brd_state;	/* Last known board state. */
+ 	u32 ul_int_mask;	/* int mask */
+ 	u16 io_base;		/* Board I/O base */
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index fd1a237..39de131 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -308,7 +308,7 @@ dsp_status bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	u8 num_procs = 0;
+ 	s32 ndx = 0;
+ 	/* DSP MMU setup table */
+-	struct wmdioctl_extproc ae_proc[WMDIOCTL_NUMOFMMUTLB];
++	struct bridge_ioctl_extproc ae_proc[WMDIOCTL_NUMOFMMUTLB];
+ 	struct cfg_hostres *host_res;
+ 	struct bridge_dev_context *pbridge_context;
+ 	u32 map_attrs;
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430.c b/drivers/dsp/bridge/wmd/tiomap3430.c
+index fb5ae74..38d6f18 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430.c
+@@ -248,14 +248,14 @@ static void bad_page_dump(u32 pa, struct page *pg)
+  *      Mini Driver entry point.
+  */
+ void bridge_drv_entry(OUT struct bridge_drv_interface **ppDrvInterface,
+-		   IN CONST char *pstrWMDFileName)
++		   IN CONST char *driver_file_name)
+ {
+ 
+-	DBC_REQUIRE(pstrWMDFileName != NULL);
++	DBC_REQUIRE(driver_file_name != NULL);
+ 
+ 	io_sm_init();		/* Initialization of io_sm module */
+ 
+-	if (strcmp(pstrWMDFileName, "UMA") == 0)
++	if (strcmp(driver_file_name, "UMA") == 0)
+ 		*ppDrvInterface = &drv_interface_fxns;
+ 	else
+ 		dev_dbg(bridge, "%s Unknown WMD file name", __func__);
+@@ -985,7 +985,8 @@ static dsp_status bridge_dev_ctrl(struct bridge_dev_context *dev_context,
+ 				  u32 dw_cmd, IN OUT void *pargs)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmdioctl_extproc *pa_ext_proc = (struct wmdioctl_extproc *)pargs;
++	struct bridge_ioctl_extproc *pa_ext_proc =
++					(struct bridge_ioctl_extproc *)pargs;
+ 	s32 ndx;
+ 
+ 	switch (dw_cmd) {
+-- 
+1.7.0.4
+

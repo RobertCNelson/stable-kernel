@@ -1,0 +1,1285 @@
+From 8420278ac8aa6b0789848cfc2425ad693d07e97c Mon Sep 17 00:00:00 2001
+From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+Date: Fri, 7 May 2010 16:37:43 -0500
+Subject: [PATCH 122/135] DSPBRIDGE: Rename wmd_dev_context structure by bridge_dev_context
+
+This change is done because "wmd" refers to Windows OS.
+
+wmd = windows mini driver
+
+And the new name "bridge_dev_context" make more sense.
+
+Signed-off-by: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/dev.h   |    2 +-
+ arch/arm/plat-omap/include/dspbridge/io_sm.h |   18 ++--
+ arch/arm/plat-omap/include/dspbridge/wmd.h   |   30 ++++----
+ drivers/dsp/bridge/pmgr/dev.c                |    4 +-
+ drivers/dsp/bridge/pmgr/ioobj.h              |    2 +-
+ drivers/dsp/bridge/rmgr/node.c               |    8 +-
+ drivers/dsp/bridge/rmgr/proc.c               |    2 +-
+ drivers/dsp/bridge/rmgr/pwr.c                |   16 ++--
+ drivers/dsp/bridge/wmd/_deh.h                |    2 +-
+ drivers/dsp/bridge/wmd/_tiomap.h             |   13 ++--
+ drivers/dsp/bridge/wmd/_tiomap_mmu.h         |    2 +-
+ drivers/dsp/bridge/wmd/_tiomap_pwr.h         |   22 +++--
+ drivers/dsp/bridge/wmd/_tiomap_util.h        |    2 +-
+ drivers/dsp/bridge/wmd/chnl_sm.c             |    4 +-
+ drivers/dsp/bridge/wmd/dsp-clock.c           |    2 +-
+ drivers/dsp/bridge/wmd/io_sm.c               |   24 +++---
+ drivers/dsp/bridge/wmd/mmu_fault.c           |    8 +-
+ drivers/dsp/bridge/wmd/tiomap3430.c          |  114 +++++++++++++-------------
+ drivers/dsp/bridge/wmd/tiomap3430_pwr.c      |   17 ++--
+ drivers/dsp/bridge/wmd/tiomap_io.c           |   10 +-
+ drivers/dsp/bridge/wmd/tiomap_io.h           |   12 ++--
+ drivers/dsp/bridge/wmd/ue_deh.c              |    8 +-
+ 22 files changed, 165 insertions(+), 157 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/dev.h b/arch/arm/plat-omap/include/dspbridge/dev.h
+index 226c9d6..f99d7be 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dev.h
++++ b/arch/arm/plat-omap/include/dspbridge/dev.h
+@@ -522,7 +522,7 @@ extern dsp_status dev_get_symbol(struct dev_object *hdev_obj,
+  *      else:           *phWmdContext is NULL;
+  */
+ extern dsp_status dev_get_wmd_context(struct dev_object *hdev_obj,
+-				      OUT struct wmd_dev_context
++				      OUT struct bridge_dev_context
+ 				      **phWmdContext);
+ 
+ /*
+diff --git a/arch/arm/plat-omap/include/dspbridge/io_sm.h b/arch/arm/plat-omap/include/dspbridge/io_sm.h
+index a3c996d..7dd8174 100644
+--- a/arch/arm/plat-omap/include/dspbridge/io_sm.h
++++ b/arch/arm/plat-omap/include/dspbridge/io_sm.h
+@@ -270,21 +270,21 @@ extern dsp_status io_sh_msetting(struct io_mgr *hio_mgr, u8 desc, void *pargs);
+ /* Maximum channel bufsize that can be used. */
+ extern u32 io_buf_size(struct io_mgr *hio_mgr);
+ 
+-extern u32 io_read_value(struct wmd_dev_context *hDevContext, u32 dwDSPAddr);
++extern u32 io_read_value(struct bridge_dev_context *hDevContext, u32 dwDSPAddr);
+ 
+-extern void io_write_value(struct wmd_dev_context *hDevContext,
++extern void io_write_value(struct bridge_dev_context *hDevContext,
+ 			   u32 dwDSPAddr, u32 dwValue);
+ 
+-extern u32 io_read_value_long(struct wmd_dev_context *hDevContext,
++extern u32 io_read_value_long(struct bridge_dev_context *hDevContext,
+ 			      u32 dwDSPAddr);
+ 
+-extern void io_write_value_long(struct wmd_dev_context *hDevContext,
++extern void io_write_value_long(struct bridge_dev_context *hDevContext,
+ 				u32 dwDSPAddr, u32 dwValue);
+ 
+-extern void io_or_set_value(struct wmd_dev_context *hDevContext,
++extern void io_or_set_value(struct bridge_dev_context *hDevContext,
+ 			    u32 dwDSPAddr, u32 dwValue);
+ 
+-extern void io_and_set_value(struct wmd_dev_context *hDevContext,
++extern void io_and_set_value(struct bridge_dev_context *hDevContext,
+ 			     u32 dwDSPAddr, u32 dwValue);
+ 
+ extern void io_intr_dsp2(IN struct io_mgr *pio_mgr, IN u16 mb_val);
+@@ -295,12 +295,12 @@ extern void io_sm_init(void);
+  *  ========print_dsp_trace_buffer ========
+  *      Print DSP tracebuffer.
+  */
+-extern dsp_status print_dsp_trace_buffer(struct wmd_dev_context
++extern dsp_status print_dsp_trace_buffer(struct bridge_dev_context
+ 					 *hwmd_context);
+ 
+-dsp_status dump_dsp_stack(struct wmd_dev_context *wmd_context);
++dsp_status dump_dsp_stack(struct bridge_dev_context *wmd_context);
+ 
+-void dump_dl_modules(struct wmd_dev_context *wmd_context);
++void dump_dl_modules(struct bridge_dev_context *wmd_context);
+ 
+ #ifndef DSP_TRACEBUF_DISABLED
+ void print_dsp_debug_trace(struct io_mgr *hio_mgr);
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmd.h b/arch/arm/plat-omap/include/dspbridge/wmd.h
+index 18413b3..fd54a1a 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmd.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmd.h
+@@ -44,7 +44,7 @@
+ #define WMD_RESERVEDIOCTLBASE   0x8000
+ 
+ /* Handle to mini-driver's private device context. */
+-struct wmd_dev_context;
++struct bridge_dev_context;
+ 
+ /*--------------------------------------------------------------------------- */
+ /* 'Bridge MINI DRIVER FUNCTION TYPES */
+@@ -67,7 +67,7 @@ struct wmd_dev_context;
+  *      DSP_SOK:        Board is in BRD_IDLE state;
+  *      else:           Board state is indeterminate.
+  */
+-typedef dsp_status(*fxn_brd_monitor) (struct wmd_dev_context *hDevContext);
++typedef dsp_status(*fxn_brd_monitor) (struct bridge_dev_context *hDevContext);
+ 
+ /*
+  *  ======== fxn_brd_setstate ========
+@@ -86,7 +86,7 @@ typedef dsp_status(*fxn_brd_monitor) (struct wmd_dev_context *hDevContext);
+  *      ulBrdState  <= BRD_LASTSTATE.
+  *  Update the Board state to the specified state.
+  */
+-typedef dsp_status(*fxn_brd_setstate) (struct wmd_dev_context
++typedef dsp_status(*fxn_brd_setstate) (struct bridge_dev_context
+ 				       * hDevContext, u32 ulBrdState);
+ 
+ /*
+@@ -108,7 +108,7 @@ typedef dsp_status(*fxn_brd_setstate) (struct wmd_dev_context
+  *                      Interrupts to the PC are enabled.
+  *      else:           Board state is indeterminate.
+  */
+-typedef dsp_status(*fxn_brd_start) (struct wmd_dev_context
++typedef dsp_status(*fxn_brd_start) (struct bridge_dev_context
+ 				    * hDevContext, u32 dwDSPAddr);
+ 
+ /*
+@@ -131,7 +131,7 @@ typedef dsp_status(*fxn_brd_start) (struct wmd_dev_context
+  *                      Interrupts to the PC are enabled.
+  *      else:           Board state is indeterminate.
+  */
+-typedef dsp_status(*fxn_brd_memcopy) (struct wmd_dev_context
++typedef dsp_status(*fxn_brd_memcopy) (struct bridge_dev_context
+ 				      * hDevContext,
+ 				      u32 ulDspDestAddr,
+ 				      u32 ulDspSrcAddr,
+@@ -156,7 +156,7 @@ typedef dsp_status(*fxn_brd_memcopy) (struct wmd_dev_context
+  *      pHostBuf != NULL.
+  *  Ensures:
+  */
+-typedef dsp_status(*fxn_brd_memwrite) (struct wmd_dev_context
++typedef dsp_status(*fxn_brd_memwrite) (struct bridge_dev_context
+ 				       * hDevContext,
+ 				       IN u8 *pHostBuf,
+ 				       u32 dwDSPAddr, u32 ul_num_bytes,
+@@ -179,7 +179,7 @@ typedef dsp_status(*fxn_brd_memwrite) (struct wmd_dev_context
+  *      hDevContext != NULL;
+  *  Ensures:
+  */
+-typedef dsp_status(*fxn_brd_memmap) (struct wmd_dev_context
++typedef dsp_status(*fxn_brd_memmap) (struct bridge_dev_context
+ 				     * hDevContext, u32 ul_mpu_addr,
+ 				     u32 ulVirtAddr, u32 ul_num_bytes,
+ 				     u32 ulMapAttrs);
+@@ -199,7 +199,7 @@ typedef dsp_status(*fxn_brd_memmap) (struct wmd_dev_context
+  *      hDevContext != NULL;
+  *  Ensures:
+  */
+-typedef dsp_status(*fxn_brd_memunmap) (struct wmd_dev_context
++typedef dsp_status(*fxn_brd_memunmap) (struct bridge_dev_context
+ 				       * hDevContext,
+ 				       u32 ulVirtAddr, u32 ul_num_bytes);
+ 
+@@ -220,7 +220,7 @@ typedef dsp_status(*fxn_brd_memunmap) (struct wmd_dev_context
+  *                      Interrupts to the PC are disabled.
+  *      else:           Board state is indeterminate.
+  */
+-typedef dsp_status(*fxn_brd_stop) (struct wmd_dev_context *hDevContext);
++typedef dsp_status(*fxn_brd_stop) (struct bridge_dev_context *hDevContext);
+ 
+ /*
+  *  ======== bridge_brd_status ========
+@@ -237,7 +237,7 @@ typedef dsp_status(*fxn_brd_stop) (struct wmd_dev_context *hDevContext);
+  *  Ensures:
+  *      *pdwState is one of {BRD_STOPPED, BRD_IDLE, BRD_RUNNING, BRD_UNKNOWN};
+  */
+-typedef dsp_status(*fxn_brd_status) (struct wmd_dev_context *hDevContext,
++typedef dsp_status(*fxn_brd_status) (struct bridge_dev_context *hDevContext,
+ 				     int *pdwState);
+ 
+ /*
+@@ -261,7 +261,7 @@ typedef dsp_status(*fxn_brd_status) (struct wmd_dev_context *hDevContext,
+  *  Ensures:
+  *  Will not write more than ul_num_bytes bytes into pHostBuf.
+  */
+-typedef dsp_status(*fxn_brd_read) (struct wmd_dev_context *hDevContext,
++typedef dsp_status(*fxn_brd_read) (struct bridge_dev_context *hDevContext,
+ 				   OUT u8 *pHostBuf,
+ 				   u32 dwDSPAddr,
+ 				   u32 ul_num_bytes, u32 ulMemType);
+@@ -286,7 +286,7 @@ typedef dsp_status(*fxn_brd_read) (struct wmd_dev_context *hDevContext,
+  *      pHostBuf != NULL.
+  *  Ensures:
+  */
+-typedef dsp_status(*fxn_brd_write) (struct wmd_dev_context *hDevContext,
++typedef dsp_status(*fxn_brd_write) (struct bridge_dev_context *hDevContext,
+ 				    IN u8 *pHostBuf,
+ 				    u32 dwDSPAddr,
+ 				    u32 ul_num_bytes, u32 ulMemType);
+@@ -685,7 +685,7 @@ typedef dsp_status(*fxn_chnl_registernotify)
+  *      function returns, they must not be stored into the device context
+  *      structure.
+  */
+-typedef dsp_status(*fxn_dev_create) (OUT struct wmd_dev_context
++typedef dsp_status(*fxn_dev_create) (OUT struct bridge_dev_context
+ 				     **phDevContext,
+ 				     struct dev_object
+ 				     * hdev_obj,
+@@ -708,7 +708,7 @@ typedef dsp_status(*fxn_dev_create) (OUT struct wmd_dev_context
+  *      IOCTL completion routines provided.
+  *  Ensures:
+  */
+-typedef dsp_status(*fxn_dev_ctrl) (struct wmd_dev_context *hDevContext,
++typedef dsp_status(*fxn_dev_ctrl) (struct bridge_dev_context *hDevContext,
+ 				   u32 dw_cmd, IN OUT void *pargs);
+ 
+ /*
+@@ -728,7 +728,7 @@ typedef dsp_status(*fxn_dev_ctrl) (struct wmd_dev_context *hDevContext,
+  *  Ensures:
+  *      DSP_SOK: Device context is freed.
+  */
+-typedef dsp_status(*fxn_dev_destroy) (struct wmd_dev_context *hDevContext);
++typedef dsp_status(*fxn_dev_destroy) (struct bridge_dev_context *hDevContext);
+ 
+ /*
+  *  ======== bridge_deh_create ========
+diff --git a/drivers/dsp/bridge/pmgr/dev.c b/drivers/dsp/bridge/pmgr/dev.c
+index b6cb933..3232f8e 100644
+--- a/drivers/dsp/bridge/pmgr/dev.c
++++ b/drivers/dsp/bridge/pmgr/dev.c
+@@ -64,7 +64,7 @@ struct dev_object {
+ 	struct list_head link;	/* Link to next dev_object. */
+ 	u8 dev_type;		/* Device Type */
+ 	struct cfg_devnode *dev_node_obj;	/* Platform specific dev id */
+-	struct wmd_dev_context *hwmd_context;	/* WMD Context Handle */
++	struct bridge_dev_context *hwmd_context;	/* WMD Context Handle */
+ 	/* Function interface to WMD. */
+ 	struct bridge_drv_interface wmd_interface;
+ 	struct brd_object *lock_owner;	/* Client with exclusive access. */
+@@ -720,7 +720,7 @@ dsp_status dev_get_symbol(struct dev_object *hdev_obj,
+  *      Retrieve the WMD Context handle, as returned by the WMD_Create fxn.
+  */
+ dsp_status dev_get_wmd_context(struct dev_object *hdev_obj,
+-			       OUT struct wmd_dev_context **phWmdContext)
++			       OUT struct bridge_dev_context **phWmdContext)
+ {
+ 	dsp_status status = DSP_SOK;
+ 	struct dev_object *dev_obj = hdev_obj;
+diff --git a/drivers/dsp/bridge/pmgr/ioobj.h b/drivers/dsp/bridge/pmgr/ioobj.h
+index f481765..4a3c35b 100644
+--- a/drivers/dsp/bridge/pmgr/ioobj.h
++++ b/drivers/dsp/bridge/pmgr/ioobj.h
+@@ -30,7 +30,7 @@
+  */
+ struct io_mgr_ {
+ 	/* These must be the first fields in a io_mgr struct: */
+-	struct wmd_dev_context *hwmd_context;	/* WMD device context. */
++	struct bridge_dev_context *hwmd_context;	/* Bridge context. */
+ 	struct bridge_drv_interface *intf_fxns;	/* Function interface to WMD. */
+ 	struct dev_object *hdev_obj;	/* Device this board represents. */
+ };
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index b5a57fb..9334cb9 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -312,7 +312,7 @@ dsp_status node_allocate(struct proc_object *hprocessor,
+ 	u32 ul_stack_seg_addr, ul_stack_seg_val;
+ 	u32 ul_gpp_mem_base;
+ 	struct cfg_hostres *host_res;
+-	struct wmd_dev_context *pwmd_context;
++	struct bridge_dev_context *pwmd_context;
+ 	u32 mapped_addr = 0;
+ 	u32 map_attrs = 0x0;
+ 	struct dsp_processorstate proc_state;
+@@ -2963,7 +2963,7 @@ static dsp_status get_proc_props(struct node_mgr *hnode_mgr,
+ 				 struct dev_object *hdev_obj)
+ {
+ 	struct cfg_hostres *host_res;
+-	struct wmd_dev_context *pwmd_context;
++	struct bridge_dev_context *pwmd_context;
+ 	dsp_status status = DSP_SOK;
+ 
+ 	status = dev_get_wmd_context(hdev_obj, &pwmd_context);
+@@ -3131,7 +3131,7 @@ static u32 ovly(void *priv_ref, u32 ulDspRunAddr, u32 ulDspLoadAddr,
+ 	u32 ul_size;
+ 	u32 ul_timeout;
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *hwmd_context;
++	struct bridge_dev_context *hwmd_context;
+ 	struct bridge_drv_interface *intf_fxns;	/* Function interface to WMD */
+ 
+ 	DBC_REQUIRE(hnode);
+@@ -3173,7 +3173,7 @@ static u32 mem_write(void *priv_ref, u32 ulDspAddr, void *pbuf,
+ 	u16 mem_sect_type;
+ 	u32 ul_timeout;
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *hwmd_context;
++	struct bridge_dev_context *hwmd_context;
+ 	struct bridge_drv_interface *intf_fxns;	/* Function interface to WMD */
+ 
+ 	DBC_REQUIRE(hnode);
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index 9649016..c9e70b9 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -92,7 +92,7 @@ struct proc_object {
+ 					 * GPP Client attached
+ 					 */
+ 	struct ntfy_object *ntfy_obj;	/* Manages  notifications */
+-	struct wmd_dev_context *hwmd_context;	/* WMD Context Handle */
++	struct bridge_dev_context *hwmd_context;	/* WMD Context Handle */
+ 	struct bridge_drv_interface *intf_fxns;	/* Function interface to WMD */
+ 	char *psz_last_coff;
+ 	struct list_head proc_list;
+diff --git a/drivers/dsp/bridge/rmgr/pwr.c b/drivers/dsp/bridge/rmgr/pwr.c
+index 4262109..cd690df 100644
+--- a/drivers/dsp/bridge/rmgr/pwr.c
++++ b/drivers/dsp/bridge/rmgr/pwr.c
+@@ -39,7 +39,7 @@
+ dsp_status pwr_sleep_dsp(IN CONST u32 sleepCode, IN CONST u32 timeout)
+ {
+ 	struct bridge_drv_interface *intf_fxns;
+-	struct wmd_dev_context *dw_context;
++	struct bridge_dev_context *dw_context;
+ 	dsp_status status = -EPERM;
+ 	struct dev_object *hdev_obj = NULL;
+ 	u32 ioctlcode = 0;
+@@ -50,7 +50,7 @@ dsp_status pwr_sleep_dsp(IN CONST u32 sleepCode, IN CONST u32 timeout)
+ 	     hdev_obj =
+ 	     (struct dev_object *)drv_get_next_dev_object((u32) hdev_obj)) {
+ 		if (DSP_FAILED(dev_get_wmd_context(hdev_obj,
+-						   (struct wmd_dev_context **)
++						(struct bridge_dev_context **)
+ 						   &dw_context))) {
+ 			continue;
+ 		}
+@@ -82,7 +82,7 @@ dsp_status pwr_sleep_dsp(IN CONST u32 sleepCode, IN CONST u32 timeout)
+ dsp_status pwr_wake_dsp(IN CONST u32 timeout)
+ {
+ 	struct bridge_drv_interface *intf_fxns;
+-	struct wmd_dev_context *dw_context;
++	struct bridge_dev_context *dw_context;
+ 	dsp_status status = -EPERM;
+ 	struct dev_object *hdev_obj = NULL;
+ 	u32 arg = timeout;
+@@ -92,7 +92,7 @@ dsp_status pwr_wake_dsp(IN CONST u32 timeout)
+ 	     hdev_obj = (struct dev_object *)drv_get_next_dev_object
+ 	     ((u32) hdev_obj)) {
+ 		if (DSP_SUCCEEDED(dev_get_wmd_context(hdev_obj,
+-						      (struct wmd_dev_context
++						      (struct bridge_dev_context
+ 						       **)&dw_context))) {
+ 			if (DSP_SUCCEEDED
+ 			    (dev_get_intf_fxns
+@@ -115,7 +115,7 @@ dsp_status pwr_wake_dsp(IN CONST u32 timeout)
+ dsp_status pwr_pm_pre_scale(IN u16 voltage_domain, u32 level)
+ {
+ 	struct bridge_drv_interface *intf_fxns;
+-	struct wmd_dev_context *dw_context;
++	struct bridge_dev_context *dw_context;
+ 	dsp_status status = -EPERM;
+ 	struct dev_object *hdev_obj = NULL;
+ 	u32 arg[2];
+@@ -128,7 +128,7 @@ dsp_status pwr_pm_pre_scale(IN u16 voltage_domain, u32 level)
+ 	     hdev_obj = (struct dev_object *)drv_get_next_dev_object
+ 	     ((u32) hdev_obj)) {
+ 		if (DSP_SUCCEEDED(dev_get_wmd_context(hdev_obj,
+-						      (struct wmd_dev_context
++						      (struct bridge_dev_context
+ 						       **)&dw_context))) {
+ 			if (DSP_SUCCEEDED
+ 			    (dev_get_intf_fxns
+@@ -151,7 +151,7 @@ dsp_status pwr_pm_pre_scale(IN u16 voltage_domain, u32 level)
+ dsp_status pwr_pm_post_scale(IN u16 voltage_domain, u32 level)
+ {
+ 	struct bridge_drv_interface *intf_fxns;
+-	struct wmd_dev_context *dw_context;
++	struct bridge_dev_context *dw_context;
+ 	dsp_status status = -EPERM;
+ 	struct dev_object *hdev_obj = NULL;
+ 	u32 arg[2];
+@@ -164,7 +164,7 @@ dsp_status pwr_pm_post_scale(IN u16 voltage_domain, u32 level)
+ 	     hdev_obj = (struct dev_object *)drv_get_next_dev_object
+ 	     ((u32) hdev_obj)) {
+ 		if (DSP_SUCCEEDED(dev_get_wmd_context(hdev_obj,
+-						      (struct wmd_dev_context
++						      (struct bridge_dev_context
+ 						       **)&dw_context))) {
+ 			if (DSP_SUCCEEDED
+ 			    (dev_get_intf_fxns
+diff --git a/drivers/dsp/bridge/wmd/_deh.h b/drivers/dsp/bridge/wmd/_deh.h
+index d7f2ef4..7fd2966 100644
+--- a/drivers/dsp/bridge/wmd/_deh.h
++++ b/drivers/dsp/bridge/wmd/_deh.h
+@@ -24,7 +24,7 @@
+ 
+ /* DEH Manager: only one created per board: */
+ struct deh_mgr {
+-	struct wmd_dev_context *hwmd_context;	/* WMD device context. */
++	struct bridge_dev_context *hwmd_context;	/* Bridge context. */
+ 	struct ntfy_object *ntfy_obj;	/* NTFY object */
+ 	struct dsp_errorinfo err_info;	/* DSP exception info. */
+ 
+diff --git a/drivers/dsp/bridge/wmd/_tiomap.h b/drivers/dsp/bridge/wmd/_tiomap.h
+index 81f61fa..c5942a9 100644
+--- a/drivers/dsp/bridge/wmd/_tiomap.h
++++ b/drivers/dsp/bridge/wmd/_tiomap.h
+@@ -309,7 +309,7 @@ static const struct bpwr_clk_t bpwr_clks[] = {
+ #define CLEAR_BIT_INDEX(reg, index)   (reg &= ~(1 << (index)))
+ 
+ /* This mini driver's device context: */
+-struct wmd_dev_context {
++struct bridge_dev_context {
+ 	struct dev_object *hdev_obj;	/* Handle to WCD device object. */
+ 	u32 dw_dsp_base_addr;	/* Arm's API to DSP virt base addr */
+ 	/*
+@@ -362,10 +362,11 @@ extern s32 dsp_debug;
+ 	 *     Given a DSP virtual address, traverse the page table and return
+ 	 *     a corresponding MPU physical address and size.
+ 	 */
+-extern dsp_status wmd_tlb_dsp_va_to_mpu_pa(struct wmd_dev_context *dev_context,
+-					   IN u32 ulVirtAddr,
+-					   OUT u32 *ulPhysAddr,
+-					   OUT u32 *sizeTlb);
++extern dsp_status wmd_tlb_dsp_va_to_mpu_pa(
++					struct bridge_dev_context *dev_context,
++					IN u32 ulVirtAddr,
++					OUT u32 *ulPhysAddr,
++					OUT u32 *sizeTlb);
+ 
+ /*
+  *  ======== sm_interrupt_dsp ========
+@@ -382,6 +383,6 @@ extern dsp_status wmd_tlb_dsp_va_to_mpu_pa(struct wmd_dev_context *dev_context,
+  *  Requires:
+  *  Ensures:
+  */
+-dsp_status sm_interrupt_dsp(struct wmd_dev_context *dev_context, u16 mb_val);
++dsp_status sm_interrupt_dsp(struct bridge_dev_context *dev_context, u16 mb_val);
+ 
+ #endif /* _TIOMAP_ */
+diff --git a/drivers/dsp/bridge/wmd/_tiomap_mmu.h b/drivers/dsp/bridge/wmd/_tiomap_mmu.h
+index 7af9e5e..66c1249 100644
+--- a/drivers/dsp/bridge/wmd/_tiomap_mmu.h
++++ b/drivers/dsp/bridge/wmd/_tiomap_mmu.h
+@@ -29,7 +29,7 @@
+  *  SECTION = 1MB, LARGE_PAGE = 64KB, SMALL_PAGE = 4KB, TINY_PAGE = 1KB.
+  *  DSP Byte address 0x40_0000 is word addr 0x20_0000.
+  */
+-extern void configure_dsp_mmu(struct wmd_dev_context *dev_context,
++extern void configure_dsp_mmu(struct bridge_dev_context *dev_context,
+ 			      u32 dataBasePhys,
+ 			      u32 dspBaseVirt,
+ 			      u32 sizeInBytes,
+diff --git a/drivers/dsp/bridge/wmd/_tiomap_pwr.h b/drivers/dsp/bridge/wmd/_tiomap_pwr.h
+index 5212101..451f589 100644
+--- a/drivers/dsp/bridge/wmd/_tiomap_pwr.h
++++ b/drivers/dsp/bridge/wmd/_tiomap_pwr.h
+@@ -29,46 +29,50 @@ extern struct mailbox_context mboxsetting;
+  * ======== wake_dsp =========
+  * Wakes up the DSP from DeepSleep
+  */
+-extern dsp_status wake_dsp(struct wmd_dev_context *dev_context, IN void *pargs);
++extern dsp_status wake_dsp(struct bridge_dev_context *dev_context,
++							IN void *pargs);
+ 
+ /*
+  * ======== sleep_dsp =========
+  * Places the DSP in DeepSleep.
+  */
+-extern dsp_status sleep_dsp(struct wmd_dev_context *dev_context,
++extern dsp_status sleep_dsp(struct bridge_dev_context *dev_context,
+ 			    IN u32 dw_cmd, IN void *pargs);
+ /*
+  *  ========interrupt_dsp========
+  *  	  Sends an interrupt to DSP unconditionally.
+  */
+-extern void interrupt_dsp(struct wmd_dev_context *dev_context, IN u16 mb_val);
++extern void interrupt_dsp(struct bridge_dev_context *dev_context,
++							IN u16 mb_val);
+ 
+ /*
+  * ======== wake_dsp =========
+  * Wakes up the DSP from DeepSleep
+  */
+-extern dsp_status dsp_peripheral_clk_ctrl(struct wmd_dev_context *dev_context,
+-					  IN void *pargs);
++extern dsp_status dsp_peripheral_clk_ctrl(struct bridge_dev_context
++					*dev_context, IN void *pargs);
+ /*
+  *  ======== handle_hibernation_from_dsp ========
+  *  	Handle Hibernation requested from DSP
+  */
+-dsp_status handle_hibernation_from_dsp(struct wmd_dev_context *dev_context);
++dsp_status handle_hibernation_from_dsp(struct bridge_dev_context *dev_context);
+ /*
+  *  ======== post_scale_dsp ========
+  *  	Handle Post Scale notification to DSP
+  */
+-dsp_status post_scale_dsp(struct wmd_dev_context *dev_context, IN void *pargs);
++dsp_status post_scale_dsp(struct bridge_dev_context *dev_context,
++							IN void *pargs);
+ /*
+  *  ======== pre_scale_dsp ========
+  *  	Handle Pre Scale notification to DSP
+  */
+-dsp_status pre_scale_dsp(struct wmd_dev_context *dev_context, IN void *pargs);
++dsp_status pre_scale_dsp(struct bridge_dev_context *dev_context,
++							IN void *pargs);
+ /*
+  *  ======== handle_constraints_set ========
+  *  	Handle constraints request from DSP
+  */
+-dsp_status handle_constraints_set(struct wmd_dev_context *dev_context,
++dsp_status handle_constraints_set(struct bridge_dev_context *dev_context,
+ 				  IN void *pargs);
+ 
+ /*
+diff --git a/drivers/dsp/bridge/wmd/_tiomap_util.h b/drivers/dsp/bridge/wmd/_tiomap_util.h
+index e449946..ccdd678 100644
+--- a/drivers/dsp/bridge/wmd/_tiomap_util.h
++++ b/drivers/dsp/bridge/wmd/_tiomap_util.h
+@@ -37,7 +37,7 @@
+  *  The argument dw_sync_addr is set to 1 before releasing the DSP.
+  *  If the DSP starts running, it will clear this location.
+  */
+-extern bool wait_for_start(struct wmd_dev_context *dev_context,
++extern bool wait_for_start(struct bridge_dev_context *dev_context,
+ 			   u32 dw_sync_addr);
+ 
+ #endif /* _TIOMAP_UTIL_ */
+diff --git a/drivers/dsp/bridge/wmd/chnl_sm.c b/drivers/dsp/bridge/wmd/chnl_sm.c
+index d62acf2..639367b 100644
+--- a/drivers/dsp/bridge/wmd/chnl_sm.c
++++ b/drivers/dsp/bridge/wmd/chnl_sm.c
+@@ -96,7 +96,7 @@ dsp_status bridge_chnl_add_io_req(struct chnl_object *chnl_obj, void *pHostBuf,
+ 	dsp_status status = DSP_SOK;
+ 	struct chnl_object *pchnl = (struct chnl_object *)chnl_obj;
+ 	struct chnl_irp *chnl_packet_obj = NULL;
+-	struct wmd_dev_context *dev_ctxt;
++	struct bridge_dev_context *dev_ctxt;
+ 	struct dev_object *dev_obj;
+ 	u8 dw_state;
+ 	bool is_eos;
+@@ -579,7 +579,7 @@ dsp_status bridge_chnl_get_ioc(struct chnl_object *chnl_obj, u32 dwTimeOut,
+ 	bool dequeue_ioc = true;
+ 	struct chnl_ioc ioc = { NULL, 0, 0, 0, 0 };
+ 	u8 *host_sys_buf = NULL;
+-	struct wmd_dev_context *dev_ctxt;
++	struct bridge_dev_context *dev_ctxt;
+ 	struct dev_object *dev_obj;
+ 
+ 	/* Check args: */
+diff --git a/drivers/dsp/bridge/wmd/dsp-clock.c b/drivers/dsp/bridge/wmd/dsp-clock.c
+index 608ff03..03174c7 100644
+--- a/drivers/dsp/bridge/wmd/dsp-clock.c
++++ b/drivers/dsp/bridge/wmd/dsp-clock.c
+@@ -151,7 +151,7 @@ static void mcbsp_clk_prepare(bool flag, u8 id)
+ {
+ 	struct cfg_hostres *resources;
+ 	struct dev_object *hdev_object = NULL;
+-	struct wmd_dev_context *wmd_context = NULL;
++	struct bridge_dev_context *wmd_context = NULL;
+ 	u32 val;
+ 
+ 	hdev_object = (struct dev_object *)drv_get_first_dev_object();
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index 8eaed29..14d578e 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -89,7 +89,7 @@
+ /* IO Manager: only one created per board */
+ struct io_mgr {
+ 	/* These four fields must be the first fields in a io_mgr_ struct */
+-	struct wmd_dev_context *hwmd_context;	/* WMD device context */
++	struct bridge_dev_context *hwmd_context;	/* WMD device context */
+ 	struct bridge_drv_interface *intf_fxns;	/* Function interface to WMD */
+ 	struct dev_object *hdev_obj;	/* Device this board represents */
+ 
+@@ -146,9 +146,9 @@ static void input_msg(struct io_mgr *pio_mgr, struct msg_mgr *hmsg_mgr);
+ static void output_msg(struct io_mgr *pio_mgr, struct msg_mgr *hmsg_mgr);
+ static u32 find_ready_output(struct chnl_mgr *chnl_mgr_obj,
+ 			     struct chnl_object *pchnl, u32 dwMask);
+-static u32 read_data(struct wmd_dev_context *hDevContext, void *dest,
++static u32 read_data(struct bridge_dev_context *hDevContext, void *dest,
+ 		     void *pSrc, u32 usize);
+-static u32 write_data(struct wmd_dev_context *hDevContext, void *dest,
++static u32 write_data(struct bridge_dev_context *hDevContext, void *dest,
+ 		      void *pSrc, u32 usize);
+ 
+ /* Bus Addr (cached kernel) */
+@@ -167,7 +167,7 @@ dsp_status bridge_io_create(OUT struct io_mgr **phIOMgr,
+ 	dsp_status status = DSP_SOK;
+ 	struct io_mgr *pio_mgr = NULL;
+ 	struct shm *shared_mem = NULL;
+-	struct wmd_dev_context *hwmd_context = NULL;
++	struct bridge_dev_context *hwmd_context = NULL;
+ 	struct cfg_devnode *dev_node_obj;
+ 	struct chnl_mgr *hchnl_mgr;
+ 	u8 dev_type;
+@@ -310,7 +310,7 @@ dsp_status bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	/* DSP MMU setup table */
+ 	struct wmdioctl_extproc ae_proc[WMDIOCTL_NUMOFMMUTLB];
+ 	struct cfg_hostres *host_res;
+-	struct wmd_dev_context *pwmd_context;
++	struct bridge_dev_context *pwmd_context;
+ 	u32 map_attrs;
+ 	u32 shm0_end;
+ 	u32 ul_dyn_ext_base;
+@@ -1692,7 +1692,7 @@ func_end:
+  *  ======== read_data ========
+  *      Copies buffers from the shared memory to the host buffer.
+  */
+-static u32 read_data(struct wmd_dev_context *hDevContext, void *dest,
++static u32 read_data(struct bridge_dev_context *hDevContext, void *dest,
+ 		     void *pSrc, u32 usize)
+ {
+ 	memcpy(dest, pSrc, usize);
+@@ -1703,7 +1703,7 @@ static u32 read_data(struct wmd_dev_context *hDevContext, void *dest,
+  *  ======== write_data ========
+  *      Copies buffers from the host side buffer to the shared memory.
+  */
+-static u32 write_data(struct wmd_dev_context *hDevContext, void *dest,
++static u32 write_data(struct bridge_dev_context *hDevContext, void *dest,
+ 		      void *pSrc, u32 usize)
+ {
+ 	memcpy(dest, pSrc, usize);
+@@ -1874,7 +1874,7 @@ void print_dsp_debug_trace(struct io_mgr *hio_mgr)
+  *  Requires:
+  *      hdeh_mgr muse be valid. Checked in bridge_deh_notify.
+  */
+-dsp_status print_dsp_trace_buffer(struct wmd_dev_context *hwmd_context)
++dsp_status print_dsp_trace_buffer(struct bridge_dev_context *hwmd_context)
+ {
+ 	dsp_status status = DSP_SOK;
+ 	struct cod_manager *cod_mgr;
+@@ -1890,7 +1890,7 @@ dsp_status print_dsp_trace_buffer(struct wmd_dev_context *hwmd_context)
+ 	char *buf_end;
+ 	char *new_line;
+ 
+-	struct wmd_dev_context *pwmd_context = hwmd_context;
++	struct bridge_dev_context *pwmd_context = hwmd_context;
+ 	struct bridge_drv_interface *intf_fxns;
+ 	struct dev_object *dev_obj = (struct dev_object *)
+ 	    pwmd_context->hdev_obj;
+@@ -2043,7 +2043,7 @@ void io_sm_init(void)
+  * @wmd_context:	Mini driver's device context pointer.
+  *
+  */
+-dsp_status dump_dsp_stack(struct wmd_dev_context *wmd_context)
++dsp_status dump_dsp_stack(struct bridge_dev_context *wmd_context)
+ {
+ 	dsp_status status = DSP_SOK;
+ 	struct cod_manager *code_mgr;
+@@ -2233,11 +2233,11 @@ func_end:
+  * @wmd_context:		Mini driver's device context pointer.
+  *
+  */
+-void dump_dl_modules(struct wmd_dev_context *wmd_context)
++void dump_dl_modules(struct bridge_dev_context *wmd_context)
+ {
+ 	struct cod_manager *code_mgr;
+ 	struct bridge_drv_interface *intf_fxns;
+-	struct wmd_dev_context *wmd_ctxt = wmd_context;
++	struct bridge_dev_context *wmd_ctxt = wmd_context;
+ 	struct dev_object *dev_object = wmd_ctxt->hdev_obj;
+ 	struct modules_header modules_hdr;
+ 	struct dll_module *module_struct = NULL;
+diff --git a/drivers/dsp/bridge/wmd/mmu_fault.c b/drivers/dsp/bridge/wmd/mmu_fault.c
+index 375d7ec..341fb49 100644
+--- a/drivers/dsp/bridge/wmd/mmu_fault.c
++++ b/drivers/dsp/bridge/wmd/mmu_fault.c
+@@ -45,7 +45,7 @@
+ static u32 dmmu_event_mask;
+ u32 fault_addr;
+ 
+-static bool mmu_check_if_fault(struct wmd_dev_context *dev_context);
++static bool mmu_check_if_fault(struct bridge_dev_context *dev_context);
+ 
+ /*
+  *  ======== mmu_fault_dpc ========
+@@ -67,7 +67,7 @@ void mmu_fault_dpc(IN unsigned long pRefData)
+ irqreturn_t mmu_fault_isr(int irq, IN void *pRefData)
+ {
+ 	struct deh_mgr *deh_mgr_obj = (struct deh_mgr *)pRefData;
+-	struct wmd_dev_context *dev_context;
++	struct bridge_dev_context *dev_context;
+ 	struct cfg_hostres *resources;
+ 
+ 	DBC_REQUIRE(irq == INT_DSP_MMU_IRQ);
+@@ -76,7 +76,7 @@ irqreturn_t mmu_fault_isr(int irq, IN void *pRefData)
+ 	if (deh_mgr_obj) {
+ 
+ 		dev_context =
+-		    (struct wmd_dev_context *)deh_mgr_obj->hwmd_context;
++		    (struct bridge_dev_context *)deh_mgr_obj->hwmd_context;
+ 
+ 		resources = dev_context->resources;
+ 
+@@ -119,7 +119,7 @@ irqreturn_t mmu_fault_isr(int irq, IN void *pRefData)
+  *      Check to see if MMU Fault is valid TLB miss from DSP
+  *  Note: This function is called from an ISR
+  */
+-static bool mmu_check_if_fault(struct wmd_dev_context *dev_context)
++static bool mmu_check_if_fault(struct bridge_dev_context *dev_context)
+ {
+ 
+ 	bool ret = false;
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430.c b/drivers/dsp/bridge/wmd/tiomap3430.c
+index 22f4d76..fb5ae74 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430.c
+@@ -77,46 +77,47 @@
+ #define MMU_GFLUSH 0x60
+ 
+ /* Forward Declarations: */
+-static dsp_status bridge_brd_monitor(struct wmd_dev_context *dev_context);
+-static dsp_status bridge_brd_read(struct wmd_dev_context *dev_context,
++static dsp_status bridge_brd_monitor(struct bridge_dev_context *dev_context);
++static dsp_status bridge_brd_read(struct bridge_dev_context *dev_context,
+ 				  OUT u8 *pbHostBuf,
+ 				  u32 dwDSPAddr, u32 ul_num_bytes,
+ 				  u32 ulMemType);
+-static dsp_status bridge_brd_start(struct wmd_dev_context *dev_context,
++static dsp_status bridge_brd_start(struct bridge_dev_context *dev_context,
+ 				   u32 dwDSPAddr);
+-static dsp_status bridge_brd_status(struct wmd_dev_context *dev_context,
++static dsp_status bridge_brd_status(struct bridge_dev_context *dev_context,
+ 				    int *pdwState);
+-static dsp_status bridge_brd_stop(struct wmd_dev_context *dev_context);
+-static dsp_status bridge_brd_write(struct wmd_dev_context *dev_context,
++static dsp_status bridge_brd_stop(struct bridge_dev_context *dev_context);
++static dsp_status bridge_brd_write(struct bridge_dev_context *dev_context,
+ 				   IN u8 *pbHostBuf,
+ 				   u32 dwDSPAddr, u32 ul_num_bytes,
+ 				   u32 ulMemType);
+-static dsp_status bridge_brd_set_state(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_set_state(struct bridge_dev_context *hDevContext,
+ 				    u32 ulBrdState);
+-static dsp_status bridge_brd_mem_copy(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_mem_copy(struct bridge_dev_context *hDevContext,
+ 				   u32 ulDspDestAddr, u32 ulDspSrcAddr,
+ 				   u32 ul_num_bytes, u32 ulMemType);
+-static dsp_status bridge_brd_mem_write(struct wmd_dev_context *dev_context,
++static dsp_status bridge_brd_mem_write(struct bridge_dev_context *dev_context,
+ 				    IN u8 *pbHostBuf, u32 dwDSPAddr,
+ 				    u32 ul_num_bytes, u32 ulMemType);
+-static dsp_status bridge_brd_mem_map(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_mem_map(struct bridge_dev_context *hDevContext,
+ 				  u32 ul_mpu_addr, u32 ulVirtAddr,
+ 				  u32 ul_num_bytes, u32 ul_map_attr);
+-static dsp_status bridge_brd_mem_un_map(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_mem_un_map(struct bridge_dev_context *hDevContext,
+ 				     u32 ulVirtAddr, u32 ul_num_bytes);
+-static dsp_status bridge_dev_create(OUT struct wmd_dev_context **ppDevContext,
+-				    struct dev_object *hdev_obj,
+-				    IN struct cfg_hostres *pConfig);
+-static dsp_status bridge_dev_ctrl(struct wmd_dev_context *dev_context,
++static dsp_status bridge_dev_create(OUT struct bridge_dev_context
++					**ppDevContext,
++					struct dev_object *hdev_obj,
++					IN struct cfg_hostres *pConfig);
++static dsp_status bridge_dev_ctrl(struct bridge_dev_context *dev_context,
+ 				  u32 dw_cmd, IN OUT void *pargs);
+-static dsp_status bridge_dev_destroy(struct wmd_dev_context *dev_context);
++static dsp_status bridge_dev_destroy(struct bridge_dev_context *dev_context);
+ static u32 user_va2_pa(struct mm_struct *mm, u32 address);
+-static dsp_status pte_update(struct wmd_dev_context *hDevContext, u32 pa,
++static dsp_status pte_update(struct bridge_dev_context *hDevContext, u32 pa,
+ 			     u32 va, u32 size,
+ 			     struct hw_mmu_map_attrs_t *map_attrs);
+ static dsp_status pte_set(struct pg_table_attrs *pt, u32 pa, u32 va,
+ 			  u32 size, struct hw_mmu_map_attrs_t *attrs);
+-static dsp_status mem_map_vmalloc(struct wmd_dev_context *hDevContext,
++static dsp_status mem_map_vmalloc(struct bridge_dev_context *hDevContext,
+ 				  u32 ul_mpu_addr, u32 ulVirtAddr,
+ 				  u32 ul_num_bytes,
+ 				  struct hw_mmu_map_attrs_t *hw_attrs);
+@@ -220,7 +221,7 @@ static inline void tlb_flush_all(const void __iomem *base)
+ 	__raw_writeb(__raw_readb(base + MMU_GFLUSH) | 1, base + MMU_GFLUSH);
+ }
+ 
+-static inline void flush_all(struct wmd_dev_context *dev_context)
++static inline void flush_all(struct bridge_dev_context *dev_context)
+ {
+ 	if (dev_context->dw_brd_state == BRD_DSP_HIBERNATION ||
+ 	    dev_context->dw_brd_state == BRD_HIBERNATION)
+@@ -270,10 +271,10 @@ void bridge_drv_entry(OUT struct bridge_drv_interface **ppDrvInterface,
+  *  Preconditions:
+  *      Device in 'OFF' state.
+  */
+-static dsp_status bridge_brd_monitor(struct wmd_dev_context *hDevContext)
++static dsp_status bridge_brd_monitor(struct bridge_dev_context *hDevContext)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	u32 temp;
+ 	struct dspbridge_platform_data *pdata =
+ 				    omap_dspbridge_dev->dev.platform_data;
+@@ -313,12 +314,12 @@ static dsp_status bridge_brd_monitor(struct wmd_dev_context *hDevContext)
+  *  purpose:
+  *      Reads buffers for DSP memory.
+  */
+-static dsp_status bridge_brd_read(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_read(struct bridge_dev_context *hDevContext,
+ 				  OUT u8 *pbHostBuf, u32 dwDSPAddr,
+ 				  u32 ul_num_bytes, u32 ulMemType)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	u32 offset;
+ 	u32 dsp_base_addr = hDevContext->dw_dsp_base_addr;
+ 
+@@ -345,11 +346,11 @@ static dsp_status bridge_brd_read(struct wmd_dev_context *hDevContext,
+  *  purpose:
+  *      This routine updates the Board status.
+  */
+-static dsp_status bridge_brd_set_state(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_set_state(struct bridge_dev_context *hDevContext,
+ 				    u32 ulBrdState)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 
+ 	dev_context->dw_brd_state = ulBrdState;
+ 	return status;
+@@ -365,11 +366,11 @@ static dsp_status bridge_brd_set_state(struct wmd_dev_context *hDevContext,
+  *  b) DSP_RST1 is asserted.
+  *  b) DSP_RST2 is released.
+  */
+-static dsp_status bridge_brd_start(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_start(struct bridge_dev_context *hDevContext,
+ 				   u32 dwDSPAddr)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	u32 dw_sync_addr = 0;
+ 	u32 ul_shm_base;	/* Gpp Phys SM base addr(byte) */
+ 	u32 ul_shm_base_virt;	/* Dsp Virt SM base addr */
+@@ -647,10 +648,10 @@ static dsp_status bridge_brd_start(struct wmd_dev_context *hDevContext,
+  *  Preconditions :
+  *  a) None
+  */
+-static dsp_status bridge_brd_stop(struct wmd_dev_context *hDevContext)
++static dsp_status bridge_brd_stop(struct bridge_dev_context *hDevContext)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	struct pg_table_attrs *pt_attrs;
+ 	u32 dsp_pwr_state;
+ 	dsp_status clk_status;
+@@ -720,10 +721,10 @@ static dsp_status bridge_brd_stop(struct wmd_dev_context *hDevContext)
+  *  Preconditions :
+  *  a) None
+  */
+-static dsp_status wmd_brd_delete(struct wmd_dev_context *hDevContext)
++static dsp_status wmd_brd_delete(struct bridge_dev_context *hDevContext)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	struct pg_table_attrs *pt_attrs;
+ 	dsp_status clk_status;
+ 	struct dspbridge_platform_data *pdata =
+@@ -771,10 +772,10 @@ static dsp_status wmd_brd_delete(struct wmd_dev_context *hDevContext)
+  *  ======== bridge_brd_status ========
+  *      Returns the board status.
+  */
+-static dsp_status bridge_brd_status(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_status(struct bridge_dev_context *hDevContext,
+ 				    int *pdwState)
+ {
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	*pdwState = dev_context->dw_brd_state;
+ 	return DSP_SOK;
+ }
+@@ -783,12 +784,12 @@ static dsp_status bridge_brd_status(struct wmd_dev_context *hDevContext,
+  *  ======== bridge_brd_write ========
+  *      Copies the buffers to DSP internal or external memory.
+  */
+-static dsp_status bridge_brd_write(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_write(struct bridge_dev_context *hDevContext,
+ 				   IN u8 *pbHostBuf, u32 dwDSPAddr,
+ 				   u32 ul_num_bytes, u32 ulMemType)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 
+ 	if (dwDSPAddr < dev_context->dw_dsp_start_add) {
+ 		status = -EPERM;
+@@ -810,12 +811,13 @@ static dsp_status bridge_brd_write(struct wmd_dev_context *hDevContext,
+  *  ======== bridge_dev_create ========
+  *      Creates a driver object. Puts DSP in self loop.
+  */
+-static dsp_status bridge_dev_create(OUT struct wmd_dev_context **ppDevContext,
+-				    struct dev_object *hdev_obj,
+-				    IN struct cfg_hostres *pConfig)
++static dsp_status bridge_dev_create(OUT struct bridge_dev_context
++					**ppDevContext,
++					struct dev_object *hdev_obj,
++					IN struct cfg_hostres *pConfig)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = NULL;
++	struct bridge_dev_context *dev_context = NULL;
+ 	s32 entry_ndx;
+ 	struct cfg_hostres *resources = pConfig;
+ 	struct pg_table_attrs *pt_attrs;
+@@ -826,7 +828,7 @@ static dsp_status bridge_dev_create(OUT struct wmd_dev_context **ppDevContext,
+ 
+ 	/* Allocate and initialize a data structure to contain the mini driver
+ 	 *  state, which becomes the context for later calls into this WMD. */
+-	dev_context = kzalloc(sizeof(struct wmd_dev_context), GFP_KERNEL);
++	dev_context = kzalloc(sizeof(struct bridge_dev_context), GFP_KERNEL);
+ 	if (!dev_context) {
+ 		status = -ENOMEM;
+ 		goto func_end;
+@@ -979,7 +981,7 @@ func_end:
+  *  ======== bridge_dev_ctrl ========
+  *      Receives device specific commands.
+  */
+-static dsp_status bridge_dev_ctrl(struct wmd_dev_context *dev_context,
++static dsp_status bridge_dev_ctrl(struct bridge_dev_context *dev_context,
+ 				  u32 dw_cmd, IN OUT void *pargs)
+ {
+ 	dsp_status status = DSP_SOK;
+@@ -1033,11 +1035,11 @@ static dsp_status bridge_dev_ctrl(struct wmd_dev_context *dev_context,
+  *  ======== bridge_dev_destroy ========
+  *      Destroys the driver object.
+  */
+-static dsp_status bridge_dev_destroy(struct wmd_dev_context *hDevContext)
++static dsp_status bridge_dev_destroy(struct bridge_dev_context *hDevContext)
+ {
+ 	struct pg_table_attrs *pt_attrs;
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = (struct wmd_dev_context *)
++	struct bridge_dev_context *dev_context = (struct bridge_dev_context *)
+ 	    hDevContext;
+ 	struct cfg_hostres *host_res;
+ 	u32 shm_size;
+@@ -1125,7 +1127,7 @@ static dsp_status bridge_dev_destroy(struct wmd_dev_context *hDevContext)
+ 	return status;
+ }
+ 
+-static dsp_status bridge_brd_mem_copy(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_mem_copy(struct bridge_dev_context *hDevContext,
+ 				   u32 ulDspDestAddr, u32 ulDspSrcAddr,
+ 				   u32 ul_num_bytes, u32 ulMemType)
+ {
+@@ -1135,7 +1137,7 @@ static dsp_status bridge_brd_mem_copy(struct wmd_dev_context *hDevContext,
+ 	u32 copy_bytes = 0;
+ 	u32 total_bytes = ul_num_bytes;
+ 	u8 host_buf[BUFFERSIZE];
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	while ((total_bytes > 0) && DSP_SUCCEEDED(status)) {
+ 		copy_bytes =
+ 		    total_bytes > BUFFERSIZE ? BUFFERSIZE : total_bytes;
+@@ -1165,12 +1167,12 @@ static dsp_status bridge_brd_mem_copy(struct wmd_dev_context *hDevContext,
+ }
+ 
+ /* Mem Write does not halt the DSP to write unlike bridge_brd_write */
+-static dsp_status bridge_brd_mem_write(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_mem_write(struct bridge_dev_context *hDevContext,
+ 				    IN u8 *pbHostBuf, u32 dwDSPAddr,
+ 				    u32 ul_num_bytes, u32 ulMemType)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	u32 ul_remain_bytes = 0;
+ 	u32 ul_bytes = 0;
+ 	ul_remain_bytes = ul_num_bytes;
+@@ -1203,13 +1205,13 @@ static dsp_status bridge_brd_mem_write(struct wmd_dev_context *hDevContext,
+  *
+  *  TODO: Disable MMU while updating the page tables (but that'll stall DSP)
+  */
+-static dsp_status bridge_brd_mem_map(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_mem_map(struct bridge_dev_context *hDevContext,
+ 				  u32 ul_mpu_addr, u32 ulVirtAddr,
+ 				  u32 ul_num_bytes, u32 ul_map_attr)
+ {
+ 	u32 attrs;
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	struct hw_mmu_map_attrs_t hw_attrs;
+ 	struct vm_area_struct *vma;
+ 	struct mm_struct *mm = current->mm;
+@@ -1423,7 +1425,7 @@ func_cont:
+  *      So, instead of looking up the PTE address for every 4K block,
+  *      we clear consecutive PTEs until we unmap all the bytes
+  */
+-static dsp_status bridge_brd_mem_un_map(struct wmd_dev_context *hDevContext,
++static dsp_status bridge_brd_mem_un_map(struct bridge_dev_context *hDevContext,
+ 				     u32 ulVirtAddr, u32 ul_num_bytes)
+ {
+ 	u32 l1_base_va;
+@@ -1440,7 +1442,7 @@ static dsp_status bridge_brd_mem_un_map(struct wmd_dev_context *hDevContext,
+ 	u32 va_curr;
+ 	struct page *pg = NULL;
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	struct pg_table_attrs *pt = dev_context->pt_attrs;
+ 	u32 temp;
+ 	u32 paddr;
+@@ -1648,7 +1650,7 @@ static u32 user_va2_pa(struct mm_struct *mm, u32 address)
+  *      This function calculates the optimum page-aligned addresses and sizes
+  *      Caller must pass page-aligned values
+  */
+-static dsp_status pte_update(struct wmd_dev_context *hDevContext, u32 pa,
++static dsp_status pte_update(struct bridge_dev_context *hDevContext, u32 pa,
+ 			     u32 va, u32 size,
+ 			     struct hw_mmu_map_attrs_t *map_attrs)
+ {
+@@ -1657,7 +1659,7 @@ static dsp_status pte_update(struct wmd_dev_context *hDevContext, u32 pa,
+ 	u32 pa_curr = pa;
+ 	u32 va_curr = va;
+ 	u32 num_bytes = size;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	dsp_status status = DSP_SOK;
+ 	u32 page_size[] = { HW_PAGE_SIZE16MB, HW_PAGE_SIZE1MB,
+ 		HW_PAGE_SIZE64KB, HW_PAGE_SIZE4KB
+@@ -1786,7 +1788,7 @@ static dsp_status pte_set(struct pg_table_attrs *pt, u32 pa, u32 va,
+ }
+ 
+ /* Memory map kernel VA -- memory allocated with vmalloc */
+-static dsp_status mem_map_vmalloc(struct wmd_dev_context *dev_context,
++static dsp_status mem_map_vmalloc(struct bridge_dev_context *dev_context,
+ 				  u32 ul_mpu_addr, u32 ulVirtAddr,
+ 				  u32 ul_num_bytes,
+ 				  struct hw_mmu_map_attrs_t *hw_attrs)
+@@ -1872,7 +1874,7 @@ static dsp_status mem_map_vmalloc(struct wmd_dev_context *dev_context,
+  *  ======== configure_dsp_mmu ========
+  *      Make DSP MMU page table entries.
+  */
+-void configure_dsp_mmu(struct wmd_dev_context *dev_context, u32 dataBasePhys,
++void configure_dsp_mmu(struct bridge_dev_context *dev_context, u32 dataBasePhys,
+ 		       u32 dspBaseVirt, u32 sizeInBytes, s32 nEntryStart,
+ 		       enum hw_endianism_t endianism,
+ 		       enum hw_element_size_t elem_size,
+@@ -1896,7 +1898,7 @@ void configure_dsp_mmu(struct wmd_dev_context *dev_context, u32 dataBasePhys,
+  *  ======== wait_for_start ========
+  *      Wait for the singal from DSP that it has started, or time out.
+  */
+-bool wait_for_start(struct wmd_dev_context *dev_context, u32 dw_sync_addr)
++bool wait_for_start(struct bridge_dev_context *dev_context, u32 dw_sync_addr)
+ {
+ 	u16 timeout = TIHELEN_ACKTIMEOUT;
+ 
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+index 86a6cc0..9336bd5 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+@@ -49,7 +49,7 @@
+  *  ======== handle_constraints_set ========
+  *  	Sets new DSP constraint
+  */
+-dsp_status handle_constraints_set(struct wmd_dev_context *dev_context,
++dsp_status handle_constraints_set(struct bridge_dev_context *dev_context,
+ 				  IN void *pargs)
+ {
+ #ifdef CONFIG_BRIDGE_DVFS
+@@ -73,7 +73,7 @@ dsp_status handle_constraints_set(struct wmd_dev_context *dev_context,
+  *  ======== handle_hibernation_from_dsp ========
+  *  	Handle Hibernation requested from DSP
+  */
+-dsp_status handle_hibernation_from_dsp(struct wmd_dev_context *dev_context)
++dsp_status handle_hibernation_from_dsp(struct bridge_dev_context *dev_context)
+ {
+ 	dsp_status status = DSP_SOK;
+ #ifdef CONFIG_PM
+@@ -140,7 +140,7 @@ dsp_status handle_hibernation_from_dsp(struct wmd_dev_context *dev_context)
+  *  ======== sleep_dsp ========
+  *  	Put DSP in low power consuming state.
+  */
+-dsp_status sleep_dsp(struct wmd_dev_context *dev_context, IN u32 dw_cmd,
++dsp_status sleep_dsp(struct bridge_dev_context *dev_context, IN u32 dw_cmd,
+ 		     IN void *pargs)
+ {
+ 	dsp_status status = DSP_SOK;
+@@ -246,7 +246,7 @@ dsp_status sleep_dsp(struct wmd_dev_context *dev_context, IN u32 dw_cmd,
+  *  ======== wake_dsp ========
+  *  	Wake up DSP from sleep.
+  */
+-dsp_status wake_dsp(struct wmd_dev_context *dev_context, IN void *pargs)
++dsp_status wake_dsp(struct bridge_dev_context *dev_context, IN void *pargs)
+ {
+ 	dsp_status status = DSP_SOK;
+ #ifdef CONFIG_PM
+@@ -272,7 +272,7 @@ dsp_status wake_dsp(struct wmd_dev_context *dev_context, IN void *pargs)
+  *  ======== dsp_peripheral_clk_ctrl ========
+  *  	Enable/Disable the DSP peripheral clocks as needed..
+  */
+-dsp_status dsp_peripheral_clk_ctrl(struct wmd_dev_context *dev_context,
++dsp_status dsp_peripheral_clk_ctrl(struct bridge_dev_context *dev_context,
+ 				   IN void *pargs)
+ {
+ 	u32 ext_clk = 0;
+@@ -334,7 +334,7 @@ dsp_status dsp_peripheral_clk_ctrl(struct wmd_dev_context *dev_context,
+  *  Sends prescale notification to DSP
+  *
+  */
+-dsp_status pre_scale_dsp(struct wmd_dev_context *dev_context, IN void *pargs)
++dsp_status pre_scale_dsp(struct bridge_dev_context *dev_context, IN void *pargs)
+ {
+ #ifdef CONFIG_BRIDGE_DVFS
+ 	u32 level;
+@@ -367,7 +367,8 @@ dsp_status pre_scale_dsp(struct wmd_dev_context *dev_context, IN void *pargs)
+  *  Sends postscale notification to DSP
+  *
+  */
+-dsp_status post_scale_dsp(struct wmd_dev_context *dev_context, IN void *pargs)
++dsp_status post_scale_dsp(struct bridge_dev_context *dev_context,
++							IN void *pargs)
+ {
+ 	dsp_status status = DSP_SOK;
+ #ifdef CONFIG_BRIDGE_DVFS
+@@ -411,7 +412,7 @@ void dsp_clk_wakeup_event_ctrl(u32 ClkId, bool enable)
+ 	u32 iva2_grpsel;
+ 	u32 mpu_grpsel;
+ 	struct dev_object *hdev_object = NULL;
+-	struct wmd_dev_context *wmd_context = NULL;
++	struct bridge_dev_context *wmd_context = NULL;
+ 
+ 	hdev_object = (struct dev_object *)drv_get_first_dev_object();
+ 	if (!hdev_object)
+diff --git a/drivers/dsp/bridge/wmd/tiomap_io.c b/drivers/dsp/bridge/wmd/tiomap_io.c
+index 2ab7b7d..00610df 100644
+--- a/drivers/dsp/bridge/wmd/tiomap_io.c
++++ b/drivers/dsp/bridge/wmd/tiomap_io.c
+@@ -51,12 +51,12 @@ bool symbols_reloaded = true;
+  *  ======== read_ext_dsp_data ========
+  *      Copies DSP external memory buffers to the host side buffers.
+  */
+-dsp_status read_ext_dsp_data(struct wmd_dev_context *hDevContext,
++dsp_status read_ext_dsp_data(struct bridge_dev_context *hDevContext,
+ 			     OUT u8 *pbHostBuf, u32 dwDSPAddr,
+ 			     u32 ul_num_bytes, u32 ulMemType)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct wmd_dev_context *dev_context = hDevContext;
++	struct bridge_dev_context *dev_context = hDevContext;
+ 	u32 offset;
+ 	u32 ul_tlb_base_virt = 0;
+ 	u32 ul_shm_offset_virt = 0;
+@@ -179,7 +179,7 @@ dsp_status read_ext_dsp_data(struct wmd_dev_context *hDevContext,
+  *  purpose:
+  *      Copies buffers to the DSP internal/external memory.
+  */
+-dsp_status write_dsp_data(struct wmd_dev_context *hDevContext,
++dsp_status write_dsp_data(struct bridge_dev_context *hDevContext,
+ 			  IN u8 *pbHostBuf, u32 dwDSPAddr, u32 ul_num_bytes,
+ 			  u32 ulMemType)
+ {
+@@ -225,7 +225,7 @@ dsp_status write_dsp_data(struct wmd_dev_context *hDevContext,
+  *      Copies buffers to the external memory.
+  *
+  */
+-dsp_status write_ext_dsp_data(struct wmd_dev_context *dev_context,
++dsp_status write_ext_dsp_data(struct bridge_dev_context *dev_context,
+ 			      IN u8 *pbHostBuf, u32 dwDSPAddr,
+ 			      u32 ul_num_bytes, u32 ulMemType,
+ 			      bool bDynamicLoad)
+@@ -387,7 +387,7 @@ dsp_status write_ext_dsp_data(struct wmd_dev_context *dev_context,
+ 	return ret;
+ }
+ 
+-dsp_status sm_interrupt_dsp(struct wmd_dev_context *dev_context, u16 mb_val)
++dsp_status sm_interrupt_dsp(struct bridge_dev_context *dev_context, u16 mb_val)
+ {
+ #ifdef CONFIG_BRIDGE_DVFS
+ 	u32 opplevel = 0;
+diff --git a/drivers/dsp/bridge/wmd/tiomap_io.h b/drivers/dsp/bridge/wmd/tiomap_io.h
+index ac78538..0f30fe7 100644
+--- a/drivers/dsp/bridge/wmd/tiomap_io.h
++++ b/drivers/dsp/bridge/wmd/tiomap_io.h
+@@ -47,14 +47,14 @@
+  *  Reads it from DSP External memory. The external memory for the DSP
+  * is configured by the combination of DSP MMU and shm Memory manager in the CDB
+  */
+-extern dsp_status read_ext_dsp_data(struct wmd_dev_context *dev_context,
++extern dsp_status read_ext_dsp_data(struct bridge_dev_context *dev_context,
+ 				    OUT u8 *pbHostBuf, u32 dwDSPAddr,
+ 				    u32 ul_num_bytes, u32 ulMemType);
+ 
+ /*
+  *  ======== write_dsp_data ========
+  */
+-extern dsp_status write_dsp_data(struct wmd_dev_context *dev_context,
++extern dsp_status write_dsp_data(struct bridge_dev_context *dev_context,
+ 				 OUT u8 *pbHostBuf, u32 dwDSPAddr,
+ 				 u32 ul_num_bytes, u32 ulMemType);
+ 
+@@ -64,7 +64,7 @@ extern dsp_status write_dsp_data(struct wmd_dev_context *dev_context,
+  *  The ext mem for progra is configured by the combination of DSP MMU and
+  *  shm Memory manager in the CDB
+  */
+-extern dsp_status write_ext_dsp_data(struct wmd_dev_context *dev_context,
++extern dsp_status write_ext_dsp_data(struct bridge_dev_context *dev_context,
+ 				     IN u8 *pbHostBuf, u32 dwDSPAddr,
+ 				     u32 ul_num_bytes, u32 ulMemType,
+ 				     bool bDynamicLoad);
+@@ -74,8 +74,8 @@ extern dsp_status write_ext_dsp_data(struct wmd_dev_context *dev_context,
+  * Writes 32 bit data to the external memory
+  */
+ extern inline void write_ext32_bit_dsp_data(IN const
+-					    struct wmd_dev_context *dev_context,
+-					    IN u32 dwDSPAddr, IN u32 val)
++					struct bridge_dev_context *dev_context,
++					IN u32 dwDSPAddr, IN u32 val)
+ {
+ 	*(u32 *) dwDSPAddr = ((dev_context->tc_word_swap_on) ? (((val << 16) &
+ 								 0xFFFF0000) |
+@@ -88,7 +88,7 @@ extern inline void write_ext32_bit_dsp_data(IN const
+  * ======== read_ext32_bit_dsp_data ========
+  * Reads 32 bit data from the external memory
+  */
+-extern inline u32 read_ext32_bit_dsp_data(IN const struct wmd_dev_context
++extern inline u32 read_ext32_bit_dsp_data(IN const struct bridge_dev_context
+ 					  *dev_context, IN u32 dwDSPAddr)
+ {
+ 	u32 ret;
+diff --git a/drivers/dsp/bridge/wmd/ue_deh.c b/drivers/dsp/bridge/wmd/ue_deh.c
+index d6cd820..ca33f78 100644
+--- a/drivers/dsp/bridge/wmd/ue_deh.c
++++ b/drivers/dsp/bridge/wmd/ue_deh.c
+@@ -76,7 +76,7 @@ dsp_status bridge_deh_create(struct deh_mgr **ret_deh_mgr,
+ {
+ 	dsp_status status = DSP_SOK;
+ 	struct deh_mgr *deh_mgr;
+-	struct wmd_dev_context *hwmd_context = NULL;
++	struct bridge_dev_context *hwmd_context = NULL;
+ 
+ 	/*  Message manager will be created when a file is loaded, since
+ 	 *  size of message buffer in shared memory is configurable in
+@@ -189,7 +189,7 @@ dsp_status bridge_deh_register_notify(struct deh_mgr *deh_mgr, u32 event_mask,
+ 
+ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ {
+-	struct wmd_dev_context *dev_context;
++	struct bridge_dev_context *dev_context;
+ 	dsp_status status = DSP_SOK;
+ 	u32 mem_physical = 0;
+ 	u32 hw_mmu_max_tlb_count = 31;
+@@ -201,7 +201,7 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 		return;
+ 
+ 	dev_info(bridge, "%s: device exception\n", __func__);
+-	dev_context = (struct wmd_dev_context *)deh_mgr->hwmd_context;
++	dev_context = (struct bridge_dev_context *)deh_mgr->hwmd_context;
+ 	resources = dev_context->resources;
+ 
+ 	switch (ulEventMask) {
+@@ -230,7 +230,7 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 		dummy_va_addr = kzalloc(sizeof(char) * 0x1000, GFP_ATOMIC);
+ 		mem_physical =
+ 			ALIGN_DOWN(virt_to_phys(dummy_va_addr), PAGE_SIZE);
+-		dev_context = (struct wmd_dev_context *)
++		dev_context = (struct bridge_dev_context *)
+ 			deh_mgr->hwmd_context;
+ 
+ 		print_dsp_trace_buffer(dev_context);
+-- 
+1.7.0.4
+

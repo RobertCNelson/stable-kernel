@@ -1,0 +1,380 @@
+From d806509cea7c82d550f3afba4dc406240be3e256 Mon Sep 17 00:00:00 2001
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Date: Tue, 23 Mar 2010 21:25:38 +0000
+Subject: [PATCH 028/135] dsp-bridge: deh: decrease nesting levels
+
+No functional changes.
+
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+---
+ drivers/dsp/bridge/wmd/ue_deh.c |  305 ++++++++++++++++++++-------------------
+ 1 files changed, 153 insertions(+), 152 deletions(-)
+
+diff --git a/drivers/dsp/bridge/wmd/ue_deh.c b/drivers/dsp/bridge/wmd/ue_deh.c
+index 3bba973..10cc883 100644
+--- a/drivers/dsp/bridge/wmd/ue_deh.c
++++ b/drivers/dsp/bridge/wmd/ue_deh.c
+@@ -81,42 +81,47 @@ dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+ 	MEM_ALLOC_OBJECT(deh_mgr_obj, struct deh_mgr, SIGNATURE);
+ 	if (deh_mgr_obj == NULL) {
+ 		status = DSP_EMEMORY;
++		goto leave;
++	}
++
++	/* Create an NTFY object to manage notifications */
++	deh_mgr_obj->ntfy_obj = kmalloc(sizeof(struct ntfy_object), GFP_KERNEL);
++	if (deh_mgr_obj->ntfy_obj) {
++		ntfy_init(deh_mgr_obj->ntfy_obj);
+ 	} else {
+-		/* Create an NTFY object to manage notifications */
+-		deh_mgr_obj->ntfy_obj = kmalloc(sizeof(struct ntfy_object),
+-							GFP_KERNEL);
+-		if (deh_mgr_obj->ntfy_obj)
+-			ntfy_init(deh_mgr_obj->ntfy_obj);
+-		else
+-			status = DSP_EMEMORY;
++		status = DSP_EMEMORY;
++		goto leave;
++	}
+ 
+-		/* Create a MMUfault DPC */
+-		tasklet_init(&deh_mgr_obj->dpc_tasklet, mmu_fault_dpc,
+-			     (u32) deh_mgr_obj);
++	/* Create a MMUfault DPC */
++	tasklet_init(&deh_mgr_obj->dpc_tasklet, mmu_fault_dpc,
++			(u32) deh_mgr_obj);
+ 
+-		if (DSP_SUCCEEDED(status))
+-			status = dev_get_dev_node(hdev_obj, &dev_node_obj);
++	status = dev_get_dev_node(hdev_obj, &dev_node_obj);
+ 
+-		if (DSP_SUCCEEDED(status))
+-			status =
+-			    cfg_get_host_resources(dev_node_obj, &cfg_host_res);
++	if (DSP_FAILED(status))
++		goto leave;
+ 
+-		if (DSP_SUCCEEDED(status)) {
+-			/* Fill in context structure */
+-			deh_mgr_obj->hwmd_context = hwmd_context;
+-			deh_mgr_obj->err_info.dw_err_mask = 0L;
+-			deh_mgr_obj->err_info.dw_val1 = 0L;
+-			deh_mgr_obj->err_info.dw_val2 = 0L;
+-			deh_mgr_obj->err_info.dw_val3 = 0L;
+-			/* Install ISR function for DSP MMU fault */
+-			if ((request_irq(INT_DSP_MMU_IRQ, mmu_fault_isr, 0,
+-					 "DspBridge\tiommu fault",
+-					 (void *)deh_mgr_obj)) == 0)
+-				status = DSP_SOK;
+-			else
+-				status = DSP_EFAIL;
+-		}
+-	}
++	status = cfg_get_host_resources(dev_node_obj, &cfg_host_res);
++
++	if (DSP_FAILED(status))
++		goto leave;
++
++	/* Fill in context structure */
++	deh_mgr_obj->hwmd_context = hwmd_context;
++	deh_mgr_obj->err_info.dw_err_mask = 0L;
++	deh_mgr_obj->err_info.dw_val1 = 0L;
++	deh_mgr_obj->err_info.dw_val2 = 0L;
++	deh_mgr_obj->err_info.dw_val3 = 0L;
++	/* Install ISR function for DSP MMU fault */
++	if ((request_irq(INT_DSP_MMU_IRQ, mmu_fault_isr, 0,
++					"DspBridge\tiommu fault",
++					(void *)deh_mgr_obj)) == 0)
++		status = DSP_SOK;
++	else
++		status = DSP_EFAIL;
++
++leave:
+ 	if (DSP_FAILED(status)) {
+ 		/* If create failed, cleanup */
+ 		bridge_deh_destroy((struct deh_mgr *)deh_mgr_obj);
+@@ -130,28 +135,28 @@ dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+ 
+ dsp_status bridge_deh_destroy(struct deh_mgr *hdeh_mgr)
+ {
+-	dsp_status status = DSP_SOK;
+ 	struct deh_mgr *deh_mgr_obj = (struct deh_mgr *)hdeh_mgr;
+ 
+-	if (MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE)) {
+-		/* Release dummy VA buffer */
+-		bridge_deh_release_dummy_mem();
+-		/* If notification object exists, delete it */
+-		if (deh_mgr_obj->ntfy_obj) {
+-			ntfy_delete(deh_mgr_obj->ntfy_obj);
+-			kfree(deh_mgr_obj->ntfy_obj);
+-		}
+-		/* Disable DSP MMU fault */
+-		free_irq(INT_DSP_MMU_IRQ, deh_mgr_obj);
+-
+-		/* Free DPC object */
+-		tasklet_kill(&deh_mgr_obj->dpc_tasklet);
++	if (!MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE))
++		return DSP_SOK;
+ 
+-		/* Deallocate the DEH manager object */
+-		MEM_FREE_OBJECT(deh_mgr_obj);
++	/* Release dummy VA buffer */
++	bridge_deh_release_dummy_mem();
++	/* If notification object exists, delete it */
++	if (deh_mgr_obj->ntfy_obj) {
++		ntfy_delete(deh_mgr_obj->ntfy_obj);
++		kfree(deh_mgr_obj->ntfy_obj);
+ 	}
++	/* Disable DSP MMU fault */
++	free_irq(INT_DSP_MMU_IRQ, deh_mgr_obj);
+ 
+-	return status;
++	/* Free DPC object */
++	tasklet_kill(&deh_mgr_obj->dpc_tasklet);
++
++	/* Deallocate the DEH manager object */
++	MEM_FREE_OBJECT(deh_mgr_obj);
++
++	return DSP_SOK;
+ }
+ 
+ dsp_status bridge_deh_register_notify(struct deh_mgr *hdeh_mgr, u32 event_mask,
+@@ -161,14 +166,14 @@ dsp_status bridge_deh_register_notify(struct deh_mgr *hdeh_mgr, u32 event_mask,
+ 	dsp_status status = DSP_SOK;
+ 	struct deh_mgr *deh_mgr_obj = (struct deh_mgr *)hdeh_mgr;
+ 
+-	if (MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE)) {
+-		if (event_mask)
+-			status = ntfy_register(deh_mgr_obj->ntfy_obj,
+-				hnotification, event_mask, notify_type);
+-		else
+-			status = ntfy_unregister(deh_mgr_obj->ntfy_obj,
+-							hnotification);
+-	}
++	if (!MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE))
++		return DSP_EHANDLE;
++
++	if (event_mask)
++		status = ntfy_register(deh_mgr_obj->ntfy_obj, hnotification,
++					event_mask, notify_type);
++	else
++		status = ntfy_unregister(deh_mgr_obj->ntfy_obj, hnotification);
+ 
+ 	return status;
+ }
+@@ -188,120 +193,116 @@ void bridge_deh_notify(struct deh_mgr *hdeh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 					drv_get_first_dev_extension(),
+ 					&resources);
+ 
+-	if (MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE)) {
+-		dev_info(bridge, "%s: device exception\n", __func__);
+-		dev_context =
+-		    (struct wmd_dev_context *)deh_mgr_obj->hwmd_context;
+-
+-		switch (ulEventMask) {
+-		case DSP_SYSERROR:
+-			/* reset err_info structure before use */
+-			deh_mgr_obj->err_info.dw_err_mask = DSP_SYSERROR;
+-			deh_mgr_obj->err_info.dw_val1 = 0L;
+-			deh_mgr_obj->err_info.dw_val2 = 0L;
+-			deh_mgr_obj->err_info.dw_val3 = 0L;
+-			deh_mgr_obj->err_info.dw_val1 = dwErrInfo;
+-			dev_err(bridge, "%s: %s, err_info = 0x%x\n",
+-					__func__, "DSP_SYSERROR", dwErrInfo);
+-			break;
+-		case DSP_MMUFAULT:
+-			/* MMU fault routine should have set err info
+-			 * structure */
+-			deh_mgr_obj->err_info.dw_err_mask = DSP_MMUFAULT;
+-			dev_err(bridge, "%s: %s, err_info = 0x%x\n",
+-					__func__, "DSP_MMUFAULT", dwErrInfo);
+-			dev_info(bridge, "%s: %s, high=0x%x, low=0x%x, "
+-				"fault=0x%x\n", __func__, "DSP_MMUFAULT",
+-				(unsigned int) deh_mgr->err_info.dw_val1,
+-				(unsigned int) deh_mgr->err_info.dw_val2,
+-				(unsigned int) fault_addr);
+-			dummy_va_addr =
+-			    (u32) mem_calloc(sizeof(char) * 0x1000, MEM_PAGED);
+-			mem_physical =
+-			    VIRT_TO_PHYS(PG_ALIGN_LOW
+-					 ((u32) dummy_va_addr, PG_SIZE4K));
+-			dev_context = (struct wmd_dev_context *)
+-			    deh_mgr_obj->hwmd_context;
+-			/* Reset the dynamic mmu index to fixed count if it
+-			 * exceeds 31. So that the dynmmuindex is always
+-			 * between the range of standard/fixed entries
+-			 * and 31. */
+-			if (dev_context->num_tlb_entries >
+-			    hw_mmu_max_tlb_count) {
+-				dev_context->num_tlb_entries =
+-				    dev_context->fixed_tlb_entries;
+-			}
+-			if (DSP_SUCCEEDED(status)) {
+-				hw_status_obj =
+-				    hw_mmu_tlb_add(resources.dw_dmmu_base,
+-						   mem_physical, fault_addr,
+-						   HW_PAGE_SIZE4KB, 1,
+-						   &map_attrs, HW_SET, HW_SET);
+-			}
+-			/* send an interrupt to DSP */
+-			omap_mbox_msg_send(dev_context->mbox,
+-						MBX_DEH_CLASS | MBX_DEH_EMMU);
+-			/* Clear MMU interrupt */
+-			hw_mmu_event_ack(resources.dw_dmmu_base,
+-					 HW_MMU_TRANSLATION_FAULT);
+-			break;
++	if (!MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE))
++		return;
++
++	dev_info(bridge, "%s: device exception\n", __func__);
++	dev_context = (struct wmd_dev_context *)deh_mgr_obj->hwmd_context;
++
++	switch (ulEventMask) {
++	case DSP_SYSERROR:
++		/* reset err_info structure before use */
++		deh_mgr_obj->err_info.dw_err_mask = DSP_SYSERROR;
++		deh_mgr_obj->err_info.dw_val1 = 0L;
++		deh_mgr_obj->err_info.dw_val2 = 0L;
++		deh_mgr_obj->err_info.dw_val3 = 0L;
++		deh_mgr_obj->err_info.dw_val1 = dwErrInfo;
++		dev_err(bridge, "%s: %s, err_info = 0x%x\n",
++				__func__, "DSP_SYSERROR", dwErrInfo);
++		break;
++	case DSP_MMUFAULT:
++		/* MMU fault routine should have set err info structure. */
++		deh_mgr_obj->err_info.dw_err_mask = DSP_MMUFAULT;
++		dev_err(bridge, "%s: %s, err_info = 0x%x\n",
++				__func__, "DSP_MMUFAULT", dwErrInfo);
++		dev_info(bridge, "%s: %s, high=0x%x, low=0x%x, "
++			"fault=0x%x\n", __func__, "DSP_MMUFAULT",
++			(unsigned int) deh_mgr->err_info.dw_val1,
++			(unsigned int) deh_mgr->err_info.dw_val2,
++			(unsigned int) fault_addr);
++		dummy_va_addr =
++			(u32) mem_calloc(sizeof(char) * 0x1000, MEM_PAGED);
++		mem_physical =
++			VIRT_TO_PHYS(PG_ALIGN_LOW
++					((u32) dummy_va_addr, PG_SIZE4K));
++		dev_context = (struct wmd_dev_context *)
++			deh_mgr_obj->hwmd_context;
++		/*
++		 * Reset the dynamic mmu index to fixed count if it exceeds
++		 * 31. So that the dynmmuindex is always between the range of
++		 * standard/fixed entries and 31.
++		 */
++		if (dev_context->num_tlb_entries >
++				hw_mmu_max_tlb_count) {
++			dev_context->num_tlb_entries =
++				dev_context->fixed_tlb_entries;
++		}
++		if (DSP_SUCCEEDED(status)) {
++			hw_status_obj =
++				hw_mmu_tlb_add(resources.dw_dmmu_base,
++						mem_physical, fault_addr,
++						HW_PAGE_SIZE4KB, 1,
++						&map_attrs, HW_SET, HW_SET);
++		}
++		/* send an interrupt to DSP */
++		omap_mbox_msg_send(dev_context->mbox,
++				MBX_DEH_CLASS | MBX_DEH_EMMU);
++		/* Clear MMU interrupt */
++		hw_mmu_event_ack(resources.dw_dmmu_base,
++				HW_MMU_TRANSLATION_FAULT);
++		break;
+ #ifdef CONFIG_BRIDGE_NTFY_PWRERR
+-		case DSP_PWRERROR:
+-			/* reset err_info structure before use */
+-			deh_mgr_obj->err_info.dw_err_mask = DSP_PWRERROR;
+-			deh_mgr_obj->err_info.dw_val1 = 0L;
+-			deh_mgr_obj->err_info.dw_val2 = 0L;
+-			deh_mgr_obj->err_info.dw_val3 = 0L;
+-			deh_mgr_obj->err_info.dw_val1 = dwErrInfo;
+-			dev_err(bridge, "%s: %s, err_info = 0x%x\n",
+-					__func__, "DSP_PWRERROR", dwErrInfo);
+-			break;
++	case DSP_PWRERROR:
++		/* reset err_info structure before use */
++		deh_mgr_obj->err_info.dw_err_mask = DSP_PWRERROR;
++		deh_mgr_obj->err_info.dw_val1 = 0L;
++		deh_mgr_obj->err_info.dw_val2 = 0L;
++		deh_mgr_obj->err_info.dw_val3 = 0L;
++		deh_mgr_obj->err_info.dw_val1 = dwErrInfo;
++		dev_err(bridge, "%s: %s, err_info = 0x%x\n",
++				__func__, "DSP_PWRERROR", dwErrInfo);
++		break;
+ #endif /* CONFIG_BRIDGE_NTFY_PWRERR */
+-		default:
+-			dev_dbg(bridge, "%s: Unknown Error, err_info = 0x%x\n",
++	default:
++		dev_dbg(bridge, "%s: Unknown Error, err_info = 0x%x\n",
+ 				__func__, dwErrInfo);
+-			break;
+-		}
++		break;
++	}
+ 
+-		/* Filter subsequent notifications when an error occurs */
+-		if (dev_context->dw_brd_state != BRD_ERROR) {
+-			ntfy_notify(deh_mgr_obj->ntfy_obj, ulEventMask);
++	/* Filter subsequent notifications when an error occurs */
++	if (dev_context->dw_brd_state != BRD_ERROR) {
++		ntfy_notify(deh_mgr_obj->ntfy_obj, ulEventMask);
+ #ifdef CONFIG_BRIDGE_RECOVERY
+-			bridge_recover_schedule();
++		bridge_recover_schedule();
+ #endif
+-		}
+-
+-		/* Set the Board state as ERROR */
+-		dev_context->dw_brd_state = BRD_ERROR;
+-		/* Disable all the clocks that were enabled by DSP */
+-		dsp_peripheral_clocks_disable(dev_context, NULL);
+-		/* Call DSP Trace Buffer */
+-		print_dsp_trace_buffer(hdeh_mgr->hwmd_context);
+-
+ 	}
++
++	/* Set the Board state as ERROR */
++	dev_context->dw_brd_state = BRD_ERROR;
++	/* Disable all the clocks that were enabled by DSP */
++	dsp_peripheral_clocks_disable(dev_context, NULL);
++	/* Call DSP Trace Buffer */
++	print_dsp_trace_buffer(hdeh_mgr->hwmd_context);
+ }
+ 
+ dsp_status bridge_deh_get_info(struct deh_mgr *hdeh_mgr,
+ 			    struct dsp_errorinfo *pErrInfo)
+ {
+-	dsp_status status = DSP_SOK;
+ 	struct deh_mgr *deh_mgr_obj = (struct deh_mgr *)hdeh_mgr;
+ 
+ 	DBC_REQUIRE(deh_mgr_obj);
+ 	DBC_REQUIRE(pErrInfo);
+ 
+-	if (MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE)) {
+-		/* Copy DEH error info structure to PROC error info
+-		 * structure. */
+-		pErrInfo->dw_err_mask = deh_mgr_obj->err_info.dw_err_mask;
+-		pErrInfo->dw_val1 = deh_mgr_obj->err_info.dw_val1;
+-		pErrInfo->dw_val2 = deh_mgr_obj->err_info.dw_val2;
+-		pErrInfo->dw_val3 = deh_mgr_obj->err_info.dw_val3;
+-	} else {
+-		status = DSP_EHANDLE;
+-	}
++	if (!MEM_IS_VALID_HANDLE(deh_mgr_obj, SIGNATURE))
++		return DSP_EHANDLE;
+ 
+-	return status;
++	/* Copy DEH error info structure to PROC error info structure. */
++	pErrInfo->dw_err_mask = deh_mgr_obj->err_info.dw_err_mask;
++	pErrInfo->dw_val1 = deh_mgr_obj->err_info.dw_val1;
++	pErrInfo->dw_val2 = deh_mgr_obj->err_info.dw_val2;
++	pErrInfo->dw_val3 = deh_mgr_obj->err_info.dw_val3;
++
++	return DSP_SOK;
+ }
+ 
+ void bridge_deh_release_dummy_mem(void)
+-- 
+1.7.0.4
+

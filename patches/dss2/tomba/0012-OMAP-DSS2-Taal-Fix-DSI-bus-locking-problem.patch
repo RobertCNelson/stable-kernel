@@ -1,0 +1,37 @@
+From 0b4c5deff01f1ef9441d1d62e4ff2809585211d9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@nokia.com>
+Date: Wed, 10 Mar 2010 18:24:54 +0100
+Subject: [PATCH 12/23] OMAP: DSS2: Taal: Fix DSI bus locking problem
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+If omapdss_dsi_display_enable() failed the DSI bus was left locked. Also
+if the operation failed later omapdss_dsi_display_disable() would get
+called without holding the bus lock.
+
+Signed-off-by: Ville Syrjälä <ville.syrjala@nokia.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+---
+ drivers/video/omap2/displays/panel-taal.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index 1799096..aaf5d30 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -702,10 +702,9 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 
+ 	return 0;
+ err:
+-	dsi_bus_unlock();
+-
+ 	omapdss_dsi_display_disable(dssdev);
+ err0:
++	dsi_bus_unlock();
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+-- 
+1.7.0.4
+

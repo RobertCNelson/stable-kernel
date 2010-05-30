@@ -1,0 +1,42 @@
+From 529dea3d9e006f1bbdb3ec66f4050c6dc723e1ff Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:18 -0500
+Subject: [PATCH 048/135] DSPBRIDGE: replace error code CHNL_E_CANCELLED for -ECANCELED
+
+This patch replaces CHNL_E_CANCELLED with -ECANCELED.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/wmd.h |    2 +-
+ drivers/dsp/bridge/wmd/chnl_sm.c           |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmd.h b/arch/arm/plat-omap/include/dspbridge/wmd.h
+index 62b43f5..6d6cd61 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmd.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmd.h
+@@ -453,7 +453,7 @@ typedef dsp_status(*fxn_chnl_close) (struct chnl_object *chnl_obj);
+  *      DSP_EHANDLE:    Invalid chnl_obj.
+  *      DSP_EPOINTER:   pHostBuf is invalid.
+  *      CHNL_E_NOEOS:   User cannot mark EOS on an input channel.
+- *      CHNL_E_CANCELLED: I/O has been cancelled on this channel.  No further
++ *      -ECANCELED: I/O has been cancelled on this channel.  No further
+  *                      I/O is allowed.
+  *      CHNL_E_EOS:     End of stream was already marked on a previous
+  *                      IORequest on this channel.  No further I/O is expected.
+diff --git a/drivers/dsp/bridge/wmd/chnl_sm.c b/drivers/dsp/bridge/wmd/chnl_sm.c
+index e7b1d1e..15bbcff 100644
+--- a/drivers/dsp/bridge/wmd/chnl_sm.c
++++ b/drivers/dsp/bridge/wmd/chnl_sm.c
+@@ -123,7 +123,7 @@ dsp_status bridge_chnl_add_io_req(struct chnl_object *chnl_obj, void *pHostBuf,
+ 		dw_state = pchnl->dw_state;
+ 		if (dw_state != CHNL_STATEREADY) {
+ 			if (dw_state & CHNL_STATECANCEL)
+-				status = CHNL_E_CANCELLED;
++				status = -ECANCELED;
+ 			else if ((dw_state & CHNL_STATEEOS) &&
+ 				 CHNL_IS_OUTPUT(pchnl->chnl_mode))
+ 				status = CHNL_E_EOS;
+-- 
+1.7.0.4
+

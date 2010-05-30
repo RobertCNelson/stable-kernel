@@ -1,0 +1,51 @@
+From a7c1308dd2ad1bc88cd986858eddea2679d41061 Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:58 -0500
+Subject: [PATCH 065/135] DSPBRIDGE: replace error code DSP_EALREADYCONNECTED for -EISCONN
+
+This patch replaces DSP_EALREADYCONNECTED with -EISCONN.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/node.h |    2 +-
+ drivers/dsp/bridge/rmgr/node.c              |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/node.h b/arch/arm/plat-omap/include/dspbridge/node.h
+index bee34c2..114a43d 100644
+--- a/arch/arm/plat-omap/include/dspbridge/node.h
++++ b/arch/arm/plat-omap/include/dspbridge/node.h
+@@ -168,7 +168,7 @@ extern dsp_status node_close_orphans(struct node_mgr *hnode_mgr,
+  *      -EFAULT:            Invalid hNode1 or hNode2.
+  *      -ENOMEM:            Insufficient host memory.
+  *      -EINVAL:             A stream index parameter is invalid.
+- *      DSP_EALREADYCONNECTED:  A connection already exists for one of the
++ *      -EISCONN:  A connection already exists for one of the
+  *                              indices uStream1 or uStream2.
+  *      DSP_EWRONGSTATE:        Either hNode1 or hNode2 is not in the
+  *                              NODE_ALLOCATED state.
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index 626ea72..3370cd2 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -935,7 +935,7 @@ dsp_status node_connect(struct node_object *hNode1, u32 uStream1,
+ 			    &(hNode1->create_args.asa.
+ 			      task_arg_obj.strm_out_def[uStream1]);
+ 			if (output->sz_device != NULL)
+-				status = DSP_EALREADYCONNECTED;
++				status = -EISCONN;
+ 
+ 		}
+ 		if (node2_type == NODE_TASK || node2_type == NODE_DAISSOCKET) {
+@@ -943,7 +943,7 @@ dsp_status node_connect(struct node_object *hNode1, u32 uStream1,
+ 			    &(hNode2->create_args.asa.
+ 			      task_arg_obj.strm_in_def[uStream2]);
+ 			if (input->sz_device != NULL)
+-				status = DSP_EALREADYCONNECTED;
++				status = -EISCONN;
+ 
+ 		}
+ 	}
+-- 
+1.7.0.4
+

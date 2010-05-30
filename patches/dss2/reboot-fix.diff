@@ -1,0 +1,19 @@
+diff --git a/drivers/video/omap2/displays/panel-generic.c b/drivers/video/omap2/displays/panel-generic.c
+index 300eff5..8266130 100644
+--- a/drivers/video/omap2/displays/panel-generic.c
++++ b/drivers/video/omap2/displays/panel-generic.c
+@@ -91,6 +91,14 @@ static int generic_panel_enable(struct omap_dss_device *dssdev)
+ 
+ static void generic_panel_disable(struct omap_dss_device *dssdev)
+ {
++
++	if (dssdev->state == OMAP_DSS_DISPLAY_SUSPENDED)
++	{
++		generic_panel_power_on(dssdev);
++
++		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++	}
++
+ 	generic_panel_power_off(dssdev);
+ 
+ 	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;

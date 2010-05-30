@@ -1,0 +1,32 @@
+From 2441ed9235323eb38cf58576b51613ae4e87fb8e Mon Sep 17 00:00:00 2001
+From: omar ramirez <omar.ramirez@ti.com>
+Date: Tue, 23 Mar 2010 22:48:30 +0000
+Subject: [PATCH 012/135] DSPBRIDGE: auto select mailbox when compiling bridge
+
+Auto select mailbox when compiling bridgedriver.
+
+If selected as module, first install:
+arch/arm/plat-omap/mailbox.ko
+arch/arm/mach-omap2/mailbox_mach.ko
+
+Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com
+Acked-by: Deepak Chitriki <deepak.chitriki@ti.com>
+---
+ drivers/dsp/bridge/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/dsp/bridge/Kconfig b/drivers/dsp/bridge/Kconfig
+index c721f40..a3251c3 100644
+--- a/drivers/dsp/bridge/Kconfig
++++ b/drivers/dsp/bridge/Kconfig
+@@ -5,6 +5,7 @@
+ menuconfig MPU_BRIDGE
+ 	tristate "DSP Bridge driver"
+ 	default n
++	select OMAP_MBOX_FWK
+ 	help
+ 	  DSP/BIOS Bridge is designed for platforms that contain a GPP and
+ 	  one or more attached DSPs.  The GPP is considered the master or
+-- 
+1.7.0.4
+

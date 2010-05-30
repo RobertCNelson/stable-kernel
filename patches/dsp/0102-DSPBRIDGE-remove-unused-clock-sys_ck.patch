@@ -1,0 +1,40 @@
+From c2ccba70effaf0e22c913fcbf1b97d0822c7e656 Mon Sep 17 00:00:00 2001
+From: Omar Ramirez Luna <omar.ramirez@ti.com>
+Date: Thu, 8 Apr 2010 23:15:55 +0000
+Subject: [PATCH 102/135] DSPBRIDGE: remove unused clock sys_ck
+
+Remove unused clock sys_ck
+
+Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/clk.h |    1 -
+ drivers/dsp/bridge/services/clk.c          |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/clk.h b/arch/arm/plat-omap/include/dspbridge/clk.h
+index a547225..2a43aab 100644
+--- a/arch/arm/plat-omap/include/dspbridge/clk.h
++++ b/arch/arm/plat-omap/include/dspbridge/clk.h
+@@ -46,7 +46,6 @@ enum dsp_clk_id {
+ 	DSP_CLK_SSI_FCK,
+ 	DSP_CLK_SSI_ICK,
+ 	DSP_CLK_SYS32K_CK,
+-	DSP_CLK_SYS_CK,
+ 	DSP_CLK_NOT_DEFINED
+ };
+ 
+diff --git a/drivers/dsp/bridge/services/clk.c b/drivers/dsp/bridge/services/clk.c
+index 4101c38..23d4346 100644
+--- a/drivers/dsp/bridge/services/clk.c
++++ b/drivers/dsp/bridge/services/clk.c
+@@ -76,7 +76,6 @@ static struct dsp_clk_t dsp_clks[] = {
+ 	{NULL, "ssi_ssr_sst_fck", -1},
+ 	{NULL, "ssi_ick", -1},
+ 	{NULL, "omap_32k_fck", -1},
+-	{NULL, "sys_ck", -1},
+ 	{NULL, ""}
+ };
+ 
+-- 
+1.7.0.4
+

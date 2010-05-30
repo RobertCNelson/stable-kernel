@@ -1,0 +1,28 @@
+From 65a9f45e8ee7c1cd6a2f2aa32e49a045976a567f Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:14:50 -0500
+Subject: [PATCH 036/135] DSPBRIDGE: replace error code REG_E_INVALIDSUBKEY for -ENOKEY
+
+This patch replaces REG_E_INVALIDSUBKEY with -ENOKEY.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ drivers/dsp/bridge/services/regsup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/dsp/bridge/services/regsup.c b/drivers/dsp/bridge/services/regsup.c
+index b029c2a..1d04489 100644
+--- a/drivers/dsp/bridge/services/regsup.c
++++ b/drivers/dsp/bridge/services/regsup.c
+@@ -172,7 +172,7 @@ dsp_status regsup_enum_value(IN u32 dw_index, IN CONST char *pstrKey,
+ 			     IN OUT char *pstrValue, IN OUT u32 * pdwValueSize,
+ 			     IN OUT char *pstrData, IN OUT u32 * pdwDataSize)
+ {
+-	dsp_status ret = REG_E_INVALIDSUBKEY;
++	dsp_status ret = -ENOKEY;
+ 	struct reg_value *rv = (struct reg_value *)lst_first(reg_key_list);
+ 	u32 dw_key_len;
+ 	u32 count = 0;
+-- 
+1.7.0.4
+

@@ -1,0 +1,130 @@
+From de48424b66816951aace57a0ae640aae5f2d2367 Mon Sep 17 00:00:00 2001
+From: Armando Uribe De Leon <x0095078@ti.com>
+Date: Mon, 3 May 2010 18:19:28 -0500
+Subject: [PATCH 117/135] DSPBRIDGE: Remove checkpatch errors regarding braces
+
+This patch removes checkptach errors due to
+misleading braces
+
+Signed-off-by: Armando Uribe De Leon <x0095078@ti.com>
+---
+ drivers/dsp/bridge/dynload/cload.c      |    4 ++--
+ drivers/dsp/bridge/pmgr/cmm.c           |    5 ++---
+ drivers/dsp/bridge/pmgr/dbll.c          |    3 +--
+ drivers/dsp/bridge/rmgr/mgr.c           |    3 +--
+ drivers/dsp/bridge/services/cfg.c       |    3 +--
+ drivers/dsp/bridge/wmd/io_sm.c          |    3 +--
+ drivers/dsp/bridge/wmd/tiomap3430_pwr.c |    3 +--
+ 7 files changed, 9 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/dsp/bridge/dynload/cload.c b/drivers/dsp/bridge/dynload/cload.c
+index d0de525..7f3c3bd 100644
+--- a/drivers/dsp/bridge/dynload/cload.c
++++ b/drivers/dsp/bridge/dynload/cload.c
+@@ -48,8 +48,8 @@ static const char loader_dllview_root[] = { "?DLModules?" };
+  */
+ static const char readstrm[] = { "Error reading %s from input stream" };
+ static const char err_alloc[] = { "Syms->dload_allocate( %d ) failed" };
+-static const char tgtalloc[] =
+-    { "Target memory allocate failed, section %s size " FMT_UI32 };
++static const char tgtalloc[] = {
++	"Target memory allocate failed, section %s size " FMT_UI32 };
+ static const char initfail[] = { "%s to target address " FMT_UI32 " failed" };
+ static const char dlvwrite[] = { "Write to DLLview list failed" };
+ static const char iconnect[] = { "Connect call to init interface failed" };
+diff --git a/drivers/dsp/bridge/pmgr/cmm.c b/drivers/dsp/bridge/pmgr/cmm.c
+index ea7c246..60925e8 100644
+--- a/drivers/dsp/bridge/pmgr/cmm.c
++++ b/drivers/dsp/bridge/pmgr/cmm.c
+@@ -997,11 +997,10 @@ dsp_status cmm_xlator_delete(struct cmm_xlatorobject *xlator, bool bForce)
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+-	if (xlator_obj) {
++	if (xlator_obj)
+ 		kfree(xlator_obj);
+-	} else {
++	else
+ 		status = -EFAULT;
+-	}
+ 
+ 	return status;
+ }
+diff --git a/drivers/dsp/bridge/pmgr/dbll.c b/drivers/dsp/bridge/pmgr/dbll.c
+index ac381e0..70dbba3 100644
+--- a/drivers/dsp/bridge/pmgr/dbll.c
++++ b/drivers/dsp/bridge/pmgr/dbll.c
+@@ -836,9 +836,8 @@ void dbll_unload(struct dbll_library_obj *lib, struct dbll_attrs *attrs)
+ 					    &zl_lib->symbol.dl_symbol,
+ 					    &zl_lib->allocate.dl_alloc,
+ 					    &zl_lib->init.dl_init);
+-		if (err != 0) {
++		if (err != 0)
+ 			dev_dbg(bridge, "%s: failed: 0x%x\n", __func__, err);
+-		}
+ 	}
+ 	/* remove symbols from symbol table */
+ 	if (zl_lib->sym_tab != NULL) {
+diff --git a/drivers/dsp/bridge/rmgr/mgr.c b/drivers/dsp/bridge/rmgr/mgr.c
+index a0e89dc..dfaf288 100644
+--- a/drivers/dsp/bridge/rmgr/mgr.c
++++ b/drivers/dsp/bridge/rmgr/mgr.c
+@@ -214,9 +214,8 @@ dsp_status mgr_enum_processor_info(u32 processor_id,
+ 			if (dev_type != DSP_UNIT)
+ 				status = -EPERM;
+ 
+-			if (DSP_SUCCEEDED(status)) {
++			if (DSP_SUCCEEDED(status))
+ 				processor_info->processor_type = DSPTYPE64;
+-			}
+ 		}
+ 	}
+ 	if (DSP_FAILED(status))
+diff --git a/drivers/dsp/bridge/services/cfg.c b/drivers/dsp/bridge/services/cfg.c
+index 43d9b3e..6a0b5c3 100644
+--- a/drivers/dsp/bridge/services/cfg.c
++++ b/drivers/dsp/bridge/services/cfg.c
+@@ -214,9 +214,8 @@ dsp_status cfg_set_dev_object(struct cfg_devnode *dev_node_obj, u32 dwValue)
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* Store the WCD device object in the Registry */
+ 
+-		if (!(strcmp((char *)dev_node_obj, "TIOMAP1510"))) {
++		if (!(strcmp((char *)dev_node_obj, "TIOMAP1510")))
+ 			drv_datap->dev_object = (void *) dwValue;
+-		}
+ 	}
+ 	if (DSP_FAILED(status))
+ 		pr_err("%s: Failed, status 0x%x\n", __func__, status);
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index c745207..d815195 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -587,9 +587,8 @@ dsp_status bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 					ae_proc[ndx].ul_gpp_va,
+ 					ae_proc[ndx].ul_dsp_va *
+ 					hio_mgr->word_size, page_size[i]);
+-				if (DSP_FAILED(status)) {
++				if (DSP_FAILED(status))
+ 					goto func_end;
+-				}
+ 			}
+ 			pa_curr += page_size[i];
+ 			va_curr += page_size[i];
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+index 906c2c5..3163d1d 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+@@ -231,9 +231,8 @@ dsp_status sleep_dsp(struct wmd_dev_context *dev_context, IN u32 dw_cmd,
+ 
+ 		/* Turn off DSP Peripheral clocks */
+ 		status = dsp_clock_disable_all(dev_context->dsp_per_clks);
+-		if (DSP_FAILED(status)) {
++		if (DSP_FAILED(status))
+ 			return status;
+-		}
+ #ifdef CONFIG_BRIDGE_DVFS
+ 		else if (target_pwr_state == PWRDM_POWER_OFF) {
+ 			/*
+-- 
+1.7.0.4
+
