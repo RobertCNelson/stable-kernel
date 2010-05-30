@@ -1,0 +1,264 @@
+From 6bda180a60e0849b2184897e3e2b2ca1da9e5efc Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:41 -0500
+Subject: [PATCH 058/135] DSPBRIDGE: replace error code DSP_ENOTIMPL for -ENOSYS
+
+This patch replaces DSP_ENOTIMPL with -ENOSYS.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/cod.h      |    2 +-
+ arch/arm/plat-omap/include/dspbridge/dblldefs.h |    4 ++--
+ arch/arm/plat-omap/include/dspbridge/node.h     |    2 +-
+ arch/arm/plat-omap/include/dspbridge/proc.h     |    2 +-
+ arch/arm/plat-omap/include/dspbridge/strm.h     |    2 +-
+ arch/arm/plat-omap/include/dspbridge/wmd.h      |    2 +-
+ drivers/dsp/bridge/pmgr/cod.c                   |    2 +-
+ drivers/dsp/bridge/pmgr/dbll.c                  |    4 ++--
+ drivers/dsp/bridge/pmgr/dev.c                   |    6 +++---
+ drivers/dsp/bridge/pmgr/wcd.c                   |    8 ++++----
+ drivers/dsp/bridge/rmgr/node.c                  |    2 +-
+ drivers/dsp/bridge/rmgr/proc.c                  |    2 +-
+ drivers/dsp/bridge/rmgr/strm.c                  |    4 ++--
+ 13 files changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/cod.h b/arch/arm/plat-omap/include/dspbridge/cod.h
+index bb6a379..4d83e3d 100644
+--- a/arch/arm/plat-omap/include/dspbridge/cod.h
++++ b/arch/arm/plat-omap/include/dspbridge/cod.h
+@@ -87,7 +87,7 @@ extern void cod_close(struct cod_libraryobj *lib);
+  *      DSP_SOK:                Success.
+  *      COD_E_NOZLFUNCTIONS:    Could not initialize ZL functions.
+  *      COD_E_ZLCREATEFAILED:   ZL_Create failed.
+- *      DSP_ENOTIMPL:           attrs was not NULL.  We don't yet support
++ *      -ENOSYS:           attrs was not NULL.  We don't yet support
+  *                              non default values of attrs.
+  *  Requires:
+  *      COD module initialized.
+diff --git a/arch/arm/plat-omap/include/dspbridge/dblldefs.h b/arch/arm/plat-omap/include/dspbridge/dblldefs.h
+index 60bc5e5..ecc5d06 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dblldefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/dblldefs.h
+@@ -361,7 +361,7 @@ typedef dsp_status(*dbll_load_fxn) (struct dbll_library_obj *lib,
+  *      DSP_SOK:        Success.
+  *      DSP_ENOSECT:    Section not found.
+  *      DSP_EFWRITE:    Write function failed.
+- *      DSP_ENOTIMPL:   Function not implemented.
++ *      -ENOSYS:   Function not implemented.
+  *  Requires:
+  *      Valid lib.
+  *      sectName != NULL.
+@@ -466,7 +466,7 @@ typedef void (*dbll_unload_fxn) (struct dbll_library_obj *library,
+  *  Returns:
+  *      DSP_SOK:        Success.
+  *      DSP_ENOSECT:    Named section not found.
+- *      DSP_ENOTIMPL
++ *      -ENOSYS
+  *  Requires:
+  *      DBL initialized.
+  *      Valid lib.
+diff --git a/arch/arm/plat-omap/include/dspbridge/node.h b/arch/arm/plat-omap/include/dspbridge/node.h
+index e36f1d6..1dd7217 100644
+--- a/arch/arm/plat-omap/include/dspbridge/node.h
++++ b/arch/arm/plat-omap/include/dspbridge/node.h
+@@ -493,7 +493,7 @@ extern dsp_status node_put_message(struct node_object *hnode,
+  *      DSP_EHANDLE:    Invalid hnode.
+  *      DSP_EMEMORY:    Insufficient memory on GPP.
+  *      -EINVAL:     event_mask is invalid.
+- *      DSP_ENOTIMPL:   Notification type specified by notify_type is not
++ *      -ENOSYS:   Notification type specified by notify_type is not
+  *                      supported.
+  *  Requires:
+  *      node_init(void) called.
+diff --git a/arch/arm/plat-omap/include/dspbridge/proc.h b/arch/arm/plat-omap/include/dspbridge/proc.h
+index 53a2429..f0b26ec 100644
+--- a/arch/arm/plat-omap/include/dspbridge/proc.h
++++ b/arch/arm/plat-omap/include/dspbridge/proc.h
+@@ -184,7 +184,7 @@ extern dsp_status proc_enum_nodes(void *hprocessor,
+  *  Ensures:
+  *  Details:
+  *      This function currently returns
+- *      DSP_ENOTIMPL, and does not write any data to the resource_info struct.
++ *      -ENOSYS, and does not write any data to the resource_info struct.
+  */
+ extern dsp_status proc_get_resource_info(void *hprocessor,
+ 					 u32 resource_type,
+diff --git a/arch/arm/plat-omap/include/dspbridge/strm.h b/arch/arm/plat-omap/include/dspbridge/strm.h
+index a3b58a8..43afc1c 100644
+--- a/arch/arm/plat-omap/include/dspbridge/strm.h
++++ b/arch/arm/plat-omap/include/dspbridge/strm.h
+@@ -340,7 +340,7 @@ extern dsp_status strm_reclaim(struct strm_object *hStrm,
+  *      DSP_EHANDLE:    Invalid hStrm.
+  *      DSP_EMEMORY:    Insufficient memory on GPP.
+  *      -EINVAL:     event_mask is invalid.
+- *      DSP_ENOTIMPL:   Notification type specified by notify_type is not
++ *      -ENOSYS:   Notification type specified by notify_type is not
+  *                      supported.
+  *  Requires:
+  *      strm_init(void) called.
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmd.h b/arch/arm/plat-omap/include/dspbridge/wmd.h
+index b57de2c..455afa0 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmd.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmd.h
+@@ -1044,7 +1044,7 @@ typedef void (*fxn_msg_setqueueid) (struct msg_queue *msg_queue_obj,
+  *  and copied into the 'Bridge class driver's own space.  If any interface
+  *  function field is set to a value of NULL, then the class driver will
+  *  consider that function not implemented, and return the error code
+- *  DSP_ENOTIMPL when a WMD client attempts to call that function.
++ *  -ENOSYS when a WMD client attempts to call that function.
+  *
+  *  This function table contains WCD version numbers, which are used by the
+  *  WMD loader to help ensure backwards compatility between older WMD's and a
+diff --git a/drivers/dsp/bridge/pmgr/cod.c b/drivers/dsp/bridge/pmgr/cod.c
+index 3707398..0f2e2a1 100644
+--- a/drivers/dsp/bridge/pmgr/cod.c
++++ b/drivers/dsp/bridge/pmgr/cod.c
+@@ -232,7 +232,7 @@ dsp_status cod_create(OUT struct cod_manager **phMgr, char *pstrDummyFile,
+ 
+ 	/* we don't support non-default attrs yet */
+ 	if (attrs != NULL)
+-		return DSP_ENOTIMPL;
++		return -ENOSYS;
+ 
+ 	mgr_new = mem_calloc(sizeof(struct cod_manager), MEM_NONPAGED);
+ 	if (mgr_new == NULL)
+diff --git a/drivers/dsp/bridge/pmgr/dbll.c b/drivers/dsp/bridge/pmgr/dbll.c
+index f93543c..28b71b2 100644
+--- a/drivers/dsp/bridge/pmgr/dbll.c
++++ b/drivers/dsp/bridge/pmgr/dbll.c
+@@ -589,7 +589,7 @@ dsp_status dbll_load_sect(struct dbll_library_obj *zl_lib, char *sectName,
+ {
+ 	DBC_REQUIRE(MEM_IS_VALID_HANDLE(zl_lib, DBLL_LIBSIGNATURE));
+ 
+-	return DSP_ENOTIMPL;
++	return -ENOSYS;
+ }
+ 
+ /*
+@@ -874,7 +874,7 @@ dsp_status dbll_unload_sect(struct dbll_library_obj *lib, char *sectName,
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(sectName != NULL);
+ 
+-	return DSP_ENOTIMPL;
++	return -ENOSYS;
+ }
+ 
+ /*
+diff --git a/drivers/dsp/bridge/pmgr/dev.c b/drivers/dsp/bridge/pmgr/dev.c
+index ae6f8aa..806ee9c 100644
+--- a/drivers/dsp/bridge/pmgr/dev.c
++++ b/drivers/dsp/bridge/pmgr/dev.c
+@@ -217,7 +217,7 @@ dsp_status dev_create_device(OUT struct dev_object **phDevObject,
+ 			       __func__);
+ 		}
+ 		status = chnl_create(&dev_obj->hchnl_mgr, dev_obj, &mgr_attrs);
+-		if (status == DSP_ENOTIMPL) {
++		if (status == -ENOSYS) {
+ 			/* It's OK for a device not to have a channel
+ 			 * manager: */
+ 			status = DSP_SOK;
+@@ -933,11 +933,11 @@ dsp_status dev_start_device(struct cfg_devnode *dev_node_obj)
+  *  Parameters:
+  *      Multiple, optional.
+  *  Returns:
+- *      DSP_ENOTIMPL:   Always.
++ *      -ENOSYS:   Always.
+  */
+ static dsp_status fxn_not_implemented(int arg, ...)
+ {
+-	return DSP_ENOTIMPL;
++	return -ENOSYS;
+ }
+ 
+ /*
+diff --git a/drivers/dsp/bridge/pmgr/wcd.c b/drivers/dsp/bridge/pmgr/wcd.c
+index 5a4f284..06c4c7f 100644
+--- a/drivers/dsp/bridge/pmgr/wcd.c
++++ b/drivers/dsp/bridge/pmgr/wcd.c
+@@ -1439,7 +1439,7 @@ u32 __deprecated strmwrap_get_event_handle(union Trapped_Args * args,
+ 					   void *pr_ctxt)
+ {
+ 	pr_err("%s: deprecated dspbridge ioctl\n", __func__);
+-	return DSP_ENOTIMPL;
++	return -ENOSYS;
+ }
+ 
+ /*
+@@ -1521,7 +1521,7 @@ u32 strmwrap_open(union Trapped_Args *args, void *pr_ctxt)
+ 		if (DSP_SUCCEEDED(status)) {
+ 			attr.stream_attr_in = &strm_attr_in;
+ 			if (attr.stream_attr_in->strm_mode == STRMMODE_LDMA)
+-				return DSP_ENOTIMPL;
++				return -ENOSYS;
+ 		}
+ 
+ 	}
+@@ -1611,7 +1611,7 @@ u32 __deprecated cmmwrap_calloc_buf(union Trapped_Args * args, void *pr_ctxt)
+ {
+ 	/* This operation is done in kernel */
+ 	pr_err("%s: deprecated dspbridge ioctl\n", __func__);
+-	return DSP_ENOTIMPL;
++	return -ENOSYS;
+ }
+ 
+ /*
+@@ -1621,7 +1621,7 @@ u32 __deprecated cmmwrap_free_buf(union Trapped_Args * args, void *pr_ctxt)
+ {
+ 	/* This operation is done in kernel */
+ 	pr_err("%s: deprecated dspbridge ioctl\n", __func__);
+-	return DSP_ENOTIMPL;
++	return -ENOSYS;
+ }
+ 
+ /*
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index b4f9c22..59eb17b 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -2043,7 +2043,7 @@ dsp_status node_pause(struct node_object *hnode)
+ 	status = proc_get_processor_id(pnode->hprocessor, &proc_id);
+ 
+ 	if (proc_id == IVA_UNIT)
+-		status = DSP_ENOTIMPL;
++		status = -ENOSYS;
+ 
+ 	if (DSP_SUCCEEDED(status)) {
+ 		hnode_mgr = hnode->hnode_mgr;
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index 5b4ec46..eb57b4d 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -775,7 +775,7 @@ dsp_status proc_get_state(void *hprocessor,
+ dsp_status proc_get_trace(void *hprocessor, u8 * pbuf, u32 max_size)
+ {
+ 	dsp_status status;
+-	status = DSP_ENOTIMPL;
++	status = -ENOSYS;
+ 	return status;
+ }
+ 
+diff --git a/drivers/dsp/bridge/rmgr/strm.c b/drivers/dsp/bridge/rmgr/strm.c
+index 4811154..61ed363 100644
+--- a/drivers/dsp/bridge/rmgr/strm.c
++++ b/drivers/dsp/bridge/rmgr/strm.c
+@@ -724,7 +724,7 @@ dsp_status strm_register_notify(struct strm_object *hStrm, u32 event_mask,
+ 		status = -EINVAL;
+ 	} else {
+ 		if (notify_type != DSP_SIGNALEVENT)
+-			status = DSP_ENOTIMPL;
++			status = -ENOSYS;
+ 
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+@@ -739,7 +739,7 @@ dsp_status strm_register_notify(struct strm_object *hStrm, u32 event_mask,
+ 	/* ensure we return a documented return code */
+ 	DBC_ENSURE(DSP_SUCCEEDED(status) || status == DSP_EHANDLE ||
+ 		   status == -ETIME || status == DSP_ETRANSLATE ||
+-		   status == DSP_ENOTIMPL || status == -EPERM);
++		   status == -ENOSYS || status == -EPERM);
+ 	return status;
+ }
+ 
+-- 
+1.7.0.4
+

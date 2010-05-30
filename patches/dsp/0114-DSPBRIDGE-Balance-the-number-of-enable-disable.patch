@@ -1,0 +1,96 @@
+From 9755fefe39ce42b5283d4ee2ce5af2b02a8e6ec2 Mon Sep 17 00:00:00 2001
+From: Omar Ramirez Luna <omar.ramirez@ti.com>
+Date: Tue, 27 Apr 2010 01:39:33 -0500
+Subject: [PATCH 114/135] DSPBRIDGE: Balance the number of enable/disable
+
+This patch ensure a balanced number of enable/disable
+calls is made.
+
+Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com>
+---
+ drivers/dsp/bridge/services/clk.c |   37 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 37 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/dsp/bridge/services/clk.c b/drivers/dsp/bridge/services/clk.c
+index 763a599..c4f0874 100644
+--- a/drivers/dsp/bridge/services/clk.c
++++ b/drivers/dsp/bridge/services/clk.c
+@@ -71,6 +71,23 @@ struct dsp_ssi {
+ 
+ static struct dsp_ssi ssi;
+ 
++static u32 dsp_clocks;
++
++static inline u32 is_dsp_clk_active(u32 clk, u8 id)
++{
++	return clk & (1 << id);
++}
++
++static inline void set_dsp_clk_active(u32 *clk, u8 id)
++{
++	*clk |= (1 << id);
++}
++
++static inline void set_dsp_clk_inactive(u32 *clk, u8 id)
++{
++	*clk &= ~(1 << id);
++}
++
+ static s8 get_clk_type(u8 id)
+ {
+ 	s8 type;
+@@ -184,6 +201,11 @@ dsp_status dsp_clk_enable(IN enum dsp_clk_id clk_id)
+ {
+ 	dsp_status status = DSP_SOK;
+ 
++	if (is_dsp_clk_active(dsp_clocks, clk_id)) {
++		dev_err(bridge, "WARN: clock id %d already enabled\n", clk_id);
++		goto out;
++	}
++
+ 	switch (get_clk_type(clk_id)) {
+ 	case IVA2_CLK:
+ 		clk_enable(iva2_clk);
+@@ -215,8 +237,13 @@ dsp_status dsp_clk_enable(IN enum dsp_clk_id clk_id)
+ 		break;
+ 	default:
+ 		dev_err(bridge, "Invalid clock id for enable\n");
++		status = -EPERM;
+ 	}
+ 
++	if (DSP_SUCCEEDED(status))
++		set_dsp_clk_active(&dsp_clocks, clk_id);
++
++out:
+ 	return status;
+ }
+ 
+@@ -230,6 +257,11 @@ dsp_status dsp_clk_disable(IN enum dsp_clk_id clk_id)
+ {
+ 	dsp_status status = DSP_SOK;
+ 
++	if (!is_dsp_clk_active(dsp_clocks, clk_id)) {
++		dev_err(bridge, "ERR: clock id %d already disabled\n", clk_id);
++		goto out;
++	}
++
+ 	switch (get_clk_type(clk_id)) {
+ 	case IVA2_CLK:
+ 		clk_disable(iva2_clk);
+@@ -253,8 +285,13 @@ dsp_status dsp_clk_disable(IN enum dsp_clk_id clk_id)
+ 		break;
+ 	default:
+ 		dev_err(bridge, "Invalid clock id for disable\n");
++		status = -EPERM;
+ 	}
+ 
++	if (DSP_SUCCEEDED(status))
++		set_dsp_clk_inactive(&dsp_clocks, clk_id);
++
++out:
+ 	return status;
+ }
+ 
+-- 
+1.7.0.4
+

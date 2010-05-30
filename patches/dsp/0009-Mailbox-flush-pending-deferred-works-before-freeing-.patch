@@ -1,0 +1,29 @@
+From 8b12a48391ceed595e17a589b6e6afa783f83220 Mon Sep 17 00:00:00 2001
+From: Fernando Guzman Lugo <x0095840@ti.com>
+Date: Fri, 12 Feb 2010 19:07:14 -0600
+Subject: [PATCH 009/135] Mailbox: flush pending deferred works before freeing blk queue
+
+flush pending deferred works before freeing blk_queue to prevent
+any attempt of access to blk_queue after it was freed
+
+Signed-off-by: Fernando Guzman Lugo <x0095840@ti.com>
+---
+ arch/arm/plat-omap/mailbox.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/plat-omap/mailbox.c b/arch/arm/plat-omap/mailbox.c
+index 836177d..e544a51 100644
+--- a/arch/arm/plat-omap/mailbox.c
++++ b/arch/arm/plat-omap/mailbox.c
+@@ -313,6 +313,8 @@ static int omap_mbox_startup(struct omap_mbox *mbox)
+ static void omap_mbox_fini(struct omap_mbox *mbox)
+ {
+ 	free_irq(mbox->irq, mbox);
++	tasklet_kill(&mbox->txq->tasklet);
++	flush_work(&mbox->rxq->work);
+ 	mbox_queue_free(mbox->txq);
+ 	mbox_queue_free(mbox->rxq);
+ 
+-- 
+1.7.0.4
+

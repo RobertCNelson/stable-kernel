@@ -1,0 +1,12 @@
+diff --git a/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/bc_cat.c b/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/bc_cat.c
+index 1d26699..436c3f7 100644
+--- a/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/bc_cat.c
++++ b/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/bc_cat.c
+@@ -28,6 +28,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/fs.h>
++#include <linux/slab.h>
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+ #include <img_defs.h>

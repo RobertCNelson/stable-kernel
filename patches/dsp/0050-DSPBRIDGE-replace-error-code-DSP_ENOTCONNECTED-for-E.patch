@@ -1,0 +1,28 @@
+From 7b7a4017f655bf20f5b8ac60a0d6b39c87f48498 Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:22 -0500
+Subject: [PATCH 050/135] DSPBRIDGE: replace error code DSP_ENOTCONNECTED for -ENOTCONN
+
+This patch replaces DSP_ENOTCONNECTED with -ENOTCONN.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ drivers/dsp/bridge/rmgr/node.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index 154658e..ed74377 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -1205,7 +1205,7 @@ dsp_status node_create(struct node_object *hnode)
+ 	     hnode->num_inputs - 1) ||
+ 	    (hnode->num_outputs && hnode->max_output_index >
+ 	     hnode->num_outputs - 1))
+-		status = DSP_ENOTCONNECTED;
++		status = -ENOTCONN;
+ 
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* If node's create function is not loaded, load it */
+-- 
+1.7.0.4
+

@@ -1,0 +1,902 @@
+From ba420227d52adf40208e9496e222e5193f69d3c5 Mon Sep 17 00:00:00 2001
+From: Fernando Guzman Lugo <x0095840@ti.com>
+Date: Fri, 12 Feb 2010 02:26:58 -0600
+Subject: [PATCH 005/135] DSPBRIDGE: Change dspbridge for open source mailbox implementation
+
+This patch replaces our dspbridge for opensource mailbox
+implementation.
+
+Signed-off-by: Fernando Guzman Lugo <x0095840@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/cfgdefs.h |    1 -
+ arch/arm/plat-omap/include/dspbridge/clk.h     |    1 -
+ arch/arm/plat-omap/include/dspbridge/drv.h     |    3 -
+ arch/arm/plat-omap/include/dspbridge/host_os.h |    2 +-
+ arch/arm/plat-omap/include/dspbridge/io_sm.h   |    9 +-
+ drivers/dsp/bridge/Kconfig                     |    2 +
+ drivers/dsp/bridge/Makefile                    |    2 +-
+ drivers/dsp/bridge/rmgr/drv.c                  |    7 -
+ drivers/dsp/bridge/services/clk.c              |    1 -
+ drivers/dsp/bridge/wmd/_tiomap.h               |    4 +-
+ drivers/dsp/bridge/wmd/chnl_sm.c               |   25 +++-
+ drivers/dsp/bridge/wmd/io_sm.c                 |  168 +++++++-----------------
+ drivers/dsp/bridge/wmd/tiomap3430.c            |   48 +++++---
+ drivers/dsp/bridge/wmd/tiomap3430_pwr.c        |    6 +-
+ drivers/dsp/bridge/wmd/tiomap_sm.c             |  105 ++--------------
+ drivers/dsp/bridge/wmd/ue_deh.c                |    4 +-
+ 16 files changed, 126 insertions(+), 262 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/cfgdefs.h b/arch/arm/plat-omap/include/dspbridge/cfgdefs.h
+index 4333613..bd24611 100644
+--- a/arch/arm/plat-omap/include/dspbridge/cfgdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/cfgdefs.h
+@@ -71,7 +71,6 @@ struct cfg_hostres {
+ 	u32 dw_per_pm_base;
+ 	u32 dw_core_pm_base;
+ 	void __iomem *dw_wd_timer_dsp_base;
+-	void __iomem *dw_mbox_base;
+ 	void __iomem *dw_dmmu_base;
+ 	void __iomem *dw_sys_ctrl_base;
+ };
+diff --git a/arch/arm/plat-omap/include/dspbridge/clk.h b/arch/arm/plat-omap/include/dspbridge/clk.h
+index 4ff2b27..89dd4d2 100644
+--- a/arch/arm/plat-omap/include/dspbridge/clk.h
++++ b/arch/arm/plat-omap/include/dspbridge/clk.h
+@@ -23,7 +23,6 @@
+ struct timer_object;
+ enum services_clk_id {
+ 	SERVICESCLK_IVA2_CK = 0,
+-	SERVICESCLK_MAILBOX_ICK,
+ 	SERVICESCLK_GPT5_FCK,
+ 	SERVICESCLK_GPT5_ICK,
+ 	SERVICESCLK_GPT6_FCK,
+diff --git a/arch/arm/plat-omap/include/dspbridge/drv.h b/arch/arm/plat-omap/include/dspbridge/drv.h
+index 3db4491..41deb86 100644
+--- a/arch/arm/plat-omap/include/dspbridge/drv.h
++++ b/arch/arm/plat-omap/include/dspbridge/drv.h
+@@ -67,9 +67,6 @@
+ #define OMAP_SYSC_BASE 0x48002000
+ #define OMAP_SYSC_SIZE 0x1000
+ 
+-#define OMAP_MBOX_BASE 0x48094000
+-#define OMAP_MBOX_SIZE 0x1000
+-
+ #define OMAP_DMMU_BASE 0x5D000000
+ #define OMAP_DMMU_SIZE 0x1000
+ 
+diff --git a/arch/arm/plat-omap/include/dspbridge/host_os.h b/arch/arm/plat-omap/include/dspbridge/host_os.h
+index faf1aaa..a5d8caf 100644
+--- a/arch/arm/plat-omap/include/dspbridge/host_os.h
++++ b/arch/arm/plat-omap/include/dspbridge/host_os.h
+@@ -45,12 +45,12 @@
+ #include <dspbridge/dbtype.h>
+ #include <plat/clock.h>
+ #include <linux/clk.h>
++#include <plat/mailbox.h>
+ #include <linux/pagemap.h>
+ #include <asm/cacheflush.h>
+ #include <linux/dma-mapping.h>
+ 
+ /* TODO -- Remove, once BP defines them */
+-#define INT_MAIL_MPU_IRQ        26
+ #define INT_DSP_MMU_IRQ        28
+ 
+ struct dspbridge_platform_data {
+diff --git a/arch/arm/plat-omap/include/dspbridge/io_sm.h b/arch/arm/plat-omap/include/dspbridge/io_sm.h
+index e0875ee..aa4d0cf 100644
+--- a/arch/arm/plat-omap/include/dspbridge/io_sm.h
++++ b/arch/arm/plat-omap/include/dspbridge/io_sm.h
+@@ -43,10 +43,6 @@
+ #define IO_SET_LONG(pContext, type, base, field, value)  (base->field = value)
+ #define IO_GET_LONG(pContext, type, base, field)         (base->field)
+ 
+-#define IO_DISABLE_INTERRUPT(h)  chnlsm_disable_interrupt(h)
+-#define IO_ENABLE_INTERRUPT(h)   chnlsm_enable_interrupt(h)
+-#define IO_CALLISR(h, pFlag, pwMBRegVal)   chnlsm_isr(h, pFlag, pwMBRegVal)
+-
+ /*
+  *  ======== io_cancel_chnl ========
+  *  Purpose:
+@@ -80,7 +76,7 @@ extern void io_cancel_chnl(struct io_mgr *hio_mgr, u32 ulChnl);
+ extern void io_dpc(IN OUT unsigned long pRefData);
+ 
+ /*
+- *  ======== io_isr ========
++ *  ======== io_mbox_msg ========
+  *  Purpose:
+  *      Main interrupt handler for the shared memory WMD channel manager.
+  *      Calls the WMD's chnlsm_isr to determine if this interrupt is ours, then
+@@ -97,7 +93,8 @@ extern void io_dpc(IN OUT unsigned long pRefData);
+  *      Interrupts are disabled and EOI for this interrupt has been sent.
+  *  Ensures:
+  */
+-irqreturn_t io_isr(int irq, IN void *pRefData);
++void io_mbox_msg(u32 msg);
++
+ /*
+  *  ======== io_request_chnl ========
+  *  Purpose:
+diff --git a/drivers/dsp/bridge/Kconfig b/drivers/dsp/bridge/Kconfig
+index e494f02..c721f40 100644
+--- a/drivers/dsp/bridge/Kconfig
++++ b/drivers/dsp/bridge/Kconfig
+@@ -11,6 +11,8 @@ menuconfig MPU_BRIDGE
+ 	  "host" processor, and the attached DSPs are processing resources
+ 	  that can be utilized by applications and drivers running on the GPP.
+ 
++	  This driver depends on OMAP Mailbox (OMAP_MBOX_FWK).
++
+ config BRIDGE_DVFS
+ 	bool "Enable Bridge Dynamic Voltage and Frequency Scaling (DVFS)"
+ 	depends on MPU_BRIDGE && OMAP_PM_SRF
+diff --git a/drivers/dsp/bridge/Makefile b/drivers/dsp/bridge/Makefile
+index 11f48cb..d700938 100644
+--- a/drivers/dsp/bridge/Makefile
++++ b/drivers/dsp/bridge/Makefile
+@@ -15,7 +15,7 @@ librmgr = rmgr/dbdcd.o rmgr/disp.o rmgr/drv.o rmgr/mgr.o rmgr/node.o \
+ 		rmgr/nldr.o rmgr/drv_interface.o
+ libdload = dynload/cload.o dynload/getsection.o dynload/reloc.o \
+ 		 dynload/tramp.o
+-libhw = hw/hw_prcm.o hw/hw_dspssC64P.o hw/hw_mmu.o hw/hw_mbox.o
++libhw = hw/hw_prcm.o hw/hw_dspssC64P.o hw/hw_mmu.o
+ 
+ bridgedriver-objs = $(libgen) $(libservices) $(libwmd) $(libpmgr) $(librmgr) \
+ 			$(libdload) $(libhw)
+diff --git a/drivers/dsp/bridge/rmgr/drv.c b/drivers/dsp/bridge/rmgr/drv.c
+index cd2524f..98f9b78 100644
+--- a/drivers/dsp/bridge/rmgr/drv.c
++++ b/drivers/dsp/bridge/rmgr/drv.c
+@@ -896,8 +896,6 @@ static dsp_status request_bridge_resources(u32 dw_context, s32 bRequest)
+ 				iounmap(host_res->dw_prm_base);
+ 			if (host_res->dw_cm_base)
+ 				iounmap(host_res->dw_cm_base);
+-			if (host_res->dw_mbox_base)
+-				iounmap(host_res->dw_mbox_base);
+ 			if (host_res->dw_mem_base[0])
+ 				iounmap((void *)host_res->dw_mem_base[0]);
+ 			if (host_res->dw_mem_base[2])
+@@ -921,7 +919,6 @@ static dsp_status request_bridge_resources(u32 dw_context, s32 bRequest)
+ 
+ 			host_res->dw_prm_base = NULL;
+ 			host_res->dw_cm_base = NULL;
+-			host_res->dw_mbox_base = NULL;
+ 			host_res->dw_mem_base[0] = (u32) NULL;
+ 			host_res->dw_mem_base[2] = (u32) NULL;
+ 			host_res->dw_mem_base[3] = (u32) NULL;
+@@ -951,8 +948,6 @@ static dsp_status request_bridge_resources(u32 dw_context, s32 bRequest)
+ 						OMAP_IVA2_PRM_SIZE);
+ 		host_res->dw_cm_base = ioremap(OMAP_IVA2_CM_BASE,
+ 					       OMAP_IVA2_CM_SIZE);
+-		host_res->dw_mbox_base = ioremap(OMAP_MBOX_BASE,
+-						 OMAP_MBOX_SIZE);
+ 		host_res->dw_sys_ctrl_base = ioremap(OMAP_SYSC_BASE,
+ 						     OMAP_SYSC_SIZE);
+ 		dev_dbg(bridge, "dw_mem_base[0] 0x%x\n",
+@@ -963,7 +958,6 @@ static dsp_status request_bridge_resources(u32 dw_context, s32 bRequest)
+ 		dev_dbg(bridge, "dw_cm_base %p\n", host_res->dw_cm_base);
+ 		dev_dbg(bridge, "dw_wd_timer_dsp_base %p\n",
+ 			host_res->dw_wd_timer_dsp_base);
+-		dev_dbg(bridge, "dw_mbox_base %p\n", host_res->dw_mbox_base);
+ 		dev_dbg(bridge, "dw_dmmu_base %p\n", host_res->dw_dmmu_base);
+ 
+ 		/* for 24xx base port is not mapping the mamory for DSP
+@@ -1054,7 +1048,6 @@ static dsp_status request_bridge_resources_dsp(u32 dw_context, s32 bRequest)
+ 		dev_dbg(bridge, "dw_cm_base %p\n", host_res->dw_cm_base);
+ 		dev_dbg(bridge, "dw_wd_timer_dsp_base %p\n",
+ 			host_res->dw_wd_timer_dsp_base);
+-		dev_dbg(bridge, "dw_mbox_base %p\n", host_res->dw_mbox_base);
+ 		dev_dbg(bridge, "dw_dmmu_base %p\n", host_res->dw_dmmu_base);
+ 		dw_buff_size = sizeof(shm_size);
+ 		status =
+diff --git a/drivers/dsp/bridge/services/clk.c b/drivers/dsp/bridge/services/clk.c
+index 541568d..a398dc4 100644
+--- a/drivers/dsp/bridge/services/clk.c
++++ b/drivers/dsp/bridge/services/clk.c
+@@ -56,7 +56,6 @@ struct services_clk_t {
+  * enumerations needs to be fixed in the array as well */
+ static struct services_clk_t services_clks[] = {
+ 	{NULL, "iva2_ck", -1},
+-	{NULL, "mailboxes_ick", -1},
+ 	{NULL, "gpt5_fck", -1},
+ 	{NULL, "gpt5_ick", -1},
+ 	{NULL, "gpt6_fck", -1},
+diff --git a/drivers/dsp/bridge/wmd/_tiomap.h b/drivers/dsp/bridge/wmd/_tiomap.h
+index a2893c3..d563002 100644
+--- a/drivers/dsp/bridge/wmd/_tiomap.h
++++ b/drivers/dsp/bridge/wmd/_tiomap.h
+@@ -21,7 +21,6 @@
+ 
+ #include <dspbridge/devdefs.h>
+ #include <hw_defs.h>
+-#include <hw_mbox.h>
+ #include <dspbridge/wmdioctl.h>	/* for wmdioctl_extproc defn */
+ #include <dspbridge/sync.h>
+ #include <dspbridge/clk.h>
+@@ -317,7 +316,6 @@ struct wmd_dev_context {
+ 	u32 dw_dsp_ext_base_addr;	/* See the comment above */
+ 	u32 dw_api_reg_base;	/* API mem map'd registers */
+ 	void __iomem *dw_dsp_mmu_base;	/* DSP MMU Mapped registers */
+-	u32 dw_mail_box_base;	/* Mail box mapped registers */
+ 	u32 dw_api_clk_base;	/* CLK Registers */
+ 	u32 dw_dsp_clk_m2_base;	/* DSP Clock Module m2 */
+ 	u32 dw_public_rhea;	/* Pub Rhea */
+@@ -328,6 +326,8 @@ struct wmd_dev_context {
+ 	u32 dw_dsp_start_add;	/* API Boot vector */
+ 	u32 dw_internal_size;	/* Internal memory size */
+ 
++	struct omap_mbox *mbox;		/* Mail box handle*/
++
+ 	/*
+ 	 * Processor specific info is set when prog loaded and read from DCD.
+ 	 * [See WMD_BRD_Ctrl()]  PROC info contains DSP-MMU TLB entries.
+diff --git a/drivers/dsp/bridge/wmd/chnl_sm.c b/drivers/dsp/bridge/wmd/chnl_sm.c
+index b7a5749..0c14bc2 100644
+--- a/drivers/dsp/bridge/wmd/chnl_sm.c
++++ b/drivers/dsp/bridge/wmd/chnl_sm.c
+@@ -61,6 +61,7 @@
+ /*  ----------------------------------- Mini-Driver */
+ #include <dspbridge/wmd.h>
+ #include <dspbridge/wmdchnl.h>
++#include "_tiomap.h"
+ 
+ /*  ----------------------------------- Platform Manager */
+ #include <dspbridge/dev.h>
+@@ -96,6 +97,8 @@ dsp_status bridge_chnl_add_io_req(struct chnl_object *chnl_obj, void *pHostBuf,
+ 	dsp_status status = DSP_SOK;
+ 	struct chnl_object *pchnl = (struct chnl_object *)chnl_obj;
+ 	struct chnl_irp *chnl_packet_obj = NULL;
++	struct wmd_dev_context *dev_ctxt;
++	struct dev_object *dev_obj;
+ 	u32 dw_state;
+ 	bool is_eos;
+ 	struct chnl_mgr *chnl_mgr_obj = pchnl->chnl_mgr_obj;
+@@ -129,6 +132,12 @@ dsp_status bridge_chnl_add_io_req(struct chnl_object *chnl_obj, void *pHostBuf,
+ 				DBC_ASSERT(0);
+ 		}
+ 	}
++
++	dev_obj = dev_get_first();
++	dev_get_wmd_context(dev_obj, &dev_ctxt);
++	if (!dev_ctxt)
++		status = DSP_EHANDLE;
++
+ 	if (DSP_FAILED(status))
+ 		goto func_end;
+ 
+@@ -161,7 +170,7 @@ func_cont:
+ 	 * non-mailbox interrupt occurs, that DPC will run and break CS. Hence
+ 	 * we disable ALL DPCs. We will try to disable ONLY IO DPC later. */
+ 	sync_enter_cs(chnl_mgr_obj->hcs_obj);
+-	disable_irq(MAILBOX_IRQ);
++	omap_mbox_disable_irq(dev_ctxt->mbox, IRQ_RX);
+ 	if (pchnl->chnl_type == CHNL_PCPY) {
+ 		/* This is a processor-copy channel. */
+ 		if (DSP_SUCCEEDED(status) && CHNL_IS_OUTPUT(pchnl->chnl_mode)) {
+@@ -221,7 +230,7 @@ func_cont:
+ 		sched_dpc = true;
+ 
+ 	}
+-	enable_irq(MAILBOX_IRQ);
++	omap_mbox_enable_irq(dev_ctxt->mbox, IRQ_RX);
+ 	sync_leave_cs(chnl_mgr_obj->hcs_obj);
+ 	if (mb_val != 0)
+ 		io_intr_dsp2(chnl_mgr_obj->hio_mgr, mb_val);
+@@ -576,6 +585,8 @@ dsp_status bridge_chnl_get_ioc(struct chnl_object *chnl_obj, u32 dwTimeOut,
+ 	bool dequeue_ioc = true;
+ 	struct chnl_ioc ioc = { NULL, 0, 0, 0, 0 };
+ 	u8 *host_sys_buf = NULL;
++	struct wmd_dev_context *dev_ctxt;
++	struct dev_object *dev_obj;
+ 
+ 	/* Check args: */
+ 	if (pIOC == NULL) {
+@@ -587,6 +598,12 @@ dsp_status bridge_chnl_get_ioc(struct chnl_object *chnl_obj, u32 dwTimeOut,
+ 			status = CHNL_E_NOIOC;
+ 
+ 	}
++
++	dev_obj = dev_get_first();
++	dev_get_wmd_context(dev_obj, &dev_ctxt);
++	if (!dev_ctxt)
++		status = DSP_EHANDLE;
++
+ 	if (DSP_FAILED(status))
+ 		goto func_end;
+ 
+@@ -615,7 +632,7 @@ dsp_status bridge_chnl_get_ioc(struct chnl_object *chnl_obj, u32 dwTimeOut,
+ 	}
+ 	/* See comment in AddIOReq */
+ 	sync_enter_cs(pchnl->chnl_mgr_obj->hcs_obj);
+-	disable_irq(MAILBOX_IRQ);
++	omap_mbox_disable_irq(dev_ctxt->mbox, IRQ_RX);
+ 	if (dequeue_ioc) {
+ 		/* Dequeue IOC and set pIOC; */
+ 		DBC_ASSERT(!LST_IS_EMPTY(pchnl->pio_completions));
+@@ -666,7 +683,7 @@ dsp_status bridge_chnl_get_ioc(struct chnl_object *chnl_obj, u32 dwTimeOut,
+ 		/* else, if list is empty, ensure event is reset. */
+ 		sync_reset_event(pchnl->sync_event);
+ 	}
+-	enable_irq(MAILBOX_IRQ);
++	omap_mbox_enable_irq(dev_ctxt->mbox, IRQ_RX);
+ 	sync_leave_cs(pchnl->chnl_mgr_obj->hcs_obj);
+ 	if (dequeue_ioc
+ 	    && (pchnl->chnl_type == CHNL_PCPY && pchnl->chnl_id > 1)) {
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index 85fa9db..e68343d 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -110,9 +110,6 @@ struct io_mgr {
+ 	struct mgr_processorextinfo ext_proc_info;
+ 	struct cmm_object *hcmm_mgr;	/* Shared Mem Mngr */
+ 	struct work_struct io_workq;	/* workqueue */
+-	u32 que_power_mbx_val[MAX_PM_REQS];
+-	u32 que_power_head;
+-	u32 que_power_tail;
+ #ifndef DSP_TRACEBUF_DISABLED
+ 	u32 ul_trace_buffer_begin;	/* Trace message start address */
+ 	u32 ul_trace_buffer_end;	/* Trace message end address */
+@@ -135,7 +132,7 @@ static void io_dispatch_chnl(IN struct io_mgr *pio_mgr,
+ 			     IN OUT struct chnl_object *pchnl, u32 iMode);
+ static void io_dispatch_msg(IN struct io_mgr *pio_mgr,
+ 			    struct msg_mgr *hmsg_mgr);
+-static void io_dispatch_pm(struct work_struct *work);
++static void io_dispatch_pm(struct io_mgr *pio_mgr);
+ static void notify_chnl_complete(struct chnl_object *pchnl,
+ 				 struct chnl_irp *chnl_packet_obj);
+ static void input_chnl(struct io_mgr *pio_mgr, struct chnl_object *pchnl,
+@@ -150,7 +147,7 @@ static u32 read_data(struct wmd_dev_context *hDevContext, void *dest,
+ 		     void *pSrc, u32 usize);
+ static u32 write_data(struct wmd_dev_context *hDevContext, void *dest,
+ 		      void *pSrc, u32 usize);
+-static struct workqueue_struct *bridge_workqueue;
++
+ #ifndef DSP_TRACEBUF_DISABLED
+ void print_dsp_debug_trace(struct io_mgr *hio_mgr);
+ #endif
+@@ -182,8 +179,8 @@ dsp_status bridge_io_create(OUT struct io_mgr **phIOMgr,
+ 	struct cfg_hostres host_res;
+ 	struct cfg_devnode *dev_node_obj;
+ 	struct chnl_mgr *hchnl_mgr;
+-	static int ref_count;
+ 	u32 dev_type;
++
+ 	/* Check requirements */
+ 	if (!phIOMgr || !pMgrAttrs || pMgrAttrs->word_size == 0) {
+ 		status = DSP_EHANDLE;
+@@ -213,27 +210,12 @@ dsp_status bridge_io_create(OUT struct io_mgr **phIOMgr,
+ 	 */
+ 	shared_mem = (struct shm *)-1;
+ 
+-	/* Create a Single Threaded Work Queue */
+-	if (ref_count == 0)
+-		bridge_workqueue = create_workqueue("bridge_work-queue");
+-
+-	if (bridge_workqueue <= 0)
+-		dev_dbg(bridge, "%s: Workque Create failed %p\n", __func__,
+-			bridge_workqueue);
+-
+ 	/* Allocate IO manager object */
+ 	MEM_ALLOC_OBJECT(pio_mgr, struct io_mgr, IO_MGRSIGNATURE);
+ 	if (pio_mgr == NULL) {
+ 		status = DSP_EMEMORY;
+ 		goto func_end;
+ 	}
+-	/* Intializing Work Element */
+-	if (ref_count == 0) {
+-		INIT_WORK(&pio_mgr->io_workq, (void *)io_dispatch_pm);
+-		ref_count = 1;
+-	} else {
+-		PREPARE_WORK(&pio_mgr->io_workq, (void *)io_dispatch_pm);
+-	}
+ 
+ 	/* Initialize chnl_mgr object */
+ #ifndef DSP_TRACEBUF_DISABLED
+@@ -257,9 +239,6 @@ dsp_status bridge_io_create(OUT struct io_mgr **phIOMgr,
+ 
+ 		if (DSP_SUCCEEDED(status))
+ 			status = dev_get_dev_node(hdev_obj, &dev_node_obj);
+-
+-		pio_mgr->que_power_head = 0;
+-		pio_mgr->que_power_tail = 0;
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+ 		status = cfg_get_host_resources((struct cfg_devnode *)
+@@ -269,15 +248,6 @@ dsp_status bridge_io_create(OUT struct io_mgr **phIOMgr,
+ 	if (DSP_SUCCEEDED(status)) {
+ 		pio_mgr->hwmd_context = hwmd_context;
+ 		pio_mgr->shared_irq = pMgrAttrs->irq_shared;
+-		IO_DISABLE_INTERRUPT(hwmd_context);
+-		if (dev_type == DSP_UNIT) {
+-			hw_mbox_init_settings(host_res.dw_mbox_base);
+-			/* Plug the channel ISR */
+-			if ((request_irq(INT_MAIL_MPU_IRQ, io_isr, 0,
+-					 "DspBridge\tmailbox",
+-					 (void *)pio_mgr)) != 0)
+-				status = CHNL_E_ISR;
+-		}
+ 	} else {
+ 		status = CHNL_E_ISR;
+ 	}
+@@ -305,14 +275,7 @@ dsp_status bridge_io_destroy(struct io_mgr *hio_mgr)
+ 	dsp_status status = DSP_SOK;
+ 	struct wmd_dev_context *hwmd_context;
+ 	if (MEM_IS_VALID_HANDLE(hio_mgr, IO_MGRSIGNATURE)) {
+-		/* Disable interrupts from the board */
+ 		status = dev_get_wmd_context(hio_mgr->hdev_obj, &hwmd_context);
+-		if (DSP_SUCCEEDED(status))
+-			(void)chnlsm_disable_interrupt(hwmd_context);
+-
+-		destroy_workqueue(bridge_workqueue);
+-		/* Linux function to uninstall ISR */
+-		free_irq(INT_MAIL_MPU_IRQ, (void *)hio_mgr);
+ 
+ 		/* Free IO DPC object */
+ 		tasklet_kill(&hio_mgr->dpc_tasklet);
+@@ -835,7 +798,6 @@ dsp_status bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	hio_mgr->ul_gpp_va = (ul_gpp_va + ul_seg1_size + ul_pad_size);
+ 
+ #endif
+-	IO_ENABLE_INTERRUPT(hio_mgr->hwmd_context);
+ func_end:
+ 	return status;
+ }
+@@ -915,55 +877,41 @@ func_end:
+  *  ======== io_dispatch_pm ========
+  *      Performs I/O dispatch on PM related messages from DSP
+  */
+-static void io_dispatch_pm(struct work_struct *work)
++static void io_dispatch_pm(struct io_mgr *pio_mgr)
+ {
+-	struct io_mgr *pio_mgr = container_of(work, struct io_mgr, io_workq);
+ 	dsp_status status;
+ 	u32 parg[2];
+ 
+ 	/* Perform Power message processing here */
+-	while (pio_mgr->que_power_head != pio_mgr->que_power_tail) {
+-		parg[0] =
+-		    *(u32 *) &
+-		    (pio_mgr->que_power_mbx_val[pio_mgr->que_power_tail]);
+-
+-		/* Send the command to the WMD clk/pwr manager to handle */
+-		if (parg[0] == MBX_PM_HIBERNATE_EN) {
+-			dev_dbg(bridge, "PM: Hibernate command\n");
+-			status =
+-			    pio_mgr->intf_fxns->
+-			    pfn_dev_cntrl(pio_mgr->hwmd_context,
+-					  WMDIOCTL_PWR_HIBERNATE, parg);
+-			if (DSP_FAILED(status))
+-				pr_err("%s: hibernate cmd failed 0x%x\n",
++	parg[0] = pio_mgr->intr_val;
++
++	/* Send the command to the WMD clk/pwr manager to handle */
++	if (parg[0] == MBX_PM_HIBERNATE_EN) {
++		dev_dbg(bridge, "PM: Hibernate command\n");
++		status = pio_mgr->intf_fxns->
++				pfn_dev_cntrl(pio_mgr->hwmd_context,
++					      WMDIOCTL_PWR_HIBERNATE, parg);
++		if (DSP_FAILED(status))
++			pr_err("%s: hibernate cmd failed 0x%x\n",
+ 				       __func__, status);
+-		} else if (parg[0] == MBX_PM_OPP_REQ) {
+-			parg[1] = pio_mgr->shared_mem->opp_request.rqst_opp_pt;
+-			dev_dbg(bridge, "PM: Requested OPP = 0x%x\n", parg[1]);
+-			status =
+-			    pio_mgr->intf_fxns->
+-			    pfn_dev_cntrl(pio_mgr->hwmd_context,
+-					  WMDIOCTL_CONSTRAINT_REQUEST, parg);
+-			if (DSP_FAILED(status)) {
+-				dev_dbg(bridge, "PM: Failed to set constraint "
+-					"= 0x%x \n", parg[1]);
+-			}
+-
+-		} else {
+-			dev_dbg(bridge, "PM: clk control value of msg = 0x%x\n",
+-				parg[0]);
+-			status =
+-			    pio_mgr->intf_fxns->
+-			    pfn_dev_cntrl(pio_mgr->hwmd_context,
+-					  WMDIOCTL_CLK_CTRL, parg);
+-			if (DSP_FAILED(status))
+-				dev_dbg(bridge, "PM: Failed to ctrl the DSP clk"
+-					"= 0x%x\n", *parg);
+-		}
+-		/* Increment the tail count here */
+-		pio_mgr->que_power_tail++;
+-		if (pio_mgr->que_power_tail >= MAX_PM_REQS)
+-			pio_mgr->que_power_tail = 0;
++	} else if (parg[0] == MBX_PM_OPP_REQ) {
++		parg[1] = pio_mgr->shared_mem->opp_request.rqst_opp_pt;
++		dev_dbg(bridge, "PM: Requested OPP = 0x%x\n", parg[1]);
++		status = pio_mgr->intf_fxns->
++				pfn_dev_cntrl(pio_mgr->hwmd_context,
++					WMDIOCTL_CONSTRAINT_REQUEST, parg);
++		if (DSP_FAILED(status))
++			dev_dbg(bridge, "PM: Failed to set constraint "
++				"= 0x%x \n", parg[1]);
++	} else {
++		dev_dbg(bridge, "PM: clk control value of msg = 0x%x\n",
++			parg[0]);
++		status = pio_mgr->intf_fxns->
++				pfn_dev_cntrl(pio_mgr->hwmd_context,
++					      WMDIOCTL_CLK_CTRL, parg);
++		if (DSP_FAILED(status))
++			dev_dbg(bridge, "PM: Failed to ctrl the DSP clk"
++				"= 0x%x\n", *parg);
+ 	}
+ }
+ 
+@@ -1025,52 +973,36 @@ func_end:
+ }
+ 
+ /*
+- *  ======== io_isr ========
++ *  ======== io_mbox_msg ========
+  *      Main interrupt handler for the shared memory IO manager.
+  *      Calls the WMD's CHNL_ISR to determine if this interrupt is ours, then
+  *      schedules a DPC to dispatch I/O.
+  */
+-irqreturn_t io_isr(int irq, IN void *pRefData)
++void io_mbox_msg(u32 msg)
+ {
+-	struct io_mgr *hio_mgr = (struct io_mgr *)pRefData;
+-	bool sched_dpc;
++	struct io_mgr *pio_mgr;
++	struct dev_object *dev_obj;
+ 	unsigned long flags;
+ 
+-	if (irq != INT_MAIL_MPU_IRQ ||
+-	    !MEM_IS_VALID_HANDLE(hio_mgr, IO_MGRSIGNATURE))
+-		return IRQ_NONE;
++	dev_obj = dev_get_first();
++	dev_get_io_mgr(dev_obj, &pio_mgr);
+ 
+-	/* Call WMD's chnlsm_isr() to see if interrupt is ours, and process. */
+-	if (IO_CALLISR(hio_mgr->hwmd_context, &sched_dpc, &hio_mgr->intr_val)) {
+-		if (hio_mgr->intr_val & MBX_PM_CLASS) {
+-			hio_mgr->que_power_mbx_val[hio_mgr->que_power_head] =
+-			    hio_mgr->intr_val;
+-			hio_mgr->que_power_head++;
+-			if (hio_mgr->que_power_head >= MAX_PM_REQS)
+-				hio_mgr->que_power_head = 0;
++	if (!pio_mgr)
++		return;
+ 
+-			queue_work(bridge_workqueue, &hio_mgr->io_workq);
+-		}
+-		if (hio_mgr->intr_val == MBX_DEH_RESET) {
+-			hio_mgr->intr_val = 0;
+-		} else if (sched_dpc) {
+-			/*
+-			 * PROC-COPY defer i/o.
+-			 * Increment count of DPC's pending.
+-			 */
+-			spin_lock_irqsave(&hio_mgr->dpc_lock, flags);
+-			hio_mgr->dpc_req++;
+-			spin_unlock_irqrestore(&hio_mgr->dpc_lock, flags);
++	pio_mgr->intr_val = (u16)msg;
++	if (pio_mgr->intr_val & MBX_PM_CLASS)
++		io_dispatch_pm(pio_mgr);
+ 
+-			/* Schedule DPC */
+-			tasklet_schedule(&hio_mgr->dpc_tasklet);
+-		}
++	if (pio_mgr->intr_val == MBX_DEH_RESET) {
++		pio_mgr->intr_val = 0;
+ 	} else {
+-		/* Ensure that, if WMD didn't claim it, the IRQ is shared. */
+-		DBC_ENSURE(hio_mgr->shared_irq);
++		spin_lock_irqsave(&pio_mgr->dpc_lock, flags);
++		pio_mgr->dpc_req++;
++		spin_unlock_irqrestore(&pio_mgr->dpc_lock, flags);
++		tasklet_schedule(&pio_mgr->dpc_tasklet);
+ 	}
+-
+-	return IRQ_HANDLED;
++	return;
+ }
+ 
+ /*
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430.c b/drivers/dsp/bridge/wmd/tiomap3430.c
+index b49a965..5f2ac70 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430.c
+@@ -46,7 +46,6 @@
+ #include <hw_dspssC64P.h>
+ #include <hw_prcm.h>
+ #include <hw_mmu.h>
+-#include <hw_mbox.h>
+ 
+ /*  ----------------------------------- Link Driver */
+ #include <dspbridge/wmd.h>
+@@ -664,7 +663,23 @@ static dsp_status bridge_brd_start(struct wmd_dev_context *hDevContext,
+ 					       (u8 *) &ul_dsp_clk_rate,
+ 					       ul_dsp_clk_addr, sizeof(u32), 0);
+ 		}
+-/*PM_IVA2GRPSEL_PER = 0xC0; */
++		/*
++		 *Enable Mailbox events and also drain any pending
++		 * stale messages.
++		 */
++		dev_context->mbox = omap_mbox_get("dsp");
++		if (IS_ERR(dev_context->mbox)) {
++			dev_context->mbox = NULL;
++			pr_err("%s: Failed to get dsp mailbox handle\n",
++								__func__);
++			status = DSP_EFAIL;
++		}
++
++	}
++	if (DSP_SUCCEEDED(status)) {
++		dev_context->mbox->rxq->callback = (int (*)(void *))io_mbox_msg;
++
++/*PM_IVA2GRPSEL_PER = 0xC0;*/
+ 		temp = (u32) *((reg_uword32 *)
+ 				((u32) (resources.dw_per_pm_base) + 0xA8));
+ 		temp = (temp & 0xFFFFFF30) | 0xC0;
+@@ -691,10 +706,6 @@ static dsp_status bridge_brd_start(struct wmd_dev_context *hDevContext,
+ 		*((reg_uword32 *) ((u32) (resources.dw_cm_base) + 0x48)) =
+ 		    (u32) temp;
+ 
+-		/* Enable Mailbox events and also drain any pending
+-		 * stale messages */
+-		(void)chnlsm_enable_interrupt(dev_context);
+-
+ 		/* Let DSP go */
+ 		dev_dbg(bridge, "%s Unreset\n", __func__);
+ 		/* Enable DSP MMU Interrupts */
+@@ -749,9 +760,6 @@ static dsp_status bridge_brd_stop(struct wmd_dev_context *hDevContext)
+ 	u32 dsp_pwr_state;
+ 	dsp_status clk_status;
+ 
+-	/* Disable the mail box interrupts */
+-	(void)chnlsm_disable_interrupt(dev_context);
+-
+ 	if (dev_context->dw_brd_state == BRD_STOPPED)
+ 		return status;
+ 
+@@ -765,7 +773,7 @@ static dsp_status bridge_brd_stop(struct wmd_dev_context *hDevContext)
+ 		return DSP_EFAIL;
+ 
+ 	hw_pwrst_iva2_reg_get(resources.dw_prm_base, &dsp_pwr_state);
+-	if (dsp_pwr_state != HW_PWR_STATE_OFF) {
++	if (dsp_pwr_state != HW_PWR_STATE_OFF && dev_context->mbox) {
+ 		chnlsm_interrupt_dsp2(dev_context, MBX_PM_DSPIDLE);
+ 		mdelay(10);
+ 		get_hw_regs(resources.dw_prm_base, resources.dw_cm_base);
+@@ -800,6 +808,13 @@ static dsp_status bridge_brd_stop(struct wmd_dev_context *hDevContext)
+ 		memset((u8 *) pt_attrs->pg_info, 0x00,
+ 		       (pt_attrs->l2_num_pages * sizeof(struct page_info)));
+ 	}
++	/* Disable the mailbox interrupts */
++	if (dev_context->mbox) {
++		omap_mbox_disable_irq(dev_context->mbox, IRQ_RX);
++		omap_mbox_put(dev_context->mbox);
++		dev_context->mbox = NULL;
++	}
++
+ 	hw_rst_reset(resources.dw_prm_base, HW_RST1_IVA2);
+ 	hw_rst_reset(resources.dw_prm_base, HW_RST2_IVA2);
+ 	hw_rst_reset(resources.dw_prm_base, HW_RST3_IVA2);
+@@ -823,9 +838,6 @@ static dsp_status wmd_brd_delete(struct wmd_dev_context *hDevContext)
+ 	struct pg_table_attrs *pt_attrs;
+ 	dsp_status clk_status;
+ 
+-	/* Disable the mail box interrupts */
+-	(void)chnlsm_disable_interrupt(dev_context);
+-
+ 	if (dev_context->dw_brd_state == BRD_STOPPED)
+ 		return status;
+ 
+@@ -857,6 +869,13 @@ static dsp_status wmd_brd_delete(struct wmd_dev_context *hDevContext)
+ 		memset((u8 *) pt_attrs->pg_info, 0x00,
+ 		       (pt_attrs->l2_num_pages * sizeof(struct page_info)));
+ 	}
++	/* Disable the mail box interrupts */
++	if (dev_context->mbox) {
++		omap_mbox_disable_irq(dev_context->mbox, IRQ_RX);
++		omap_mbox_put(dev_context->mbox);
++		dev_context->mbox = NULL;
++	}
++
+ 	hw_rst_reset(resources.dw_prm_base, HW_RST1_IVA2);
+ 	hw_rst_reset(resources.dw_prm_base, HW_RST2_IVA2);
+ 	hw_rst_reset(resources.dw_prm_base, HW_RST3_IVA2);
+@@ -1052,9 +1071,6 @@ static dsp_status bridge_dev_create(OUT struct wmd_dev_context **ppDevContext,
+ 		dev_context->tc_word_swap_on = tc_word_swap;
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+-		/* Set the Clock Divisor for the DSP module */
+-		status = services_clk_enable(SERVICESCLK_MAILBOX_ICK);
+-		udelay(5);
+ 		/* 24xx-Linux MMU address is obtained from the host
+ 		 * resources struct */
+ 		dev_context->dw_dsp_mmu_base = resources.dw_dmmu_base;
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+index 9fdafac..2eb553b 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+@@ -121,7 +121,7 @@ dsp_status handle_hibernation_from_dsp(struct wmd_dev_context *dev_context)
+ 	} else {
+ 
+ 		/* Save mailbox settings */
+-		status = hw_mbox_save_settings(resources.dw_mbox_base);
++		omap_mbox_save_ctx(dev_context->mbox);
+ 
+ 		/* Turn off DSP Peripheral clocks and DSP Load monitor timer */
+ 		status = dsp_peripheral_clocks_disable(dev_context, NULL);
+@@ -178,7 +178,7 @@ dsp_status sleep_dsp(struct wmd_dev_context *dev_context, IN u32 dw_cmd,
+ 
+ 	switch (dev_context->dw_brd_state) {
+ 	case BRD_RUNNING:
+-		status = hw_mbox_save_settings(resources.dw_mbox_base);
++		omap_mbox_save_ctx(dev_context->mbox);
+ 		if (dsp_test_sleepstate == HW_PWR_STATE_OFF) {
+ 			chnlsm_interrupt_dsp2(dev_context, MBX_PM_DSPHIBERNATE);
+ 			dev_dbg(bridge, "PM: %s - sent hibernate cmd to DSP\n",
+@@ -190,7 +190,7 @@ dsp_status sleep_dsp(struct wmd_dev_context *dev_context, IN u32 dw_cmd,
+ 		}
+ 		break;
+ 	case BRD_RETENTION:
+-		status = hw_mbox_save_settings(resources.dw_mbox_base);
++		omap_mbox_save_ctx(dev_context->mbox);
+ 		if (dsp_test_sleepstate == HW_PWR_STATE_OFF) {
+ 			chnlsm_interrupt_dsp2(dev_context, MBX_PM_DSPHIBERNATE);
+ 			target_pwr_state = HW_PWR_STATE_OFF;
+diff --git a/drivers/dsp/bridge/wmd/tiomap_sm.c b/drivers/dsp/bridge/wmd/tiomap_sm.c
+index 747827b..70b9cd9 100644
+--- a/drivers/dsp/bridge/wmd/tiomap_sm.c
++++ b/drivers/dsp/bridge/wmd/tiomap_sm.c
+@@ -24,65 +24,6 @@
+ #include "_tiomap.h"
+ #include "_tiomap_pwr.h"
+ 
+-#define MAILBOX_FIFOSTATUS(m) (0x80 + 4 * (m))
+-
+-static inline unsigned int fifo_full(void __iomem *mbox_base, int mbox_id)
+-{
+-	return __raw_readl(mbox_base + MAILBOX_FIFOSTATUS(mbox_id)) & 0x1;
+-}
+-
+-dsp_status chnlsm_enable_interrupt(struct wmd_dev_context *dev_context)
+-{
+-	dsp_status status = DSP_SOK;
+-	u32 num_mbx_msg;
+-	u32 mbx_value;
+-	struct cfg_hostres resources;
+-	u32 dev_type;
+-
+-	/* Read the messages in the mailbox until the message queue is empty */
+-
+-	cfg_get_host_resources((struct cfg_devnode *)
+-			       drv_get_first_dev_extension(), &resources);
+-	dev_get_dev_type(dev_context->hdev_obj, &dev_type);
+-	if (dev_type == DSP_UNIT) {
+-		hw_mbox_num_msg_get(resources.dw_mbox_base,
+-				    MBOX_DSP2ARM, &num_mbx_msg);
+-		while (num_mbx_msg != 0) {
+-			hw_mbox_msg_read(resources.dw_mbox_base,
+-					 MBOX_DSP2ARM, &mbx_value);
+-			num_mbx_msg--;
+-		}
+-		/* clear the DSP mailbox as well... */
+-		hw_mbox_num_msg_get(resources.dw_mbox_base,
+-				    MBOX_ARM2DSP, &num_mbx_msg);
+-		while (num_mbx_msg != 0) {
+-			hw_mbox_msg_read(resources.dw_mbox_base,
+-					 MBOX_ARM2DSP, &mbx_value);
+-			num_mbx_msg--;
+-			udelay(10);
+-
+-			hw_mbox_event_ack(resources.dw_mbox_base, MBOX_ARM2DSP,
+-					  HW_MBOX_U1_DSP1, HW_MBOX_INT_NEW_MSG);
+-		}
+-		/* Enable the new message events on this IRQ line */
+-		hw_mbox_event_enable(resources.dw_mbox_base,
+-				     MBOX_DSP2ARM,
+-				     MBOX_ARM, HW_MBOX_INT_NEW_MSG);
+-	}
+-
+-	return status;
+-}
+-
+-dsp_status chnlsm_disable_interrupt(struct wmd_dev_context *dev_context)
+-{
+-	struct cfg_hostres resources;
+-
+-	cfg_get_host_resources((struct cfg_devnode *)
+-			       drv_get_first_dev_extension(), &resources);
+-	hw_mbox_event_disable(resources.dw_mbox_base, MBOX_DSP2ARM, MBOX_ARM,
+-			      HW_MBOX_INT_NEW_MSG);
+-	return DSP_SOK;
+-}
+ 
+ dsp_status chnlsm_interrupt_dsp2(struct wmd_dev_context *dev_context,
+ 				 u16 mb_val)
+@@ -94,9 +35,11 @@ dsp_status chnlsm_interrupt_dsp2(struct wmd_dev_context *dev_context,
+ #endif
+ 	struct cfg_hostres resources;
+ 	dsp_status status = DSP_SOK;
+-	unsigned long timeout;
+ 	u32 temp;
+ 
++	if (!dev_context->mbox)
++		return DSP_SOK;
++
+ 	status = cfg_get_host_resources((struct cfg_devnode *)
+ 					drv_get_first_dev_extension(),
+ 					&resources);
+@@ -132,7 +75,7 @@ dsp_status chnlsm_interrupt_dsp2(struct wmd_dev_context *dev_context,
+ 		*(reg_uword32 *) (resources.dw_cm_base + 0x4) = temp;
+ 
+ 		/* Restore mailbox settings */
+-		hw_mbox_restore_settings(resources.dw_mbox_base);
++		omap_mbox_restore_ctx(dev_context->mbox);
+ 
+ 		/* Access MMU SYS CONFIG register to generate a short wakeup */
+ 		temp = *(reg_uword32 *) (resources.dw_dmmu_base + 0x10);
+@@ -143,42 +86,12 @@ dsp_status chnlsm_interrupt_dsp2(struct wmd_dev_context *dev_context,
+ 		dsp_peripheral_clocks_enable(dev_context, NULL);
+ 	}
+ 
+-	timeout = jiffies + msecs_to_jiffies(1);
+-	while (fifo_full((void __iomem *)resources.dw_mbox_base, 0)) {
+-		if (time_after(jiffies, timeout)) {
+-			pr_err("dspbridge: timed out waiting for mailbox\n");
+-			return WMD_E_TIMEOUT;
+-		}
++	status = omap_mbox_msg_send(dev_context->mbox, mb_val);
++
++	if (status) {
++		pr_err("omap_mbox_msg_send Fail and status = %d\n", status);
++		status = DSP_EFAIL;
+ 	}
+ 
+-	dev_dbg(bridge, "MBX: writing %x to Mailbox\n", mb_val);
+-	hw_mbox_msg_write(resources.dw_mbox_base, MBOX_ARM2DSP, mb_val);
+ 	return DSP_SOK;
+ }
+-
+-bool chnlsm_isr(struct wmd_dev_context *dev_context, bool *pfSchedDPC,
+-		u16 *pwIntrVal)
+-{
+-	struct cfg_hostres resources;
+-	u32 num_mbx_msg;
+-	u32 mbx_value;
+-
+-	cfg_get_host_resources((struct cfg_devnode *)
+-			       drv_get_first_dev_extension(), &resources);
+-
+-	hw_mbox_num_msg_get(resources.dw_mbox_base, MBOX_DSP2ARM, &num_mbx_msg);
+-
+-	if (num_mbx_msg > 0) {
+-		hw_mbox_msg_read(resources.dw_mbox_base, MBOX_DSP2ARM,
+-				 &mbx_value);
+-
+-		hw_mbox_event_ack(resources.dw_mbox_base, MBOX_DSP2ARM,
+-				  HW_MBOX_U0_ARM, HW_MBOX_INT_NEW_MSG);
+-
+-		dev_dbg(bridge, "MBX: Read %x from Mailbox\n", mbx_value);
+-		*pwIntrVal = (u16) mbx_value;
+-	}
+-	/* Set *pfSchedDPC to true; */
+-	*pfSchedDPC = true;
+-	return true;
+-}
+diff --git a/drivers/dsp/bridge/wmd/ue_deh.c b/drivers/dsp/bridge/wmd/ue_deh.c
+index 5edcce9..b88112e 100644
+--- a/drivers/dsp/bridge/wmd/ue_deh.c
++++ b/drivers/dsp/bridge/wmd/ue_deh.c
+@@ -251,8 +251,8 @@ void bridge_deh_notify(struct deh_mgr *hdeh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 						   &map_attrs, HW_SET, HW_SET);
+ 			}
+ 			/* send an interrupt to DSP */
+-			hw_mbox_msg_write(resources.dw_mbox_base, MBOX_ARM2DSP,
+-					  MBX_DEH_CLASS | MBX_DEH_EMMU);
++			omap_mbox_msg_send(dev_context->mbox,
++						MBX_DEH_CLASS | MBX_DEH_EMMU);
+ 			/* Clear MMU interrupt */
+ 			hw_mmu_event_ack(resources.dw_dmmu_base,
+ 					 HW_MMU_TRANSLATION_FAULT);
+-- 
+1.7.0.4
+

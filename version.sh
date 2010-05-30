@@ -2,22 +2,18 @@
 
 unset BUILD
 
-KERNEL_REL=2.6.33
+KERNEL_REL=2.6.34
 #Stable Kernel
-STABLE_PATCH=5
-KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
-DL_PATCH=patch-${KERNEL_PATCH}
-ABI=3
+#STABLE_PATCH=5
+#KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
+#DL_PATCH=patch-${KERNEL_PATCH}
+ABI=0
 
 if [ "${IS_LUCID}" ] ; then
 BUILD+=l${ABI}
 else
 BUILD+=x${ABI}
 fi
-
-BRANCH=master
-REL=v2.6.32
-GIT=v2.6.32-omap1
 
 #USB patches is board specific
 BOARD=beagleboard

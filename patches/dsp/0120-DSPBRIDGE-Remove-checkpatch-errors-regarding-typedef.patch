@@ -1,0 +1,1077 @@
+From 240f65cd9620e697ddc10c006dc49ce4acb44f6b Mon Sep 17 00:00:00 2001
+From: Armando Uribe De Leon <x0095078@ti.com>
+Date: Thu, 6 May 2010 15:41:26 -0500
+Subject: [PATCH 120/135] DSPBRIDGE: Remove checkpatch errors regarding typedefs
+
+This patch is intended to remove the checkpatch errors
+due to the use of tyoedefs.
+
+Signed-off-by: Armando Uribe De Leon <x0095078@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/_chnl_sm.h    |    2 +-
+ arch/arm/plat-omap/include/dspbridge/chnldefs.h    |    4 +-
+ arch/arm/plat-omap/include/dspbridge/chnlpriv.h    |    2 +-
+ arch/arm/plat-omap/include/dspbridge/cod.h         |    5 +--
+ arch/arm/plat-omap/include/dspbridge/dbdefs.h      |    4 +-
+ arch/arm/plat-omap/include/dspbridge/dbtype.h      |    2 -
+ arch/arm/plat-omap/include/dspbridge/dispdefs.h    |    2 +-
+ arch/arm/plat-omap/include/dspbridge/drv.h         |    2 +-
+ .../plat-omap/include/dspbridge/dynamic_loader.h   |    8 +--
+ arch/arm/plat-omap/include/dspbridge/gb.h          |   14 +++---
+ arch/arm/plat-omap/include/dspbridge/getsection.h  |   11 ++---
+ arch/arm/plat-omap/include/dspbridge/msgdefs.h     |    2 +-
+ arch/arm/plat-omap/include/dspbridge/nldrdefs.h    |    2 +-
+ arch/arm/plat-omap/include/dspbridge/node.h        |    2 +-
+ .../plat-omap/include/dspbridge/resourcecleanup.h  |   46 ++++++++++----------
+ arch/arm/plat-omap/include/dspbridge/rms_sh.h      |    2 +-
+ arch/arm/plat-omap/include/dspbridge/rmstypes.h    |    1 -
+ arch/arm/plat-omap/include/dspbridge/strm.h        |    2 +-
+ arch/arm/plat-omap/include/dspbridge/strmdefs.h    |    2 +-
+ arch/arm/plat-omap/include/dspbridge/wcdioctl.h    |    2 +-
+ arch/arm/plat-omap/include/dspbridge/wmd.h         |    2 +-
+ arch/arm/plat-omap/include/dspbridge/wmdmsg.h      |    2 +-
+ drivers/dsp/bridge/dynload/cload.c                 |    6 +-
+ drivers/dsp/bridge/dynload/dload_internal.h        |    3 +-
+ drivers/dsp/bridge/dynload/getsection.c            |    8 ++--
+ drivers/dsp/bridge/dynload/header.h                |    2 -
+ drivers/dsp/bridge/dynload/reloc.c                 |    4 +-
+ drivers/dsp/bridge/gen/gb.c                        |   30 ++++++-------
+ drivers/dsp/bridge/hw/GlobalTypes.h                |    4 +-
+ drivers/dsp/bridge/pmgr/cod.c                      |    2 +-
+ drivers/dsp/bridge/pmgr/dbll.c                     |    4 +-
+ drivers/dsp/bridge/rmgr/drv.c                      |   36 ++++++++--------
+ drivers/dsp/bridge/rmgr/drv_interface.c            |    4 +-
+ drivers/dsp/bridge/rmgr/node.c                     |   10 ++--
+ drivers/dsp/bridge/rmgr/strm.c                     |   10 ++--
+ drivers/dsp/bridge/wmd/_msg_sm.h                   |    2 +-
+ drivers/dsp/bridge/wmd/io_sm.c                     |    2 +-
+ drivers/dsp/bridge/wmd/msg_sm.c                    |    2 +-
+ 38 files changed, 117 insertions(+), 133 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h b/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
+index 009ccf4..b473744 100644
+--- a/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
++++ b/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
+@@ -143,7 +143,7 @@ struct chnl_object {
+ 	u8 dw_state;		/* Current channel state */
+ 	s8 chnl_mode;		/* Chnl mode and attributes */
+ 	/* Chnl I/O completion event (user mode) */
+-	bhandle user_event;
++	void *user_event;
+ 	/* Abstract syncronization object */
+ 	struct sync_object *sync_event;
+ 	u32 process;		/* Process which created this channel */
+diff --git a/arch/arm/plat-omap/include/dspbridge/chnldefs.h b/arch/arm/plat-omap/include/dspbridge/chnldefs.h
+index 66fb660..0fe3824 100644
+--- a/arch/arm/plat-omap/include/dspbridge/chnldefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/chnldefs.h
+@@ -48,9 +48,9 @@
+ /* Channel attributes: */
+ struct chnl_attr {
+ 	u32 uio_reqs;		/* Max # of preallocated I/O requests. */
+-	bhandle event_obj;	/* User supplied auto-reset event object. */
++	void *event_obj;	/* User supplied auto-reset event object. */
+ 	char *pstr_event_name;	/* Ptr to name of user event object. */
+-	bhandle reserved1;	/* Reserved for future use. */
++	void *reserved1;	/* Reserved for future use. */
+ 	u32 reserved2;		/* Reserved for future use. */
+ 
+ };
+diff --git a/arch/arm/plat-omap/include/dspbridge/chnlpriv.h b/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
+index ec06578..7a7c420 100644
+--- a/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
++++ b/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
+@@ -70,7 +70,7 @@
+ struct chnl_info {
+ 	struct chnl_mgr *hchnl_mgr;	/* Owning channel manager. */
+ 	u32 cnhl_id;		/* Channel ID. */
+-	bhandle event_obj;	/* Channel I/O completion event. */
++	void *event_obj;	/* Channel I/O completion event. */
+ 	/*Abstraction of I/O completion event. */
+ 	struct sync_object *sync_event;
+ 	s8 dw_mode;		/* Channel mode. */
+diff --git a/arch/arm/plat-omap/include/dspbridge/cod.h b/arch/arm/plat-omap/include/dspbridge/cod.h
+index c7efe97..3331a2f 100644
+--- a/arch/arm/plat-omap/include/dspbridge/cod.h
++++ b/arch/arm/plat-omap/include/dspbridge/cod.h
+@@ -34,9 +34,6 @@
+ #define COD_NOLOAD              DBLL_NOLOAD
+ #define COD_SYMB                DBLL_SYMB
+ 
+-/* Flags passed to cod_open */
+-typedef dbll_flags cod_flags;
+-
+ /* COD code manager handle */
+ struct cod_manager;
+ 
+@@ -326,7 +323,7 @@ extern dsp_status cod_load_base(struct cod_manager *cod_mgr_obj,
+  */
+ extern dsp_status cod_open(struct cod_manager *hmgr,
+ 			   IN char *pszCoffPath,
+-			   cod_flags flags, OUT struct cod_libraryobj **pLib);
++			   u32 flags, OUT struct cod_libraryobj **pLib);
+ 
+ /*
+  *  ======== cod_open_base ========
+diff --git a/arch/arm/plat-omap/include/dspbridge/dbdefs.h b/arch/arm/plat-omap/include/dspbridge/dbdefs.h
+index d3e115f..c6703a2 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dbdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/dbdefs.h
+@@ -394,7 +394,7 @@ struct dsp_nodeattr {
+  */
+ struct dsp_notification {
+ 	char *ps_name;
+-	bhandle handle;
++	void *handle;
+ };
+ 
+ /* The dsp_processorattrin structure describes the attributes of a processor */
+@@ -480,7 +480,7 @@ struct dsp_streaminfo {
+ 	u32 number_bufs_allowed;
+ 	u32 number_bufs_in_stream;
+ 	u32 ul_number_bytes;
+-	bhandle sync_object_handle;
++	void *sync_object_handle;
+ 	enum dsp_streamstate ss_stream_state;
+ };
+ 
+diff --git a/arch/arm/plat-omap/include/dspbridge/dbtype.h b/arch/arm/plat-omap/include/dspbridge/dbtype.h
+index ff58370..de65a82 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dbtype.h
++++ b/arch/arm/plat-omap/include/dspbridge/dbtype.h
+@@ -77,8 +77,6 @@
+ typedef volatile unsigned short reg_uword16;
+ #endif
+ 
+-typedef void *bhandle;		/* h */
+-
+ #define TEXT(x) x
+ 
+ #define DLLIMPORT
+diff --git a/arch/arm/plat-omap/include/dspbridge/dispdefs.h b/arch/arm/plat-omap/include/dspbridge/dispdefs.h
+index 43321c8..946551a 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dispdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/dispdefs.h
+@@ -28,7 +28,7 @@ struct disp_attr {
+ 	u32 ul_chnl_buf_size;
+ 	int proc_family;	/* eg, 5000 */
+ 	int proc_type;		/* eg, 5510 */
+-	bhandle reserved1;	/* Reserved for future use. */
++	void *reserved1;	/* Reserved for future use. */
+ 	u32 reserved2;		/* Reserved for future use. */
+ };
+ 
+diff --git a/arch/arm/plat-omap/include/dspbridge/drv.h b/arch/arm/plat-omap/include/dspbridge/drv.h
+index 509395b..7de3323 100644
+--- a/arch/arm/plat-omap/include/dspbridge/drv.h
++++ b/arch/arm/plat-omap/include/dspbridge/drv.h
+@@ -103,7 +103,7 @@ struct dspheap_res_object {
+ 	u32 ul_dsp_addr;
+ 	u32 ul_dsp_res_addr;
+ 	u32 heap_size;
+-	bhandle hprocessor;
++	void *hprocessor;
+ 	struct dspheap_res_object *next;
+ };
+ 
+diff --git a/arch/arm/plat-omap/include/dspbridge/dynamic_loader.h b/arch/arm/plat-omap/include/dspbridge/dynamic_loader.h
+index 15fcf4d..4b109d1 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dynamic_loader.h
++++ b/arch/arm/plat-omap/include/dspbridge/dynamic_loader.h
+@@ -49,8 +49,6 @@ struct dynamic_loader_initialize;
+ #define DLOAD_BIGEND 0x2	/* require big-endian load module */
+ #define DLOAD_LITTLE 0x4	/* require little-endian load module */
+ 
+-typedef void *dload_mhandle;	/* module handle for loaded modules */
+-
+ /*****************************************************************************
+  * Procedure dynamic_load_module
+  *
+@@ -85,7 +83,7 @@ extern int dynamic_load_module(
+ 				      struct dynamic_loader_initialize *init,
+ 				      unsigned options,	/* option flags */
+ 				      /* the returned module handle */
+-				      dload_mhandle * mhandle);
++				      void **mhandle);
+ 
+ /*****************************************************************************
+  * Procedure dynamic_open_module
+@@ -121,7 +119,7 @@ extern int dynamic_open_module(
+ 				      struct dynamic_loader_initialize *init,
+ 				      unsigned options,	/* option flags */
+ 				      /* the returned module handle */
+-				      dload_mhandle * mhandle);
++				      void **mhandle);
+ 
+ /*****************************************************************************
+  * Procedure dynamic_unload_module
+@@ -141,7 +139,7 @@ extern int dynamic_open_module(
+  *  Zero for success. On error, the number of errors detected is returned.
+  * Individual errors are reported using syms->error_report().
+  **************************************************************************** */
+-extern int dynamic_unload_module(dload_mhandle mhandle,	/* the module
++extern int dynamic_unload_module(void *mhandle,	/* the module
+ 							 * handle */
+ 				 /* host support for symbols and
+ 				  * storage */
+diff --git a/arch/arm/plat-omap/include/dspbridge/gb.h b/arch/arm/plat-omap/include/dspbridge/gb.h
+index 12cdce8..fda783a 100644
+--- a/arch/arm/plat-omap/include/dspbridge/gb.h
++++ b/arch/arm/plat-omap/include/dspbridge/gb.h
+@@ -21,7 +21,7 @@
+ 
+ #define GB_NOBITS (~0)
+ #include <dspbridge/host_os.h>
+-typedef s32 gb_bit_num;
++
+ struct gb_t_map;
+ 
+ /*
+@@ -30,14 +30,14 @@ struct gb_t_map;
+  *  zero based.
+  */
+ 
+-extern void gb_clear(struct gb_t_map *map, gb_bit_num bitn);
++extern void gb_clear(struct gb_t_map *map, u32 bitn);
+ 
+ /*
+  *  ======== gb_create ========
+  *  Create a bit map with len bits.  Initially all bits are cleared.
+  */
+ 
+-extern struct gb_t_map *gb_create(gb_bit_num len);
++extern struct gb_t_map *gb_create(u32 len);
+ 
+ /*
+  *  ======== gb_delete ========
+@@ -51,14 +51,14 @@ extern void gb_delete(struct gb_t_map *map);
+  *  Finds a clear bit, sets it, and returns the position
+  */
+ 
+-extern gb_bit_num gb_findandset(struct gb_t_map *map);
++extern u32 gb_findandset(struct gb_t_map *map);
+ 
+ /*
+  *  ======== gb_minclear ========
+  *  gb_minclear returns the minimum clear bit position.  If no bit is
+  *  clear, gb_minclear returns -1.
+  */
+-extern gb_bit_num gb_minclear(struct gb_t_map *map);
++extern u32 gb_minclear(struct gb_t_map *map);
+ 
+ /*
+  *  ======== gb_set ========
+@@ -66,7 +66,7 @@ extern gb_bit_num gb_minclear(struct gb_t_map *map);
+  *  zero based.
+  */
+ 
+-extern void gb_set(struct gb_t_map *map, gb_bit_num bitn);
++extern void gb_set(struct gb_t_map *map, u32 bitn);
+ 
+ /*
+  *  ======== gb_test ========
+@@ -74,6 +74,6 @@ extern void gb_set(struct gb_t_map *map, gb_bit_num bitn);
+  *  gb_test returns FALSE.  Bit positions are zero based.
+  */
+ 
+-extern bool gb_test(struct gb_t_map *map, gb_bit_num bitn);
++extern bool gb_test(struct gb_t_map *map, u32 bitn);
+ 
+ #endif /*GB_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/getsection.h b/arch/arm/plat-omap/include/dspbridge/getsection.h
+index a0ea786..bdd8e20 100644
+--- a/arch/arm/plat-omap/include/dspbridge/getsection.h
++++ b/arch/arm/plat-omap/include/dspbridge/getsection.h
+@@ -27,9 +27,6 @@
+ 
+ #include "dynamic_loader.h"
+ 
+-	/* opaque handle for module information */
+-typedef void *dload_module_info;
+-
+ /*
+  * Procedure dload_module_open
+  *
+@@ -48,7 +45,7 @@ typedef void *dload_module_info;
+  *  NULL if an error is encountered, otherwise a module handle for use
+  * in subsequent operations.
+  */
+-extern dload_module_info dload_module_open(struct dynamic_loader_stream
++extern void *dload_module_open(struct dynamic_loader_stream
+ 					   *module, struct dynamic_loader_sym
+ 					   *syms);
+ 
+@@ -67,7 +64,7 @@ extern dload_module_info dload_module_open(struct dynamic_loader_stream
+  * Returns:
+  *  TRUE for success, FALSE for section not found
+  */
+-extern int dload_get_section_info(dload_module_info minfo,
++extern int dload_get_section_info(void *minfo,
+ 				  const char *sectionName,
+ 				  const struct ldr_section_info
+ 				  **const sectionInfo);
+@@ -87,7 +84,7 @@ extern int dload_get_section_info(dload_module_info minfo,
+  * Returns:
+  *  TRUE for success, FALSE for section not found
+  */
+-extern int dload_get_section(dload_module_info minfo,
++extern int dload_get_section(void *minfo,
+ 			     const struct ldr_section_info *sectionInfo,
+ 			     void *sectionData);
+ 
+@@ -106,6 +103,6 @@ extern int dload_get_section(dload_module_info minfo,
+  * Individual errors are reported using syms->error_report(), where syms was
+  * an argument to dload_module_open
+  */
+-extern void dload_module_close(dload_module_info minfo);
++extern void dload_module_close(void *minfo);
+ 
+ #endif /* _GETSECTION_H_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/msgdefs.h b/arch/arm/plat-omap/include/dspbridge/msgdefs.h
+index 57c168a..fe24656 100644
+--- a/arch/arm/plat-omap/include/dspbridge/msgdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/msgdefs.h
+@@ -24,6 +24,6 @@ struct msg_mgr;
+ struct msg_queue;
+ 
+ /* Function prototype for callback to be called on RMS_EXIT message received */
+-typedef void (*msg_onexit) (bhandle h, s32 nStatus);
++typedef void (*msg_onexit) (void *h, s32 nStatus);
+ 
+ #endif /* MSGDEFS_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/nldrdefs.h b/arch/arm/plat-omap/include/dspbridge/nldrdefs.h
+index ccf9e45..6a6a153 100644
+--- a/arch/arm/plat-omap/include/dspbridge/nldrdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/nldrdefs.h
+@@ -114,7 +114,7 @@ enum nldr_phase {
+  *      node_props:     Pointer to a dcd_nodeprops for the node.
+  *      phNldrNode:     Location to store node handle on output. This handle
+  *                      will be passed to nldr_load/nldr_unload.
+- *      pf_phase_split:   pointer to boolean variable referenced in node.c
++ *      pf_phase_split:   pointer to int variable referenced in node.c
+  *  Returns:
+  *      DSP_SOK:        Success.
+  *      -ENOMEM:    Insufficient memory on GPP.
+diff --git a/arch/arm/plat-omap/include/dspbridge/node.h b/arch/arm/plat-omap/include/dspbridge/node.h
+index a8078fb..d1135f7 100644
+--- a/arch/arm/plat-omap/include/dspbridge/node.h
++++ b/arch/arm/plat-omap/include/dspbridge/node.h
+@@ -582,6 +582,6 @@ dsp_status node_find_addr(struct node_mgr *node_mgr, u32 sym_addr,
+ 				u32 offset_range, void *sym_addr_output,
+ 				char *sym_name);
+ 
+-enum node_state node_get_state(bhandle hnode);
++enum node_state node_get_state(void *hnode);
+ 
+ #endif /* NODE_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/resourcecleanup.h b/arch/arm/plat-omap/include/dspbridge/resourcecleanup.h
+index ef18477..a25b1bc 100644
+--- a/arch/arm/plat-omap/include/dspbridge/resourcecleanup.h
++++ b/arch/arm/plat-omap/include/dspbridge/resourcecleanup.h
+@@ -21,43 +21,43 @@ extern dsp_status drv_get_proc_ctxt_list(struct process_context **pPctxt,
+ 					 struct drv_object *hdrv_obj);
+ 
+ extern dsp_status drv_insert_proc_context(struct drv_object *hDrVObject,
+-					  bhandle hPCtxt);
++					  void *hPCtxt);
+ 
+-extern dsp_status drv_remove_all_dmm_res_elements(bhandle ctxt);
++extern dsp_status drv_remove_all_dmm_res_elements(void *ctxt);
+ 
+-extern dsp_status drv_remove_all_node_res_elements(bhandle ctxt);
++extern dsp_status drv_remove_all_node_res_elements(void *ctxt);
+ 
+-extern dsp_status drv_proc_set_pid(bhandle ctxt, s32 process);
++extern dsp_status drv_proc_set_pid(void *ctxt, s32 process);
+ 
+-extern dsp_status drv_remove_all_resources(bhandle pPctxt);
++extern dsp_status drv_remove_all_resources(void *pPctxt);
+ 
+ extern dsp_status drv_remove_proc_context(struct drv_object *hDRVObject,
+-					  bhandle pr_ctxt);
++					  void *pr_ctxt);
+ 
+-extern dsp_status drv_get_node_res_element(bhandle hnode, bhandle node_res,
+-					   bhandle ctxt);
++extern dsp_status drv_get_node_res_element(void *hnode, void *node_res,
++					   void *ctxt);
+ 
+-extern dsp_status drv_insert_node_res_element(bhandle hnode, bhandle node_res,
+-					      bhandle ctxt);
++extern dsp_status drv_insert_node_res_element(void *hnode, void *node_res,
++					      void *ctxt);
+ 
+-extern void drv_proc_node_update_heap_status(bhandle hNodeRes, s32 status);
++extern void drv_proc_node_update_heap_status(void *hNodeRes, s32 status);
+ 
+-extern dsp_status drv_remove_node_res_element(bhandle node_res, bhandle status);
++extern dsp_status drv_remove_node_res_element(void *node_res, void *status);
+ 
+-extern void drv_proc_node_update_status(bhandle hNodeRes, s32 status);
++extern void drv_proc_node_update_status(void *hNodeRes, s32 status);
+ 
+-extern dsp_status drv_proc_update_strm_res(u32 num_bufs, bhandle strm_res);
++extern dsp_status drv_proc_update_strm_res(u32 num_bufs, void *strm_res);
+ 
+-extern dsp_status drv_proc_insert_strm_res_element(bhandle hStrm,
+-						   bhandle strm_res,
+-						   bhandle pPctxt);
++extern dsp_status drv_proc_insert_strm_res_element(void *hStrm,
++						   void *strm_res,
++						   void *pPctxt);
+ 
+-extern dsp_status drv_get_strm_res_element(bhandle hStrm, bhandle strm_res,
+-					   bhandle ctxt);
++extern dsp_status drv_get_strm_res_element(void *hStrm, void *strm_res,
++					   void *ctxt);
+ 
+-extern dsp_status drv_proc_remove_strm_res_element(bhandle strm_res,
+-						   bhandle ctxt);
++extern dsp_status drv_proc_remove_strm_res_element(void *strm_res,
++						   void *ctxt);
+ 
+-extern dsp_status drv_remove_all_strm_res_elements(bhandle ctxt);
++extern dsp_status drv_remove_all_strm_res_elements(void *ctxt);
+ 
+-extern enum node_state node_get_state(bhandle hnode);
++extern enum node_state node_get_state(void *hnode);
+diff --git a/arch/arm/plat-omap/include/dspbridge/rms_sh.h b/arch/arm/plat-omap/include/dspbridge/rms_sh.h
+index d70b17d..7bc5574 100644
+--- a/arch/arm/plat-omap/include/dspbridge/rms_sh.h
++++ b/arch/arm/plat-omap/include/dspbridge/rms_sh.h
+@@ -62,7 +62,7 @@ struct rms_strm_def {
+ 	rms_word segid;		/* Segment to allocate buffers */
+ 	rms_word align;		/* Alignment for allocated buffers */
+ 	rms_word timeout;	/* Timeout (msec) for blocking calls */
+-	rms_char name[1];	/* Device Name (terminated by '\0') */
++	char name[1];	/* Device Name (terminated by '\0') */
+ };
+ 
+ /* Message node create args structure: */
+diff --git a/arch/arm/plat-omap/include/dspbridge/rmstypes.h b/arch/arm/plat-omap/include/dspbridge/rmstypes.h
+index b096cf1..3c31f5e 100644
+--- a/arch/arm/plat-omap/include/dspbridge/rmstypes.h
++++ b/arch/arm/plat-omap/include/dspbridge/rmstypes.h
+@@ -24,6 +24,5 @@
+  */
+ #include <dspbridge/std.h>
+ typedef u32 rms_word;
+-typedef char rms_char;
+ 
+ #endif /* RMSTYPES_ */
+diff --git a/arch/arm/plat-omap/include/dspbridge/strm.h b/arch/arm/plat-omap/include/dspbridge/strm.h
+index 2ea96b0..85b402e 100644
+--- a/arch/arm/plat-omap/include/dspbridge/strm.h
++++ b/arch/arm/plat-omap/include/dspbridge/strm.h
+@@ -158,7 +158,7 @@ extern dsp_status strm_free_buffer(struct strm_object *hStrm,
+  *  Ensures:
+  */
+ extern dsp_status strm_get_event_handle(struct strm_object *hStrm,
+-					OUT bhandle *ph_event);
++					OUT void **ph_event);
+ 
+ /*
+  *  ======== strm_get_info ========
+diff --git a/arch/arm/plat-omap/include/dspbridge/strmdefs.h b/arch/arm/plat-omap/include/dspbridge/strmdefs.h
+index 1742544..b363f79 100644
+--- a/arch/arm/plat-omap/include/dspbridge/strmdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/strmdefs.h
+@@ -26,7 +26,7 @@ struct strm_mgr;
+ struct strm_object;
+ 
+ struct strm_attr {
+-	bhandle user_event;
++	void *user_event;
+ 	char *pstr_event_name;
+ 	void *virt_base;	/* Process virtual base address of
+ 				 * mapped SM */
+diff --git a/arch/arm/plat-omap/include/dspbridge/wcdioctl.h b/arch/arm/plat-omap/include/dspbridge/wcdioctl.h
+index 49bec37..7ebb9f0 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wcdioctl.h
++++ b/arch/arm/plat-omap/include/dspbridge/wcdioctl.h
+@@ -275,7 +275,7 @@ union Trapped_Args {
+ 
+ 	struct {
+ 		void *hstream;
+-		bhandle *ph_event;
++		void **ph_event;
+ 	} args_strm_geteventhandle;
+ 
+ 	struct {
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmd.h b/arch/arm/plat-omap/include/dspbridge/wmd.h
+index 9db5b6a..18413b3 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmd.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmd.h
+@@ -920,7 +920,7 @@ typedef dsp_status(*fxn_msg_create)
+  */
+ typedef dsp_status(*fxn_msg_createqueue)
+  (struct msg_mgr *hmsg_mgr,
+-  OUT struct msg_queue **phMsgQueue, u32 msgq_id, u32 max_msgs, bhandle h);
++  OUT struct msg_queue **phMsgQueue, u32 msgq_id, u32 max_msgs, void *h);
+ 
+ /*
+  *  ======== bridge_msg_delete ========
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmdmsg.h b/arch/arm/plat-omap/include/dspbridge/wmdmsg.h
+index 74d6cbb..7935b6e 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmdmsg.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmdmsg.h
+@@ -32,7 +32,7 @@ extern dsp_status bridge_msg_create(OUT struct msg_mgr **phMsgMgr,
+ 
+ extern dsp_status bridge_msg_create_queue(struct msg_mgr *hmsg_mgr,
+ 				       OUT struct msg_queue **phMsgQueue,
+-				       u32 msgq_id, u32 max_msgs, bhandle h);
++				       u32 msgq_id, u32 max_msgs, void *h);
+ 
+ extern void bridge_msg_delete(struct msg_mgr *hmsg_mgr);
+ 
+diff --git a/drivers/dsp/bridge/dynload/cload.c b/drivers/dsp/bridge/dynload/cload.c
+index 7f3c3bd..d4f71b5 100644
+--- a/drivers/dsp/bridge/dynload/cload.c
++++ b/drivers/dsp/bridge/dynload/cload.c
+@@ -126,7 +126,7 @@ int dynamic_load_module(struct dynamic_loader_stream *module,
+ 			struct dynamic_loader_sym *syms,
+ 			struct dynamic_loader_allocate *alloc,
+ 			struct dynamic_loader_initialize *init,
+-			unsigned options, dload_mhandle *mhandle)
++			unsigned options, void **mhandle)
+ {
+ 	register unsigned *dp, sz;
+ 	struct dload_state dl_state;	/* internal state for this call */
+@@ -235,7 +235,7 @@ dynamic_open_module(struct dynamic_loader_stream *module,
+ 		    struct dynamic_loader_sym *syms,
+ 		    struct dynamic_loader_allocate *alloc,
+ 		    struct dynamic_loader_initialize *init,
+-		    unsigned options, dload_mhandle *mhandle)
++		    unsigned options, void **mhandle)
+ {
+ 	register unsigned *dp, sz;
+ 	struct dload_state dl_state;	/* internal state for this call */
+@@ -1802,7 +1802,7 @@ static void init_module_handle(struct dload_state *dlthis)
+  *	Zero for success. On error, the number of errors detected is returned.
+  * Individual errors are reported using syms->error_report().
+  *********************************************************************** */
+-int dynamic_unload_module(dload_mhandle mhandle,
++int dynamic_unload_module(void *mhandle,
+ 			  struct dynamic_loader_sym *syms,
+ 			  struct dynamic_loader_allocate *alloc,
+ 			  struct dynamic_loader_initialize *init)
+diff --git a/drivers/dsp/bridge/dynload/dload_internal.h b/drivers/dsp/bridge/dynload/dload_internal.h
+index 12ac6c1..8037561 100644
+--- a/drivers/dsp/bridge/dynload/dload_internal.h
++++ b/drivers/dsp/bridge/dynload/dload_internal.h
+@@ -25,7 +25,6 @@
+ 
+ #define TRUE 1
+ #define FALSE 0
+-typedef int boolean;
+ 
+ /* type used for relocation intermediate results */
+ typedef s32 rvalue;
+@@ -274,7 +273,7 @@ struct dload_state {
+ 	/* Number of target sections that require allocation and relocation */
+ 	unsigned allocated_secn_count;
+ #ifndef TARGET_ENDIANNESS
+-	boolean big_e_target;	/* Target data in big-endian format */
++	int big_e_target;	/* Target data in big-endian format */
+ #endif
+ 	/* map for reordering bytes, 0 if not needed */
+ 	u32 reorder_map;
+diff --git a/drivers/dsp/bridge/dynload/getsection.c b/drivers/dsp/bridge/dynload/getsection.c
+index 2ac4f43..029898f 100644
+--- a/drivers/dsp/bridge/dynload/getsection.c
++++ b/drivers/dsp/bridge/dynload/getsection.c
+@@ -144,7 +144,7 @@ static void expand_sec_names(struct dload_state *dlthis)
+  *	NULL if an error is encountered, otherwise a module handle for use
+  * in subsequent operations.
+  ************************************************************************* */
+-dload_module_info dload_module_open(struct dynamic_loader_stream *module,
++void *dload_module_open(struct dynamic_loader_stream *module,
+ 				    struct dynamic_loader_sym *syms)
+ {
+ 	struct dload_state *dlthis;	/* internal state for this call */
+@@ -237,7 +237,7 @@ dload_module_info dload_module_open(struct dynamic_loader_stream *module,
+  * Returns:
+  *	true for success, false for section not found
+  ************************************************************************* */
+-int dload_get_section_info(dload_module_info minfo, const char *sectionName,
++int dload_get_section_info(void *minfo, const char *sectionName,
+ 			   const struct ldr_section_info **const sectionInfo)
+ {
+ 	struct dload_state *dlthis;
+@@ -278,7 +278,7 @@ int dload_get_section_info(dload_module_info minfo, const char *sectionName,
+  * Returns:
+  *	true for success, false for section not found
+  ************************************************************************* */
+-int dload_get_section(dload_module_info minfo,
++int dload_get_section(void *minfo,
+ 		      const struct ldr_section_info *sectionInfo,
+ 		      void *sectionData)
+ {
+@@ -389,7 +389,7 @@ int dload_get_section(dload_module_info minfo,
+  * Individual errors are reported using syms->error_report(), where syms was
+  * an argument to dload_module_open
+  ************************************************************************* */
+-void dload_module_close(dload_module_info minfo)
++void dload_module_close(void *minfo)
+ {
+ 	struct dload_state *dlthis;
+ 
+diff --git a/drivers/dsp/bridge/dynload/header.h b/drivers/dsp/bridge/dynload/header.h
+index 0264f97..5cef360 100644
+--- a/drivers/dsp/bridge/dynload/header.h
++++ b/drivers/dsp/bridge/dynload/header.h
+@@ -27,8 +27,6 @@
+ #define STATIC_EXPR_STK_SIZE 10
+ 
+ #include <linux/types.h>
+-typedef unsigned int uint_least32_t;
+-typedef unsigned short int uint_least16_t;
+ 
+ #include "doff.h"
+ #include <dspbridge/dynamic_loader.h>
+diff --git a/drivers/dsp/bridge/dynload/reloc.c b/drivers/dsp/bridge/dynload/reloc.c
+index 3ec4a49..316a38c 100644
+--- a/drivers/dsp/bridge/dynload/reloc.c
++++ b/drivers/dsp/bridge/dynload/reloc.c
+@@ -212,8 +212,8 @@ void dload_relocate(struct dload_state *dlthis, tgt_au_t * data,
+ 		}
+ 	}
+ 	rx = HASH_I(rop_map2[rx]);
+-	if ((rx < (sizeof(rop_action) / sizeof(uint_least16_t)))
+-	    && (rx < (sizeof(rop_info) / sizeof(uint_least16_t))) && (rx > 0)) {
++	if ((rx < (sizeof(rop_action) / sizeof(u16)))
++	    && (rx < (sizeof(rop_info) / sizeof(u16))) && (rx > 0)) {
+ 		reloc_action = rop_action[rx];
+ 		reloc_info = rop_info[rx];
+ 	} else {
+diff --git a/drivers/dsp/bridge/gen/gb.c b/drivers/dsp/bridge/gen/gb.c
+index 1874f0b..f1a9dd3 100644
+--- a/drivers/dsp/bridge/gen/gb.c
++++ b/drivers/dsp/bridge/gen/gb.c
+@@ -23,11 +23,9 @@
+ #include <dspbridge/gs.h>
+ #include <dspbridge/gb.h>
+ 
+-typedef gb_bit_num gb_word_num;
+-
+ struct gb_t_map {
+-	gb_bit_num len;
+-	gb_word_num wcnt;
++	u32 len;
++	u32 wcnt;
+ 	u32 *words;
+ };
+ 
+@@ -37,7 +35,7 @@ struct gb_t_map {
+  *      Clears a bit in the bit map.
+  */
+ 
+-void gb_clear(struct gb_t_map *map, gb_bit_num bitn)
++void gb_clear(struct gb_t_map *map, u32 bitn)
+ {
+ 	u32 mask;
+ 
+@@ -51,10 +49,10 @@ void gb_clear(struct gb_t_map *map, gb_bit_num bitn)
+  *      Creates a bit map.
+  */
+ 
+-struct gb_t_map *gb_create(gb_bit_num len)
++struct gb_t_map *gb_create(u32 len)
+ {
+ 	struct gb_t_map *map;
+-	gb_word_num i;
++	u32 i;
+ 	map = (struct gb_t_map *)gs_alloc(sizeof(struct gb_t_map));
+ 	if (map != NULL) {
+ 		map->len = len;
+@@ -90,9 +88,9 @@ void gb_delete(struct gb_t_map *map)
+  *  purpose:
+  *      Finds a free bit and sets it.
+  */
+-gb_bit_num gb_findandset(struct gb_t_map *map)
++u32 gb_findandset(struct gb_t_map *map)
+ {
+-	gb_bit_num bitn;
++	u32 bitn;
+ 
+ 	bitn = gb_minclear(map);
+ 
+@@ -107,12 +105,12 @@ gb_bit_num gb_findandset(struct gb_t_map *map)
+  *  purpose:
+  *      returns the location of the first unset bit in the bit map.
+  */
+-gb_bit_num gb_minclear(struct gb_t_map *map)
++u32 gb_minclear(struct gb_t_map *map)
+ {
+-	gb_bit_num bit_location = 0;
+-	gb_bit_num bit_acc = 0;
+-	gb_word_num i;
+-	gb_bit_num bit;
++	u32 bit_location = 0;
++	u32 bit_acc = 0;
++	u32 i;
++	u32 bit;
+ 	u32 *word;
+ 
+ 	for (word = map->words, i = 0; i < map->wcnt; word++, i++) {
+@@ -141,7 +139,7 @@ gb_bit_num gb_minclear(struct gb_t_map *map)
+  *      Sets a bit in the bit map.
+  */
+ 
+-void gb_set(struct gb_t_map *map, gb_bit_num bitn)
++void gb_set(struct gb_t_map *map, u32 bitn)
+ {
+ 	u32 mask;
+ 
+@@ -155,7 +153,7 @@ void gb_set(struct gb_t_map *map, gb_bit_num bitn)
+  *      Returns true if the bit is set in the specified location.
+  */
+ 
+-bool gb_test(struct gb_t_map *map, gb_bit_num bitn)
++bool gb_test(struct gb_t_map *map, u32 bitn)
+ {
+ 	bool state;
+ 	u32 mask;
+diff --git a/drivers/dsp/bridge/hw/GlobalTypes.h b/drivers/dsp/bridge/hw/GlobalTypes.h
+index 5cc7ac0..9b55150 100644
+--- a/drivers/dsp/bridge/hw/GlobalTypes.h
++++ b/drivers/dsp/bridge/hw/GlobalTypes.h
+@@ -219,7 +219,7 @@ typedef volatile unsigned long reg_uword32;
+ 
+ /* boolean_t:  Boolean Type True, False */
+ /* return_code_t:  Return codes to be returned by all library functions */
+-typedef enum return_code_label {
++enum return_code_label {
+ 	RET_OK = 0,
+ 	RET_FAIL = -1,
+ 	RET_BAD_NULL_PARAM = -2,
+@@ -233,7 +233,7 @@ typedef enum return_code_label {
+ 	/* Add new error codes at end of above list */
+ 
+ 	RET_NUM_RET_CODES	/* this should ALWAYS be LAST entry */
+-} return_code_t, *preturn_code_t;
++};
+ 
+ /* MACRO: RD_MEM8, WR_MEM8
+  *
+diff --git a/drivers/dsp/bridge/pmgr/cod.c b/drivers/dsp/bridge/pmgr/cod.c
+index 5d9f085..455138e 100644
+--- a/drivers/dsp/bridge/pmgr/cod.c
++++ b/drivers/dsp/bridge/pmgr/cod.c
+@@ -552,7 +552,7 @@ dsp_status cod_load_base(struct cod_manager *hmgr, u32 nArgc, char *aArgs[],
+  *      Open library for reading sections.
+  */
+ dsp_status cod_open(struct cod_manager *hmgr, IN char *pszCoffPath,
+-		    cod_flags flags, struct cod_libraryobj **pLib)
++		    u32 flags, struct cod_libraryobj **pLib)
+ {
+ 	dsp_status status = DSP_SOK;
+ 	struct cod_libraryobj *lib = NULL;
+diff --git a/drivers/dsp/bridge/pmgr/dbll.c b/drivers/dsp/bridge/pmgr/dbll.c
+index 7f551e5..020c948 100644
+--- a/drivers/dsp/bridge/pmgr/dbll.c
++++ b/drivers/dsp/bridge/pmgr/dbll.c
+@@ -118,12 +118,12 @@ struct dbll_library_obj {
+ 	struct ldr_symbol symbol;
+ 	struct dbll_alloc allocate;
+ 	struct dbll_init_obj init;
+-	dload_mhandle dload_mod_obj;
++	void *dload_mod_obj;
+ 
+ 	char *file_name;	/* COFF file name */
+ 	void *fp;		/* Opaque file handle */
+ 	u32 entry;		/* Entry point */
+-	dload_mhandle desc;	/* desc of DOFF file loaded */
++	void *desc;	/* desc of DOFF file loaded */
+ 	u32 open_ref;		/* Number of times opened */
+ 	u32 load_ref;		/* Number of times loaded */
+ 	struct gh_t_hash_tab *sym_tab;	/* Hash table of symbols */
+diff --git a/drivers/dsp/bridge/rmgr/drv.c b/drivers/dsp/bridge/rmgr/drv.c
+index 69fba49..f1fe604 100644
+--- a/drivers/dsp/bridge/rmgr/drv.c
++++ b/drivers/dsp/bridge/rmgr/drv.c
+@@ -74,12 +74,12 @@ static dsp_status request_bridge_resources(struct cfg_hostres *res);
+ 
+ /* GPP PROCESS CLEANUP CODE */
+ 
+-static dsp_status drv_proc_free_node_res(bhandle hPCtxt);
++static dsp_status drv_proc_free_node_res(void *hPCtxt);
+ 
+ /* Allocate and add a node resource element
+ * This function is called from .Node_Allocate. */
+-dsp_status drv_insert_node_res_element(bhandle hnode, bhandle hNodeRes,
+-				       bhandle hPCtxt)
++dsp_status drv_insert_node_res_element(void *hnode, void *hNodeRes,
++				       void *hPCtxt)
+ {
+ 	struct node_res_object **node_res_obj =
+ 	    (struct node_res_object **)hNodeRes;
+@@ -114,7 +114,7 @@ dsp_status drv_insert_node_res_element(bhandle hnode, bhandle hNodeRes,
+ 
+ /* Release all Node resources and its context
+ * This is called from .Node_Delete. */
+-dsp_status drv_remove_node_res_element(bhandle hNodeRes, bhandle hPCtxt)
++dsp_status drv_remove_node_res_element(void *hNodeRes, void *hPCtxt)
+ {
+ 	struct node_res_object *node_res_obj =
+ 	    (struct node_res_object *)hNodeRes;
+@@ -141,7 +141,7 @@ dsp_status drv_remove_node_res_element(bhandle hNodeRes, bhandle hPCtxt)
+ }
+ 
+ /* Actual Node De-Allocation */
+-static dsp_status drv_proc_free_node_res(bhandle hPCtxt)
++static dsp_status drv_proc_free_node_res(void *hPCtxt)
+ {
+ 	struct process_context *ctxt = (struct process_context *)hPCtxt;
+ 	dsp_status status = DSP_SOK;
+@@ -176,7 +176,7 @@ static dsp_status drv_proc_free_node_res(bhandle hPCtxt)
+ }
+ 
+ /* Release all Mapped and Reserved DMM resources */
+-dsp_status drv_remove_all_dmm_res_elements(bhandle hPCtxt)
++dsp_status drv_remove_all_dmm_res_elements(void *hPCtxt)
+ {
+ 	struct process_context *ctxt = (struct process_context *)hPCtxt;
+ 	dsp_status status = DSP_SOK;
+@@ -205,7 +205,7 @@ dsp_status drv_remove_all_dmm_res_elements(bhandle hPCtxt)
+ }
+ 
+ /* Update Node allocation status */
+-void drv_proc_node_update_status(bhandle hNodeRes, s32 status)
++void drv_proc_node_update_status(void *hNodeRes, s32 status)
+ {
+ 	struct node_res_object *node_res_obj =
+ 	    (struct node_res_object *)hNodeRes;
+@@ -214,7 +214,7 @@ void drv_proc_node_update_status(bhandle hNodeRes, s32 status)
+ }
+ 
+ /* Update Node Heap status */
+-void drv_proc_node_update_heap_status(bhandle hNodeRes, s32 status)
++void drv_proc_node_update_heap_status(void *hNodeRes, s32 status)
+ {
+ 	struct node_res_object *node_res_obj =
+ 	    (struct node_res_object *)hNodeRes;
+@@ -225,7 +225,7 @@ void drv_proc_node_update_heap_status(bhandle hNodeRes, s32 status)
+ /* Release all Node resources and its context
+ * This is called from .bridge_release.
+  */
+-dsp_status drv_remove_all_node_res_elements(bhandle hPCtxt)
++dsp_status drv_remove_all_node_res_elements(void *hPCtxt)
+ {
+ 	struct process_context *ctxt = (struct process_context *)hPCtxt;
+ 	dsp_status status = DSP_SOK;
+@@ -244,8 +244,8 @@ dsp_status drv_remove_all_node_res_elements(bhandle hPCtxt)
+ }
+ 
+ /* Getting the node resource element */
+-dsp_status drv_get_node_res_element(bhandle hnode, bhandle hNodeRes,
+-				    bhandle hPCtxt)
++dsp_status drv_get_node_res_element(void *hnode, void *hNodeRes,
++				    void *hPCtxt)
+ {
+ 	struct node_res_object **node_res = (struct node_res_object **)hNodeRes;
+ 	struct process_context *ctxt = (struct process_context *)hPCtxt;
+@@ -275,8 +275,8 @@ dsp_status drv_get_node_res_element(bhandle hnode, bhandle hNodeRes,
+ /* Allocate the STRM resource element
+ * This is called after the actual resource is allocated
+  */
+-dsp_status drv_proc_insert_strm_res_element(bhandle hStreamHandle,
+-					    bhandle hstrm_res, bhandle hPCtxt)
++dsp_status drv_proc_insert_strm_res_element(void *hStreamHandle,
++					    void *hstrm_res, void *hPCtxt)
+ {
+ 	struct strm_res_object **pstrm_res =
+ 	    (struct strm_res_object **)hstrm_res;
+@@ -311,7 +311,7 @@ dsp_status drv_proc_insert_strm_res_element(bhandle hStreamHandle,
+ /* Release Stream resource element context
+ * This function called after the actual resource is freed
+  */
+-dsp_status drv_proc_remove_strm_res_element(bhandle hstrm_res, bhandle hPCtxt)
++dsp_status drv_proc_remove_strm_res_element(void *hstrm_res, void *hPCtxt)
+ {
+ 	struct strm_res_object *pstrm_res = (struct strm_res_object *)hstrm_res;
+ 	struct process_context *ctxt = (struct process_context *)hPCtxt;
+@@ -340,7 +340,7 @@ dsp_status drv_proc_remove_strm_res_element(bhandle hstrm_res, bhandle hPCtxt)
+ /* Release all Stream resources and its context
+ * This is called from .bridge_release.
+  */
+-dsp_status drv_remove_all_strm_res_elements(bhandle hPCtxt)
++dsp_status drv_remove_all_strm_res_elements(void *hPCtxt)
+ {
+ 	struct process_context *ctxt = (struct process_context *)hPCtxt;
+ 	dsp_status status = DSP_SOK;
+@@ -381,8 +381,8 @@ dsp_status drv_remove_all_strm_res_elements(bhandle hPCtxt)
+ }
+ 
+ /* Getting the stream resource element */
+-dsp_status drv_get_strm_res_element(bhandle hStrm, bhandle hstrm_res,
+-				    bhandle hPCtxt)
++dsp_status drv_get_strm_res_element(void *hStrm, void *hstrm_res,
++				    void *hPCtxt)
+ {
+ 	struct strm_res_object **strm_res =
+ 	    (struct strm_res_object **)hstrm_res;
+@@ -411,7 +411,7 @@ dsp_status drv_get_strm_res_element(bhandle hStrm, bhandle hstrm_res,
+ }
+ 
+ /* Updating the stream resource element */
+-dsp_status drv_proc_update_strm_res(u32 num_bufs, bhandle hstrm_res)
++dsp_status drv_proc_update_strm_res(u32 num_bufs, void *hstrm_res)
+ {
+ 	dsp_status status = DSP_SOK;
+ 	struct strm_res_object **strm_res =
+diff --git a/drivers/dsp/bridge/rmgr/drv_interface.c b/drivers/dsp/bridge/rmgr/drv_interface.c
+index 04b17be..eb7efd3 100644
+--- a/drivers/dsp/bridge/rmgr/drv_interface.c
++++ b/drivers/dsp/bridge/rmgr/drv_interface.c
+@@ -361,7 +361,7 @@ static int __devexit omap34_xx_bridge_remove(struct platform_device *pdev)
+ 	dev_t devno;
+ 	bool ret;
+ 	dsp_status status = DSP_SOK;
+-	bhandle hdrv_obj = NULL;
++	void *hdrv_obj = NULL;
+ 
+ 	status = cfg_get_object((u32 *) &hdrv_obj, REG_DRV_OBJECT);
+ 	if (DSP_FAILED(status))
+@@ -595,7 +595,7 @@ static int bridge_mmap(struct file *filp, struct vm_area_struct *vma)
+ 
+ /* To remove all process resources before removing the process from the
+  * process context list */
+-dsp_status drv_remove_all_resources(bhandle hPCtxt)
++dsp_status drv_remove_all_resources(void *hPCtxt)
+ {
+ 	dsp_status status = DSP_SOK;
+ 	struct process_context *ctxt = (struct process_context *)hPCtxt;
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index 0edc7da..b5a57fb 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -274,7 +274,7 @@ static struct node_ldr_fxns nldr_fxns = {
+ 	nldr_unload,
+ };
+ 
+-enum node_state node_get_state(bhandle hnode)
++enum node_state node_get_state(void *hnode)
+ {
+ 	struct node_object *pnode = (struct node_object *)hnode;
+ 	if (!pnode)
+@@ -321,7 +321,7 @@ dsp_status node_allocate(struct proc_object *hprocessor,
+ 	struct proc_object *p_proc_object = (struct proc_object *)hprocessor;
+ #endif
+ 
+-	bhandle node_res;
++	void *node_res;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(hprocessor != NULL);
+@@ -844,8 +844,8 @@ dsp_status node_connect(struct node_object *hNode1, u32 uStream1,
+ 	struct node_object *dev_node_obj;
+ 	struct node_object *hnode;
+ 	struct stream_chnl *pstream;
+-	gb_bit_num pipe_id = GB_NOBITS;
+-	gb_bit_num chnl_id = GB_NOBITS;
++	u32 pipe_id = GB_NOBITS;
++	u32 chnl_id = GB_NOBITS;
+ 	s8 chnl_mode;
+ 	u32 dw_length;
+ 	dsp_status status = DSP_SOK;
+@@ -1448,7 +1448,7 @@ dsp_status node_delete(struct node_object *hnode,
+ 	u32 proc_id;
+ 	struct bridge_drv_interface *intf_fxns;
+ 
+-	bhandle node_res;
++	void *node_res;
+ 
+ 	struct dsp_processorstate proc_state;
+ 	DBC_REQUIRE(refs > 0);
+diff --git a/drivers/dsp/bridge/rmgr/strm.c b/drivers/dsp/bridge/rmgr/strm.c
+index aa3d81f..dcdd406 100644
+--- a/drivers/dsp/bridge/rmgr/strm.c
++++ b/drivers/dsp/bridge/rmgr/strm.c
+@@ -74,7 +74,7 @@ struct strm_object {
+ 	u32 ul_n_bytes;		/* bytes transferred since idled */
+ 	/* STREAM_IDLE, STREAM_READY, ... */
+ 	enum dsp_streamstate strm_state;
+-	bhandle user_event;	/* Saved for strm_get_info() */
++	void *user_event;	/* Saved for strm_get_info() */
+ 	enum dsp_strmmode strm_mode;	/* STRMMODE_[PROCCOPY][ZEROCOPY]... */
+ 	u32 udma_chnl_id;	/* DMA chnl id */
+ 	u32 udma_priority;	/* DMA priority:DMAPRI_[LOW][HIGH] */
+@@ -104,7 +104,7 @@ dsp_status strm_allocate_buffer(struct strm_object *hStrm, u32 usize,
+ 	u32 alloc_cnt = 0;
+ 	u32 i;
+ 
+-	bhandle hstrm_res;
++	void *hstrm_res;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(ap_buffer != NULL);
+@@ -158,7 +158,7 @@ dsp_status strm_close(struct strm_object *hStrm,
+ 	struct chnl_info chnl_info_obj;
+ 	dsp_status status = DSP_SOK;
+ 
+-	bhandle hstrm_res;
++	void *hstrm_res;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+@@ -278,7 +278,7 @@ dsp_status strm_free_buffer(struct strm_object *hStrm, u8 ** ap_buffer,
+ 	dsp_status status = DSP_SOK;
+ 	u32 i = 0;
+ 
+-	bhandle hstrm_res = NULL;
++	void *hstrm_res = NULL;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(ap_buffer != NULL);
+@@ -478,7 +478,7 @@ dsp_status strm_open(struct node_object *hnode, u32 dir, u32 index,
+ 	dsp_status status = DSP_SOK;
+ 	struct cmm_object *hcmm_mgr = NULL;	/* Shared memory manager hndl */
+ 
+-	bhandle hstrm_res;
++	void *hstrm_res;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(phStrm != NULL);
+diff --git a/drivers/dsp/bridge/wmd/_msg_sm.h b/drivers/dsp/bridge/wmd/_msg_sm.h
+index e2233e2..99e8640 100644
+--- a/drivers/dsp/bridge/wmd/_msg_sm.h
++++ b/drivers/dsp/bridge/wmd/_msg_sm.h
+@@ -112,7 +112,7 @@ struct msg_queue {
+ 	struct lst_list *msg_free_list;	/* Free MsgFrames ready to be filled */
+ 	/* Filled MsgFramess waiting to be read */
+ 	struct lst_list *msg_used_list;
+-	bhandle arg;		/* Handle passed to mgr on_exit callback */
++	void *arg;		/* Handle passed to mgr on_exit callback */
+ 	struct sync_object *sync_event;	/* Signalled when message is ready */
+ 	struct sync_object *sync_done;	/* For synchronizing cleanup */
+ 	struct sync_object *sync_done_ack;	/* For synchronizing cleanup */
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index 4fcd9f6..8eaed29 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -1295,7 +1295,7 @@ static void input_msg(struct io_mgr *pio_mgr, struct msg_mgr *hmsg_mgr)
+ 					 * The exit message does not get
+ 					 * queued.
+ 					 */
+-					(*hmsg_mgr->on_exit) ((bhandle)
++					(*hmsg_mgr->on_exit) ((void *)
+ 							   msg_queue_obj->arg,
+ 							   msg.msg.dw_arg1);
+ 				} else {
+diff --git a/drivers/dsp/bridge/wmd/msg_sm.c b/drivers/dsp/bridge/wmd/msg_sm.c
+index 77c34b0..4f08a83 100644
+--- a/drivers/dsp/bridge/wmd/msg_sm.c
++++ b/drivers/dsp/bridge/wmd/msg_sm.c
+@@ -122,7 +122,7 @@ func_end:
+  */
+ dsp_status bridge_msg_create_queue(struct msg_mgr *hmsg_mgr,
+ 				OUT struct msg_queue **phMsgQueue,
+-				u32 msgq_id, u32 max_msgs, bhandle arg)
++				u32 msgq_id, u32 max_msgs, void *arg)
+ {
+ 	u32 i;
+ 	u32 num_allocated = 0;
+-- 
+1.7.0.4
+

@@ -1,0 +1,112 @@
+From 609005fda54c3ee90aadc50107f269f703f6d3ed Mon Sep 17 00:00:00 2001
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Date: Tue, 23 Mar 2010 21:25:40 +0000
+Subject: [PATCH 030/135] dsp-bridge: deh: reorganize create()
+
+No functional changes.
+
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+---
+ arch/arm/plat-omap/include/dspbridge/wmddeh.h |    4 ++--
+ drivers/dsp/bridge/wmd/ue_deh.c               |   24 +++++++++++++-----------
+ 2 files changed, 15 insertions(+), 13 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmddeh.h b/arch/arm/plat-omap/include/dspbridge/wmddeh.h
+index 0152c43..3ded87c 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmddeh.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmddeh.h
+@@ -27,8 +27,8 @@
+ 
+ #include <dspbridge/dehdefs.h>
+ 
+-extern dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+-				    struct dev_object *hdev_obj);
++extern dsp_status bridge_deh_create(struct deh_mgr **ret_deh_mgr,
++		struct dev_object *hdev_obj);
+ 
+ extern dsp_status bridge_deh_destroy(struct deh_mgr *hdeh_mgr);
+ 
+diff --git a/drivers/dsp/bridge/wmd/ue_deh.c b/drivers/dsp/bridge/wmd/ue_deh.c
+index 657e139..77f4315 100644
+--- a/drivers/dsp/bridge/wmd/ue_deh.c
++++ b/drivers/dsp/bridge/wmd/ue_deh.c
+@@ -61,11 +61,11 @@ static struct hw_mmu_map_attrs_t map_attrs = { HW_LITTLE_ENDIAN,
+ 
+ static u32 dummy_va_addr;
+ 
+-dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+-			     struct dev_object *hdev_obj)
++dsp_status bridge_deh_create(struct deh_mgr **ret_deh_mgr,
++		struct dev_object *hdev_obj)
+ {
+ 	dsp_status status = DSP_SOK;
+-	struct deh_mgr *deh_mgr_obj = NULL;
++	struct deh_mgr *deh_mgr_obj;
+ 	struct cfg_hostres cfg_host_res;
+ 	struct cfg_devnode *dev_node_obj;
+ 	struct wmd_dev_context *hwmd_context = NULL;
+@@ -79,7 +79,7 @@ dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+ 	dummy_va_addr = 0;
+ 	/* Allocate IO manager object: */
+ 	MEM_ALLOC_OBJECT(deh_mgr_obj, struct deh_mgr, SIGNATURE);
+-	if (deh_mgr_obj == NULL) {
++	if (!deh_mgr_obj) {
+ 		status = DSP_EMEMORY;
+ 		goto leave;
+ 	}
+@@ -90,7 +90,7 @@ dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+ 		ntfy_init(deh_mgr_obj->ntfy_obj);
+ 	} else {
+ 		status = DSP_EMEMORY;
+-		goto leave;
++		goto err;
+ 	}
+ 
+ 	/* Create a MMUfault DPC */
+@@ -100,12 +100,12 @@ dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+ 	status = dev_get_dev_node(hdev_obj, &dev_node_obj);
+ 
+ 	if (DSP_FAILED(status))
+-		goto leave;
++		goto err;
+ 
+ 	status = cfg_get_host_resources(dev_node_obj, &cfg_host_res);
+ 
+ 	if (DSP_FAILED(status))
+-		goto leave;
++		goto err;
+ 
+ 	/* Fill in context structure */
+ 	deh_mgr_obj->hwmd_context = hwmd_context;
+@@ -113,6 +113,7 @@ dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+ 	deh_mgr_obj->err_info.dw_val1 = 0L;
+ 	deh_mgr_obj->err_info.dw_val2 = 0L;
+ 	deh_mgr_obj->err_info.dw_val3 = 0L;
++
+ 	/* Install ISR function for DSP MMU fault */
+ 	if ((request_irq(INT_DSP_MMU_IRQ, mmu_fault_isr, 0,
+ 					"DspBridge\tiommu fault",
+@@ -121,15 +122,16 @@ dsp_status bridge_deh_create(OUT struct deh_mgr **phDehMgr,
+ 	else
+ 		status = DSP_EFAIL;
+ 
+-leave:
++err:
+ 	if (DSP_FAILED(status)) {
+ 		/* If create failed, cleanup */
+ 		bridge_deh_destroy((struct deh_mgr *)deh_mgr_obj);
+-		*phDehMgr = NULL;
+-	} else {
+-		*phDehMgr = (struct deh_mgr *)deh_mgr_obj;
++		deh_mgr_obj = NULL;
+ 	}
+ 
++leave:
++	*ret_deh_mgr = deh_mgr_obj;
++
+ 	return status;
+ }
+ 
+-- 
+1.7.0.4
+

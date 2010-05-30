@@ -1,0 +1,46 @@
+From 76e69b388b32e75246bbd6fac2739c122fb47ee8 Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:38 -0500
+Subject: [PATCH 057/135] DSPBRIDGE: replace error code DSP_EFOPEN for -EBADF
+
+This patch replaces DSP_EFOPEN with -EBADF.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/dblldefs.h |    2 +-
+ drivers/dsp/bridge/pmgr/dbll.c                  |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/dblldefs.h b/arch/arm/plat-omap/include/dspbridge/dblldefs.h
+index dd0ad09..60bc5e5 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dblldefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/dblldefs.h
+@@ -385,7 +385,7 @@ typedef dsp_status(*dbll_load_sect_fxn) (struct dbll_library_obj *lib,
+  *  Returns:
+  *      DSP_SOK:            Success.
+  *      DSP_EMEMORY:        Memory allocation failure.
+- *      DSP_EFOPEN:         File open failure.
++ *      -EBADF:         File open failure.
+  *      -EBADF:         File read failure.
+  *      DSP_ECORRUPTFILE:   Unable to determine target type.
+  *  Requires:
+diff --git a/drivers/dsp/bridge/pmgr/dbll.c b/drivers/dsp/bridge/pmgr/dbll.c
+index 1cdafb5..f93543c 100644
+--- a/drivers/dsp/bridge/pmgr/dbll.c
++++ b/drivers/dsp/bridge/pmgr/dbll.c
+@@ -915,10 +915,10 @@ static dsp_status dof_open(struct dbll_library_obj *zl_lib)
+ 		if (zl_lib->desc == NULL) {
+ 			(zl_lib->target_obj->attrs.fclose) (zl_lib->fp);
+ 			zl_lib->fp = NULL;
+-			status = DSP_EFOPEN;
++			status = -EBADF;
+ 		}
+ 	} else {
+-		status = DSP_EFOPEN;
++		status = -EBADF;
+ 	}
+ 
+ 	return status;
+-- 
+1.7.0.4
+

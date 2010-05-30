@@ -1,0 +1,70 @@
+diff --git a/arch/arm/plat-omap/include/dspbridge/drv.h b/arch/arm/plat-omap/include/dspbridge/drv.h
+index 3186935..2eeb47f 100644
+--- a/arch/arm/plat-omap/include/dspbridge/drv.h
++++ b/arch/arm/plat-omap/include/dspbridge/drv.h
+@@ -466,21 +466,6 @@ extern void *mem_alloc_phys_mem(IN u32 byte_size,
+ 				IN u32 ulAlign, OUT u32 *pPhysicalAddress);
+ 
+ /*
+- *  ======== mem_flush_cache ========
+- *  Purpose:
+- *      Performs system cache sync with discard
+- *  Parameters:
+- *      pMemBuf:    Pointer to memory region to be flushed.
+- *      pMemBuf:    Size of the memory region to be flushed.
+- *  Returns:
+- *  Requires:
+- *      MEM is initialized.
+- *  Ensures:
+- *      Cache is synchronized
+- */
+-extern void mem_flush_cache(void *pMemBuf, u32 byte_size, s32 FlushType);
+-
+-/*
+  *  ======== mem_free_phys_mem ========
+  *  Purpose:
+  *      Free the given block of physically contiguous memory.
+diff --git a/drivers/dsp/bridge/rmgr/drv.c b/drivers/dsp/bridge/rmgr/drv.c
+index a8e711a..6ffae0b 100644
+--- a/drivers/dsp/bridge/rmgr/drv.c
++++ b/drivers/dsp/bridge/rmgr/drv.c
+@@ -1039,39 +1039,6 @@ void *mem_alloc_phys_mem(u32 byte_size, u32 ulAlign, OUT u32 * pPhysicalAddress)
+ }
+ 
+ /*
+- *  ======== mem_flush_cache ========
+- *  Purpose:
+- *      Flush cache
+- */
+-void mem_flush_cache(void *pMemBuf, u32 byte_size, s32 FlushType)
+-{
+-	if (!pMemBuf)
+-		return;
+-
+-	switch (FlushType) {
+-		/* invalidate only */
+-	case PROC_INVALIDATE_MEM:
+-		dmac_inv_range(pMemBuf, pMemBuf + byte_size);
+-		outer_inv_range(__pa((u32) pMemBuf), __pa((u32) pMemBuf +
+-							  byte_size));
+-		break;
+-		/* writeback only */
+-	case PROC_WRITEBACK_MEM:
+-		dmac_clean_range(pMemBuf, pMemBuf + byte_size);
+-		outer_clean_range(__pa((u32) pMemBuf), __pa((u32) pMemBuf +
+-							    byte_size));
+-		break;
+-		/* writeback and invalidate */
+-	case PROC_WRITEBACK_INVALIDATE_MEM:
+-		dmac_flush_range(pMemBuf, pMemBuf + byte_size);
+-		outer_flush_range(__pa((u32) pMemBuf), __pa((u32) pMemBuf +
+-							    byte_size));
+-		break;
+-	}
+-
+-}
+-
+-/*
+  *  ======== mem_free_phys_mem ========
+  *  Purpose:
+  *      Free the given block of physically contiguous memory.

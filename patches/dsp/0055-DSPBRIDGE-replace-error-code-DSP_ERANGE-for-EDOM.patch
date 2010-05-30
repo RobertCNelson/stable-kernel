@@ -1,0 +1,74 @@
+From ba120b5c7a7bcfc2b39ca5e62ddcf5af953de640 Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:33 -0500
+Subject: [PATCH 055/135] DSPBRIDGE: replace error code DSP_ERANGE for -EDOM
+
+This patch replaces DSP_ERANGE with -EDOM.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/node.h |    4 ++--
+ arch/arm/plat-omap/include/dspbridge/strm.h |    2 +-
+ drivers/dsp/bridge/rmgr/node.c              |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/node.h b/arch/arm/plat-omap/include/dspbridge/node.h
+index e4bd16e..e36f1d6 100644
+--- a/arch/arm/plat-omap/include/dspbridge/node.h
++++ b/arch/arm/plat-omap/include/dspbridge/node.h
+@@ -42,7 +42,7 @@
+  *      DSP_EMEMORY:        Insufficient memory on GPP.
+  *      -ENOKEY:          Node UUID has not been registered.
+  *      DSP_ESYMBOL:        iAlg functions not found for a DAIS node.
+- *      DSP_ERANGE:         attr_in != NULL and attr_in->prio out of
++ *      -EDOM:         attr_in != NULL and attr_in->prio out of
+  *                          range.
+  *      -EPERM:          A failure occured, unable to allocate node.
+  *      DSP_EWRONGSTATE:    Proccessor is not in the running state.
+@@ -99,7 +99,7 @@ extern dsp_status node_alloc_msg_buf(struct node_object *hnode,
+  *  Returns:
+  *      DSP_SOK:            Success.
+  *      DSP_EHANDLE:        Invalid hnode.
+- *      DSP_ERANGE:         prio is out of range.
++ *      -EDOM:         prio is out of range.
+  *      DSP_ENODETYPE:      The specified node is not a task node.
+  *      DSP_EWRONGSTATE:    Node is not in the NODE_ALLOCATED, NODE_PAUSED,
+  *                          or NODE_RUNNING state.
+diff --git a/arch/arm/plat-omap/include/dspbridge/strm.h b/arch/arm/plat-omap/include/dspbridge/strm.h
+index a43ef62..a3b58a8 100644
+--- a/arch/arm/plat-omap/include/dspbridge/strm.h
++++ b/arch/arm/plat-omap/include/dspbridge/strm.h
+@@ -363,7 +363,7 @@ extern dsp_status strm_register_notify(struct strm_object *hStrm,
+  *      utimeout:       Timeout value (milliseconds).
+  *  Returns:
+  *      DSP_SOK:        Success.
+- *      DSP_ERANGE:     nStrms out of range.
++ *      -EDOM:     nStrms out of range.
+ 
+  *      DSP_EHANDLE:    Invalid stream handle in array.
+  *      -ETIME:   A timeout occurred before a stream became ready.
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index 7cceb46..b4f9c22 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -374,7 +374,7 @@ dsp_status node_allocate(struct proc_object *hprocessor,
+ 			/* Check if attr_in->prio is within range */
+ 			if (attr_in->prio < hnode_mgr->min_pri ||
+ 			    attr_in->prio > hnode_mgr->max_pri)
+-				status = DSP_ERANGE;
++				status = -EDOM;
+ 		}
+ 	}
+ 	/* Allocate node object and fill in */
+@@ -791,7 +791,7 @@ dsp_status node_change_priority(struct node_object *hnode, s32 prio)
+ 		if (node_type != NODE_TASK && node_type != NODE_DAISSOCKET)
+ 			status = DSP_ENODETYPE;
+ 		else if (prio < hnode_mgr->min_pri || prio > hnode_mgr->max_pri)
+-			status = DSP_ERANGE;
++			status = -EDOM;
+ 	}
+ 	if (DSP_FAILED(status))
+ 		goto func_end;
+-- 
+1.7.0.4
+

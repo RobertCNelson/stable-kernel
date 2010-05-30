@@ -1,0 +1,154 @@
+From 4442be4950c4962f4dab9c33c5555fa1216ce0a4 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Thu, 1 Apr 2010 00:17:24 -0600
+Subject: [PATCH 083/135] DSPBRIDGE: Remove handles from registry
+
+Remove handles from registry.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/drv.h |    3 +
+ drivers/dsp/bridge/services/cfg.c          |   59 +++++++++++++++++----------
+ 2 files changed, 40 insertions(+), 22 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/drv.h b/arch/arm/plat-omap/include/dspbridge/drv.h
+index 0b73d63..59176d5 100644
+--- a/arch/arm/plat-omap/include/dspbridge/drv.h
++++ b/arch/arm/plat-omap/include/dspbridge/drv.h
+@@ -127,6 +127,9 @@ struct drv_data {
+ 	char *base_img;
+ 	s32 shm_size;
+ 	int tc_wordswapon;
++	void *drv_object;
++	void *dev_object;
++	void *mgr_object;
+ };
+ 
+ /* Process Context */
+diff --git a/drivers/dsp/bridge/services/cfg.c b/drivers/dsp/bridge/services/cfg.c
+index 7426fd9..d6e91bf 100644
+--- a/drivers/dsp/bridge/services/cfg.c
++++ b/drivers/dsp/bridge/services/cfg.c
+@@ -82,6 +82,10 @@ dsp_status cfg_get_dev_object(struct cfg_devnode *dev_node_obj,
+ {
+ 	dsp_status status = DSP_SOK;
+ 	u32 dw_buf_size;
++	struct drv_data *drv_datap = dev_get_drvdata(bridge);
++
++	if (!drv_datap)
++		status = -EPERM;
+ 
+ 	if (!dev_node_obj)
+ 		status = -EFAULT;
+@@ -92,14 +96,12 @@ dsp_status cfg_get_dev_object(struct cfg_devnode *dev_node_obj,
+ 	dw_buf_size = sizeof(pdwValue);
+ 	if (DSP_SUCCEEDED(status)) {
+ 
+-		/* check the device string and then call the reg_set_value */
++		/* check the device string and then store dev object */
+ 		if (!
+ 		    (strcmp
+ 		     ((char *)((struct drv_ext *)dev_node_obj)->sz_string,
+ 		      "TIOMAP1510")))
+-			status =
+-			    reg_get_value("DEVICE_DSP", (u8 *) pdwValue,
+-					  &dw_buf_size);
++			*pdwValue = (u32)drv_datap->dev_object;
+ 	}
+ 	if (DSP_FAILED(status))
+ 		pr_err("%s: Failed, status 0x%x\n", __func__, status);
+@@ -145,23 +147,31 @@ dsp_status cfg_get_exec_file(struct cfg_devnode *dev_node_obj, u32 ul_buf_size,
+ dsp_status cfg_get_object(OUT u32 *pdwValue, u8 dw_type)
+ {
+ 	dsp_status status = -EINVAL;
+-	u32 dw_buf_size;
++	struct drv_data *drv_datap = dev_get_drvdata(bridge);
++
+ 	DBC_REQUIRE(pdwValue != NULL);
+ 
+-	dw_buf_size = sizeof(pdwValue);
++	if (!drv_datap)
++		return -EPERM;
++
+ 	switch (dw_type) {
+ 	case (REG_DRV_OBJECT):
+-		status =
+-		    reg_get_value(DRVOBJECT, (u8 *) pdwValue, &dw_buf_size);
+-		if (DSP_FAILED(status))
++		if (drv_datap->drv_object) {
++			*pdwValue = (u32)drv_datap->drv_object;
++			status = DSP_SOK;
++		} else {
+ 			status = -ENODATA;
++		}
+ 		break;
+ 	case (REG_MGR_OBJECT):
+-		status =
+-		    reg_get_value(MGROBJECT, (u8 *) pdwValue, &dw_buf_size);
+-		if (DSP_FAILED(status))
++		if (drv_datap->mgr_object) {
++			*pdwValue = (u32)drv_datap->mgr_object;
++			status = DSP_SOK;
++		} else {
+ 			status = -ENODATA;
++		}
+ 		break;
++
+ 	default:
+ 		break;
+ 	}
+@@ -192,18 +202,21 @@ bool cfg_init(void)
+ dsp_status cfg_set_dev_object(struct cfg_devnode *dev_node_obj, u32 dwValue)
+ {
+ 	dsp_status status = DSP_SOK;
+-	u32 dw_buff_size;
++	struct drv_data *drv_datap = dev_get_drvdata(bridge);
++
++	if (!drv_datap) {
++		pr_err("%s: Failed, status 0x%x\n", __func__, status);
++		return -EPERM;
++	}
+ 
+ 	if (!dev_node_obj)
+ 		status = -EFAULT;
+ 
+-	dw_buff_size = sizeof(dwValue);
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* Store the WCD device object in the Registry */
+ 
+ 		if (!(strcmp((char *)dev_node_obj, "TIOMAP1510"))) {
+-			status = reg_set_value("DEVICE_DSP", (u8 *) &dwValue,
+-					       dw_buff_size);
++			drv_datap->dev_object = (void *) dwValue;
+ 		}
+ 	}
+ 	if (DSP_FAILED(status))
+@@ -220,17 +233,19 @@ dsp_status cfg_set_dev_object(struct cfg_devnode *dev_node_obj, u32 dwValue)
+ dsp_status cfg_set_object(u32 dwValue, u8 dw_type)
+ {
+ 	dsp_status status = -EINVAL;
+-	u32 dw_buff_size;
++	struct drv_data *drv_datap = dev_get_drvdata(bridge);
++
++	if (!drv_datap)
++		return -EPERM;
+ 
+-	dw_buff_size = sizeof(dwValue);
+ 	switch (dw_type) {
+ 	case (REG_DRV_OBJECT):
+-		status =
+-		    reg_set_value(DRVOBJECT, (u8 *) &dwValue, dw_buff_size);
++		drv_datap->drv_object = (void *)dwValue;
++		status = DSP_SOK;
+ 		break;
+ 	case (REG_MGR_OBJECT):
+-		status =
+-		    reg_set_value(MGROBJECT, (u8 *) &dwValue, dw_buff_size);
++		drv_datap->mgr_object = (void *)dwValue;
++		status = DSP_SOK;
+ 		break;
+ 	default:
+ 		break;
+-- 
+1.7.0.4
+

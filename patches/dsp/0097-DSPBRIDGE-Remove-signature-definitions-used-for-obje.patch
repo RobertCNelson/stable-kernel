@@ -1,0 +1,276 @@
+From 5de220f5c04db532fc1493fe96c1bc68d7541840 Mon Sep 17 00:00:00 2001
+From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+Date: Mon, 29 Mar 2010 19:48:20 -0600
+Subject: [PATCH 097/135] DSPBRIDGE: Remove signature definitions used for object validation
+
+Since the patch "DSPBRIDGE: Remove dw_signature field from structures"
+removed dw_signature field from structures, then its signature
+definitions are no longer used.
+
+Signed-off-by: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/chnlpriv.h |    4 ----
+ arch/arm/plat-omap/include/dspbridge/io_sm.h    |    2 --
+ arch/arm/plat-omap/include/dspbridge/msgdefs.h  |    2 --
+ drivers/dsp/bridge/pmgr/cmm.c                   |    5 -----
+ drivers/dsp/bridge/pmgr/dbll.c                  |    3 ---
+ drivers/dsp/bridge/pmgr/dev.c                   |    1 -
+ drivers/dsp/bridge/pmgr/dmm.c                   |    3 ---
+ drivers/dsp/bridge/rmgr/dbdcd.c                 |    2 --
+ drivers/dsp/bridge/rmgr/disp.c                  |    2 --
+ drivers/dsp/bridge/rmgr/drv.c                   |    2 --
+ drivers/dsp/bridge/rmgr/mgr.c                   |    1 -
+ drivers/dsp/bridge/rmgr/nldr.c                  |    3 ---
+ drivers/dsp/bridge/rmgr/node.c                  |    3 ---
+ drivers/dsp/bridge/rmgr/proc.c                  |    1 -
+ drivers/dsp/bridge/rmgr/rmm.c                   |    2 --
+ drivers/dsp/bridge/rmgr/strm.c                  |    3 ---
+ drivers/dsp/bridge/wmd/_deh.h                   |    2 --
+ drivers/dsp/bridge/wmd/msg_sm.c                 |    3 ---
+ 18 files changed, 0 insertions(+), 44 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/chnlpriv.h b/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
+index d839eb1..ec06578 100644
+--- a/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
++++ b/arch/arm/plat-omap/include/dspbridge/chnlpriv.h
+@@ -23,10 +23,6 @@
+ #include <dspbridge/devdefs.h>
+ #include <dspbridge/sync.h>
+ 
+-/* CHNL Object validation signatures: */
+-#define CHNL_MGRSIGNATURE   0x52474D43	/* "CMGR" (in reverse). */
+-#define CHNL_SIGNATURE      0x4C4E4843	/* "CHNL" (in reverse). */
+-
+ /* Channel manager limits: */
+ #define CHNL_MAXCHANNELS    32	/* Max channels available per transport */
+ 
+diff --git a/arch/arm/plat-omap/include/dspbridge/io_sm.h b/arch/arm/plat-omap/include/dspbridge/io_sm.h
+index 153bf06..3db55e0 100644
+--- a/arch/arm/plat-omap/include/dspbridge/io_sm.h
++++ b/arch/arm/plat-omap/include/dspbridge/io_sm.h
+@@ -30,8 +30,6 @@
+ #define IO_SERVICE          2
+ #define IO_MAXSERVICE       IO_SERVICE
+ 
+-#define IO_MGRSIGNATURE     0x494f4D43	/* "IOGR" */
+-
+ #define DSP_FIELD_ADDR(type, field, base, wordsize) \
+     ((((s32)&(((type *)0)->field)) / wordsize) + (u32)base)
+ 
+diff --git a/arch/arm/plat-omap/include/dspbridge/msgdefs.h b/arch/arm/plat-omap/include/dspbridge/msgdefs.h
+index cda4ef4..57c168a 100644
+--- a/arch/arm/plat-omap/include/dspbridge/msgdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/msgdefs.h
+@@ -19,8 +19,6 @@
+ #ifndef MSGDEFS_
+ #define MSGDEFS_
+ 
+-#define MSGMGR_SIGNATURE    0x4d47534d	/* "MGSM" */
+-
+ /* msg_ctrl Objects: */
+ struct msg_mgr;
+ struct msg_queue;
+diff --git a/drivers/dsp/bridge/pmgr/cmm.c b/drivers/dsp/bridge/pmgr/cmm.c
+index c564b1e..ea7c246 100644
+--- a/drivers/dsp/bridge/pmgr/cmm.c
++++ b/drivers/dsp/bridge/pmgr/cmm.c
+@@ -52,11 +52,6 @@
+ #include <dspbridge/cmm.h>
+ 
+ /*  ----------------------------------- Defines, Data Structures, Typedefs */
+-/* Object signatures */
+-#define CMMSIGNATURE       0x004d4d43	/* "CMM"   (in reverse) */
+-#define SMEMSIGNATURE      0x4D454D53	/* "SMEM"  SM space */
+-#define CMMXLATESIGNATURE  0x584d4d43	/* "CMMX"  CMM Xlator */
+-
+ #define NEXT_PA(pnode)   (pnode->dw_pa + pnode->ul_size)
+ 
+ /* Other bus/platform translations */
+diff --git a/drivers/dsp/bridge/pmgr/dbll.c b/drivers/dsp/bridge/pmgr/dbll.c
+index 341e6ed..ac381e0 100644
+--- a/drivers/dsp/bridge/pmgr/dbll.c
++++ b/drivers/dsp/bridge/pmgr/dbll.c
+@@ -36,9 +36,6 @@
+ #include <dspbridge/dbll.h>
+ #include <dspbridge/rmm.h>
+ 
+-#define DBLL_TARGSIGNATURE      0x544c4c44	/* "TLLD" */
+-#define DBLL_LIBSIGNATURE       0x4c4c4c44	/* "LLLD" */
+-
+ /* Number of buckets for symbol hash table */
+ #define MAXBUCKETS 211
+ 
+diff --git a/drivers/dsp/bridge/pmgr/dev.c b/drivers/dsp/bridge/pmgr/dev.c
+index a17e638..3465b52 100644
+--- a/drivers/dsp/bridge/pmgr/dev.c
++++ b/drivers/dsp/bridge/pmgr/dev.c
+@@ -55,7 +55,6 @@
+ 
+ /*  ----------------------------------- Defines, Data Structures, Typedefs */
+ 
+-#define SIGNATURE           0x5f564544	/* "DEV_" (in reverse) */
+ #define MAKEVERSION(major, minor)   (major * 10 + minor)
+ #define WCDVERSION          MAKEVERSION(WCD_MAJOR_VERSION, WCD_MINOR_VERSION)
+ 
+diff --git a/drivers/dsp/bridge/pmgr/dmm.c b/drivers/dsp/bridge/pmgr/dmm.c
+index 51b88cc..514b2c0 100644
+--- a/drivers/dsp/bridge/pmgr/dmm.c
++++ b/drivers/dsp/bridge/pmgr/dmm.c
+@@ -43,9 +43,6 @@
+ #include <dspbridge/dmm.h>
+ 
+ /*  ----------------------------------- Defines, Data Structures, Typedefs */
+-/* Object signatures */
+-#define DMMSIGNATURE       0x004d4d44	/* "DMM"   (in reverse) */
+-
+ #define DMM_ADDR_VIRTUAL(a) \
+ 	(((struct map_page *)(a) - virtual_mapping_table) * PG_SIZE4K +\
+ 	dyn_mem_map_beg)
+diff --git a/drivers/dsp/bridge/rmgr/dbdcd.c b/drivers/dsp/bridge/rmgr/dbdcd.c
+index 5493eb9..3fa267f 100644
+--- a/drivers/dsp/bridge/rmgr/dbdcd.c
++++ b/drivers/dsp/bridge/rmgr/dbdcd.c
+@@ -43,8 +43,6 @@
+ #include <dspbridge/dbdcd.h>
+ 
+ /*  ----------------------------------- Global defines. */
+-#define SIGNATURE       0x5f444344	/* "DCD_" (in reverse). */
+-
+ #define MAX_INT2CHAR_LENGTH     16	/* Max int2char len of 32 bit int */
+ 
+ /* Name of section containing dependent libraries */
+diff --git a/drivers/dsp/bridge/rmgr/disp.c b/drivers/dsp/bridge/rmgr/disp.c
+index e20bc97..c125395 100644
+--- a/drivers/dsp/bridge/rmgr/disp.c
++++ b/drivers/dsp/bridge/rmgr/disp.c
+@@ -46,8 +46,6 @@
+ /*  ----------------------------------- This */
+ #include <dspbridge/disp.h>
+ 
+-#define DISP_SIGNATURE       0x50534944	/* "PSID" */
+-
+ /* Size of a reply from RMS */
+ #define REPLYSIZE (3 * sizeof(rms_word))
+ 
+diff --git a/drivers/dsp/bridge/rmgr/drv.c b/drivers/dsp/bridge/rmgr/drv.c
+index 3ad8551..aab6416 100644
+--- a/drivers/dsp/bridge/rmgr/drv.c
++++ b/drivers/dsp/bridge/rmgr/drv.c
+@@ -43,8 +43,6 @@
+ #include <dspbridge/resourcecleanup.h>
+ 
+ /*  ----------------------------------- Defines, Data Structures, Typedefs */
+-#define SIGNATURE   0x5f52474d	/* "DRV_" (in reverse) */
+-
+ struct drv_object {
+ 	struct lst_list *dev_list;
+ 	struct lst_list *dev_node_string;
+diff --git a/drivers/dsp/bridge/rmgr/mgr.c b/drivers/dsp/bridge/rmgr/mgr.c
+index e39f45d..a0e89dc 100644
+--- a/drivers/dsp/bridge/rmgr/mgr.c
++++ b/drivers/dsp/bridge/rmgr/mgr.c
+@@ -40,7 +40,6 @@
+ 
+ /*  ----------------------------------- Defines, Data Structures, Typedefs */
+ #define ZLDLLNAME               ""
+-#define SIGNATURE               0x5f52474d	/* "MGR_" (in reverse) */
+ 
+ struct mgr_object {
+ 	struct dcd_manager *hdcd_mgr;	/* Proc/Node data manager */
+diff --git a/drivers/dsp/bridge/rmgr/nldr.c b/drivers/dsp/bridge/rmgr/nldr.c
+index 63451a4..6d8c646 100644
+--- a/drivers/dsp/bridge/rmgr/nldr.c
++++ b/drivers/dsp/bridge/rmgr/nldr.c
+@@ -36,9 +36,6 @@
+ 
+ #include <dspbridge/nldr.h>
+ 
+-#define NLDR_SIGNATURE      0x52444c4e	/* "RDLN" */
+-#define NLDR_NODESIGNATURE  0x4e444c4e	/* "NDLN" */
+-
+ /* Name of section containing dynamic load mem */
+ #define DYNMEMSECT  ".dspbridge_mem"
+ 
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index cd6dddb..d63761f 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -68,9 +68,6 @@
+ #include <dspbridge/resourcecleanup.h>
+ #include <_tiomap.h>
+ 
+-#define NODE_SIGNATURE      0x45444f4e	/* "EDON" */
+-#define NODEMGR_SIGNATURE   0x52474d4e	/* "RGMN" */
+-
+ #define HOSTPREFIX	  "/host"
+ #define PIPEPREFIX	  "/dbpipe"
+ 
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index eedb270..c163829 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -59,7 +59,6 @@
+ 
+ #include <dspbridge/resourcecleanup.h>
+ /*  ----------------------------------- Defines, Data Structures, Typedefs */
+-#define PROC_SIGNATURE	   0x434F5250	/* "PROC" (in reverse). */
+ #define MAXCMDLINELEN       255
+ #define PROC_ENVPROCID      "PROC_ID=%d"
+ #define MAXPROCIDLEN	(8 + 5)
+diff --git a/drivers/dsp/bridge/rmgr/rmm.c b/drivers/dsp/bridge/rmgr/rmm.c
+index efacee2..3e90bf8 100644
+--- a/drivers/dsp/bridge/rmgr/rmm.c
++++ b/drivers/dsp/bridge/rmgr/rmm.c
+@@ -51,8 +51,6 @@
+ /*  ----------------------------------- This */
+ #include <dspbridge/rmm.h>
+ 
+-#define RMM_TARGSIGNATURE   0x544d4d52	/* "TMMR" */
+-
+ /*
+  *  ======== rmm_header ========
+  *  This header is used to maintain a list of free memory blocks.
+diff --git a/drivers/dsp/bridge/rmgr/strm.c b/drivers/dsp/bridge/rmgr/strm.c
+index f5d451d..aa3d81f 100644
+--- a/drivers/dsp/bridge/rmgr/strm.c
++++ b/drivers/dsp/bridge/rmgr/strm.c
+@@ -46,9 +46,6 @@
+ #include <dspbridge/resourcecleanup.h>
+ 
+ /*  ----------------------------------- Defines, Data Structures, Typedefs */
+-#define STRM_SIGNATURE      0x4d525453	/* "MRTS" */
+-#define STRMMGR_SIGNATURE   0x5254534d	/* "RTSM" */
+-
+ #define DEFAULTTIMEOUT      10000
+ #define DEFAULTNUMBUFS      2
+ 
+diff --git a/drivers/dsp/bridge/wmd/_deh.h b/drivers/dsp/bridge/wmd/_deh.h
+index bfe26fc..d7f2ef4 100644
+--- a/drivers/dsp/bridge/wmd/_deh.h
++++ b/drivers/dsp/bridge/wmd/_deh.h
+@@ -22,8 +22,6 @@
+ #include <dspbridge/ntfy.h>
+ #include <dspbridge/wmd.h>
+ 
+-#define SIGNATURE       0x5f484544	/* "DEH_" backwards */
+-
+ /* DEH Manager: only one created per board: */
+ struct deh_mgr {
+ 	struct wmd_dev_context *hwmd_context;	/* WMD device context. */
+diff --git a/drivers/dsp/bridge/wmd/msg_sm.c b/drivers/dsp/bridge/wmd/msg_sm.c
+index 83e9be5..77c34b0 100644
+--- a/drivers/dsp/bridge/wmd/msg_sm.c
++++ b/drivers/dsp/bridge/wmd/msg_sm.c
+@@ -38,9 +38,6 @@
+ #include <_msg_sm.h>
+ #include <dspbridge/wmdmsg.h>
+ 
+-/*  ----------------------------------- Defines, Data Structures, Typedefs */
+-#define MSGQ_SIGNATURE      0x5147534d	/* "QGSM" */
+-
+ /*  ----------------------------------- Function Prototypes */
+ static dsp_status add_new_msg(struct lst_list *msgList);
+ static void delete_msg_mgr(struct msg_mgr *hmsg_mgr);
+-- 
+1.7.0.4
+

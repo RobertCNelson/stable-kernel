@@ -1,0 +1,24 @@
+diff --git a/drivers/staging/omap3-sgx/services4/3rdparty/dc_omap3430_linux/Kbuild b/drivers/staging/omap3-sgx/services4/3rdparty/dc_omap3430_linux/Kbuild
+index eca3626..315ac8d 100644
+--- a/drivers/staging/omap3-sgx/services4/3rdparty/dc_omap3430_linux/Kbuild
++++ b/drivers/staging/omap3-sgx/services4/3rdparty/dc_omap3430_linux/Kbuild
+@@ -4,13 +4,12 @@ SUPPORT_TI_DSS_FW = 0
+ SYS_CFLAGS.$(SYS_USING_INTERRUPTS)                      += -DSYS_USING_INTERRUPTS
+ SYS_CFLAGS.$(SUPPORT_TI_DSS_FW)                         += -DSUPPORT_TI_DSS_FW
+ 
+-
+-EXTRA_CFLAGS =	-DLINUX \
+-		-I$(PVR_BUILD_DIR)/include4 \
+-		-I$(PVR_BUILD_DIR)/services4/include \
+-		-I$(PVR_BUILD_DIR)/services4/system/$(PVR_SYSTEM) \
+-		-I$(PVR_BUILD_DIR)/services4/system/include \
+-		$(SYS_CFLAGS.1) \
++ccflags-y += -DLINUX
++ccflags-y += -Idrivers/staging/omap3-sgx/include4
++ccflags-y += -Idrivers/staging/omap3-sgx/services4/include
++ccflags-y += -Idrivers/staging/omap3-sgx/services4/system/$(PVR_SYSTEM)
++ccflags-y += -Idrivers/staging/omap3-sgx/services4/system/include
++ccflags-y += $(SYS_CFLAGS.1)
+ 
+ obj-m := omaplfb.o
+ omaplfb-y := omaplfb_displayclass.o omaplfb_linux.o

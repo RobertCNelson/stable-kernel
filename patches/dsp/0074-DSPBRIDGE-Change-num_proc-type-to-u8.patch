@@ -1,0 +1,71 @@
+From a2f54d2ca499e0860a0afc096254e2aa39097c02 Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Fri, 19 Mar 2010 17:29:46 -0600
+Subject: [PATCH 074/135] DSPBRIDGE: Change num_proc type to u8
+
+num_proc is used to represent number of processors.
+As of now its 1. So changing it to u8.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/mgr.h |    2 +-
+ drivers/dsp/bridge/pmgr/wcd.c              |    2 +-
+ drivers/dsp/bridge/rmgr/mgr.c              |    2 +-
+ drivers/dsp/bridge/wmd/io_sm.c             |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/mgr.h b/arch/arm/plat-omap/include/dspbridge/mgr.h
+index db28575..f0b9f4a 100644
+--- a/arch/arm/plat-omap/include/dspbridge/mgr.h
++++ b/arch/arm/plat-omap/include/dspbridge/mgr.h
+@@ -153,7 +153,7 @@ extern dsp_status mgr_enum_processor_info(u32 processor_id,
+ 					  OUT struct dsp_processorinfo
+ 					  *processor_info,
+ 					  u32 processor_info_size,
+-					  OUT u32 *pu_num_procs);
++					  OUT u8 *pu_num_procs);
+ /*
+  *  ======== mgr_exit ========
+  *  Purpose:
+diff --git a/drivers/dsp/bridge/pmgr/wcd.c b/drivers/dsp/bridge/pmgr/wcd.c
+index a1efd92..035a9db 100644
+--- a/drivers/dsp/bridge/pmgr/wcd.c
++++ b/drivers/dsp/bridge/pmgr/wcd.c
+@@ -446,7 +446,7 @@ u32 mgrwrap_enum_node_info(union Trapped_Args *args, void *pr_ctxt)
+ u32 mgrwrap_enum_proc_info(union Trapped_Args *args, void *pr_ctxt)
+ {
+ 	u8 *processor_info;
+-	u32 num_procs;
++	u8 num_procs;
+ 	dsp_status status = DSP_SOK;
+ 	u32 size = args->args_mgr_enumproc_info.processor_info_size;
+ 
+diff --git a/drivers/dsp/bridge/rmgr/mgr.c b/drivers/dsp/bridge/rmgr/mgr.c
+index 50e4185..7b683cc 100644
+--- a/drivers/dsp/bridge/rmgr/mgr.c
++++ b/drivers/dsp/bridge/rmgr/mgr.c
+@@ -187,7 +187,7 @@ func_cont:
+ dsp_status mgr_enum_processor_info(u32 processor_id,
+ 				   OUT struct dsp_processorinfo *
+ 				   processor_info, u32 processor_info_size,
+-				   OUT u32 *pu_num_procs)
++				   OUT u8 *pu_num_procs)
+ {
+ 	dsp_status status = DSP_SOK;
+ 	dsp_status status1 = DSP_SOK;
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index e8857c4..3274ad3 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -320,7 +320,7 @@ dsp_status bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	u32 ul_pad_size = 0;
+ 	u32 i;
+ 	dsp_status status = DSP_SOK;
+-	u32 num_procs = 0;
++	u8 num_procs = 0;
+ 	s32 ndx = 0;
+ 	/* DSP MMU setup table */
+ 	struct wmdioctl_extproc ae_proc[WMDIOCTL_NUMOFMMUTLB];
+-- 
+1.7.0.4
+

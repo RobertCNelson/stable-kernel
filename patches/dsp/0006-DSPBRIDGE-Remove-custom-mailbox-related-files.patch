@@ -1,0 +1,935 @@
+From 5de98fb2ebc100e3683f3daf3f995be525844483 Mon Sep 17 00:00:00 2001
+From: Fernando Guzman Lugo <x0095840@ti.com>
+Date: Wed, 27 Jan 2010 20:12:38 -0600
+Subject: [PATCH 006/135] DSPBRIDGE: Remove custom mailbox related files
+
+Because of mailbox migration now the files:
+hw_mbox.c, hw_mbox.h, MLBAccInt.h, MLBRegAcM.h
+are not needed anymore.
+
+Signed-off-by: Fernando Guzman Lugo <x0095840@ti.com>
+---
+ drivers/dsp/bridge/hw/MLBAccInt.h |  125 --------------
+ drivers/dsp/bridge/hw/MLBRegAcM.h |  184 ---------------------
+ drivers/dsp/bridge/hw/hw_mbox.c   |  252 ----------------------------
+ drivers/dsp/bridge/hw/hw_mbox.h   |  326 -------------------------------------
+ 4 files changed, 0 insertions(+), 887 deletions(-)
+ delete mode 100644 drivers/dsp/bridge/hw/MLBAccInt.h
+ delete mode 100644 drivers/dsp/bridge/hw/MLBRegAcM.h
+ delete mode 100644 drivers/dsp/bridge/hw/hw_mbox.c
+ delete mode 100644 drivers/dsp/bridge/hw/hw_mbox.h
+
+diff --git a/drivers/dsp/bridge/hw/MLBAccInt.h b/drivers/dsp/bridge/hw/MLBAccInt.h
+deleted file mode 100644
+index 93fcd0c..0000000
+--- a/drivers/dsp/bridge/hw/MLBAccInt.h
++++ /dev/null
+@@ -1,125 +0,0 @@
+-/*
+- * MLBAccInt.h
+- *
+- * DSP-BIOS Bridge driver support functions for TI OMAP processors.
+- *
+- * Copyright (C) 2007 Texas Instruments, Inc.
+- *
+- * This package is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * THIS PACKAGE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+- */
+-
+-#ifndef _MLB_ACC_INT_H
+-#define _MLB_ACC_INT_H
+-
+-/* Mappings of level 1 EASI function numbers to function names */
+-
+-#define EASIL1_MLBMAILBOX_SYSCONFIG_READ_REGISTER32   (MLB_BASE_EASIL1 + 3)
+-#define EASIL1_MLBMAILBOX_SYSCONFIG_WRITE_REGISTER32  (MLB_BASE_EASIL1 + 4)
+-#define EASIL1_MLBMAILBOX_SYSCONFIGS_IDLE_MODE_READ32   (MLB_BASE_EASIL1 + 7)
+-#define EASIL1_MLBMAILBOX_SYSCONFIGS_IDLE_MODE_WRITE32  (MLB_BASE_EASIL1 + 17)
+-#define EASIL1_MLBMAILBOX_SYSCONFIG_SOFT_RESET_WRITE32 (MLB_BASE_EASIL1 + 29)
+-#define EASIL1_MLBMAILBOX_SYSCONFIG_AUTO_IDLE_READ32 \
+-						(MLB_BASE_EASIL1 + 33)
+-#define EASIL1_MLBMAILBOX_SYSCONFIG_AUTO_IDLE_WRITE32   (MLB_BASE_EASIL1 + 39)
+-#define EASIL1_MLBMAILBOX_SYSSTATUS_RESET_DONE_READ32  (MLB_BASE_EASIL1 + 44)
+-#define EASIL1_MLBMAILBOX_MESSAGE015_READ_REGISTER32 \
+-						(MLB_BASE_EASIL1 + 50)
+-#define EASIL1_MLBMAILBOX_MESSAGE015_WRITE_REGISTER32  \
+-						(MLB_BASE_EASIL1 + 51)
+-#define EASIL1_MLBMAILBOX_FIFOSTATUS015_READ_REGISTER32  \
+-						(MLB_BASE_EASIL1 + 56)
+-#define EASIL1_MLBMAILBOX_FIFOSTATUS015_FIFO_FULL_M_BM_READ32 \
+-						(MLB_BASE_EASIL1 + 57)
+-#define EASIL1_MLBMAILBOX_MSGSTATUS015_NB_OF_MSG_M_BM_READ32  \
+-						(MLB_BASE_EASIL1 + 60)
+-#define EASIL1_MLBMAILBOX_IRQSTATUS03_READ_REGISTER32  \
+-						(MLB_BASE_EASIL1 + 62)
+-#define EASIL1_MLBMAILBOX_IRQSTATUS03_WRITE_REGISTER32 \
+-						(MLB_BASE_EASIL1 + 63)
+-#define EASIL1_MLBMAILBOX_IRQENABLE03_READ_REGISTER32    \
+-						(MLB_BASE_EASIL1 + 192)
+-#define EASIL1_MLBMAILBOX_IRQENABLE03_WRITE_REGISTER32   \
+-						(MLB_BASE_EASIL1 + 193)
+-
+-/* Register set MAILBOX_MESSAGE___REGSET_0_15 address offset, bank address
+- * increment and number of banks */
+-
+-#define MLB_MAILBOX_MESSAGE_REGSET015_OFFSET    (u32)(0x0040)
+-#define MLB_MAILBOX_MESSAGE_REGSET015_STEP   (u32)(0x0004)
+-
+-/* Register offset address definitions relative to register set
+- * MAILBOX_MESSAGE___REGSET_0_15 */
+-
+-#define MLB_MAILBOX_MESSAGE015_OFFSET   (u32)(0x0)
+-
+-/* Register set MAILBOX_FIFOSTATUS___REGSET_0_15 address offset, bank address
+- * increment and number of banks */
+-
+-#define MLB_MAILBOX_FIFOSTATUS_REGSET015_OFFSET  (u32)(0x0080)
+-#define MLB_MAILBOX_FIFOSTATUS_REGSET015_STEP   (u32)(0x0004)
+-
+-/* Register offset address definitions relative to register set
+- * MAILBOX_FIFOSTATUS___REGSET_0_15 */
+-
+-#define MLB_MAILBOX_FIFOSTATUS015_OFFSET    (u32)(0x0)
+-
+-/* Register set MAILBOX_MSGSTATUS___REGSET_0_15 address offset, bank address
+- * increment and number of banks */
+-
+-#define MLB_MAILBOX_MSGSTATUS_REGSET015_OFFSET  (u32)(0x00c0)
+-#define MLB_MAILBOX_MSGSTATUS_REGSET015_STEP    (u32)(0x0004)
+-
+-/* Register offset address definitions relative to register set
+- * MAILBOX_MSGSTATUS___REGSET_0_15 */
+-
+-#define MLB_MAILBOX_MSGSTATUS015_OFFSET    (u32)(0x0)
+-
+-/* Register set MAILBOX_IRQSTATUS___REGSET_0_3 address offset, bank address
+- * increment and number of banks */
+-
+-#define MLB_MAILBOX_IRQSTATUS_REGSET03_OFFSET        (u32)(0x0100)
+-#define MLB_MAILBOX_IRQSTATUS_REGSET03_STEP          (u32)(0x0008)
+-
+-/* Register offset address definitions relative to register set
+- * MAILBOX_IRQSTATUS___REGSET_0_3 */
+-
+-#define MLB_MAILBOX_IRQSTATUS03_OFFSET        (u32)(0x0)
+-
+-/* Register set MAILBOX_IRQENABLE___REGSET_0_3 address offset, bank address
+- * increment and number of banks */
+-
+-#define MLB_MAILBOX_IRQENABLE_REGSET03_OFFSET     (u32)(0x0104)
+-#define MLB_MAILBOX_IRQENABLE_REGSET03_STEP     (u32)(0x0008)
+-
+-/* Register offset address definitions relative to register set
+- * MAILBOX_IRQENABLE___REGSET_0_3 */
+-
+-#define MLB_MAILBOX_IRQENABLE03_OFFSET          (u32)(0x0)
+-
+-/* Register offset address definitions */
+-
+-#define MLB_MAILBOX_SYSCONFIG_OFFSET            (u32)(0x10)
+-#define MLB_MAILBOX_SYSSTATUS_OFFSET            (u32)(0x14)
+-
+-/* Bitfield mask and offset declarations */
+-
+-#define MLB_MAILBOX_SYSCONFIG_S_IDLE_MODE_MASK        (u32)(0x18)
+-#define MLB_MAILBOX_SYSCONFIG_S_IDLE_MODE_OFFSET      (u32)(3)
+-#define MLB_MAILBOX_SYSCONFIG_SOFT_RESET_MASK        (u32)(0x2)
+-#define MLB_MAILBOX_SYSCONFIG_SOFT_RESET_OFFSET      (u32)(1)
+-#define MLB_MAILBOX_SYSCONFIG_AUTO_IDLE_MASK          (u32)(0x1)
+-#define MLB_MAILBOX_SYSCONFIG_AUTO_IDLE_OFFSET        (u32)(0)
+-#define MLB_MAILBOX_SYSSTATUS_RESET_DONE_MASK         (u32)(0x1)
+-#define MLB_MAILBOX_SYSSTATUS_RESET_DONE_OFFSET         (u32)(0)
+-#define MLB_MAILBOX_FIFOSTATUS015_FIFO_FULL_M_BM_MASK   (u32)(0x1)
+-#define MLB_MAILBOX_FIFOSTATUS015_FIFO_FULL_M_BM_OFFSET  (u32)(0)
+-#define MLB_MAILBOX_MSGSTATUS015_NB_OF_MSG_M_BM_MASK    (u32)(0x7f)
+-#define MLB_MAILBOX_MSGSTATUS015_NB_OF_MSG_M_BM_OFFSET    (u32)(0)
+-
+-#endif /* _MLB_ACC_INT_H */
+diff --git a/drivers/dsp/bridge/hw/MLBRegAcM.h b/drivers/dsp/bridge/hw/MLBRegAcM.h
+deleted file mode 100644
+index 16e551b..0000000
+--- a/drivers/dsp/bridge/hw/MLBRegAcM.h
++++ /dev/null
+@@ -1,184 +0,0 @@
+-/*
+- * MLBRegAcM.h
+- *
+- * DSP-BIOS Bridge driver support functions for TI OMAP processors.
+- *
+- * Copyright (C) 2007 Texas Instruments, Inc.
+- *
+- * This package is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * THIS PACKAGE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+- */
+-
+-#ifndef _MLB_REG_ACM_H
+-#define _MLB_REG_ACM_H
+-
+-#include <GlobalTypes.h>
+-#include <linux/io.h>
+-#include <EasiGlobal.h>
+-#include "MLBAccInt.h"
+-
+-#if defined(USE_LEVEL_1_MACROS)
+-
+-#define MLBMAILBOX_SYSCONFIG_READ_REGISTER32(baseAddress)\
+-    (_DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_SYSCONFIG_READ_REGISTER32),\
+-      __raw_readl(((baseAddress))+ \
+-      MLB_MAILBOX_SYSCONFIG_OFFSET))
+-
+-#define MLBMAILBOX_SYSCONFIG_WRITE_REGISTER32(baseAddress, value)\
+-{\
+-    const u32 offset = MLB_MAILBOX_SYSCONFIG_OFFSET;\
+-    register u32 newValue = ((u32)(value));\
+-    _DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_SYSCONFIG_WRITE_REGISTER32);\
+-    __raw_writel(newValue, ((baseAddress))+offset);\
+-}
+-
+-#define MLBMAILBOX_SYSCONFIGS_IDLE_MODE_READ32(baseAddress)\
+-    (_DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_SYSCONFIGS_IDLE_MODE_READ32),\
+-      (((__raw_readl((((u32)(baseAddress))+\
+-      (MLB_MAILBOX_SYSCONFIG_OFFSET)))) &\
+-      MLB_MAILBOX_SYSCONFIG_S_IDLE_MODE_MASK) >>\
+-      MLB_MAILBOX_SYSCONFIG_S_IDLE_MODE_OFFSET))
+-
+-#define MLBMAILBOX_SYSCONFIGS_IDLE_MODE_WRITE32(baseAddress, value)\
+-{\
+-    const u32 offset = MLB_MAILBOX_SYSCONFIG_OFFSET;\
+-    register u32 data = __raw_readl(((u32)(baseAddress)) +\
+-			    offset);\
+-    register u32 newValue = ((u32)(value));\
+-    _DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_SYSCONFIGS_IDLE_MODE_WRITE32);\
+-    data &= ~(MLB_MAILBOX_SYSCONFIG_S_IDLE_MODE_MASK);\
+-    newValue <<= MLB_MAILBOX_SYSCONFIG_S_IDLE_MODE_OFFSET;\
+-    newValue &= MLB_MAILBOX_SYSCONFIG_S_IDLE_MODE_MASK;\
+-    newValue |= data;\
+-    __raw_writel(newValue, (u32)(baseAddress)+offset);\
+-}
+-
+-#define MLBMAILBOX_SYSCONFIG_SOFT_RESET_WRITE32(baseAddress, value)\
+-{\
+-    const u32 offset = MLB_MAILBOX_SYSCONFIG_OFFSET;\
+-    register u32 data =\
+-    __raw_readl(((u32)(baseAddress))+offset);\
+-    register u32 newValue = ((u32)(value));\
+-    _DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_SYSCONFIG_SOFT_RESET_WRITE32);\
+-    data &= ~(MLB_MAILBOX_SYSCONFIG_SOFT_RESET_MASK);\
+-    newValue <<= MLB_MAILBOX_SYSCONFIG_SOFT_RESET_OFFSET;\
+-    newValue &= MLB_MAILBOX_SYSCONFIG_SOFT_RESET_MASK;\
+-    newValue |= data;\
+-    __raw_writel(newValue, (u32)(baseAddress)+offset);\
+-}
+-
+-#define MLBMAILBOX_SYSCONFIG_AUTO_IDLE_READ32(baseAddress)\
+-    (_DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_SYSCONFIG_AUTO_IDLE_READ32),\
+-      (((__raw_readl((((u32)(baseAddress))+\
+-      (MLB_MAILBOX_SYSCONFIG_OFFSET)))) &\
+-      MLB_MAILBOX_SYSCONFIG_AUTO_IDLE_MASK) >>\
+-      MLB_MAILBOX_SYSCONFIG_AUTO_IDLE_OFFSET))
+-
+-#define MLBMAILBOX_SYSCONFIG_AUTO_IDLE_WRITE32(baseAddress, value)\
+-{\
+-    const u32 offset = MLB_MAILBOX_SYSCONFIG_OFFSET;\
+-    register u32 data =\
+-    __raw_readl(((u32)(baseAddress))+offset);\
+-    register u32 newValue = ((u32)(value));\
+-    _DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_SYSCONFIG_AUTO_IDLE_WRITE32);\
+-    data &= ~(MLB_MAILBOX_SYSCONFIG_AUTO_IDLE_MASK);\
+-    newValue <<= MLB_MAILBOX_SYSCONFIG_AUTO_IDLE_OFFSET;\
+-    newValue &= MLB_MAILBOX_SYSCONFIG_AUTO_IDLE_MASK;\
+-    newValue |= data;\
+-    __raw_writel(newValue, (u32)(baseAddress)+offset);\
+-}
+-
+-#define MLBMAILBOX_SYSSTATUS_RESET_DONE_READ32(baseAddress)\
+-    (_DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_SYSSTATUS_RESET_DONE_READ32),\
+-      (((__raw_readl((((u32)(baseAddress))+\
+-      (MLB_MAILBOX_SYSSTATUS_OFFSET)))) &\
+-      MLB_MAILBOX_SYSSTATUS_RESET_DONE_MASK) >>\
+-      MLB_MAILBOX_SYSSTATUS_RESET_DONE_OFFSET))
+-
+-#define MLBMAILBOX_MESSAGE015_READ_REGISTER32(baseAddress, bank)\
+-    (_DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_MESSAGE015_READ_REGISTER32),\
+-      __raw_readl(((baseAddress))+\
+-      (MLB_MAILBOX_MESSAGE_REGSET015_OFFSET +\
+-      MLB_MAILBOX_MESSAGE015_OFFSET+(\
+-      (bank)*MLB_MAILBOX_MESSAGE_REGSET015_STEP))))
+-
+-#define MLBMAILBOX_MESSAGE015_WRITE_REGISTER32(baseAddress, bank, value)\
+-{\
+-    const u32 offset = MLB_MAILBOX_MESSAGE_REGSET015_OFFSET +\
+-    MLB_MAILBOX_MESSAGE015_OFFSET +\
+-    ((bank)*MLB_MAILBOX_MESSAGE_REGSET015_STEP);\
+-    register u32 newValue = ((u32)(value));\
+-    _DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_MESSAGE015_WRITE_REGISTER32);\
+-    __raw_writel(newValue, ((baseAddress))+offset);\
+-}
+-
+-#define MLBMAILBOX_FIFOSTATUS015_READ_REGISTER32(baseAddress, bank)\
+-    (_DEBUG_LEVEL1_EASI(\
+-      EASIL1_MLBMAILBOX_FIFOSTATUS015_READ_REGISTER32),\
+-      __raw_readl(((u32)(baseAddress))+\
+-      (MLB_MAILBOX_FIFOSTATUS_REGSET015_OFFSET +\
+-      MLB_MAILBOX_FIFOSTATUS015_OFFSET+\
+-      ((bank)*MLB_MAILBOX_FIFOSTATUS_REGSET015_STEP))))
+-
+-#define MLBMAILBOX_FIFOSTATUS015_FIFO_FULL_M_BM_READ32(baseAddress, bank)\
+-    (_DEBUG_LEVEL1_EASI(\
+-      EASIL1_MLBMAILBOX_FIFOSTATUS015_FIFO_FULL_M_BM_READ32),\
+-      (((__raw_readl(((baseAddress))+\
+-      (MLB_MAILBOX_FIFOSTATUS_REGSET015_OFFSET +\
+-      MLB_MAILBOX_FIFOSTATUS015_OFFSET+\
+-      ((bank)*MLB_MAILBOX_FIFOSTATUS_REGSET015_STEP)))) &\
+-      MLB_MAILBOX_FIFOSTATUS015_FIFO_FULL_M_BM_MASK) >>\
+-      MLB_MAILBOX_FIFOSTATUS015_FIFO_FULL_M_BM_OFFSET))
+-
+-#define MLBMAILBOX_MSGSTATUS015_NB_OF_MSG_M_BM_READ32(baseAddress, bank)\
+-    (_DEBUG_LEVEL1_EASI(\
+-      EASIL1_MLBMAILBOX_MSGSTATUS015_NB_OF_MSG_M_BM_READ32),\
+-      (((__raw_readl(((baseAddress))+\
+-      (MLB_MAILBOX_MSGSTATUS_REGSET015_OFFSET +\
+-      MLB_MAILBOX_MSGSTATUS015_OFFSET+\
+-      ((bank)*MLB_MAILBOX_MSGSTATUS_REGSET015_STEP)))) &\
+-      MLB_MAILBOX_MSGSTATUS015_NB_OF_MSG_M_BM_MASK) >>\
+-      MLB_MAILBOX_MSGSTATUS015_NB_OF_MSG_M_BM_OFFSET))
+-
+-#define MLBMAILBOX_IRQSTATUS03_READ_REGISTER32(baseAddress, bank)\
+-    (_DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_IRQSTATUS03_READ_REGISTER32),\
+-      __raw_readl(((baseAddress))+\
+-      (MLB_MAILBOX_IRQSTATUS_REGSET03_OFFSET +\
+-      MLB_MAILBOX_IRQSTATUS03_OFFSET+\
+-      ((bank)*MLB_MAILBOX_IRQSTATUS_REGSET03_STEP))))
+-
+-#define MLBMAILBOX_IRQSTATUS03_WRITE_REGISTER32(baseAddress, bank, value)\
+-{\
+-    const u32 offset = MLB_MAILBOX_IRQSTATUS_REGSET03_OFFSET +\
+-    MLB_MAILBOX_IRQSTATUS03_OFFSET +\
+-    ((bank)*MLB_MAILBOX_IRQSTATUS_REGSET03_STEP);\
+-    register u32 newValue = ((u32)(value));\
+-    _DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_IRQSTATUS03_WRITE_REGISTER32);\
+-    __raw_writel(newValue, ((baseAddress))+offset);\
+-}
+-
+-#define MLBMAILBOX_IRQENABLE03_READ_REGISTER32(baseAddress, bank)\
+-    (_DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_IRQENABLE03_READ_REGISTER32),\
+-      __raw_readl(((baseAddress))+\
+-      (MLB_MAILBOX_IRQENABLE_REGSET03_OFFSET +\
+-      MLB_MAILBOX_IRQENABLE03_OFFSET+\
+-       ((bank)*MLB_MAILBOX_IRQENABLE_REGSET03_STEP))))
+-
+-#define MLBMAILBOX_IRQENABLE03_WRITE_REGISTER32(baseAddress, bank, value)\
+-{\
+-    const u32 offset = MLB_MAILBOX_IRQENABLE_REGSET03_OFFSET +\
+-      MLB_MAILBOX_IRQENABLE03_OFFSET +\
+-      ((bank)*MLB_MAILBOX_IRQENABLE_REGSET03_STEP);\
+-    register u32 newValue = ((u32)(value));\
+-    _DEBUG_LEVEL1_EASI(EASIL1_MLBMAILBOX_IRQENABLE03_WRITE_REGISTER32);\
+-    __raw_writel(newValue, ((baseAddress))+offset);\
+-}
+-
+-#endif /* USE_LEVEL_1_MACROS */
+-
+-#endif /* _MLB_REG_ACM_H */
+diff --git a/drivers/dsp/bridge/hw/hw_mbox.c b/drivers/dsp/bridge/hw/hw_mbox.c
+deleted file mode 100644
+index 0e29fe7..0000000
+--- a/drivers/dsp/bridge/hw/hw_mbox.c
++++ /dev/null
+@@ -1,252 +0,0 @@
+-/*
+- * hw_mbox.c
+- *
+- * DSP-BIOS Bridge driver support functions for TI OMAP processors.
+- *
+- * Mailbox messaging & configuration API definitions
+- *
+- * Copyright (C) 2007 Texas Instruments, Inc.
+- *
+- * This package is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * THIS PACKAGE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+- */
+-
+-#include <GlobalTypes.h>
+-#include "MLBRegAcM.h"
+-#include <hw_defs.h>
+-#include <hw_mbox.h>
+-
+-/* width in bits of MBOX Id */
+-#define HW_MBOX_ID_WIDTH	   2
+-
+-/* SYSCONFIG: register bit definition */
+-#define AUTOIDLE	(1 << 0)
+-#define SMARTIDLE	(2 << 3)
+-
+-struct mailbox_context mboxsetting = {
+-	.sysconfig = SMARTIDLE | AUTOIDLE,
+-};
+-
+-hw_status hw_mbox_init_settings(void __iomem *baseAddress)
+-{
+-	MLBMAILBOX_SYSCONFIG_WRITE_REGISTER32(baseAddress,
+-					      SMARTIDLE | AUTOIDLE);
+-	return RET_OK;
+-}
+-
+-/* Saves the mailbox context */
+-hw_status hw_mbox_save_settings(void __iomem *baseAddress)
+-{
+-	hw_status status = RET_OK;
+-
+-	mboxsetting.sysconfig =
+-	    MLBMAILBOX_SYSCONFIG_READ_REGISTER32(baseAddress);
+-	/* Get current enable status */
+-	mboxsetting.irq_enable0 = MLBMAILBOX_IRQENABLE03_READ_REGISTER32
+-	    (baseAddress, HW_MBOX_U0_ARM);
+-	mboxsetting.irq_enable1 = MLBMAILBOX_IRQENABLE03_READ_REGISTER32
+-	    (baseAddress, HW_MBOX_U1_DSP1);
+-	return status;
+-}
+-
+-/* Restores the mailbox context */
+-hw_status hw_mbox_restore_settings(void __iomem *baseAddress)
+-{
+-	hw_status status = RET_OK;
+-	/* Restor IRQ enable status */
+-	MLBMAILBOX_IRQENABLE03_WRITE_REGISTER32(baseAddress, HW_MBOX_U0_ARM,
+-						mboxsetting.irq_enable0);
+-	MLBMAILBOX_IRQENABLE03_WRITE_REGISTER32(baseAddress, HW_MBOX_U1_DSP1,
+-						mboxsetting.irq_enable1);
+-	/* Restore Sysconfig register */
+-	MLBMAILBOX_SYSCONFIG_WRITE_REGISTER32(baseAddress,
+-					      mboxsetting.sysconfig);
+-	return status;
+-}
+-
+-/* Reads a u32 from the sub module message box Specified. if there are no
+- * messages in the mailbox then and error is returned. */
+-hw_status hw_mbox_msg_read(const void __iomem *baseAddress,
+-			   const hw_mbox_id_t mailBoxId, u32 * const pReadValue)
+-{
+-	hw_status status = RET_OK;
+-
+-	/* Check input parameters */
+-	CHECK_INPUT_PARAM(baseAddress, 0, RET_BAD_NULL_PARAM, RES_MBOX_BASE +
+-			  RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_PARAM(pReadValue, NULL, RET_BAD_NULL_PARAM, RES_MBOX_BASE +
+-			  RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(mailBoxId, HW_MBOX_ID_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-
+-	/* Read 32-bit message in mail box */
+-	*pReadValue = MLBMAILBOX_MESSAGE015_READ_REGISTER32(baseAddress,
+-							    (u32) mailBoxId);
+-
+-	return status;
+-}
+-
+-/* Writes a u32 from the sub module message box Specified. */
+-hw_status hw_mbox_msg_write(const void __iomem *baseAddress,
+-			    const hw_mbox_id_t mailBoxId, const u32 writeValue)
+-{
+-	hw_status status = RET_OK;
+-
+-	/* Check input parameters */
+-	CHECK_INPUT_PARAM(baseAddress, 0, RET_BAD_NULL_PARAM, RES_MBOX_BASE +
+-			  RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(mailBoxId, HW_MBOX_ID_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-
+-	/* Write 32-bit value to mailbox */
+-	MLBMAILBOX_MESSAGE015_WRITE_REGISTER32(baseAddress, (u32) mailBoxId,
+-					       (u32) writeValue);
+-
+-	return status;
+-}
+-
+-/* Gets number of messages in a specified mailbox. */
+-hw_status hw_mbox_num_msg_get(const void __iomem *baseAddress,
+-			      const hw_mbox_id_t mailBoxId, u32 * const pNumMsg)
+-{
+-	hw_status status = RET_OK;
+-
+-	/* Check input parameters */
+-	CHECK_INPUT_PARAM(baseAddress, 0, RET_BAD_NULL_PARAM, RES_MBOX_BASE +
+-			  RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_PARAM(pNumMsg, NULL, RET_BAD_NULL_PARAM, RES_MBOX_BASE +
+-			  RES_INVALID_INPUT_PARAM);
+-
+-	CHECK_INPUT_RANGE_MIN0(mailBoxId, HW_MBOX_ID_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-
+-	/* Get number of messages available for MailBox */
+-	*pNumMsg = MLBMAILBOX_MSGSTATUS015_NB_OF_MSG_M_BM_READ32(baseAddress,
+-								 (u32)
+-								 mailBoxId);
+-
+-	return status;
+-}
+-
+-/* Enables the specified IRQ. */
+-hw_status hw_mbox_event_enable(const void __iomem *baseAddress,
+-			       const hw_mbox_id_t mailBoxId,
+-			       const hw_mbox_user_id_t userId, const u32 events)
+-{
+-	hw_status status = RET_OK;
+-	u32 irq_enable_reg;
+-
+-	/* Check input parameters */
+-	CHECK_INPUT_PARAM(baseAddress, 0, RET_BAD_NULL_PARAM, RES_MBOX_BASE +
+-			  RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(mailBoxId, HW_MBOX_ID_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(enableIrq, HW_MBOX_INT_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(userId, HW_MBOX_USER_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-
+-	/* Get current enable status */
+-	irq_enable_reg = MLBMAILBOX_IRQENABLE03_READ_REGISTER32(baseAddress,
+-								(u32) userId);
+-
+-	/* update enable value */
+-	irq_enable_reg |= ((u32) (events)) << (((u32) (mailBoxId)) *
+-					       HW_MBOX_ID_WIDTH);
+-
+-	/* write new enable status */
+-	MLBMAILBOX_IRQENABLE03_WRITE_REGISTER32(baseAddress, (u32) userId,
+-						(u32) irq_enable_reg);
+-
+-	mboxsetting.sysconfig =
+-	    MLBMAILBOX_SYSCONFIG_READ_REGISTER32(baseAddress);
+-	/* Get current enable status */
+-	mboxsetting.irq_enable0 = MLBMAILBOX_IRQENABLE03_READ_REGISTER32
+-	    (baseAddress, HW_MBOX_U0_ARM);
+-	mboxsetting.irq_enable1 = MLBMAILBOX_IRQENABLE03_READ_REGISTER32
+-	    (baseAddress, HW_MBOX_U1_DSP1);
+-	return status;
+-}
+-
+-/* Disables the specified IRQ. */
+-hw_status hw_mbox_event_disable(const void __iomem *baseAddress,
+-				const hw_mbox_id_t mailBoxId,
+-				const hw_mbox_user_id_t userId,
+-				const u32 events)
+-{
+-	hw_status status = RET_OK;
+-	u32 irq_disable_reg;
+-
+-	/* Check input parameters */
+-	CHECK_INPUT_PARAM(baseAddress, 0, RET_BAD_NULL_PARAM, RES_MBOX_BASE +
+-			  RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(mailBoxId, HW_MBOX_ID_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(disableIrq, HW_MBOX_INT_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(userId, HW_MBOX_USER_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-
+-	/* Get current enable status */
+-	irq_disable_reg = MLBMAILBOX_IRQENABLE03_READ_REGISTER32(baseAddress,
+-								 (u32) userId);
+-
+-	/* update enable value */
+-	irq_disable_reg &= ~(((u32) (events)) << (((u32) (mailBoxId)) *
+-						  HW_MBOX_ID_WIDTH));
+-
+-	/* write new enable status */
+-	MLBMAILBOX_IRQENABLE03_WRITE_REGISTER32(baseAddress, (u32) userId,
+-						(u32) irq_disable_reg);
+-
+-	return status;
+-}
+-
+-/* Sets the status of the specified IRQ. */
+-hw_status hw_mbox_event_ack(const void __iomem *baseAddress,
+-			    const hw_mbox_id_t mailBoxId,
+-			    const hw_mbox_user_id_t userId, const u32 event)
+-{
+-	hw_status status = RET_OK;
+-	u32 irq_status_reg;
+-
+-	/* Check input parameters */
+-	CHECK_INPUT_PARAM(baseAddress, 0, RET_BAD_NULL_PARAM, RES_MBOX_BASE +
+-			  RES_INVALID_INPUT_PARAM);
+-
+-	CHECK_INPUT_RANGE_MIN0(irqStatus, HW_MBOX_INT_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(mailBoxId, HW_MBOX_ID_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-	CHECK_INPUT_RANGE_MIN0(userId, HW_MBOX_USER_MAX, RET_INVALID_ID,
+-			       RES_MBOX_BASE + RES_INVALID_INPUT_PARAM);
+-
+-	/* calculate status to write */
+-	irq_status_reg = ((u32) event) << (((u32) (mailBoxId)) *
+-					   HW_MBOX_ID_WIDTH);
+-
+-	/* clear Irq Status for specified mailbox/User Id */
+-	MLBMAILBOX_IRQSTATUS03_WRITE_REGISTER32(baseAddress, (u32) userId,
+-						(u32) irq_status_reg);
+-
+-	/*
+-	 * FIXME: Replace all this custom register access with standard
+-	 * __raw_read/write().
+-	 *
+-	 * FIXME: Replace all interrupt handlers with standard linux style
+-	 * interrupt handlers.
+-	 *
+-	 * FIXME: Replace direct access to PRCM registers with omap standard
+-	 * PRCM register access.
+-	 *
+-	 * Flush posted write for the irq status to avoid spurious interrupts.
+-	 */
+-	MLBMAILBOX_IRQSTATUS03_READ_REGISTER32(baseAddress, (u32) userId);
+-
+-	return status;
+-}
+diff --git a/drivers/dsp/bridge/hw/hw_mbox.h b/drivers/dsp/bridge/hw/hw_mbox.h
+deleted file mode 100644
+index 58f065d..0000000
+--- a/drivers/dsp/bridge/hw/hw_mbox.h
++++ /dev/null
+@@ -1,326 +0,0 @@
+-/*
+- * hw_mbox.h
+- *
+- * DSP-BIOS Bridge driver support functions for TI OMAP processors.
+- *
+- * HW Mailbox API and types definitions
+- *
+- * Copyright (C) 2007 Texas Instruments, Inc.
+- *
+- * This package is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * THIS PACKAGE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+- */
+-
+-#ifndef _MBOX_H
+-#define _MBOX_H
+-
+-/* Bitmasks for Mailbox interrupt sources */
+-#define HW_MBOX_INT_NEW_MSG    0x1
+-#define HW_MBOX_INT_NOT_FULL   0x2
+-#define HW_MBOX_INT_ALL	0x3
+-
+-/* Maximum number of messages that mailbox can hald at a time. */
+-#define HW_MBOX_MAX_NUM_MESSAGES   4
+-
+-/* hw_mbox_id_t: Enumerated Type used to specify Mailbox Sub Module Id Number */
+-typedef enum hw_mbox_id_label {
+-	HW_MBOX_ID0,
+-	HW_MBOX_ID1,
+-	HW_MBOX_ID2,
+-	HW_MBOX_ID3,
+-	HW_MBOX_ID4,
+-	HW_MBOX_ID5
+-} hw_mbox_id_t, *phw_mbox_id_t;
+-
+-/* hw_mbox_user_id_t:  Enumerated Type used to specify Mail box User Id */
+-typedef enum hw_mbox_user_id_label {
+-	HW_MBOX_U0_ARM,
+-	HW_MBOX_U1_DSP1,
+-	HW_MBOX_U2_DSP2,
+-	HW_MBOX_U3_ARM
+-} hw_mbox_user_id_t, *phw_mbox_user_id_t;
+-
+-/* Mailbox context settings */
+-struct mailbox_context {
+-	u32 sysconfig;
+-	u32 irq_enable0;
+-	u32 irq_enable1;
+-};
+-
+-/*
+- * FUNCTION      : hw_mbox_msg_read
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *   Description : Base Address of instance of Mailbox module
+- *
+- *   Identifier  : mailBoxId
+- *   Type	: const hw_mbox_id_t
+- *   Description : Mail Box Sub module Id to read
+- *
+- * OUTPUTS:
+- *
+- *   Identifier  : pReadValue
+- *   Type	: u32 *const
+- *   Description : Value read from MailBox
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  Address/ptr Paramater was set to 0/NULL
+- *		 RET_INVALID_ID      Invalid Id used
+- *		 RET_EMPTY	   Mailbox empty
+- *
+- * PURPOSE:      : this function reads a u32 from the sub module message
+- *		 box Specified. if there are no messages in the mailbox
+- *		 then and error is returned.
+- */
+-extern hw_status hw_mbox_msg_read(const void __iomem *baseAddress,
+-				  const hw_mbox_id_t mailBoxId,
+-				  u32 * const pReadValue);
+-
+-/*
+- * FUNCTION      : hw_mbox_msg_write
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *   Description : Base Address of instance of Mailbox module
+- *
+- *   Identifier  : mailBoxId
+- *   Type	: const hw_mbox_id_t
+- *   Description : Mail Box Sub module Id to write
+- *
+- *   Identifier  : writeValue
+- *   Type	: const u32
+- *   Description : Value to write to MailBox
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  Address/pointer Paramater was set to 0/NULL
+- *		 RET_INVALID_ID      Invalid Id used
+- *
+- * PURPOSE:      : this function writes a u32 from the sub module message
+- *		 box Specified.
+- */
+-extern hw_status hw_mbox_msg_write(const void __iomem *baseAddress,
+-				   const hw_mbox_id_t mailBoxId,
+-				   const u32 writeValue);
+-
+-/*
+- * FUNCTION      : hw_mbox_num_msg_get
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *   Description : Base Address of instance of Mailbox module
+- *
+- *   Identifier  : mailBoxId
+- *   Type	: const hw_mbox_id_t
+- *   Description : Mail Box Sub module Id to get num messages
+- *
+- * OUTPUTS:
+- *
+- *   Identifier  : pNumMsg
+- *   Type	: u32 *const
+- *   Description : Number of messages in mailbox
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  Address/pointer Paramater was set to 0/NULL
+- *		 RET_INVALID_ID      Inavlid ID input at parameter
+- *
+- * PURPOSE:      : this function gets number of messages in a specified mailbox.
+- */
+-extern hw_status hw_mbox_num_msg_get(const void __iomem *baseAddress,
+-				     const hw_mbox_id_t mailBoxId,
+-				     u32 * const pNumMsg);
+-
+-/*
+- * FUNCTION      : hw_mbox_event_enable
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *		 RET_BAD_NULL_PARAM  Address/pointer Paramater was set to 0/NULL
+- *
+- *   Identifier  : mailBoxId
+- *   Type	: const hw_mbox_id_t
+- *   Description : Mail Box Sub module Id to enable
+- *
+- *   Identifier  : userId
+- *   Type	: const hw_mbox_user_id_t
+- *   Description : Mail box User Id to enable
+- *
+- *   Identifier  : enableIrq
+- *   Type	: const u32
+- *   Description : Irq value to enable
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  A Pointer Paramater was set to NULL
+- *		 RET_INVALID_ID      Invalid Id used
+- *
+- * PURPOSE:      : this function enables the specified IRQ.
+- */
+-extern hw_status hw_mbox_event_enable(const void __iomem *baseAddress,
+-				      const hw_mbox_id_t mailBoxId,
+-				      const hw_mbox_user_id_t userId,
+-				      const u32 events);
+-
+-/*
+- * FUNCTION      : hw_mbox_event_disable
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *		 RET_BAD_NULL_PARAM  Address/pointer Paramater was set to 0/NULL
+- *
+- *   Identifier  : mailBoxId
+- *   Type	: const hw_mbox_id_t
+- *   Description : Mail Box Sub module Id to disable
+- *
+- *   Identifier  : userId
+- *   Type	: const hw_mbox_user_id_t
+- *   Description : Mail box User Id to disable
+- *
+- *   Identifier  : enableIrq
+- *   Type	: const u32
+- *   Description : Irq value to disable
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  A Pointer Paramater was set to NULL
+- *		 RET_INVALID_ID      Invalid Id used
+- *
+- * PURPOSE:      : this function disables the specified IRQ.
+- */
+-extern hw_status hw_mbox_event_disable(const void __iomem *baseAddress,
+-				       const hw_mbox_id_t mailBoxId,
+-				       const hw_mbox_user_id_t userId,
+-				       const u32 events);
+-
+-/*
+- * FUNCTION      : hw_mbox_event_ack
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *   Description : Base Address of instance of Mailbox module
+- *
+- *   Identifier  : mailBoxId
+- *   Type	: const hw_mbox_id_t
+- *   Description : Mail Box Sub module Id to set
+- *
+- *   Identifier  : userId
+- *   Type	: const hw_mbox_user_id_t
+- *   Description : Mail box User Id to set
+- *
+- *   Identifier  : irqStatus
+- *   Type	: const u32
+- *   Description : The value to write IRQ status
+- *
+- * OUTPUTS:
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  Address Paramater was set to 0
+- *		 RET_INVALID_ID      Invalid Id used
+- *
+- * PURPOSE:      : this function sets the status of the specified IRQ.
+- */
+-extern hw_status hw_mbox_event_ack(const void __iomem *baseAddress,
+-				   const hw_mbox_id_t mailBoxId,
+-				   const hw_mbox_user_id_t userId,
+-				   const u32 event);
+-
+-/*
+- * FUNCTION      : hw_mbox_init_settings
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *   Description : Base Address of instance of Mailbox module
+- *
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  Address/pointer Paramater was set to 0/NULL
+- *		 RET_INVALID_ID      Invalid Id used
+- *		 RET_EMPTY	   Mailbox empty
+- *
+- * PURPOSE:      : This function initialize the mailbox configuration.
+- */
+-extern hw_status hw_mbox_init_settings(void __iomem *baseAddres);
+-
+-/*
+- * FUNCTION      : hw_mbox_save_settings
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *   Description : Base Address of instance of Mailbox module
+- *
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  Address/pointer Paramater was set to 0/NULL
+- *		 RET_INVALID_ID      Invalid Id used
+- *		 RET_EMPTY	   Mailbox empty
+- *
+- * PURPOSE:      : this function saves the context of mailbox
+- */
+-extern hw_status hw_mbox_save_settings(void __iomem *baseAddres);
+-
+-/*
+- * FUNCTION      : hw_mbox_restore_settings
+- *
+- * INPUTS:
+- *
+- *   Identifier  : baseAddress
+- *   Type	: const u32
+- *   Description : Base Address of instance of Mailbox module
+- *
+- *
+- * RETURNS:
+- *
+- *   Type	: return_code_t
+- *   Description : RET_OK	      No errors occured
+- *		 RET_BAD_NULL_PARAM  Address/pointer Paramater was set to 0/NULL
+- *		 RET_INVALID_ID      Invalid Id used
+- *		 RET_EMPTY	   Mailbox empty
+- *
+- * PURPOSE:      : this function restores the context of mailbox
+- */
+-extern hw_status hw_mbox_restore_settings(void __iomem *baseAddres);
+-
+-#endif /* _MBOX_H */
+-- 
+1.7.0.4
+

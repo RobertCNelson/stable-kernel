@@ -1,0 +1,51 @@
+From d44b5f6b828ea0b285e3d6cd54f8a6d97a0be7a1 Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:14 -0500
+Subject: [PATCH 046/135] DSPBRIDGE: replace error code DSP_EDIRECTION for -EPERM
+
+This patch replaces DSP_EDIRECTION with -EPERM.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/strm.h |    2 +-
+ drivers/dsp/bridge/rmgr/strm.c              |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/strm.h b/arch/arm/plat-omap/include/dspbridge/strm.h
+index a67ddb3..ccdffbb 100644
+--- a/arch/arm/plat-omap/include/dspbridge/strm.h
++++ b/arch/arm/plat-omap/include/dspbridge/strm.h
+@@ -259,7 +259,7 @@ extern dsp_status strm_issue(struct strm_object *hStrm, IN u8 * pbuf,
+  *  Returns:
+  *      DSP_SOK:        Success.
+  *      DSP_EHANDLE:    Invalid hnode.
+- *      DSP_EDIRECTION: Invalid dir.
++ *      -EPERM: Invalid dir.
+  *      DSP_EVALUE:     Invalid index.
+  *      DSP_ENODETYPE:  hnode is not a task or DAIS socket node.
+  *      -EPERM:      Unable to open stream.
+diff --git a/drivers/dsp/bridge/rmgr/strm.c b/drivers/dsp/bridge/rmgr/strm.c
+index 9263ac2..81f10bd 100644
+--- a/drivers/dsp/bridge/rmgr/strm.c
++++ b/drivers/dsp/bridge/rmgr/strm.c
+@@ -492,7 +492,7 @@ dsp_status strm_open(struct node_object *hnode, u32 dir, u32 index,
+ 	DBC_REQUIRE(pattr != NULL);
+ 	*phStrm = NULL;
+ 	if (dir != DSP_TONODE && dir != DSP_FROMNODE) {
+-		status = DSP_EDIRECTION;
++		status = -EPERM;
+ 	} else {
+ 		/* Get the channel id from the node (set in node_connect()) */
+ 		status = node_get_channel_id(hnode, dir, index, &ul_chnl_id);
+@@ -610,7 +610,7 @@ func_cont:
+ 	DBC_ENSURE((DSP_SUCCEEDED(status) &&
+ 		    MEM_IS_VALID_HANDLE((*phStrm), STRM_SIGNATURE)) ||
+ 		   (*phStrm == NULL && (status == DSP_EHANDLE ||
+-					status == DSP_EDIRECTION
++					status == -EPERM
+ 					|| status == DSP_EVALUE
+ 					|| status == -EPERM)));
+ 
+-- 
+1.7.0.4
+

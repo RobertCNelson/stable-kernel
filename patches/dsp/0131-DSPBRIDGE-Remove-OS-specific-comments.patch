@@ -1,0 +1,175 @@
+From 3c67d19da7a06e30f5814be338169f38fd0c37a8 Mon Sep 17 00:00:00 2001
+From: Omar Ramirez Luna <omar.ramirez@ti.com>
+Date: Fri, 30 Apr 2010 18:20:01 -0500
+Subject: [PATCH 131/135] DSPBRIDGE: Remove OS specific comments
+
+As this is generic to Linux, remove obvious references to
+this and other OS.
+
+Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/dev.h     |   14 +++++++-------
+ arch/arm/plat-omap/include/dspbridge/dspdefs.h |    4 ++--
+ arch/arm/plat-omap/include/dspbridge/mgr.h     |    2 +-
+ drivers/dsp/bridge/core/chnl_sm.c              |    2 +-
+ drivers/dsp/bridge/core/tiomap3430.c           |    6 ++----
+ drivers/dsp/bridge/rmgr/drv.c                  |    4 ++--
+ 6 files changed, 15 insertions(+), 17 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/dev.h b/arch/arm/plat-omap/include/dspbridge/dev.h
+index 5e753ae..aa79064 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dev.h
++++ b/arch/arm/plat-omap/include/dspbridge/dev.h
+@@ -72,7 +72,7 @@ extern u32 dev_brd_write_fxn(void *pArb,
+  *                      to the WMD when bridge_dev_create() is called.
+  *      pDspConfig:     DSP resources, to be passed down to the WMD when
+  *                      bridge_dev_create() is called.
+- *      dev_node_obj:       Platform (Windows) specific device node.
++ *      dev_node_obj:       Platform specific device node.
+  *  Returns:
+  *      DSP_SOK:            Module is loaded, device object has been created
+  *      -ENOMEM:        Insufficient memory to create needed resources.
+@@ -114,7 +114,7 @@ extern dsp_status dev_create_device(OUT struct dev_object
+  *                      to the WMD when bridge_dev_create() is called.
+  *      pDspConfig:     DSP resources, to be passed down to the WMD when
+  *                      bridge_dev_create() is called.
+- *      dev_node_obj:       Platform (Windows) specific device node.
++ *      dev_node_obj:       Platform specific device node.
+  *  Returns:
+  *      DSP_SOK:            Module is loaded, device object has been created
+  *      -ENOMEM:        Insufficient memory to create needed resources.
+@@ -320,7 +320,7 @@ extern dsp_status dev_get_deh_mgr(struct dev_object *hdev_obj,
+  *                      dev_create_device().
+  *      phDevNode:      Ptr to location to get the device node handle.
+  *  Returns:
+- *      DSP_SOK:        In Win95, returns a DEVNODE in *dev_node_obj; In NT, ???
++ *      DSP_SOK:        Returns a DEVNODE in *dev_node_obj.
+  *      -EFAULT:    Invalid hdev_obj.
+  *  Requires:
+  *      phDevNode != NULL.
+@@ -695,10 +695,10 @@ extern void dev_set_msg_mgr(struct dev_object *hdev_obj, struct msg_mgr *hmgr);
+ /*
+  *  ======== dev_start_device ========
+  *  Purpose:
+- *      Initializes the new device with the WinBRIDGE environment.  This
+- *      involves querying CM for allocated resources, querying the registry
+- *      for necessary dsp resources (requested in the INF file), and using
+- *      this information to create a WinBRIDGE device object.
++ *      Initializes the new device with bridge environment.  This involves
++ *      querying CM for allocated resources, querying the registry for
++ *      necessary dsp resources (requested in the INF file), and using this
++ *      information to create a bridge device object.
+  *  Parameters:
+  *      dev_node_obj:       Device node as it is know to OS.
+  *  Returns:
+diff --git a/arch/arm/plat-omap/include/dspbridge/dspdefs.h b/arch/arm/plat-omap/include/dspbridge/dspdefs.h
+index 804fe98..0b6000c 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dspdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/dspdefs.h
+@@ -653,7 +653,7 @@ typedef dsp_status(*fxn_chnl_registernotify)
+  *  Parameters:
+  *      phDevContext:   Ptr to location to store a WMD device context.
+  *      hdev_obj:     Handle to a Device Object, created and managed by WCD.
+- *      pConfig:        Ptr to configuration parameters provided by the Windows
++ *      pConfig:        Ptr to configuration parameters provided by the
+  *                      Configuration Manager during device loading.
+  *      pDspConfig:     DSP resources, as specified in the registry key for this
+  *                      device.
+@@ -1126,7 +1126,7 @@ struct bridge_drv_interface {
+  *      ppDrvInterface pointer initialized to WMD's function interface.
+  *      No system resources are acquired by this function.
+  *  Details:
+- *      Win95: Called during the Device_Init phase.
++ *      Called during the Device_Init phase.
+  */
+ void bridge_drv_entry(OUT struct bridge_drv_interface **ppDrvInterface,
+ 		   IN CONST char *driver_file_name);
+diff --git a/arch/arm/plat-omap/include/dspbridge/mgr.h b/arch/arm/plat-omap/include/dspbridge/mgr.h
+index f0b9f4a..1b42e84 100644
+--- a/arch/arm/plat-omap/include/dspbridge/mgr.h
++++ b/arch/arm/plat-omap/include/dspbridge/mgr.h
+@@ -50,7 +50,7 @@ dsp_status mgr_wait_for_bridge_events(struct dsp_notification
+  *      There is only one Manager Object in the DSP/BIOS Bridge.
+  *  Parameters:
+  *      phMgrObject:    Location to store created MGR Object handle.
+- *      dev_node_obj:       Device object as known to Windows system.
++ *      dev_node_obj:       Device object as known to the system.
+  *  Returns:
+  *      DSP_SOK:        Success
+  *      -ENOMEM:    Failed to Create the Object
+diff --git a/drivers/dsp/bridge/core/chnl_sm.c b/drivers/dsp/bridge/core/chnl_sm.c
+index bb2dd7b..0515edd 100644
+--- a/drivers/dsp/bridge/core/chnl_sm.c
++++ b/drivers/dsp/bridge/core/chnl_sm.c
+@@ -853,7 +853,7 @@ dsp_status bridge_chnl_open(OUT struct chnl_object **phChnl,
+ 			pchnl->chnl_mgr_obj = chnl_mgr_obj;
+ 			pchnl->chnl_id = uChnlId;
+ 			pchnl->chnl_mode = chnl_mode;
+-			pchnl->user_event = sync_event;	/* for Linux */
++			pchnl->user_event = sync_event;
+ 			pchnl->sync_event = sync_event;
+ 			/* Get the process handle */
+ 			pchnl->process = current->tgid;
+diff --git a/drivers/dsp/bridge/core/tiomap3430.c b/drivers/dsp/bridge/core/tiomap3430.c
+index 97a28ca..c7b0d83 100644
+--- a/drivers/dsp/bridge/core/tiomap3430.c
++++ b/drivers/dsp/bridge/core/tiomap3430.c
+@@ -941,7 +941,7 @@ static dsp_status bridge_dev_create(OUT struct bridge_dev_context
+ 
+ 		/* Set the Clock Divisor for the DSP module */
+ 		udelay(5);
+-		/* 24xx-Linux MMU address is obtained from the host
++		/* MMU address is obtained from the host
+ 		 * resources struct */
+ 		dev_context->dw_dsp_mmu_base = resources->dw_dmmu_base;
+ 	}
+@@ -1393,7 +1393,6 @@ static dsp_status bridge_brd_mem_map(struct bridge_dev_context *hDevContext,
+ 	}
+ 	up_read(&mm->mmap_sem);
+ func_cont:
+-	/* Don't propogate Linux or HW status to upper layers */
+ 	if (DSP_SUCCEEDED(status)) {
+ 		status = DSP_SOK;
+ 	} else {
+@@ -1621,7 +1620,7 @@ EXIT_LOOP:
+ /*
+  *  ======== user_va2_pa ========
+  *  Purpose:
+- *      This function walks through the Linux page tables to convert a userland
++ *      This function walks through the page tables to convert a userland
+  *      virtual address to physical address
+  */
+ static u32 user_va2_pa(struct mm_struct *mm, u32 address)
+@@ -1854,7 +1853,6 @@ static dsp_status mem_map_vmalloc(struct bridge_dev_context *dev_context,
+ 				    hw_attrs);
+ 		va_curr += size_curr;
+ 	}
+-	/* Don't propogate Linux or HW status to upper layers */
+ 	if (DSP_SUCCEEDED(status))
+ 		status = DSP_SOK;
+ 	else
+diff --git a/drivers/dsp/bridge/rmgr/drv.c b/drivers/dsp/bridge/rmgr/drv.c
+index 931576f..a8e711a 100644
+--- a/drivers/dsp/bridge/rmgr/drv.c
++++ b/drivers/dsp/bridge/rmgr/drv.c
+@@ -842,7 +842,7 @@ static dsp_status request_bridge_resources(struct cfg_hostres *res)
+ 	 * internal memory TODO Do a ioremap here */
+ 	/* Second window is for DSP external memory shared with MPU */
+ 
+-	/* For Linux, these are hard-coded values */
++	/* These are hard-coded values */
+ 	host_res->birq_registers = 0;
+ 	host_res->birq_attrib = 0;
+ 	host_res->dw_offset_for_monitor = 0;
+@@ -926,7 +926,7 @@ dsp_status drv_request_bridge_res_dsp(void **phost_resources)
+ 			}
+ 		}
+ 		if (DSP_SUCCEEDED(status)) {
+-			/* for Linux, these are hard-coded values */
++			/* These are hard-coded values */
+ 			host_res->birq_registers = 0;
+ 			host_res->birq_attrib = 0;
+ 			host_res->dw_offset_for_monitor = 0;
+-- 
+1.7.0.4
+

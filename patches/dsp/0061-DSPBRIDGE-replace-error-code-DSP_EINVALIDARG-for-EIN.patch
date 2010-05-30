@@ -1,0 +1,478 @@
+From e61c396dc2da46f01806cf9c3795644877d4c16c Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:48 -0500
+Subject: [PATCH 061/135] DSPBRIDGE: replace error code DSP_EINVALIDARG for -EINVAL
+
+This patch replaces DSP_EINVALIDARG with -EINVAL.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/_dcd.h |    2 +-
+ arch/arm/plat-omap/include/dspbridge/chnl.h |    2 +-
+ arch/arm/plat-omap/include/dspbridge/cmm.h  |    8 ++++----
+ arch/arm/plat-omap/include/dspbridge/dev.h  |    2 +-
+ arch/arm/plat-omap/include/dspbridge/mgr.h  |    4 ++--
+ arch/arm/plat-omap/include/dspbridge/ntfy.h |    2 +-
+ arch/arm/plat-omap/include/dspbridge/pwr.h  |    2 +-
+ arch/arm/plat-omap/include/dspbridge/wmd.h  |    2 +-
+ drivers/dsp/bridge/pmgr/chnl.c              |    2 +-
+ drivers/dsp/bridge/pmgr/cmm.c               |    4 ++--
+ drivers/dsp/bridge/pmgr/cod.c               |    2 +-
+ drivers/dsp/bridge/pmgr/wcd.c               |   18 +++++++++---------
+ drivers/dsp/bridge/rmgr/dbdcd.c             |    2 +-
+ drivers/dsp/bridge/rmgr/drv_interface.c     |    2 +-
+ drivers/dsp/bridge/rmgr/mgr.c               |    2 +-
+ drivers/dsp/bridge/rmgr/node.c              |    2 +-
+ drivers/dsp/bridge/rmgr/pwr.c               |    4 ++--
+ drivers/dsp/bridge/rmgr/strm.c              |    2 +-
+ drivers/dsp/bridge/services/cfg.c           |    4 ++--
+ drivers/dsp/bridge/wmd/chnl_sm.c            |    4 ++--
+ drivers/dsp/bridge/wmd/tiomap3430.c         |    6 +++---
+ drivers/dsp/bridge/wmd/tiomap3430_pwr.c     |    2 +-
+ 22 files changed, 40 insertions(+), 40 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/_dcd.h b/arch/arm/plat-omap/include/dspbridge/_dcd.h
+index 9500594..ec01aab 100644
+--- a/arch/arm/plat-omap/include/dspbridge/_dcd.h
++++ b/arch/arm/plat-omap/include/dspbridge/_dcd.h
+@@ -31,7 +31,7 @@
+  *      args:       Argument structure.
+  *      pResult:
+  *  Returns:
+- *      DSP_SOK if command called; DSP_EINVALIDARG if command not in IOCTL
++ *      DSP_SOK if command called; -EINVAL if command not in IOCTL
+  *      table.
+  *  Requires:
+  *  Ensures:
+diff --git a/arch/arm/plat-omap/include/dspbridge/chnl.h b/arch/arm/plat-omap/include/dspbridge/chnl.h
+index 7814747..25fcf4a 100644
+--- a/arch/arm/plat-omap/include/dspbridge/chnl.h
++++ b/arch/arm/plat-omap/include/dspbridge/chnl.h
+@@ -61,7 +61,7 @@ extern dsp_status chnl_close(struct chnl_object *chnl_obj);
+  *  Returns:
+  *      DSP_SOK:                Success;
+  *      DSP_EHANDLE:            hdev_obj is invalid.
+- *      DSP_EINVALIDARG:        max_channels is 0.
++ *      -EINVAL:        max_channels is 0.
+  *      -ENOMEM:            Insufficient memory for requested resources.
+  *      CHNL_E_ISR:             Unable to plug channel ISR for configured IRQ.
+  *      CHNL_E_MAXCHANNELS:     This manager cannot handle this many channels.
+diff --git a/arch/arm/plat-omap/include/dspbridge/cmm.h b/arch/arm/plat-omap/include/dspbridge/cmm.h
+index 3565729..75a03fa 100644
+--- a/arch/arm/plat-omap/include/dspbridge/cmm.h
++++ b/arch/arm/plat-omap/include/dspbridge/cmm.h
+@@ -176,7 +176,7 @@ extern dsp_status cmm_get_handle(void *hprocessor,
+  *  Returns:
+  *      DSP_SOK:        Success.
+  *      DSP_EHANDLE:    Invalid handle.
+- *      DSP_EINVALIDARG Invalid input argument.
++ *      -EINVAL Invalid input argument.
+  *  Requires:
+  *  Ensures:
+  *
+@@ -214,7 +214,7 @@ extern bool cmm_init(void);
+  *  Returns:
+  *      DSP_SOK:         Success.
+  *      DSP_EHANDLE:     Invalid hcmm_mgr handle.
+- *      DSP_EINVALIDARG: Invalid input argument.
++ *      -EINVAL: Invalid input argument.
+  *      -EPERM:       Unable to register.
+  *      - On success *pulSegId is a valid SM segment ID.
+  *  Requires:
+@@ -245,7 +245,7 @@ extern dsp_status cmm_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+  *  Returns:
+  *       DSP_SOK:         Success.
+  *       DSP_EHANDLE:     Invalid handle.
+- *       DSP_EINVALIDARG: Invalid ul_seg_id.
++ *       -EINVAL: Invalid ul_seg_id.
+  *       -EPERM:       Unable to unregister for unknown reason.
+  *  Requires:
+  *  Ensures:
+@@ -286,7 +286,7 @@ extern void *cmm_xlator_alloc_buf(struct cmm_xlatorobject *xlator,
+  *     pXlatorAttrs:   Translator attributes used for the client NODE or STREAM.
+  *  Returns:
+  *     DSP_SOK:            Success.
+- *     DSP_EINVALIDARG:    Bad input Attrs.
++ *     -EINVAL:    Bad input Attrs.
+  *     -ENOMEM:   Insufficient memory(local) for requested resources.
+  *  Requires:
+  *     phXlator != NULL
+diff --git a/arch/arm/plat-omap/include/dspbridge/dev.h b/arch/arm/plat-omap/include/dspbridge/dev.h
+index 4d6c7d4..0d655fe 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dev.h
++++ b/arch/arm/plat-omap/include/dspbridge/dev.h
+@@ -640,7 +640,7 @@ extern dsp_status dev_remove_proc_object(struct dev_object
+  *      ulStatus:    A status word, most likely a BRD_STATUS.
+  *  Returns:
+  *      DSP_SOK:     All registered clients were asynchronously notified.
+- *      DSP_EINVALIDARG:   Invalid hdev_obj.
++ *      -EINVAL:   Invalid hdev_obj.
+  *  Requires:
+  *      DEV Initialized.
+  *  Ensures:
+diff --git a/arch/arm/plat-omap/include/dspbridge/mgr.h b/arch/arm/plat-omap/include/dspbridge/mgr.h
+index d141c5b..db28575 100644
+--- a/arch/arm/plat-omap/include/dspbridge/mgr.h
++++ b/arch/arm/plat-omap/include/dspbridge/mgr.h
+@@ -102,7 +102,7 @@ extern dsp_status mgr_destroy(struct mgr_object *hmgr_obj);
+  *                          in the database will be returned.
+  *  Returns:
+  *      DSP_SOK:            Success.
+- *      DSP_EINVALIDARG:    Parameter node_id is > than the number of nodes.
++ *      -EINVAL:    Parameter node_id is > than the number of nodes.
+  *                          configutred in the system
+  *      DSP_ECHANGEDURINGENUM:  During Enumeration there has been a change in
+  *                              the number of nodes configured or in the
+@@ -136,7 +136,7 @@ extern dsp_status mgr_enum_node_info(u32 node_id,
+  *                          in the database will be returned
+  *  Returns:
+  *      DSP_SOK:            Success.
+- *      DSP_EINVALIDARG:    Parameter processor_id is > than the number of
++ *      -EINVAL:    Parameter processor_id is > than the number of
+  *                          DSP Processors in the system.
+  *      -EPERM:          Failed to querry the Node Data Base
+  *  Requires:
+diff --git a/arch/arm/plat-omap/include/dspbridge/ntfy.h b/arch/arm/plat-omap/include/dspbridge/ntfy.h
+index 5af4d17..abcf62e 100644
+--- a/arch/arm/plat-omap/include/dspbridge/ntfy.h
++++ b/arch/arm/plat-omap/include/dspbridge/ntfy.h
+@@ -165,7 +165,7 @@ static  inline dsp_status ntfy_register(struct ntfy_object *ntfy_obj,
+ 		goto func_end;
+ 	}
+ 	if (!event) {
+-		status = DSP_EINVALIDARG;
++		status = -EINVAL;
+ 		goto func_end;
+ 	}
+ 	ne = ntfy_event_create(event, type);
+diff --git a/arch/arm/plat-omap/include/dspbridge/pwr.h b/arch/arm/plat-omap/include/dspbridge/pwr.h
+index 1001adc..e65e4b0 100644
+--- a/arch/arm/plat-omap/include/dspbridge/pwr.h
++++ b/arch/arm/plat-omap/include/dspbridge/pwr.h
+@@ -40,7 +40,7 @@
+  *  Returns:
+  *      DSP_SOK:            Success.
+  *      DSP_SALREADYASLEEP: Success, but the DSP was already asleep.
+- *      DSP_EINVALIDARG:    The specified sleepCode is not supported.
++ *      -EINVAL:    The specified sleepCode is not supported.
+  *      -ETIME:       A timeout occured while waiting for DSP sleep
+  *                          confirmation.
+  *      -EPERM:          General failure, unable to send sleep command to
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmd.h b/arch/arm/plat-omap/include/dspbridge/wmd.h
+index e691cbb..406d063 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmd.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmd.h
+@@ -391,7 +391,7 @@ typedef void (*fxn_deh_notify) (struct deh_mgr *hdeh_mgr,
+  *      DSP_SOK:                Success.
+  *      DSP_EHANDLE:            hchnl_mgr is invalid.
+  *      -ENOMEM:            Insufficient memory for requested resources.
+- *      DSP_EINVALIDARG:        Invalid number of IOReqs.
++ *      -EINVAL:        Invalid number of IOReqs.
+  *      CHNL_E_OUTOFSTREAMS:    No free channels available.
+  *      CHNL_E_BADCHANID:       Channel ID is out of range.
+  *      -EALREADY:        Channel is in use.
+diff --git a/drivers/dsp/bridge/pmgr/chnl.c b/drivers/dsp/bridge/pmgr/chnl.c
+index 66f59ce..3081590 100644
+--- a/drivers/dsp/bridge/pmgr/chnl.c
++++ b/drivers/dsp/bridge/pmgr/chnl.c
+@@ -72,7 +72,7 @@ dsp_status chnl_create(OUT struct chnl_mgr **phChnlMgr,
+ 	    (pMgrAttrs->max_channels <= CHNL_MAXCHANNELS))
+ 		status = DSP_SOK;
+ 	else if (pMgrAttrs->max_channels == 0)
+-		status = DSP_EINVALIDARG;
++		status = -EINVAL;
+ 	else
+ 		status = CHNL_E_MAXCHANNELS;
+ 
+diff --git a/drivers/dsp/bridge/pmgr/cmm.c b/drivers/dsp/bridge/pmgr/cmm.c
+index 5fb5a3a..1cd083c 100644
+--- a/drivers/dsp/bridge/pmgr/cmm.c
++++ b/drivers/dsp/bridge/pmgr/cmm.c
+@@ -584,7 +584,7 @@ dsp_status cmm_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+ 	/* Check if input ul_size is big enough to alloc at least one block */
+ 	if (DSP_SUCCEEDED(status)) {
+ 		if (ul_size < cmm_mgr_obj->ul_min_block_size) {
+-			status = DSP_EINVALIDARG;
++			status = -EINVAL;
+ 			goto func_end;
+ 		}
+ 	}
+@@ -698,7 +698,7 @@ dsp_status cmm_un_register_gppsm_seg(struct cmm_object *hcmm_mgr,
+ 				ul_id++;
+ 			}	/* end while */
+ 		} else {
+-			status = DSP_EINVALIDARG;
++			status = -EINVAL;
+ 		}
+ 	} else {
+ 		status = DSP_EHANDLE;
+diff --git a/drivers/dsp/bridge/pmgr/cod.c b/drivers/dsp/bridge/pmgr/cod.c
+index 468c938..b994807 100644
+--- a/drivers/dsp/bridge/pmgr/cod.c
++++ b/drivers/dsp/bridge/pmgr/cod.c
+@@ -154,7 +154,7 @@ static s32 cod_f_read(void __user *pbuffer, s32 size, s32 cCount,
+ 		return dw_bytes_read / size;
+ 	}
+ 
+-	return DSP_EINVALIDARG;
++	return -EINVAL;
+ }
+ 
+ static s32 cod_f_seek(struct file *filp, s32 lOffset, s32 cOrigin)
+diff --git a/drivers/dsp/bridge/pmgr/wcd.c b/drivers/dsp/bridge/pmgr/wcd.c
+index 97a55a7..55dd269 100644
+--- a/drivers/dsp/bridge/pmgr/wcd.c
++++ b/drivers/dsp/bridge/pmgr/wcd.c
+@@ -503,7 +503,7 @@ u32 mgrwrap_register_object(union Trapped_Args *args, void *pr_ctxt)
+ 	}
+ 
+ 	if (args->args_mgr_registerobject.obj_type >= DSP_DCDMAXOBJTYPE)
+-		return DSP_EINVALIDARG;
++		return -EINVAL;
+ 
+ 	status = dcd_register_object(&uuid_obj,
+ 				     args->args_mgr_registerobject.obj_type,
+@@ -545,7 +545,7 @@ u32 mgrwrap_wait_for_bridge_events(union Trapped_Args *args, void *pr_ctxt)
+ 	u32 count = args->args_mgr_wait.count;
+ 
+ 	if (count > MAX_EVENTS)
+-		status = DSP_EINVALIDARG;
++		status = -EINVAL;
+ 
+ 	/* get the array of pointers to user structures */
+ 	CP_FM_USR(anotifications, args->args_mgr_wait.anotifications,
+@@ -686,7 +686,7 @@ u32 procwrap_flush_memory(union Trapped_Args *args, void *pr_ctxt)
+ 
+ 	if (args->args_proc_flushmemory.ul_flags >
+ 	    PROC_WRITEBACK_INVALIDATE_MEM)
+-		return DSP_EINVALIDARG;
++		return -EINVAL;
+ 
+ 	status = proc_flush_memory(args->args_proc_flushmemory.hprocessor,
+ 				   args->args_proc_flushmemory.pmpu_addr,
+@@ -794,7 +794,7 @@ u32 procwrap_load(union Trapped_Args *args, void *pr_ctxt)
+ 	u8 **argv = NULL, **envp = NULL;
+ 
+ 	if (count <= 0 || count > MAX_LOADARGS) {
+-		status = DSP_EINVALIDARG;
++		status = -EINVAL;
+ 		goto func_cont;
+ 	}
+ 
+@@ -916,7 +916,7 @@ u32 procwrap_map(union Trapped_Args *args, void *pr_ctxt)
+ 			  args->args_proc_mapmem.ul_map_attr, pr_ctxt);
+ 	if (DSP_SUCCEEDED(status)) {
+ 		if (put_user(map_addr, args->args_proc_mapmem.pp_map_addr)) {
+-			status = DSP_EINVALIDARG;
++			status = -EINVAL;
+ 			proc_un_map(args->args_proc_mapmem.hprocessor,
+ 				    map_addr, pr_ctxt);
+ 		}
+@@ -964,7 +964,7 @@ u32 procwrap_reserve_memory(union Trapped_Args *args, void *pr_ctxt)
+ 				     pr_ctxt);
+ 	if (DSP_SUCCEEDED(status)) {
+ 		if (put_user(prsv_addr, args->args_proc_rsvmem.pp_rsv_addr)) {
+-			status = DSP_EINVALIDARG;
++			status = -EINVAL;
+ 			proc_un_reserve_memory(args->args_proc_rsvmem.
+ 					       hprocessor, prsv_addr, pr_ctxt);
+ 		}
+@@ -1375,7 +1375,7 @@ u32 strmwrap_allocate_buffer(union Trapped_Args *args, void *pr_ctxt)
+ 	u32 num_bufs = args->args_strm_allocatebuffer.num_bufs;
+ 
+ 	if (num_bufs > MAX_BUFS)
+-		return DSP_EINVALIDARG;
++		return -EINVAL;
+ 
+ 	ap_buffer = mem_alloc((num_bufs * sizeof(u8 *)), MEM_NONPAGED);
+ 
+@@ -1414,7 +1414,7 @@ u32 strmwrap_free_buffer(union Trapped_Args *args, void *pr_ctxt)
+ 	u32 num_bufs = args->args_strm_freebuffer.num_bufs;
+ 
+ 	if (num_bufs > MAX_BUFS)
+-		return DSP_EINVALIDARG;
++		return -EINVAL;
+ 
+ 	ap_buffer = mem_alloc((num_bufs * sizeof(u8 *)), MEM_NONPAGED);
+ 
+@@ -1590,7 +1590,7 @@ u32 strmwrap_select(union Trapped_Args *args, void *pr_ctxt)
+ 	dsp_status status = DSP_SOK;
+ 
+ 	if (args->args_strm_select.strm_num > MAX_STREAMS)
+-		return DSP_EINVALIDARG;
++		return -EINVAL;
+ 
+ 	CP_FM_USR(strm_tab, args->args_strm_select.stream_tab, status,
+ 		  args->args_strm_select.strm_num);
+diff --git a/drivers/dsp/bridge/rmgr/dbdcd.c b/drivers/dsp/bridge/rmgr/dbdcd.c
+index ea7cbe1..fe28625 100644
+--- a/drivers/dsp/bridge/rmgr/dbdcd.c
++++ b/drivers/dsp/bridge/rmgr/dbdcd.c
+@@ -676,7 +676,7 @@ dsp_status dcd_get_library_name(IN struct dcd_manager *hdcd_mgr,
+ 		sprintf(sz_obj_type, "%d", DSP_DCDLIBRARYTYPE);
+ 		break;
+ 	default:
+-		status = DSP_EINVALIDARG;
++		status = -EINVAL;
+ 		DBC_ASSERT(false);
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+diff --git a/drivers/dsp/bridge/rmgr/drv_interface.c b/drivers/dsp/bridge/rmgr/drv_interface.c
+index bd693cd..cbc1767 100644
+--- a/drivers/dsp/bridge/rmgr/drv_interface.c
++++ b/drivers/dsp/bridge/rmgr/drv_interface.c
+@@ -315,7 +315,7 @@ static int __devinit omap34_xx_bridge_probe(struct platform_device *pdev)
+ 		init_status = reg_set_value(SHMSIZE, (u8 *) &shm_size,
+ 					    sizeof(shm_size));
+ 	} else {
+-		init_status = DSP_EINVALIDARG;
++		init_status = -EINVAL;
+ 		status = -1;
+ 		pr_err("%s: shm size must be at least 64 KB\n", __func__);
+ 	}
+diff --git a/drivers/dsp/bridge/rmgr/mgr.c b/drivers/dsp/bridge/rmgr/mgr.c
+index dd03d3e..d829b79 100644
+--- a/drivers/dsp/bridge/rmgr/mgr.c
++++ b/drivers/dsp/bridge/rmgr/mgr.c
+@@ -157,7 +157,7 @@ dsp_status mgr_enum_node_info(u32 node_id, OUT struct dsp_ndbprops *pndb_props,
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+ 		if (node_id > (node_index - 1)) {
+-			status = DSP_EINVALIDARG;
++			status = -EINVAL;
+ 		} else {
+ 			status = dcd_get_object_def(pmgr_obj->hdcd_mgr,
+ 						    (struct dsp_uuid *)
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index be46a75..ce6794f 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -419,7 +419,7 @@ dsp_status node_allocate(struct proc_object *hprocessor,
+ 	if (((attr_in->heap_size) & (PG_SIZE4K - 1))) {
+ 		pr_err("%s: node heap size not aligned to 4K, size = 0x%x \n",
+ 		       __func__, attr_in->heap_size);
+-		status = DSP_EINVALIDARG;
++		status = -EINVAL;
+ 	} else {
+ 		pnode->create_args.asa.task_arg_obj.heap_size =
+ 		    attr_in->heap_size;
+diff --git a/drivers/dsp/bridge/rmgr/pwr.c b/drivers/dsp/bridge/rmgr/pwr.c
+index f17ea8d..49b1894 100644
+--- a/drivers/dsp/bridge/rmgr/pwr.c
++++ b/drivers/dsp/bridge/rmgr/pwr.c
+@@ -64,9 +64,9 @@ dsp_status pwr_sleep_dsp(IN CONST u32 sleepCode, IN CONST u32 timeout)
+ 		else if (sleepCode == PWR_EMERGENCYDEEPSLEEP)
+ 			ioctlcode = WMDIOCTL_EMERGENCYSLEEP;
+ 		else
+-			status = DSP_EINVALIDARG;
++			status = -EINVAL;
+ 
+-		if (status != DSP_EINVALIDARG) {
++		if (status != -EINVAL) {
+ 			status = (*intf_fxns->pfn_dev_cntrl) (dw_context,
+ 							      ioctlcode,
+ 							      (void *)&arg);
+diff --git a/drivers/dsp/bridge/rmgr/strm.c b/drivers/dsp/bridge/rmgr/strm.c
+index 7b40566..c6527f1 100644
+--- a/drivers/dsp/bridge/rmgr/strm.c
++++ b/drivers/dsp/bridge/rmgr/strm.c
+@@ -583,7 +583,7 @@ func_cont:
+ 			 * something documented
+ 			 */
+ 			if (status != -ENOMEM && status !=
+-			    DSP_EINVALIDARG && status != -EPERM) {
++			    -EINVAL && status != -EPERM) {
+ 				/*
+ 				 * We got a status that's not return-able.
+ 				 * Assert that we got something we were
+diff --git a/drivers/dsp/bridge/services/cfg.c b/drivers/dsp/bridge/services/cfg.c
+index b05b602..b1daf27 100644
+--- a/drivers/dsp/bridge/services/cfg.c
++++ b/drivers/dsp/bridge/services/cfg.c
+@@ -210,7 +210,7 @@ dsp_status cfg_get_host_resources(struct cfg_devnode *dev_node_obj,
+  */
+ dsp_status cfg_get_object(OUT u32 *pdwValue, u32 dw_type)
+ {
+-	dsp_status status = DSP_EINVALIDARG;
++	dsp_status status = -EINVAL;
+ 	u32 dw_buf_size;
+ 	DBC_REQUIRE(pdwValue != NULL);
+ 
+@@ -298,7 +298,7 @@ dsp_status cfg_set_dev_object(struct cfg_devnode *dev_node_obj, u32 dwValue)
+  */
+ dsp_status cfg_set_object(u32 dwValue, u32 dw_type)
+ {
+-	dsp_status status = DSP_EINVALIDARG;
++	dsp_status status = -EINVAL;
+ 	u32 dw_buff_size;
+ 
+ 	dw_buff_size = sizeof(dwValue);
+diff --git a/drivers/dsp/bridge/wmd/chnl_sm.c b/drivers/dsp/bridge/wmd/chnl_sm.c
+index 3d020c4..c5256aa 100644
+--- a/drivers/dsp/bridge/wmd/chnl_sm.c
++++ b/drivers/dsp/bridge/wmd/chnl_sm.c
+@@ -497,7 +497,7 @@ dsp_status bridge_chnl_flush_io(struct chnl_object *chnl_obj, u32 dwTimeOut)
+ 	if (MEM_IS_VALID_HANDLE(pchnl, CHNL_SIGNATURE)) {
+ 		if ((dwTimeOut == CHNL_IOCNOWAIT)
+ 		    && CHNL_IS_OUTPUT(pchnl->chnl_mode)) {
+-			status = DSP_EINVALIDARG;
++			status = -EINVAL;
+ 		} else {
+ 			chnl_mode = pchnl->chnl_mode;
+ 			chnl_mgr_obj = pchnl->chnl_mgr_obj;
+@@ -798,7 +798,7 @@ dsp_status bridge_chnl_open(OUT struct chnl_object **phChnl,
+ 	*phChnl = NULL;
+ 	/* Validate Args: */
+ 	if (pattrs->uio_reqs == 0) {
+-		status = DSP_EINVALIDARG;
++		status = -EINVAL;
+ 	} else {
+ 		if (!MEM_IS_VALID_HANDLE(hchnl_mgr, CHNL_MGRSIGNATURE)) {
+ 			status = DSP_EHANDLE;
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430.c b/drivers/dsp/bridge/wmd/tiomap3430.c
+index c77252a..89636c9 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430.c
+@@ -1298,7 +1298,7 @@ static dsp_status bridge_brd_mem_map(struct wmd_dev_context *hDevContext,
+ 		__func__, hDevContext, ul_mpu_addr, ulVirtAddr, ul_num_bytes,
+ 		ul_map_attr);
+ 	if (ul_num_bytes == 0)
+-		return DSP_EINVALIDARG;
++		return -EINVAL;
+ 
+ 	if (ul_map_attr & DSP_MAP_DIR_MASK) {
+ 		attrs = ul_map_attr;
+@@ -1333,7 +1333,7 @@ static dsp_status bridge_brd_mem_map(struct wmd_dev_context *hDevContext,
+ 			 * Mixedsize isn't enabled, so size can't be
+ 			 * zero here
+ 			 */
+-			return DSP_EINVALIDARG;
++			return -EINVAL;
+ 		}
+ 	}
+ 	if (attrs & DSP_MAPDONOTLOCK)
+@@ -1387,7 +1387,7 @@ static dsp_status bridge_brd_mem_map(struct wmd_dev_context *hDevContext,
+ 	if (!vma) {
+ 		pr_err("%s: Failed to get VMA region for 0x%x (%d)\n",
+ 		       __func__, ul_mpu_addr, ul_num_bytes);
+-		status = DSP_EINVALIDARG;
++		status = -EINVAL;
+ 		up_read(&mm->mmap_sem);
+ 		goto func_cont;
+ 	}
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+index 3ff8e63..16b239e 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+@@ -167,7 +167,7 @@ dsp_status sleep_dsp(struct wmd_dev_context *dev_context, IN u32 dw_cmd,
+ 
+ 	/* Check if sleep code is valid */
+ 	if ((dw_cmd != PWR_DEEPSLEEP) && (dw_cmd != PWR_EMERGENCYDEEPSLEEP))
+-		return DSP_EINVALIDARG;
++		return -EINVAL;
+ 
+ 	status = cfg_get_host_resources((struct cfg_devnode *)
+ 					drv_get_first_dev_extension(),
+-- 
+1.7.0.4
+

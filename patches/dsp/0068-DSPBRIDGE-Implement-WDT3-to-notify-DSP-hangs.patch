@@ -1,0 +1,620 @@
+From aafbe63779364e9ae0520c636acbf6ce9dd2cb1e Mon Sep 17 00:00:00 2001
+From: Fernando Guzman Lugo <x0095840@ti.com>
+Date: Tue, 30 Mar 2010 21:52:25 -0600
+Subject: [PATCH 068/135] DSPBRIDGE: Implement WDT3 to notify DSP hangs
+
+This patch implements wdt3 feature to notify wdt3 overflow.
+This new feature can be chosen by doing make menuconfig,
+default is disabled.
+
+WDT3 is upcount Timer incrementing every functional clock tick
+till it reaches programmed timeout value. On reaching timeout
+value, if INTerrupt bit for WDT3 is enabled, then an interrupt
+is generated to MPU.
+
+After receiving this Interrupt, any client can register within
+bridge driver to be notified of this event and prepare for
+DSP recovery.
+
+Signed-off-by: Fernando Guzman Lugo <x0095840@ti.com>
+Signed-off-by: Armando Uribe <x0095078@ti.com>
+Signed-off-by: Somashekar Chandrappa <somashekar.c@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/_chnl_sm.h |    7 +
+ arch/arm/plat-omap/include/dspbridge/cfgdefs.h  |    1 -
+ arch/arm/plat-omap/include/dspbridge/dbdefs.h   |    3 +
+ arch/arm/plat-omap/include/dspbridge/wdt.h      |   79 ++++++++++++
+ arch/arm/plat-omap/include/plat/omap34xx.h      |    3 +
+ drivers/dsp/bridge/Kconfig                      |   17 +++
+ drivers/dsp/bridge/Makefile                     |    2 +-
+ drivers/dsp/bridge/rmgr/drv.c                   |    8 --
+ drivers/dsp/bridge/rmgr/proc.c                  |    8 +-
+ drivers/dsp/bridge/wmd/io_sm.c                  |    4 +
+ drivers/dsp/bridge/wmd/tiomap3430.c             |    7 +
+ drivers/dsp/bridge/wmd/tiomap3430_pwr.c         |    7 +
+ drivers/dsp/bridge/wmd/tiomap_io.c              |    2 +
+ drivers/dsp/bridge/wmd/ue_deh.c                 |   13 ++
+ drivers/dsp/bridge/wmd/wdt.c                    |  148 +++++++++++++++++++++++
+ 15 files changed, 296 insertions(+), 13 deletions(-)
+ create mode 100644 arch/arm/plat-omap/include/dspbridge/wdt.h
+ create mode 100644 drivers/dsp/bridge/wmd/wdt.c
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h b/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
+index f394ba6..f8bdc93 100644
+--- a/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
++++ b/arch/arm/plat-omap/include/dspbridge/_chnl_sm.h
+@@ -99,7 +99,14 @@ struct shm {
+ 	struct opp_rqst_struct opp_request;
+ 	/* load monitor information structure */
+ 	struct load_mon_struct load_mon_info;
++#ifdef CONFIG_BRIDGE_WDT3
++	/* Flag for WDT enable/disable F/I clocks */
++	u32 wdt_setclocks;
++	u32 wdt_overflow;	/* WDT overflow time */
++	char dummy[176];	/* padding to 256 byte boundary */
++#else
+ 	char dummy[184];	/* padding to 256 byte boundary */
++#endif
+ 	u32 shm_dbg_var[64];	/* shared memory debug variables */
+ };
+ 
+diff --git a/arch/arm/plat-omap/include/dspbridge/cfgdefs.h b/arch/arm/plat-omap/include/dspbridge/cfgdefs.h
+index bd24611..a71fc7b 100644
+--- a/arch/arm/plat-omap/include/dspbridge/cfgdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/cfgdefs.h
+@@ -70,7 +70,6 @@ struct cfg_hostres {
+ 	void __iomem *dw_per_base;
+ 	u32 dw_per_pm_base;
+ 	u32 dw_core_pm_base;
+-	void __iomem *dw_wd_timer_dsp_base;
+ 	void __iomem *dw_dmmu_base;
+ 	void __iomem *dw_sys_ctrl_base;
+ };
+diff --git a/arch/arm/plat-omap/include/dspbridge/dbdefs.h b/arch/arm/plat-omap/include/dspbridge/dbdefs.h
+index d01d9ae..67e78c9 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dbdefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/dbdefs.h
+@@ -53,6 +53,7 @@
+ #define DSP_SYSERROR                0x00000020
+ #define DSP_EXCEPTIONABORT          0x00000300
+ #define DSP_PWRERROR                0x00000080
++#define DSP_WDTOVERFLOW	0x00000040
+ 
+ /* IVA exception events (IVA MMU fault) */
+ #define IVA_MMUFAULT                0x00000040
+@@ -124,6 +125,7 @@ typedef u32 dsp_status;		/* API return code type */
+ 				    DSP_STREAMIOCOMPLETION | \
+ 				    DSP_MMUFAULT | \
+ 				    DSP_SYSERROR | \
++				    DSP_WDTOVERFLOW | \
+ 				    DSP_PWRERROR)) && \
+ 				!((x) & ~(DSP_PROCESSORSTATECHANGE | \
+ 				    DSP_PROCESSORATTACH | \
+@@ -134,6 +136,7 @@ typedef u32 dsp_status;		/* API return code type */
+ 				    DSP_STREAMIOCOMPLETION | \
+ 				    DSP_MMUFAULT | \
+ 				    DSP_SYSERROR | \
++				    DSP_WDTOVERFLOW | \
+ 				    DSP_PWRERROR))))
+ 
+ #define IS_VALID_NODE_EVENT(x)    (((x) == 0) || \
+diff --git a/arch/arm/plat-omap/include/dspbridge/wdt.h b/arch/arm/plat-omap/include/dspbridge/wdt.h
+new file mode 100644
+index 0000000..4c00ba5
+--- /dev/null
++++ b/arch/arm/plat-omap/include/dspbridge/wdt.h
+@@ -0,0 +1,79 @@
++/*
++ * wdt.h
++ *
++ * DSP-BIOS Bridge driver support functions for TI OMAP processors.
++ *
++ * IO dispatcher for a shared memory channel driver.
++ *
++ * Copyright (C) 2010 Texas Instruments, Inc.
++ *
++ * This package is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * THIS PACKAGE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
++ * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
++ */
++#ifndef __DSP_WDT3_H_
++#define __DSP_WDT3_H_
++
++/* WDT defines */
++#define OMAP3_WDT3_ISR_OFFSET	0x0018
++
++
++/**
++ * struct dsp_wdt_setting - the basic dsp_wdt_setting structure
++ * @reg_base:	pointer to the base of the wdt registers
++ * @sm_wdt:	pointer to flags in shared memory
++ * @wdt3_tasklet	tasklet to manage wdt event
++ * @fclk		handle to wdt3 functional clock
++ * @iclk		handle to wdt3 interface clock
++ *
++ * This struct is used in the function to manage wdt3.
++ */
++
++struct dsp_wdt_setting {
++	void __iomem *reg_base;
++	struct shm *sm_wdt;
++	struct tasklet_struct wdt3_tasklet;
++	struct clk *fclk;
++	struct clk *iclk;
++};
++
++/**
++ * dsp_wdt_init() - initialize wdt3 module.
++ *
++ * This function initilize to wdt3 module, so that
++ * other wdt3 function can be used.
++ */
++int dsp_wdt_init(void);
++
++/**
++ * dsp_wdt_exit() - initialize wdt3 module.
++ *
++ * This function frees all resources allocated for wdt3 module.
++ */
++void dsp_wdt_exit(void);
++
++/**
++ * dsp_wdt_enable() - enable/disable wdt3
++ * @enable:	bool value to enable/disable wdt3
++ *
++ * This function enables or disables wdt3 base on @enable value.
++ *
++ */
++void dsp_wdt_enable(bool enable);
++
++/**
++ * dsp_wdt_sm_set() - store pointer to the share memory
++ * @data:		pointer to dspbridge share memory
++ *
++ * This function is used to pass a valid pointer to share memory,
++ * so that the flags can be set in order DSP side can read them.
++ *
++ */
++void dsp_wdt_sm_set(void *data);
++
++#endif
++
+diff --git a/arch/arm/plat-omap/include/plat/omap34xx.h b/arch/arm/plat-omap/include/plat/omap34xx.h
+index a0b2511..e5984f8 100644
+--- a/arch/arm/plat-omap/include/plat/omap34xx.h
++++ b/arch/arm/plat-omap/include/plat/omap34xx.h
+@@ -108,5 +108,8 @@
+ /* Max OPP's Available among chips that comes under OMAP34xx configuration */
+ #define MAX_VDD1_OPPS	VDD1_OPP5
+ 
++#define OMAP34XX_WDT3_BASE 		(L4_PER_34XX_BASE + 0x30000)
++
++
+ #endif /* __ASM_ARCH_OMAP34XX_H */
+ 
+diff --git a/drivers/dsp/bridge/Kconfig b/drivers/dsp/bridge/Kconfig
+index 684b323..6268f44 100644
+--- a/drivers/dsp/bridge/Kconfig
++++ b/drivers/dsp/bridge/Kconfig
+@@ -59,6 +59,23 @@ config BRIDGE_CACHE_LINE_CHECK
+ 	  This can lead to heap corruption. Say Y, to enforce the check for 128
+ 	  byte alignment, buffers failing this check will be rejected.
+ 
++config BRIDGE_WDT3
++	bool "Enable WDT3 interruptions"
++	depends on MPU_BRIDGE
++	default n
++	help
++	  WTD3 is managed by DSP and once it is enabled, DSP side bridge is in
++	  charge of refreshing the timer before overflow, if the DSP hangs MPU
++	  will caught the interrupt and try to recover DSP.
++
++config WDT_TIMEOUT
++	int "DSP watchdog timer timeout (in secs)"
++	depends on BRIDGE_WDT3
++	default 5
++	help
++	   Watchdog timer timeout value, after that time if the watchdog timer
++	   counter is not reset the wdt overflow interrupt will be triggered
++
+ comment "Bridge Notifications"
+ 	depends on MPU_BRIDGE
+ 
+diff --git a/drivers/dsp/bridge/Makefile b/drivers/dsp/bridge/Makefile
+index 2b4f92c..ce85ba6 100644
+--- a/drivers/dsp/bridge/Makefile
++++ b/drivers/dsp/bridge/Makefile
+@@ -7,7 +7,7 @@ libservices = services/mem.o services/sync.o \
+ 		services/services.o
+ libwmd = wmd/chnl_sm.o wmd/msg_sm.o wmd/io_sm.o wmd/tiomap3430.o \
+ 		wmd/tiomap3430_pwr.o wmd/tiomap_io.o \
+-		wmd/mmu_fault.o wmd/ue_deh.o
++		wmd/mmu_fault.o wmd/ue_deh.o wmd/wdt.o
+ libpmgr = pmgr/chnl.o pmgr/io.o pmgr/msg.o pmgr/cod.o pmgr/dev.o pmgr/wcd.o \
+ 		pmgr/dmm.o pmgr/cmm.o pmgr/dbll.o
+ librmgr = rmgr/dbdcd.o rmgr/disp.o rmgr/drv.o rmgr/mgr.o rmgr/node.o \
+diff --git a/drivers/dsp/bridge/rmgr/drv.c b/drivers/dsp/bridge/rmgr/drv.c
+index bbc2bd8..fe53b5d 100644
+--- a/drivers/dsp/bridge/rmgr/drv.c
++++ b/drivers/dsp/bridge/rmgr/drv.c
+@@ -904,8 +904,6 @@ static dsp_status request_bridge_resources(u32 dw_context, s32 bRequest)
+ 				iounmap((void *)host_res->dw_mem_base[3]);
+ 			if (host_res->dw_mem_base[4])
+ 				iounmap((void *)host_res->dw_mem_base[4]);
+-			if (host_res->dw_wd_timer_dsp_base)
+-				iounmap(host_res->dw_wd_timer_dsp_base);
+ 			if (host_res->dw_dmmu_base)
+ 				iounmap(host_res->dw_dmmu_base);
+ 			if (host_res->dw_per_base)
+@@ -923,7 +921,6 @@ static dsp_status request_bridge_resources(u32 dw_context, s32 bRequest)
+ 			host_res->dw_mem_base[2] = (u32) NULL;
+ 			host_res->dw_mem_base[3] = (u32) NULL;
+ 			host_res->dw_mem_base[4] = (u32) NULL;
+-			host_res->dw_wd_timer_dsp_base = NULL;
+ 			host_res->dw_dmmu_base = NULL;
+ 			host_res->dw_sys_ctrl_base = NULL;
+ 
+@@ -956,8 +953,6 @@ static dsp_status request_bridge_resources(u32 dw_context, s32 bRequest)
+ 			host_res->dw_mem_base[3]);
+ 		dev_dbg(bridge, "dw_prm_base %p\n", host_res->dw_prm_base);
+ 		dev_dbg(bridge, "dw_cm_base %p\n", host_res->dw_cm_base);
+-		dev_dbg(bridge, "dw_wd_timer_dsp_base %p\n",
+-			host_res->dw_wd_timer_dsp_base);
+ 		dev_dbg(bridge, "dw_dmmu_base %p\n", host_res->dw_dmmu_base);
+ 
+ 		/* for 24xx base port is not mapping the mamory for DSP
+@@ -1032,7 +1027,6 @@ static dsp_status request_bridge_resources_dsp(u32 dw_context, s32 bRequest)
+ 							  OMAP_CORE_PRM_SIZE);
+ 		host_res->dw_dmmu_base = ioremap(OMAP_DMMU_BASE,
+ 						 OMAP_DMMU_SIZE);
+-		host_res->dw_wd_timer_dsp_base = NULL;
+ 
+ 		dev_dbg(bridge, "dw_mem_base[0] 0x%x\n",
+ 			host_res->dw_mem_base[0]);
+@@ -1046,8 +1040,6 @@ static dsp_status request_bridge_resources_dsp(u32 dw_context, s32 bRequest)
+ 			host_res->dw_mem_base[4]);
+ 		dev_dbg(bridge, "dw_prm_base %p\n", host_res->dw_prm_base);
+ 		dev_dbg(bridge, "dw_cm_base %p\n", host_res->dw_cm_base);
+-		dev_dbg(bridge, "dw_wd_timer_dsp_base %p\n",
+-			host_res->dw_wd_timer_dsp_base);
+ 		dev_dbg(bridge, "dw_dmmu_base %p\n", host_res->dw_dmmu_base);
+ 		dw_buff_size = sizeof(shm_size);
+ 		status =
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index 528fbd3..3a683b0 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -1168,8 +1168,9 @@ dsp_status proc_register_notify(void *hprocessor, u32 event_mask,
+ 	}
+ 	/* Check if event mask is a valid processor related event */
+ 	if (event_mask & ~(DSP_PROCESSORSTATECHANGE | DSP_PROCESSORATTACH |
+-			   DSP_PROCESSORDETACH | DSP_PROCESSORRESTART |
+-			   DSP_MMUFAULT | DSP_SYSERROR | DSP_PWRERROR))
++			DSP_PROCESSORDETACH | DSP_PROCESSORRESTART |
++			DSP_MMUFAULT | DSP_SYSERROR | DSP_PWRERROR |
++			DSP_WDTOVERFLOW))
+ 		status = -EINVAL;
+ 
+ 	/* Check if notify type is valid */
+@@ -1180,7 +1181,8 @@ dsp_status proc_register_notify(void *hprocessor, u32 event_mask,
+ 		/* If event mask is not DSP_SYSERROR, DSP_MMUFAULT,
+ 		 * or DSP_PWRERROR then register event immediately. */
+ 		if (event_mask &
+-		    ~(DSP_SYSERROR | DSP_MMUFAULT | DSP_PWRERROR)) {
++		    ~(DSP_SYSERROR | DSP_MMUFAULT | DSP_PWRERROR |
++				DSP_WDTOVERFLOW)) {
+ 			status = ntfy_register(p_proc_object->ntfy_obj,
+ 					       hnotification, event_mask,
+ 					       notify_type);
+diff --git a/drivers/dsp/bridge/wmd/io_sm.c b/drivers/dsp/bridge/wmd/io_sm.c
+index cc20015..588e409 100644
+--- a/drivers/dsp/bridge/wmd/io_sm.c
++++ b/drivers/dsp/bridge/wmd/io_sm.c
+@@ -51,6 +51,7 @@
+ #include <dspbridge/wmddeh.h>
+ #include <dspbridge/wmdio.h>
+ #include <dspbridge/wmdioctl.h>
++#include <dspbridge/wdt.h>
+ #include <_tiomap.h>
+ #include <tiomap_io.h>
+ #include <_tiomap_pwr.h>
+@@ -244,6 +245,8 @@ dsp_status bridge_io_create(OUT struct io_mgr **phIOMgr,
+ 	if (DSP_SUCCEEDED(status)) {
+ 		pio_mgr->hwmd_context = hwmd_context;
+ 		pio_mgr->shared_irq = pMgrAttrs->irq_shared;
++		if (dsp_wdt_init())
++			status = -EPERM;
+ 	} else {
+ 		status = CHNL_E_ISR;
+ 	}
+@@ -279,6 +282,7 @@ dsp_status bridge_io_destroy(struct io_mgr *hio_mgr)
+ #ifndef DSP_TRACEBUF_DISABLED
+ 		kfree(hio_mgr->pmsg);
+ #endif
++		dsp_wdt_exit();
+ 		/* Free this IO manager object */
+ 		MEM_FREE_OBJECT(hio_mgr);
+ 	} else {
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430.c b/drivers/dsp/bridge/wmd/tiomap3430.c
+index ef8f0fd..45fc771 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430.c
+@@ -60,6 +60,7 @@
+ #include <dspbridge/dev.h>
+ #include <dspbridge/wcd.h>
+ #include <dspbridge/dmm.h>
++#include <dspbridge/wdt.h>
+ 
+ /*  ----------------------------------- Local */
+ #include "_tiomap.h"
+@@ -724,6 +725,10 @@ static dsp_status bridge_brd_start(struct wmd_dev_context *hDevContext,
+ 		if (!wait_for_start(dev_context, dw_sync_addr))
+ 			status = -ETIMEDOUT;
+ 
++		/* Start wdt */
++		dsp_wdt_sm_set((void *)ul_shm_base);
++		dsp_wdt_enable(true);
++
+ 		status = dev_get_io_mgr(dev_context->hdev_obj, &hio_mgr);
+ 		if (DSP_SUCCEEDED(status)) {
+ 			io_sh_msetting(hio_mgr, SHM_OPPINFO, NULL);
+@@ -799,6 +804,8 @@ static dsp_status bridge_brd_stop(struct wmd_dev_context *hDevContext)
+ 
+ 	dev_context->dw_brd_state = BRD_STOPPED;	/* update board state */
+ 
++	dsp_wdt_enable(false);
++
+ 	/* This is a good place to clear the MMU page tables as well */
+ 	if (dev_context->pt_attrs) {
+ 		pt_attrs = dev_context->pt_attrs;
+diff --git a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+index 36cbed3..c281ebc 100644
+--- a/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
++++ b/drivers/dsp/bridge/wmd/tiomap3430_pwr.c
+@@ -41,6 +41,7 @@
+ 
+ /*  ----------------------------------- Mini Driver */
+ #include <dspbridge/wmddeh.h>
++#include <dspbridge/wdt.h>
+ 
+ /*  ----------------------------------- specific to this file */
+ #include "_tiomap.h"
+@@ -125,6 +126,9 @@ dsp_status handle_hibernation_from_dsp(struct wmd_dev_context *dev_context)
+ 		/* Turn off DSP Peripheral clocks and DSP Load monitor timer */
+ 		status = dsp_peripheral_clocks_disable(dev_context, NULL);
+ 
++		/* Disable wdt on hibernation. */
++		dsp_wdt_enable(false);
++
+ 		if (DSP_SUCCEEDED(status)) {
+ 			/* Update the Bridger Driver state */
+ 			dev_context->dw_brd_state = BRD_DSP_HIBERNATION;
+@@ -239,6 +243,9 @@ dsp_status sleep_dsp(struct wmd_dev_context *dev_context, IN u32 dw_cmd,
+ 		else
+ 			dev_context->dw_brd_state = BRD_RETENTION;
+ 
++		/* Disable wdt on hibernation. */
++		dsp_wdt_enable(false);
++
+ 		/* Turn off DSP Peripheral clocks */
+ 		status = dsp_peripheral_clocks_disable(dev_context, NULL);
+ 		if (DSP_FAILED(status)) {
+diff --git a/drivers/dsp/bridge/wmd/tiomap_io.c b/drivers/dsp/bridge/wmd/tiomap_io.c
+index 205cf40..125023c 100644
+--- a/drivers/dsp/bridge/wmd/tiomap_io.c
++++ b/drivers/dsp/bridge/wmd/tiomap_io.c
+@@ -30,6 +30,7 @@
+ /*  ----------------------------------- OS Adaptation Layer */
+ #include <dspbridge/mem.h>
+ #include <dspbridge/cfg.h>
++#include <dspbridge/wdt.h>
+ 
+ /*  ----------------------------------- specific to this file */
+ #include "_tiomap.h"
+@@ -426,6 +427,7 @@ dsp_status sm_interrupt_dsp(struct wmd_dev_context *dev_context, u16 mb_val)
+ #endif
+ 		/* Restart the peripheral clocks */
+ 		dsp_peripheral_clocks_enable(dev_context, NULL);
++		dsp_wdt_enable(true);
+ 
+ 		/*
+ 		 * 2:0 AUTO_IVA2_DPLL - Enabling IVA2 DPLL auto control
+diff --git a/drivers/dsp/bridge/wmd/ue_deh.c b/drivers/dsp/bridge/wmd/ue_deh.c
+index 2dec008..451ee3c 100644
+--- a/drivers/dsp/bridge/wmd/ue_deh.c
++++ b/drivers/dsp/bridge/wmd/ue_deh.c
+@@ -39,6 +39,7 @@
+ /*  ----------------------------------- Platform Manager */
+ #include <dspbridge/dev.h>
+ #include <dspbridge/wcd.h>
++#include <dspbridge/wdt.h>
+ 
+ /* ------------------------------------ Hardware Abstraction Layer */
+ #include <hw_defs.h>
+@@ -259,6 +260,13 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 				__func__, "DSP_PWRERROR", dwErrInfo);
+ 		break;
+ #endif /* CONFIG_BRIDGE_NTFY_PWRERR */
++	case DSP_WDTOVERFLOW:
++		deh_mgr->err_info.dw_err_mask = DSP_WDTOVERFLOW;
++		deh_mgr->err_info.dw_val1 = 0L;
++		deh_mgr->err_info.dw_val2 = 0L;
++		deh_mgr->err_info.dw_val3 = 0L;
++		dev_err(bridge, "%s: DSP_WDTOVERFLOW\n", __func__);
++		break;
+ 	default:
+ 		dev_dbg(bridge, "%s: Unknown Error, err_info = 0x%x\n",
+ 				__func__, dwErrInfo);
+@@ -279,6 +287,11 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 	dsp_peripheral_clocks_disable(dev_context, NULL);
+ 	/* Call DSP Trace Buffer */
+ 	print_dsp_trace_buffer(deh_mgr->hwmd_context);
++	/*
++	 * Avoid the subsequent WDT if it happens once,
++	 * also if fatal error occurs.
++	 */
++	dsp_wdt_enable(false);
+ }
+ 
+ dsp_status bridge_deh_get_info(struct deh_mgr *deh_mgr,
+diff --git a/drivers/dsp/bridge/wmd/wdt.c b/drivers/dsp/bridge/wmd/wdt.c
+new file mode 100644
+index 0000000..7a007f2
+--- /dev/null
++++ b/drivers/dsp/bridge/wmd/wdt.c
+@@ -0,0 +1,148 @@
++/*
++ * wdt.c
++ *
++ * DSP-BIOS Bridge driver support functions for TI OMAP processors.
++ *
++ * IO dispatcher for a shared memory channel driver.
++ *
++ * Copyright (C) 2010 Texas Instruments, Inc.
++ *
++ * This package is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * THIS PACKAGE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
++ * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
++ */
++
++#include <dspbridge/std.h>
++#include <dspbridge/dbdefs.h>
++#include <dspbridge/errbase.h>
++#include <dspbridge/wmddeh.h>
++#include <dspbridge/dev.h>
++#include <dspbridge/_chnl_sm.h>
++#include <dspbridge/wdt.h>
++#include <dspbridge/host_os.h>
++
++
++#ifdef CONFIG_BRIDGE_WDT3
++static struct dsp_wdt_setting dsp_wdt;
++
++void dsp_wdt_dpc(unsigned long data)
++{
++	struct deh_mgr *deh_mgr;
++	dev_get_deh_mgr(dev_get_first(), &deh_mgr);
++	if (deh_mgr)
++		bridge_deh_notify(deh_mgr, DSP_WDTOVERFLOW, 0);
++}
++
++irqreturn_t dsp_wdt_isr(int irq, void *data)
++{
++	u32 value;
++	/* ack wdt3 interrupt */
++	value = __raw_readl(dsp_wdt.reg_base + OMAP3_WDT3_ISR_OFFSET);
++	__raw_writel(value, dsp_wdt.reg_base + OMAP3_WDT3_ISR_OFFSET);
++
++	tasklet_schedule(&dsp_wdt.wdt3_tasklet);
++	return IRQ_HANDLED;
++}
++
++int dsp_wdt_init(void)
++{
++	int ret = 0;
++
++	dsp_wdt.sm_wdt = NULL;
++	dsp_wdt.reg_base = OMAP2_L4_IO_ADDRESS(OMAP34XX_WDT3_BASE);
++	tasklet_init(&dsp_wdt.wdt3_tasklet, dsp_wdt_dpc, 0);
++
++	dsp_wdt.fclk = clk_get(NULL, "wdt3_fck");
++
++	if (dsp_wdt.fclk) {
++		dsp_wdt.iclk = clk_get(NULL, "wdt3_ick");
++		if (!dsp_wdt.iclk) {
++			clk_put(dsp_wdt.fclk);
++			dsp_wdt.fclk = NULL;
++			ret = -EFAULT;
++		}
++	} else
++		ret = -EFAULT;
++
++	if (!ret)
++		ret = request_irq(INT_34XX_WDT3_IRQ, dsp_wdt_isr, 0,
++							"dsp_wdt", &dsp_wdt);
++
++	/* Disable at this moment, it will be enabled when DSP starts */
++	if (!ret)
++		disable_irq(INT_34XX_WDT3_IRQ);
++
++	return ret;
++}
++
++void dsp_wdt_sm_set(void *data)
++{
++	dsp_wdt.sm_wdt = data;
++	dsp_wdt.sm_wdt->wdt_overflow = CONFIG_WDT_TIMEOUT;
++}
++
++
++void dsp_wdt_exit(void)
++{
++	free_irq(INT_34XX_WDT3_IRQ, &dsp_wdt);
++	tasklet_kill(&dsp_wdt.wdt3_tasklet);
++
++	if (dsp_wdt.fclk)
++		clk_put(dsp_wdt.fclk);
++	if (dsp_wdt.iclk)
++		clk_put(dsp_wdt.iclk);
++
++	dsp_wdt.fclk = NULL;
++	dsp_wdt.iclk = NULL;
++	dsp_wdt.sm_wdt = NULL;
++	dsp_wdt.reg_base = NULL;
++}
++
++void dsp_wdt_enable(bool enable)
++{
++	u32 tmp;
++	static bool wdt_enable;
++
++	if (wdt_enable == enable || !dsp_wdt.fclk || !dsp_wdt.iclk)
++		return;
++
++	wdt_enable = enable;
++
++	if (enable) {
++		clk_enable(dsp_wdt.fclk);
++		clk_enable(dsp_wdt.iclk);
++		dsp_wdt.sm_wdt->wdt_setclocks = 1;
++		tmp = __raw_readl(dsp_wdt.reg_base + OMAP3_WDT3_ISR_OFFSET);
++		__raw_writel(tmp, dsp_wdt.reg_base + OMAP3_WDT3_ISR_OFFSET);
++		enable_irq(INT_34XX_WDT3_IRQ);
++	} else {
++		disable_irq(INT_34XX_WDT3_IRQ);
++		dsp_wdt.sm_wdt->wdt_setclocks = 0;
++		clk_disable(dsp_wdt.iclk);
++		clk_disable(dsp_wdt.fclk);
++	}
++}
++
++#else
++void dsp_wdt_enable(bool enable)
++{
++}
++
++void dsp_wdt_sm_set(void *data)
++{
++}
++
++int dsp_wdt_init(void)
++{
++	return 0;
++}
++
++void dsp_wdt_exit(void)
++{
++}
++#endif
++
+-- 
+1.7.0.4
+

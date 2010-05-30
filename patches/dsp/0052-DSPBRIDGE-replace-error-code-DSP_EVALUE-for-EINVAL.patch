@@ -1,0 +1,210 @@
+From cca8661e6fb571e731d582fbaae36acaef5de9e7 Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:27 -0500
+Subject: [PATCH 052/135] DSPBRIDGE: replace error code DSP_EVALUE for -EINVAL
+
+This patch replaces DSP_EVALUE with -EINVAL.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/node.h     |    4 ++--
+ arch/arm/plat-omap/include/dspbridge/nodepriv.h |    2 +-
+ arch/arm/plat-omap/include/dspbridge/proc.h     |    2 +-
+ arch/arm/plat-omap/include/dspbridge/strm.h     |    4 ++--
+ arch/arm/plat-omap/include/dspbridge/wmd.h      |    2 +-
+ drivers/dsp/bridge/rmgr/node.c                  |   10 +++++-----
+ drivers/dsp/bridge/rmgr/proc.c                  |    6 +++---
+ drivers/dsp/bridge/rmgr/strm.c                  |    4 ++--
+ drivers/dsp/bridge/wmd/msg_sm.c                 |    2 +-
+ 9 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/node.h b/arch/arm/plat-omap/include/dspbridge/node.h
+index bc02529..9ad3a5a 100644
+--- a/arch/arm/plat-omap/include/dspbridge/node.h
++++ b/arch/arm/plat-omap/include/dspbridge/node.h
+@@ -167,7 +167,7 @@ extern dsp_status node_close_orphans(struct node_mgr *hnode_mgr,
+  *      DSP_SOK:                Success.
+  *      DSP_EHANDLE:            Invalid hNode1 or hNode2.
+  *      DSP_EMEMORY:            Insufficient host memory.
+- *      DSP_EVALUE:             A stream index parameter is invalid.
++ *      -EINVAL:             A stream index parameter is invalid.
+  *      DSP_EALREADYCONNECTED:  A connection already exists for one of the
+  *                              indices uStream1 or uStream2.
+  *      DSP_EWRONGSTATE:        Either hNode1 or hNode2 is not in the
+@@ -492,7 +492,7 @@ extern dsp_status node_put_message(struct node_object *hnode,
+  *      DSP_SOK:        Success.
+  *      DSP_EHANDLE:    Invalid hnode.
+  *      DSP_EMEMORY:    Insufficient memory on GPP.
+- *      DSP_EVALUE:     event_mask is invalid.
++ *      -EINVAL:     event_mask is invalid.
+  *      DSP_ENOTIMPL:   Notification type specified by notify_type is not
+  *                      supported.
+  *  Requires:
+diff --git a/arch/arm/plat-omap/include/dspbridge/nodepriv.h b/arch/arm/plat-omap/include/dspbridge/nodepriv.h
+index ca3c696..cf67f41 100644
+--- a/arch/arm/plat-omap/include/dspbridge/nodepriv.h
++++ b/arch/arm/plat-omap/include/dspbridge/nodepriv.h
+@@ -93,7 +93,7 @@ struct node_createargs {
+  *      DSP_SOK:        Success.
+  *      DSP_EHANDLE:    Invalid hnode.
+  *      DSP_ENODETYPE:  Not a task or DAIS socket node.
+- *      DSP_EVALUE:     The node's stream corresponding to index and dir
++ *      -EINVAL:     The node's stream corresponding to index and dir
+  *                      is not a stream to or from the host.
+  *  Requires:
+  *      node_init(void) called.
+diff --git a/arch/arm/plat-omap/include/dspbridge/proc.h b/arch/arm/plat-omap/include/dspbridge/proc.h
+index 757dc86..3c86d6c 100644
+--- a/arch/arm/plat-omap/include/dspbridge/proc.h
++++ b/arch/arm/plat-omap/include/dspbridge/proc.h
+@@ -353,7 +353,7 @@ extern dsp_status proc_load(void *hprocessor,
+  *  Returns:
+  *      DSP_SOK     :   Success.
+  *      DSP_EHANDLE :   Invalid processor handle or hnotification.
+- *      DSP_EVALUE  :   Parameter event_mask is Invalid
++ *      -EINVAL  :   Parameter event_mask is Invalid
+  *      DSP_ENOTIMP :   The notification type specified in uNotifyMask
+  *		      is not supported.
+  *      -EPERM   :   Unable to register for notification.
+diff --git a/arch/arm/plat-omap/include/dspbridge/strm.h b/arch/arm/plat-omap/include/dspbridge/strm.h
+index ccdffbb..4e59b4b 100644
+--- a/arch/arm/plat-omap/include/dspbridge/strm.h
++++ b/arch/arm/plat-omap/include/dspbridge/strm.h
+@@ -260,7 +260,7 @@ extern dsp_status strm_issue(struct strm_object *hStrm, IN u8 * pbuf,
+  *      DSP_SOK:        Success.
+  *      DSP_EHANDLE:    Invalid hnode.
+  *      -EPERM: Invalid dir.
+- *      DSP_EVALUE:     Invalid index.
++ *      -EINVAL:     Invalid index.
+  *      DSP_ENODETYPE:  hnode is not a task or DAIS socket node.
+  *      -EPERM:      Unable to open stream.
+  *  Requires:
+@@ -339,7 +339,7 @@ extern dsp_status strm_reclaim(struct strm_object *hStrm,
+  *      DSP_SOK:        Success.
+  *      DSP_EHANDLE:    Invalid hStrm.
+  *      DSP_EMEMORY:    Insufficient memory on GPP.
+- *      DSP_EVALUE:     event_mask is invalid.
++ *      -EINVAL:     event_mask is invalid.
+  *      DSP_ENOTIMPL:   Notification type specified by notify_type is not
+  *                      supported.
+  *  Requires:
+diff --git a/arch/arm/plat-omap/include/dspbridge/wmd.h b/arch/arm/plat-omap/include/dspbridge/wmd.h
+index 1fb69f7..58ed9cd 100644
+--- a/arch/arm/plat-omap/include/dspbridge/wmd.h
++++ b/arch/arm/plat-omap/include/dspbridge/wmd.h
+@@ -631,7 +631,7 @@ typedef dsp_status(*fxn_chnl_idle) (struct chnl_object *chnl_obj,
+  *  Returns:
+  *      DSP_SOK:        Success.
+  *      DSP_EMEMORY:    Insufficient memory.
+- *      DSP_EVALUE:     event_mask is 0 and hnotification was not
++ *      -EINVAL:     event_mask is 0 and hnotification was not
+  *                      previously registered.
+  *      DSP_EHANDLE:    NULL hnotification, hnotification event name
+  *                      too long, or hnotification event name NULL.
+diff --git a/drivers/dsp/bridge/rmgr/node.c b/drivers/dsp/bridge/rmgr/node.c
+index ed74377..a4a7446 100644
+--- a/drivers/dsp/bridge/rmgr/node.c
++++ b/drivers/dsp/bridge/rmgr/node.c
+@@ -883,7 +883,7 @@ dsp_status node_connect(struct node_object *hNode1, u32 uStream1,
+ 							  NODE_DEVICE
+ 							  && uStream2 >=
+ 							  MAX_INPUTS(hNode2)))
+-			status = DSP_EVALUE;
++			status = -EINVAL;
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/*
+@@ -1769,7 +1769,7 @@ dsp_status node_get_channel_id(struct node_object *hnode, u32 dir, u32 index,
+ 			       OUT u32 *pulId)
+ {
+ 	enum node_type node_type;
+-	dsp_status status = DSP_EVALUE;
++	dsp_status status = -EINVAL;
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(dir == DSP_TONODE || dir == DSP_FROMNODE);
+ 	DBC_REQUIRE(pulId != NULL);
+@@ -2212,16 +2212,16 @@ dsp_status node_register_notify(struct node_object *hnode, u32 event_mask,
+ 	} else {
+ 		/* Check if event mask is a valid node related event */
+ 		if (event_mask & ~(DSP_NODESTATECHANGE | DSP_NODEMESSAGEREADY))
+-			status = DSP_EVALUE;
++			status = -EINVAL;
+ 
+ 		/* Check if notify type is valid */
+ 		if (notify_type != DSP_SIGNALEVENT)
+-			status = DSP_EVALUE;
++			status = -EINVAL;
+ 
+ 		/* Only one Notification can be registered at a
+ 		 * time - Limitation */
+ 		if (event_mask == (DSP_NODESTATECHANGE | DSP_NODEMESSAGEREADY))
+-			status = DSP_EVALUE;
++			status = -EINVAL;
+ 	}
+ 	if (DSP_SUCCEEDED(status)) {
+ 		if (event_mask == DSP_NODESTATECHANGE) {
+diff --git a/drivers/dsp/bridge/rmgr/proc.c b/drivers/dsp/bridge/rmgr/proc.c
+index d7ff16c..461a521 100644
+--- a/drivers/dsp/bridge/rmgr/proc.c
++++ b/drivers/dsp/bridge/rmgr/proc.c
+@@ -636,7 +636,7 @@ dsp_status proc_get_resource_info(void *hprocessor, u32 resource_type,
+ 					      (struct dsp_memstat *)
+ 					      &(resource_info->result.
+ 						mem_stat)))
+-					status = DSP_EVALUE;
++					status = -EINVAL;
+ 			}
+ 		}
+ 		break;
+@@ -1170,11 +1170,11 @@ dsp_status proc_register_notify(void *hprocessor, u32 event_mask,
+ 	if (event_mask & ~(DSP_PROCESSORSTATECHANGE | DSP_PROCESSORATTACH |
+ 			   DSP_PROCESSORDETACH | DSP_PROCESSORRESTART |
+ 			   DSP_MMUFAULT | DSP_SYSERROR | DSP_PWRERROR))
+-		status = DSP_EVALUE;
++		status = -EINVAL;
+ 
+ 	/* Check if notify type is valid */
+ 	if (notify_type != DSP_SIGNALEVENT)
+-		status = DSP_EVALUE;
++		status = -EINVAL;
+ 
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* If event mask is not DSP_SYSERROR, DSP_MMUFAULT,
+diff --git a/drivers/dsp/bridge/rmgr/strm.c b/drivers/dsp/bridge/rmgr/strm.c
+index fd4b042..c66958d 100644
+--- a/drivers/dsp/bridge/rmgr/strm.c
++++ b/drivers/dsp/bridge/rmgr/strm.c
+@@ -611,7 +611,7 @@ func_cont:
+ 		    MEM_IS_VALID_HANDLE((*phStrm), STRM_SIGNATURE)) ||
+ 		   (*phStrm == NULL && (status == DSP_EHANDLE ||
+ 					status == -EPERM
+-					|| status == DSP_EVALUE
++					|| status == -EINVAL
+ 					|| status == -EPERM)));
+ 
+ 	dev_dbg(bridge, "%s: hnode: %p dir: 0x%x index: 0x%x pattr: %p "
+@@ -721,7 +721,7 @@ dsp_status strm_register_notify(struct strm_object *hStrm, u32 event_mask,
+ 		status = DSP_EHANDLE;
+ 	} else if ((event_mask & ~((DSP_STREAMIOCOMPLETION) |
+ 				   DSP_STREAMDONE)) != 0) {
+-		status = DSP_EVALUE;
++		status = -EINVAL;
+ 	} else {
+ 		if (notify_type != DSP_SIGNALEVENT)
+ 			status = DSP_ENOTIMPL;
+diff --git a/drivers/dsp/bridge/wmd/msg_sm.c b/drivers/dsp/bridge/wmd/msg_sm.c
+index f0e3949..ee11ef7 100644
+--- a/drivers/dsp/bridge/wmd/msg_sm.c
++++ b/drivers/dsp/bridge/wmd/msg_sm.c
+@@ -533,7 +533,7 @@ dsp_status bridge_msg_register_notify(struct msg_queue *msg_queue_obj,
+ 		status = ntfy_unregister(msg_queue_obj->ntfy_obj,
+ 							hnotification);
+ 
+-	if (status == DSP_EVALUE) {
++	if (status == -EINVAL) {
+ 		/*  Not registered. Ok, since we couldn't have known. Node
+ 		 *  notifications are split between node state change handled
+ 		 *  by NODE, and message ready handled by msg_ctrl. */
+-- 
+1.7.0.4
+

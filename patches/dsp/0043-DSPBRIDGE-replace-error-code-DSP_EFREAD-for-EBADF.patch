@@ -1,0 +1,65 @@
+From 0f15e305a535a92be36189d174c8971dd374a0de Mon Sep 17 00:00:00 2001
+From: Shivananda Hebbar <x0hebbar@ti.com>
+Date: Mon, 19 Apr 2010 18:15:06 -0500
+Subject: [PATCH 043/135] DSPBRIDGE: replace error code DSP_EFREAD for -EBADF
+
+This patch replaces DSP_EFREAD with -EBADF.
+
+Signed-off-by: Shivananda Hebbar <x0hebbar@ti.com>
+---
+ arch/arm/plat-omap/include/dspbridge/dblldefs.h |    4 ++--
+ drivers/dsp/bridge/pmgr/cod.c                   |    2 +-
+ drivers/dsp/bridge/pmgr/dbll.c                  |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/dspbridge/dblldefs.h b/arch/arm/plat-omap/include/dspbridge/dblldefs.h
+index e223518..dd0ad09 100644
+--- a/arch/arm/plat-omap/include/dspbridge/dblldefs.h
++++ b/arch/arm/plat-omap/include/dspbridge/dblldefs.h
+@@ -337,7 +337,7 @@ typedef bool(*dbll_init_fxn) (void);
+  *      pulEntry        - Location to store program entry on output.
+  *  Returns:
+  *      DSP_SOK:        Success.
+- *      DSP_EFREAD:     File read failed.
++ *      -EBADF:     File read failed.
+  *      DSP_EFWRITE:    Write to target failed.
+  *      DSP_EDYNLOAD:   Failure in dynamic loader library.
+  *  Requires:
+@@ -386,7 +386,7 @@ typedef dsp_status(*dbll_load_sect_fxn) (struct dbll_library_obj *lib,
+  *      DSP_SOK:            Success.
+  *      DSP_EMEMORY:        Memory allocation failure.
+  *      DSP_EFOPEN:         File open failure.
+- *      DSP_EFREAD:         File read failure.
++ *      -EBADF:         File read failure.
+  *      DSP_ECORRUPTFILE:   Unable to determine target type.
+  *  Requires:
+  *      DBL initialized.
+diff --git a/drivers/dsp/bridge/pmgr/cod.c b/drivers/dsp/bridge/pmgr/cod.c
+index edd08cd..3707398 100644
+--- a/drivers/dsp/bridge/pmgr/cod.c
++++ b/drivers/dsp/bridge/pmgr/cod.c
+@@ -149,7 +149,7 @@ static s32 cod_f_read(void __user *pbuffer, s32 size, s32 cCount,
+ 		set_fs(fs);
+ 
+ 		if (!dw_bytes_read)
+-			return DSP_EFREAD;
++			return -EBADF;
+ 
+ 		return dw_bytes_read / size;
+ 	}
+diff --git a/drivers/dsp/bridge/pmgr/dbll.c b/drivers/dsp/bridge/pmgr/dbll.c
+index 24bfcd0..1cdafb5 100644
+--- a/drivers/dsp/bridge/pmgr/dbll.c
++++ b/drivers/dsp/bridge/pmgr/dbll.c
+@@ -795,7 +795,7 @@ dsp_status dbll_read_sect(struct dbll_library_obj *lib, char *name,
+ 		status = -EPERM;
+ 	} else {
+ 		if (!dload_get_section(zl_lib->desc, sect, pContent))
+-			status = DSP_EFREAD;
++			status = -EBADF;
+ 
+ 	}
+ func_cont:
+-- 
+1.7.0.4
+
