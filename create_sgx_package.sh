@@ -8,7 +8,7 @@ DIR=$PWD
 # Check if the host is X86_64
 PLATFORM=`uname -m 2>/dev/null`
 if [ "$PLATFORM" == "x86_64" ]; then
-  IA32=`file /usr/share/lintian/overrides/ia32-libs | grep -v ERROR 2> /dev/null`
+  IA32=$(file /usr/share/lintian/overrides/ia32-libs | grep -v ERROR 2> /dev/null)
   if test "-$IA32-" = "--"
   then
     echo "Missing ia32-libs"
@@ -29,13 +29,20 @@ if [ -e ${DIR}/${SGX_BIN} ]; then
   echo "${SGX_BIN} found"
   if [ -e  ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/Makefile ]; then
     echo "Extracted ${SGX_BIN} found"
+    echo ""
     SGX+=E
   else
     cd ${DIR}/dl/
     echo "${SGX_BIN} needs to be executable"
+    echo ""
     sudo chmod +x ${DIR}/${SGX_BIN}
-    echo "running ${SGX_BIN}, accept all defaults and agree to the license"
-    ${DIR}/${SGX_BIN} --mode console --prefix ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}
+    echo "running ${SGX_BIN}"
+    echo ""
+    ${DIR}/${SGX_BIN} --mode console --prefix ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION} <<setupSDK
+Y
+Y
+q
+setupSDK
     cd ${DIR}
     SGX+=E
   fi
@@ -169,6 +176,7 @@ function tar_up_examples {
 	cd ${DIR}
 	mkdir -p ${DIR}/SDK/
 	cp -r ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/GFX_Linux_SDK ${DIR}/SDK/
+	echo ""
 	echo "taring SDK example files for use on the OMAP board"
 
 	echo "removing windows binaries"
