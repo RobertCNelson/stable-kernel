@@ -22,23 +22,22 @@ SGX_BIN=OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}.bin
 
 sudo rm -rfd ${DIR}/SDK/ || true
 mkdir -p ${DIR}/SDK/
-mkdir -p ${DIR}/dl/
+mkdir -p ${DIR}/SDK_BIN/
 
 function sgx_setup {
 if [ -e ${DIR}/${SGX_BIN} ]; then
   echo "${SGX_BIN} found"
-  if [ -e  ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/Makefile ]; then
+  if [ -e  ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/Makefile ]; then
     echo "Extracted ${SGX_BIN} found"
     echo ""
     SGX+=E
   else
-    cd ${DIR}/dl/
     echo "${SGX_BIN} needs to be executable"
     echo ""
     sudo chmod +x ${DIR}/${SGX_BIN}
     echo "running ${SGX_BIN}"
     echo ""
-    ${DIR}/${SGX_BIN} --mode console --prefix ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION} <<setupSDK
+    ${DIR}/${SGX_BIN} --mode console --prefix ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION} <<setupSDK
 Y
 Y
 q
@@ -55,6 +54,77 @@ else
   echo ""
 fi
 }
+
+function file-pvr-startup {
+
+cat > ${DIR}/SDK/libs/opt/pvr <<pvrscript
+#!/bin/sh
+
+if [ "\$1" = "" ]; then
+	echo PVR-INIT: Please use start, stop, or restart.
+	exit 1
+fi
+
+if [ "\$1" = "stop" -o  "\$1" = "restart" ]; then
+	echo Stopping PVR
+	rmmod bufferclass_ti 2>/dev/null
+	rmmod omaplfb 2>/dev/null
+	rmmod pvrsrvkm 2>/dev/null
+fi
+
+if [ "\$1" = "stop" ]; then
+	exit 0
+fi
+
+echo Starting PVR
+modprobe omaplfb
+modprobe bufferclass_ti
+
+pvr_maj=\$(grep "pvrsrvkm$" /proc/devices | cut -b1,2,3)
+bc_maj=\$(grep "bc" /proc/devices | cut -b1,2,3)
+
+if [ -e /dev/pvrsrvkm ] ; then 
+	rm -f /dev/pvrsrvkm
+fi
+
+#remove with 06
+if [ -e /dev/bc_cat ] ; then 
+	rm -f /dev/bc_cat
+fi
+
+mknod /dev/pvrsrvkm c \$pvr_maj 0 
+chmod 666 /dev/pvrsrvkm
+
+#remove with 06
+mknod /dev/bc_cat c \$bc_maj 0
+chmod 666 /dev/bc_cat
+
+touch /etc/powervr-esrev
+
+SAVED_ESREVISION="\$(cat /etc/powervr-esrev)"
+ES_REVISION="\$(cat /proc/cpuinfo | grep "CPU revision" | awk -F: '{print \$2}')"
+
+if [ "\${ES_REVISION}" != "\${SAVED_ESREVISION}" ] ; then
+	echo -n "Starting SGX fixup for"
+	if [ "\${ES_REVISION}" = " 3" ] ; then
+	echo " ES3.x"
+	cp -a /usr/lib/ES3.0/* /usr/lib
+	cp -a /usr/bin/ES3.0/* /usr/bin	
+	else
+	echo " ES2.x"
+	cp -a /usr/lib/ES2.0/* /usr/lib
+	cp -a /usr/bin/ES2.0/* /usr/bin	
+	fi
+	
+	echo "\${ES_REVISION}" > /etc/powervr-esrev
+fi
+
+/usr/bin/pvrsrvinit
+
+pvrscript
+
+}
+
 
 function file-install-SGX {
 
@@ -76,18 +146,18 @@ if [ \$(uname -m) == "armv7l" ] ; then
   if which lsb_release >/dev/null 2>&1 && [ "\$(lsb_release -is)" = Ubuntu ]; then
 
     if [ \$(lsb_release -sc) == "jaunty" ]; then
-      sudo cp /opt/pvr/pvr /etc/rcS.d/S60pvr.sh
+      sudo cp /opt/pvr /etc/rcS.d/S60pvr.sh
       sudo chmod +x /etc/rcS.d/S60pvr.sh
     else
-      #karmic/lucid/etc
-      sudo cp /opt/pvr/pvr /etc/init.d/pvr
+      #karmic/lucid/maverick/etc
+      sudo cp /opt/pvr /etc/init.d/pvr
       sudo chmod +x /etc/init.d/pvr
       sudo update-rc.d pvr defaults
     fi
 
   else
 
-    sudo cp /opt/pvr/pvr /etc/init.d/pvr
+    sudo cp /opt/pvr /etc/init.d/pvr
     sudo chmod +x /etc/init.d/pvr
     sudo update-rc.d pvr defaults
 
@@ -144,15 +214,16 @@ function copy_sgx_system_files {
 	mkdir -p ${DIR}/SDK/libs/usr/bin/ES2.0
 	mkdir -p ${DIR}/SDK/libs/usr/lib/ES3.0
 	mkdir -p ${DIR}/SDK/libs/usr/bin/ES3.0
-	mkdir -p ${DIR}/SDK/libs/opt/pvr
+	mkdir -p ${DIR}/SDK/libs/opt/
 
-	sudo cp ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/lib* ${DIR}/SDK/libs/usr/lib/ES2.0
-	sudo cp ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES2.0
+	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/lib* ${DIR}/SDK/libs/usr/lib/ES2.0
+	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES2.0
 
-	sudo cp ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/lib* ${DIR}/SDK/libs/usr/lib/ES3.0
-	sudo cp ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES3.0
+	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/lib* ${DIR}/SDK/libs/usr/lib/ES3.0
+	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES3.0
 
-	cp -v ${DIR}/tools/pvr ${DIR}/SDK/libs/opt/pvr
+file-pvr-startup
+
 	cd ${DIR}/SDK/libs
 	tar czf ${DIR}/SDK/target_libs.tar.gz *
 	cd ${DIR}
@@ -175,7 +246,7 @@ file-run-SGX
 function tar_up_examples {
 	cd ${DIR}
 	mkdir -p ${DIR}/SDK/
-	cp -r ${DIR}/dl/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/GFX_Linux_SDK ${DIR}/SDK/
+	cp -r ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/GFX_Linux_SDK ${DIR}/SDK/
 	echo ""
 	echo "taring SDK example files for use on the OMAP board"
 
