@@ -1,0 +1,370 @@
+From dfe11ff587c7411d2209a36d587cfc1153d741ed Mon Sep 17 00:00:00 2001
+From: Omar Ramirez Luna <omar.ramirez@ti.com>
+Date: Tue, 22 Jun 2010 18:03:11 +0300
+Subject: [PATCH 01/11] staging: ti dspbridge: add driver documentation
+
+Add a README with a general overview of TI's DSP Bridge driver,
+a short explanations of how error codes are currently used,
+and a CONTRIBUTORS file with all past & present contributors.
+
+For additional information about TI's DSP Bridge,
+check out http://omapzoom.org/gf/project/omapbridge/docman/?subdir=3
+
+Note: if by any chance we forgot to mention any contributor,
+please let us know and we will fix that.
+
+Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com>
+Signed-off-by: Kanigeri, Hari <h-kanigeri2@ti.com>
+Signed-off-by: Ameya Palande <ameya.palande@nokia.com>
+Signed-off-by: Guzman Lugo, Fernando <fernando.lugo@ti.com>
+Signed-off-by: Hebbar, Shivananda <x0hebbar@ti.com>
+Signed-off-by: Ramos Falcon, Ernesto <ernesto@ti.com>
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+Signed-off-by: Anna, Suman <s-anna@ti.com>
+Signed-off-by: Gupta, Ramesh <grgupta@ti.com>
+Signed-off-by: Gomez Castellanos, Ivan <ivan.gomez@ti.com>
+Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Signed-off-by: Armando Uribe De Leon <x0095078@ti.com>
+Signed-off-by: Deepak Chitriki <deepak.chitriki@ti.com>
+Signed-off-by: Menon, Nishanth <nm@ti.com>
+Signed-off-by: Phil Carmody <ext-phil.2.carmody@nokia.com>
+Signed-off-by: Ohad Ben-Cohen <ohad@wizery.com>
+---
+ .../staging/tidspbridge/Documentation/CONTRIBUTORS |   82 ++++++++++
+ drivers/staging/tidspbridge/Documentation/README   |   70 +++++++++
+ .../staging/tidspbridge/Documentation/error-codes  |  157 ++++++++++++++++++++
+ 3 files changed, 309 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/staging/tidspbridge/Documentation/CONTRIBUTORS
+ create mode 100644 drivers/staging/tidspbridge/Documentation/README
+ create mode 100644 drivers/staging/tidspbridge/Documentation/error-codes
+
+diff --git a/drivers/staging/tidspbridge/Documentation/CONTRIBUTORS b/drivers/staging/tidspbridge/Documentation/CONTRIBUTORS
+new file mode 100644
+index 0000000..b40e7a6
+--- /dev/null
++++ b/drivers/staging/tidspbridge/Documentation/CONTRIBUTORS
+@@ -0,0 +1,82 @@
++TI DSP/Bridge Driver - Contributors File
++
++The DSP/Bridge project wish to thank all of its contributors, current bridge
++driver is the result of the work of all of them. If any name is accidentally
++omitted, let us know by sending a mail to omar.ramirez@ti.com or
++x095840@ti.com.
++
++Please keep the following list in alphabetical order.
++
++	Suman Anna
++	Sripal Bagadia
++	Felipe Balbi
++	Ohad Ben-Cohen
++	Phil Carmody
++	Deepak Chitriki
++	Felipe Contreras
++	Hiroshi Doyu
++	Seth Forshee
++	Ivan Gomez Castellanos
++	Mark Grosen
++	Ramesh Gupta G
++	Fernando Guzman Lugo
++	Axel Haslam
++	Janet Head
++	Shivananda Hebbar
++	Hari Kanigeri
++	Tony Lindgren
++	Antonio Luna
++	Hari Nagalla
++	Nishanth Menon
++	Ameya Palande
++	Vijay Pasam
++	Gilbert Pitney
++	Omar Ramirez Luna
++	Ernesto Ramos
++	Chris Ring
++	Larry Schiefer
++	Rebecca Schultz Zavin
++	Bhavin Shah
++	Andy Shevchenko
++	Jeff Taylor
++	Roman Tereshonkov
++	Armando Uribe de Leon
++	Nischal Varide
++	Wenbiao Wang
++
++
++
++The following list was taken from file Revision History, if you recognize your
++alias or did any contribution to the project please let us now, so we can
++proper credit your work.
++
++	ag
++	ap
++	cc
++	db
++	dh4
++	dr
++	hp
++	jg
++	kc
++	kln
++	kw
++	ge
++	gv
++	map
++	mf
++	mk
++	mr
++	nn
++	rajesh
++	rg
++	rr
++	rt
++	sb
++	sg
++	sh
++	sp
++	srid
++	swa
++	vp
++	ww
+diff --git a/drivers/staging/tidspbridge/Documentation/README b/drivers/staging/tidspbridge/Documentation/README
+new file mode 100644
+index 0000000..df6d371
+--- /dev/null
++++ b/drivers/staging/tidspbridge/Documentation/README
+@@ -0,0 +1,70 @@
++                        Linux DSP/BIOS Bridge release
++
++DSP/BIOS Bridge overview
++========================
++
++DSP/BIOS Bridge is designed for platforms that contain a GPP and one or more
++attached DSPs.  The GPP is considered the master or "host" processor, and the
++attached DSPs are processing resources that can be utilized by applications
++and drivers running on the GPP.
++
++The abstraction that DSP/BIOS Bridge supplies, is a direct link between a GPP
++program and a DSP task.  This communication link is partitioned into two
++types of sub-links:  messaging (short, fixed-length packets) and data
++streaming (multiple, large buffers).  Each sub-link operates independently,
++and features in-order delivery of data, meaning that messages are delivered
++in the order they were submitted to the message link, and stream buffers are
++delivered in the order they were submitted to the stream link.
++
++In addition, a GPP client can specify what inputs and outputs a DSP task
++uses. DSP tasks typically use message objects for passing control and status
++information and stream objects for efficient streaming of real-time data.
++
++GPP Software Architecture
++=========================
++
++A GPP application communicates with its associated DSP task running on the
++DSP subsystem using the DSP/BIOS Bridge API. For example, a GPP audio
++application can use the API to pass messages to a DSP task that is managing
++data flowing from analog-to-digital converters (ADCs) to digital-to-analog
++converters (DACs).
++
++From the perspective of the GPP OS, the DSP is treated as just another
++peripheral device.   Most high level GPP OS typically support a device driver
++model, whereby applications can safely access and share a hardware peripheral
++through standard driver interfaces.  Therefore, to allow multiple GPP
++applications to share access to the DSP, the GPP side of DSP/BIOS Bridge
++implements a device driver for the DSP.
++
++Since driver interfaces are not always standard across GPP OS, and to provide
++some level of interoperability of application code using DSP/BIOS Bridge
++between GPP OS, DSP/BIOS Bridge provides a standard library of APIs which
++wrap calls into the device driver.   So, rather than calling GPP OS specific
++driver interfaces, applications (and even other device drivers) can use the
++standard API library directly.
++
++DSP Software Architecture
++=========================
++
++For DSP/BIOS, DSP/BIOS Bridge adds a device-independent streaming I/O (STRM)
++interface, a messaging interface (NODE), and a Resource Manager (RM) Server.
++The RM Server runs as a task of DSP/BIOS and is subservient to commands
++and queries from the GPP.  It executes commands to start and stop DSP signal
++processing nodes in response to GPP programs making requests through the
++(GPP-side) API.
++
++DSP tasks started by the RM Server are similar to any other DSP task with two
++important differences:  they must follow a specific task model consisting of
++three C-callable functions (node create, execute, and delete), with specific
++sets of arguments, and they have a pre-defined task environment established
++by the RM Server.
++
++Tasks started by the RM Server communicate using the STRM and NODE interfaces
++and act as servers for their corresponding GPP clients, performing signal
++processing functions as requested by messages sent by their GPP client.
++Typically, a DSP task moves data from source devices to sink devices using
++device independent I/O streams, performing application-specific processing
++and transformations on the data while it is moved.  For example, an audio
++task might perform audio decompression (ADPCM, MPEG, CELP) on data received
++from a GPP audio driver and then send the decompressed linear samples to a
++digital-to-analog converter.
+diff --git a/drivers/staging/tidspbridge/Documentation/error-codes b/drivers/staging/tidspbridge/Documentation/error-codes
+new file mode 100644
+index 0000000..12826e2
+--- /dev/null
++++ b/drivers/staging/tidspbridge/Documentation/error-codes
+@@ -0,0 +1,157 @@
++			DSP/Bridge Error Code Guide
++
++
++Success code is always taken as 0, except for one case where a success status
++different than 0 can be possible, this is when enumerating a series of dsp
++objects, if the enumeration doesn't have any more objects it is considered as a
++successful case. In this case a positive ENODATA is returned (TODO: Change to
++avoid this case).
++
++Error codes are returned as a negative 1, if an specific code is expected, it
++can be propagated to user space by reading errno symbol defined in errno.h, for
++specific details on the implementation a copy of the standard used should be
++read first.
++
++The error codes used by this driver are:
++
++[EPERM]
++    General driver failure.
++
++    According to the use case the following might apply:
++    - Device is in 'sleep/suspend' mode due to DPM.
++    - User cannot mark end of stream on an input channel.
++    - Requested operation is invalid for the node type.
++    - Invalid alignment for the node messaging buffer.
++    - The specified direction is invalid for the stream.
++    - Invalid stream mode.
++
++[ENOENT]
++    The specified object or file was not found.
++
++[ESRCH]
++    A shared memory buffer contained in a message or stream could not be mapped
++    to the GPP client process's virtual space.
++
++[EIO]
++    Driver interface I/O error.
++
++    or:
++    - Unable to plug channel ISR for configured IRQ.
++    - No free I/O request packets are available.
++
++[ENXIO]
++    Unable to find a named section in DSP executable or a non-existent memory
++    segment identifier was specified.
++
++[EBADF]
++    General error for file handling:
++
++    - Unable to open file.
++    - Unable to read file.
++    - An error occurred while parsing the DSP executable file.
++
++[ENOMEM]
++    A memory allocation failure occurred.
++
++[EACCES]
++    - Unable to read content of DCD data section; this is typically caused by
++    improperly configured nodes.
++    - Unable to decode DCD data section content; this is typically caused by
++    changes to DSP/BIOS Bridge data structures.
++    - Unable to get pointer to DCD data section; this is typically caused by
++    improperly configured UUIDs.
++    - Unable to load file containing DCD data section; this is typically
++    caused by a missing COFF file.
++    - The specified COFF file does not contain a valid node registration
++    section.
++
++[EFAULT]
++    Invalid pointer or handler.
++
++[EEXIST]
++    Attempted to create a channel manager  when one already exists.
++
++[EINVAL]
++    Invalid argument.
++
++[ESPIPE]
++    Symbol not found in the COFF file.  DSPNode_Create will return this if
++    the iAlg function table for an xDAIS socket is not found in the COFF file.
++    In this case, force the symbol to be linked into the COFF file.
++    DSPNode_Create, DSPNode_Execute, and DSPNode_Delete will return this if
++    the create, execute, or delete phase function, respectively, could not be
++    found in the COFF file.
++
++    - No symbol table is loaded/found for this board.
++    - Unable to initialize the ZL COFF parsing module.
++
++[EPIPE]
++    I/O is currently pending.
++
++    - End of stream was already requested on this output channel.
++
++[EDOM]
++    A parameter is specified outside its valid range.
++
++[ENOSYS]
++    The indicated operation is not supported.
++
++[EIDRM]
++    During enumeration a change in the number or properties of the objects
++    has occurred.
++
++[ECHRNG]
++    Attempt to created channel manager with too many channels or channel ID out
++    of range.
++
++[EBADR]
++    The state of the specified object is incorrect for the requested operation.
++
++    - Invalid segment ID.
++
++[ENODATA]
++    Unable to retrieve resource information from the registry.
++
++    - No more registry values.
++
++[ETIME]
++    A timeout occurred before the requested operation could complete.
++
++[ENOSR]
++    A stream has been issued the maximum number of buffers allowed in the
++    stream at once; buffers must be reclaimed from the stream before any more
++    can be issued.
++
++    - No free channels are available.
++
++[EILSEQ]
++    Error occurred in a dynamic loader library function.
++
++[EISCONN]
++    The Specified Connection already exists.
++
++[ENOTCONN]
++    Nodes not connected.
++
++[ETIMEDOUT]
++    Timeout occurred waiting for a response from the hardware.
++
++    - Wait for flush operation on an output channel timed out.
++
++[ECONNREFUSED]
++    No more connections can be made for this node.
++
++[EALREADY]
++    Channel is already in use.
++
++[EREMOTEIO]
++    dwTimeOut parameter was CHNL_IOCNOWAIT, yet no I/O completions were
++    queued.
++
++[ECANCELED]
++    I/O has been cancelled on this channel.
++
++[ENOKEY]
++    Invalid subkey parameter.
++
++    - UUID not found in registry.
+-- 
+1.7.0.4
+
