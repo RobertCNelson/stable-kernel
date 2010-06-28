@@ -101,11 +101,11 @@ fi
 if [ "${GIT_MODE}" ] ; then
 if [ "${KERNEL_PATCH}" ] ; then
         git add .
-        git commit -a -m ''$KERNEL_PATCH'-'$BUILD''
+        git commit -a -m ''$KERNEL_PATCH'-'$BUILD' patchset'
         git tag -a $KERNEL_PATCH-$BUILD -m $KERNEL_PATCH-$BUILD
 else
         git add .
-        git commit -a -m ''$KERNEL_REL'-'$BUILD''
+        git commit -a -m ''$KERNEL_REL'-'$BUILD' patchset'
         git tag -a $KERNEL_REL-$BUILD -m $KERNEL_REL-$BUILD
 fi
 fi
@@ -138,7 +138,10 @@ fi
 
 function make_uImage {
 	cd ${DIR}/KERNEL/
+	echo "make -j${CORES} ARCH=arm CROSS_COMPILE=\"${CCACHE} ${CC}\" CONFIG_DEBUG_SECTION_MISMATCH=y uImage"
 	time make -j${CORES} ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
+#2.6.35+
+#	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
 	cd ${DIR}
@@ -147,6 +150,8 @@ function make_uImage {
 function make_modules {
 	cd ${DIR}/KERNEL/
 	time make -j${CORES} ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" modules
+#2.6.35+
+#	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" modules
 	rm -rfd ${DIR}/deploy/mod &> /dev/null || true
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
