@@ -136,7 +136,7 @@ zippy
 xm
 nand
 sgx
-dsp
+#dsp
 
 echo "patch.sh ran successful"
 
