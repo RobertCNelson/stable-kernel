@@ -4,6 +4,11 @@ unset BUILD
 unset CC
 DIR=$PWD
 
+if [ $(uname -m) == "armv7l" ] ; then
+  echo "ERROR: This script can only be run on an x86 system. (TI *.bin is an x86 executable)"
+  exit
+fi
+
 BIOS_VER=5_33_06
 BIOS_FILE_VER=5.33.06
 BIOS=bios_setuplinux_${BIOS_VER}.bin
@@ -19,7 +24,7 @@ function libstd_dependicy {
 DIST=$(lsb_release -sc)
 
 if [ $(uname -m) == "x86_64" ] ; then
-	LIBSTD=$(file /usr/lib32/libstdc++.so.5 | grep -v ERROR 2> /dev/null)
+	LIBSTD=$(file /usr/lib32/libstdc++.so.5 | grep -v ERROR | awk '{print $1}')
 	if [ "-$LIBSTD-" = "--" ] ; then
 		if [ "-$DIST-" = "-karmic-" ] ; then
 			sudo apt-get install -y ia32-libs
@@ -33,7 +38,7 @@ if [ $(uname -m) == "x86_64" ] ; then
 		fi
 	fi
 else
-	LIBSTD=$(file /usr/lib/libstdc++.so.5 | grep -v ERROR 2> /dev/null)
+	LIBSTD=$(file /usr/lib/libstdc++.so.5 | grep -v ERROR | awk '{print $1}')
 	if [ "-$LIBSTD-" = "--" ] ; then
 		if [ "-$DIST-" != "--" ] ; then
 			cd /tmp
