@@ -5,8 +5,13 @@ unset DIR
 
 DIR=$PWD
 
+if [ $(uname -m) == "armv7l" ] ; then
+  echo "ERROR: This script can only be run on an x86 system. (TI *.bin is an x86 executable)"
+  exit
+fi
+
 # Check if the host is X86_64
-PLATFORM=`uname -m 2>/dev/null`
+PLATFORM=$(uname -m 2>/dev/null)
 if [ "$PLATFORM" == "x86_64" ]; then
   IA32=$(file /usr/share/lintian/overrides/ia32-libs | grep -v ERROR 2> /dev/null)
   if test "-$IA32-" = "--"
