@@ -219,6 +219,9 @@ function copy_sgx_system_files {
 	mkdir -p ${DIR}/SDK/libs/usr/bin/ES2.0
 	mkdir -p ${DIR}/SDK/libs/usr/lib/ES3.0
 	mkdir -p ${DIR}/SDK/libs/usr/bin/ES3.0
+	mkdir -p ${DIR}/SDK/libs/usr/lib/ES5.0
+	mkdir -p ${DIR}/SDK/libs/usr/bin/ES5.0
+
 	mkdir -p ${DIR}/SDK/libs/opt/
 
 	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/lib* ${DIR}/SDK/libs/usr/lib/ES2.0
@@ -226,6 +229,9 @@ function copy_sgx_system_files {
 
 	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/lib* ${DIR}/SDK/libs/usr/lib/ES3.0
 	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES3.0
+
+	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es5.x/lib* ${DIR}/SDK/libs/usr/lib/ES5.0
+	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es5.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES5.0
 
 file-pvr-startup
 
