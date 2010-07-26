@@ -15,10 +15,14 @@ BIOS=bios_setuplinux_${BIOS_VER}.bin
 BIOS_DIR=bios_${BIOS_VER}
 BIOS_FILE=DSP_BIOS_${BIOS_FILE_VER}_Components
 
-CGVERSION=7.0.2
+CGVERSION=7.0.3
 CGTOOLS_BIN=ti_cgt_c6000_${CGVERSION}_setup_linux_x86.bin
 
-TIOPENMAX=0.3.5
+TI_DSP_BIN=3.09
+
+DL_DIR=${DIR}/dl
+
+mkdir -p ${DL_DIR}
 
 function libstd_dependicy {
 DIST=$(lsb_release -sc)
@@ -55,12 +59,12 @@ cd ${DIR}
 
 function check_dsp_bios {
 if [ -e ${DIR}/dl/${BIOS} ]; then
-  echo "${BIOS} found"
+  echo "${BIOS} found..."
   if [ -e  ${DIR}/dl/${BIOS_DIR}/${BIOS_FILE} ]; then
-    echo "Installed ${BIOS} found"
+    echo "Installed ${BIOS} found..."
   else
     cd ${DIR}/dl/
-    echo "${BIOS} needs to be executable"
+    echo "Setting permissions ${BIOS} needs to be executable..."
     sudo chmod +x ${DIR}/dl/${BIOS}
     ${DIR}/dl/${BIOS} --mode console --prefix ${DIR}/dl/${BIOS_DIR} <<setupBIOS
 Y
@@ -83,12 +87,12 @@ fi
 
 function check_cgtools {
 if [ -e ${DIR}/dl/${CGTOOLS_BIN} ]; then
-  echo "${CGTOOLS_BIN} found"
+  echo "${CGTOOLS_BIN} found..."
   if [ -e  ${DIR}/dl/TI_CGT_C6000_${CGVERSION}/uninstall_cgt_c6000.bin ]; then
-    echo "Installed ${CGTOOLS_BIN} found"
+    echo "Installed ${CGTOOLS_BIN} found..."
   else
     cd ${DIR}/dl/
-    echo "${CGTOOLS_BIN} needs to be executable"
+    echo "Setting permissions ${CGTOOLS_BIN} needs to be executable..."
     sudo chmod +x ${DIR}/dl/${CGTOOLS_BIN}
     ${DIR}/dl/${CGTOOLS_BIN} --mode console --prefix ${DIR}/dl/TI_CGT_C6000_${CGVERSION} <<setupCG
 Y
@@ -167,6 +171,29 @@ sed -i -e 's:CGT6X_VER = '$CGVERSION':CGT6X_VER = 6.0.7:g' product.mak
 cd ${DIR}
 }
 
+function ti_DSP_binaries {
+
+if [ -e ${DIR}/dl/DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install ]; then
+  echo "DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install found..."
+  if [ -e  ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/Binaries/baseimage.dof ]; then
+    echo "Installed DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install found..."
+  else
+    cd ${DIR}/dl/
+    echo "Setting permissions DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install needs to be executable..."
+    sudo chmod +x ${DIR}/dl/DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install
+    ${DIR}/dl/DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install --mode console --prefix ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/ <<setupDSP
+Y
+setupDSP
+
+    cd ${DIR}
+  fi
+else
+  wget -c --directory-prefix=${DL_DIR} --no-check-certificate https://gforge.ti.com/gf/download/frsrelease/285/3260/DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install
+  ti_DSP_binaries
+fi
+
+}
+
 function file-DSP-startup {
 
 cat > ${DIR}/DSP/opt/dsp <<dspscript
@@ -176,6 +203,7 @@ case "\$1" in
 	start)
 		modprobe dspbridge
 		modprobe bridgedriver
+#		modprobe bridgedriver base_img=/lib/dsp/baseimage.dof
 		;;
 esac
 
@@ -231,16 +259,16 @@ installDSP
 
 }
 
-
 function create_DSP_package {
 	cd ${DIR}
 	sudo rm -rfd ${DIR}/DSP/
 	mkdir -p ${DIR}/DSP/
-	mkdir -p ${DIR}/DSP/lib/
+	mkdir -p ${DIR}/DSP/lib/dsp
 	mkdir -p ${DIR}/DSP/opt/
 
 	sudo cp -rv ${DIR}/dl/userspace-dspbridge/source/target/dspbridge/ ${DIR}/DSP/opt/
 	sudo cp -v ${DIR}/dl/userspace-dspbridge/source/target/lib/* ${DIR}/DSP/lib/
+	sudo cp -v ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/Binaries/* ${DIR}/DSP/lib/dsp
 
 file-DSP-startup
 
@@ -272,7 +300,9 @@ if [ -e ${DIR}/system.sh ]; then
 	check_dsp_bios
 	check_cgtools
 	check_dspbridge_userspace
+	ti_DSP_binaries
 
+echo "Starting UserSpace Build"
 	build_dsp_userspace
 	create_DSP_package
 
