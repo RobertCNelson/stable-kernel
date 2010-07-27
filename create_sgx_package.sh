@@ -108,10 +108,19 @@ touch /etc/powervr-esrev
 
 SAVED_ESREVISION="\$(cat /etc/powervr-esrev)"
 ES_REVISION="\$(cat /proc/cpuinfo | grep "CPU revision" | awk -F: '{print \$2}')"
+XM_REVISION="\$(dmesg | grep "OMAP3630 ES1.0" | awk '{print \$3}')"
+
+if [ "\${XM_REVISION}" = "OMAP3630" ] ; then 
+ES_REVISION=' 5'
+fi
 
 if [ "\${ES_REVISION}" != "\${SAVED_ESREVISION}" ] ; then
 	echo -n "Starting SGX fixup for"
-	if [ "\${ES_REVISION}" = " 3" ] ; then
+	if [ "\${ES_REVISION}" = " 5" ] ; then 
+	echo " ES5.x"
+	cp -a /usr/lib/ES5.0/* /usr/lib
+	cp -a /usr/bin/ES5.0/* /usr/bin	
+	else if [ "\${ES_REVISION}" = " 3" ] ; then
 	echo " ES3.x"
 	cp -a /usr/lib/ES3.0/* /usr/lib
 	cp -a /usr/bin/ES3.0/* /usr/bin	
@@ -119,6 +128,7 @@ if [ "\${ES_REVISION}" != "\${SAVED_ESREVISION}" ] ; then
 	echo " ES2.x"
 	cp -a /usr/lib/ES2.0/* /usr/lib
 	cp -a /usr/bin/ES2.0/* /usr/bin	
+	fi
 	fi
 	
 	echo "\${ES_REVISION}" > /etc/powervr-esrev
