@@ -103,7 +103,7 @@ patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-Kconfig-updates.diff
 patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.02-update-bufferclass_ti-Kbuild.diff
 patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.02-update-bufferclass_ti-kfree-kmalloc.diff
 patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.02-update-dc_omap3430_linux-Kbuild.diff
-#Not Ready...
+#3.01.00.06
 patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.06-into-TI-3.01.00.02.patch
 patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-update-bufferclass_ti-kfree-kmalloc.diff
 patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-2.6.32-PSP.diff
