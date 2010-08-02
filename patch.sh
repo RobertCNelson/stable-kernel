@@ -3,6 +3,8 @@
 
 echo "Starting patch.sh"
 
+patch -s -p1 < "${DIR}/patches/rcn/CONFIG-enable-arm-rt2870-staging.diff"
+
 function dss2 {
 echo "dss2 patches"
 

@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.6.34.1-x2
-# Mon Jul  5 14:40:16 2010
+# Linux kernel version: 2.6.34.2-x2
+# Mon Aug  2 13:24:40 2010
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -2749,6 +2749,7 @@ CONFIG_W35UND=m
 CONFIG_PRISM2_USB=m
 # CONFIG_ECHO is not set
 CONFIG_OTUS=m
+CONFIG_RT2870=m
 # CONFIG_COMEDI is not set
 # CONFIG_ASUS_OLED is not set
 # CONFIG_TRANZPORT is not set
