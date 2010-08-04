@@ -32,3 +32,16 @@ Breaks Lucid, kernel unbootable...
 5/8/2010 (2.6.33.3-l1)
 CONFIG_TOUCHSCREEN_USB_COMPOSITE=m
 
+#To compare with Ubuntu's
+#ubuntu git://kernel.ubuntu.com/ubuntu/ubuntu-maverick.git
+
+#Requirements:
+sudo apt-get install fakeroot build-essential
+sudo apt-get install crash kexec-tools makedumpfile kernel-wedge
+sudo apt-get build-dep linux
+sudo apt-get install git-core libncurses5 libncurses5-dev
+sudo apt-get install libelf-dev asciidoc binutils-dev
+
+fakeroot debian/rules clean
+debian/rules updateconfigs
+debian/rules editconfigsdebian/rules editconfigs
