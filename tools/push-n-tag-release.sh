@@ -1,6 +1,8 @@
 #!/bin/bash -e
 #yeah, i'm getting lazy..
 
+unset IS_LUCID
+
 DIR=$PWD
 
 if [ -e ${DIR}/version.sh ]; then
