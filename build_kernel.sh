@@ -7,38 +7,6 @@ unset CC
 unset GIT_MODE
 unset IS_LUCID
 
-unset PACKAGE
-unset APT
-
-if [ ! $(which mkimage) ];then
- echo "Missing uboot-mkimage"
- PACKAGE="uboot-mkimage "
- APT=1
-fi
-
-if [ ! $(which ccache) ];then
- echo "Missing ccache"
- PACKAGE+="ccache "
- APT=1
-fi
-
-if [ ! $(which git) ];then
- echo "Missing git"
- PACKAGE+="git-core "
- APT=1
-fi
-
-if [ ! $(file /usr/lib/libncurses.so | grep -v ERROR | awk '{print $1}') ];then
- echo "Missing ncurses"
- PACKAGE+="libncurses5-dev "
- APT=1
-fi
-
-if [ "${APT}" ];then
- echo "Installing Dependicies"
- sudo aptitude install $PACKAGE
-fi
-
 ARCH=$(uname -m)
 CCACHE=ccache
 DIR=$PWD
@@ -160,6 +128,8 @@ function make_modules {
 	cd ${DIR}
 }
 
+
+	. ./tools/host_det.sh
 if [ -e ${DIR}/system.sh ]; then
 	. system.sh
 	. version.sh
