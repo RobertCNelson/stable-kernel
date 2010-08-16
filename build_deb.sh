@@ -41,11 +41,6 @@ function patch_kernel {
 	cd ${DIR}/KERNEL
 	export DIR GIT_MODE
 	/bin/bash -e ${DIR}/patch.sh
-if [ "${KERNEL_PATCH}" ] ; then
-	sed -i 's/EXTRAVERSION = .'$STABLE_PATCH'/EXTRAVERSION = .'$STABLE_PATCH'-'$BUILD'/g' ${DIR}/KERNEL/Makefile
-else
-	sed -i 's/EXTRAVERSION =/EXTRAVERSION = -'$BUILD'/g' ${DIR}/KERNEL/Makefile
-fi
 
 	cd ${DIR}/
 }
@@ -74,10 +69,8 @@ fi
 
 function make_deb {
 	cd ${DIR}/KERNEL/
-	echo "make ARCH=arm CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg"
-	fakeroot make ARCH=arm CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
-#2.6.35+
-#	fakeroot make ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
+	echo "make ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg"
+	fakeroot make ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
 	mv ${DIR}/*.deb ${DIR}/deploy/
 	cd ${DIR}
 }

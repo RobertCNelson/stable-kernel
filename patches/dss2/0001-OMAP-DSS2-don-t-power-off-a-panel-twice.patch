@@ -1,0 +1,321 @@
+From 0508f8d11ab2ad94d84f5c59ada799ff427d136a Mon Sep 17 00:00:00 2001
+From: Stanley.Miao <stanley.miao@windriver.com>
+Date: Tue, 10 Aug 2010 20:16:25 +0800
+Subject: [PATCH] OMAP: DSS2: don't power off a panel twice
+
+If we blank the panel by
+echo 1 > /sys/devices/platform/omapfb/graphics/fb0/blank
+
+Then, we reboot the sytem, the kernel will crash at
+drivers/video/omap2/dss/core.c:323
+
+This is because the panel is closed twice. Now add a variable panel_enabled
+to forbid a panel is power on or power off twice.
+
+Signed-off-by: Stanley.Miao <stanley.miao@windriver.com>
+---
+ drivers/video/omap2/displays/panel-generic.c       |   11 +++++++++++
+ .../video/omap2/displays/panel-sharp-lq043t1dg01.c |   11 +++++++++++
+ .../video/omap2/displays/panel-sharp-ls037v7dw01.c |   11 +++++++++++
+ drivers/video/omap2/displays/panel-taal.c          |    6 ++++++
+ .../video/omap2/displays/panel-toppoly-tdo35s.c    |   11 +++++++++++
+ .../video/omap2/displays/panel-tpo-td043mtea1.c    |    9 +++++++++
+ 6 files changed, 59 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/omap2/displays/panel-generic.c b/drivers/video/omap2/displays/panel-generic.c
+index 300eff5..607f11a 100644
+--- a/drivers/video/omap2/displays/panel-generic.c
++++ b/drivers/video/omap2/displays/panel-generic.c
+@@ -22,6 +22,8 @@
+ 
+ #include <plat/display.h>
+ 
++static int panel_enabled;
++
+ static struct omap_video_timings generic_panel_timings = {
+ 	/* 640 x 480 @ 60 Hz  Reduced blanking VESA CVT 0.31M3-R */
+ 	.x_res		= 640,
+@@ -39,6 +41,9 @@ static int generic_panel_power_on(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+ 
++	if (panel_enabled)
++		return 0;
++
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+ 		goto err0;
+@@ -48,6 +53,7 @@ static int generic_panel_power_on(struct omap_dss_device *dssdev)
+ 		if (r)
+ 			goto err1;
+ 	}
++	panel_enabled = 1;
+ 
+ 	return 0;
+ err1:
+@@ -58,10 +64,14 @@ err0:
+ 
+ static void generic_panel_power_off(struct omap_dss_device *dssdev)
+ {
++	if (panel_enabled == 0)
++		return;
++
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+ 	omapdss_dpi_display_disable(dssdev);
++	panel_enabled = 0;
+ }
+ 
+ static int generic_panel_probe(struct omap_dss_device *dssdev)
+@@ -155,6 +165,7 @@ static struct omap_dss_driver generic_driver = {
+ 
+ static int __init generic_panel_drv_init(void)
+ {
++	panel_enabled = 0;
+ 	return omap_dss_register_driver(&generic_driver);
+ }
+ 
+diff --git a/drivers/video/omap2/displays/panel-sharp-lq043t1dg01.c b/drivers/video/omap2/displays/panel-sharp-lq043t1dg01.c
+index 1026746..b5205d4 100644
+--- a/drivers/video/omap2/displays/panel-sharp-lq043t1dg01.c
++++ b/drivers/video/omap2/displays/panel-sharp-lq043t1dg01.c
+@@ -24,6 +24,8 @@
+ 
+ #include <plat/display.h>
+ 
++static int panel_enabled;
++
+ static struct omap_video_timings sharp_lq_timings = {
+ 	.x_res = 480,
+ 	.y_res = 272,
+@@ -43,6 +45,9 @@ static int sharp_lq_panel_power_on(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+ 
++	if (panel_enabled)
++		return 0;
++
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+ 		goto err0;
+@@ -55,6 +60,7 @@ static int sharp_lq_panel_power_on(struct omap_dss_device *dssdev)
+ 		if (r)
+ 			goto err1;
+ 	}
++	panel_enabled = 1;
+ 
+ 	return 0;
+ err1:
+@@ -65,6 +71,9 @@ err0:
+ 
+ static void sharp_lq_panel_power_off(struct omap_dss_device *dssdev)
+ {
++	if (panel_enabled == 0)
++		return;
++
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+@@ -72,6 +81,7 @@ static void sharp_lq_panel_power_off(struct omap_dss_device *dssdev)
+ 	msleep(100);
+ 
+ 	omapdss_dpi_display_disable(dssdev);
++	panel_enabled = 0;
+ }
+ 
+ static int sharp_lq_panel_probe(struct omap_dss_device *dssdev)
+@@ -146,6 +156,7 @@ static struct omap_dss_driver sharp_lq_driver = {
+ 
+ static int __init sharp_lq_panel_drv_init(void)
+ {
++	panel_enabled = 0;
+ 	return omap_dss_register_driver(&sharp_lq_driver);
+ }
+ 
+diff --git a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+index 7d9eb2b..3750fdc 100644
+--- a/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/omap2/displays/panel-sharp-ls037v7dw01.c
+@@ -31,6 +31,8 @@ struct sharp_data {
+ 	struct backlight_device *bl;
+ };
+ 
++static int panel_enabled;
++
+ static struct omap_video_timings sharp_ls_timings = {
+ 	.x_res = 480,
+ 	.y_res = 640,
+@@ -135,6 +137,9 @@ static int sharp_ls_power_on(struct omap_dss_device *dssdev)
+ {
+ 	int r = 0;
+ 
++	if (panel_enabled)
++		return 0;
++
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+ 		goto err0;
+@@ -147,6 +152,7 @@ static int sharp_ls_power_on(struct omap_dss_device *dssdev)
+ 		if (r)
+ 			goto err1;
+ 	}
++	panel_enabled = 1;
+ 
+ 	return 0;
+ err1:
+@@ -157,6 +163,9 @@ err0:
+ 
+ static void sharp_ls_power_off(struct omap_dss_device *dssdev)
+ {
++	if (panel_enabled == 0)
++		return;
++
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+@@ -165,6 +174,7 @@ static void sharp_ls_power_off(struct omap_dss_device *dssdev)
+ 	msleep(100);
+ 
+ 	omapdss_dpi_display_disable(dssdev);
++	panel_enabled = 0;
+ }
+ 
+ static int sharp_ls_panel_enable(struct omap_dss_device *dssdev)
+@@ -213,6 +223,7 @@ static struct omap_dss_driver sharp_ls_driver = {
+ 
+ static int __init sharp_ls_panel_drv_init(void)
+ {
++	panel_enabled = 0;
+ 	return omap_dss_register_driver(&sharp_ls_driver);
+ }
+ 
+diff --git a/drivers/video/omap2/displays/panel-taal.c b/drivers/video/omap2/displays/panel-taal.c
+index aaf5d30..db65577 100644
+--- a/drivers/video/omap2/displays/panel-taal.c
++++ b/drivers/video/omap2/displays/panel-taal.c
+@@ -635,6 +635,9 @@ static int taal_power_on(struct omap_dss_device *dssdev)
+ 	u8 id1, id2, id3;
+ 	int r;
+ 
++	if (td->enabled)
++		return 0;
++
+ 	if (dssdev->platform_enable) {
+ 		r = dssdev->platform_enable(dssdev);
+ 		if (r)
+@@ -715,6 +718,9 @@ static void taal_power_off(struct omap_dss_device *dssdev)
+ {
+ 	struct taal_data *td = dev_get_drvdata(&dssdev->dev);
+ 
++	if (td->enabled == 0)
++		return;
++
+ 	dsi_bus_lock();
+ 
+ 	cancel_delayed_work(&td->esd_work);
+diff --git a/drivers/video/omap2/displays/panel-toppoly-tdo35s.c b/drivers/video/omap2/displays/panel-toppoly-tdo35s.c
+index fa434ca..da279d8 100644
+--- a/drivers/video/omap2/displays/panel-toppoly-tdo35s.c
++++ b/drivers/video/omap2/displays/panel-toppoly-tdo35s.c
+@@ -26,6 +26,8 @@
+ 
+ #include <plat/display.h>
+ 
++static int panel_enabled;
++
+ static struct omap_video_timings toppoly_tdo_panel_timings = {
+ 	/* 640 x 480 @ 60 Hz  Reduced blanking VESA CVT 0.31M3-R */
+ 	.x_res		= 480,
+@@ -46,6 +48,9 @@ static int toppoly_tdo_panel_power_on(struct omap_dss_device *dssdev)
+ {
+ 	int r;
+ 
++	if (panel_enabled)
++		return 0;
++
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+ 		goto err0;
+@@ -55,6 +60,7 @@ static int toppoly_tdo_panel_power_on(struct omap_dss_device *dssdev)
+ 		if (r)
+ 			goto err1;
+ 	}
++	panel_enabled = 1;
+ 
+ 	return 0;
+ err1:
+@@ -65,10 +71,14 @@ err0:
+ 
+ static void toppoly_tdo_panel_power_off(struct omap_dss_device *dssdev)
+ {
++	if (panel_enabled == 0)
++		return;
++
+ 	if (dssdev->platform_disable)
+ 		dssdev->platform_disable(dssdev);
+ 
+ 	omapdss_dpi_display_disable(dssdev);
++	panel_enabled = 0;
+ }
+ 
+ static int toppoly_tdo_panel_probe(struct omap_dss_device *dssdev)
+@@ -141,6 +151,7 @@ static struct omap_dss_driver generic_driver = {
+ 
+ static int __init toppoly_tdo_panel_drv_init(void)
+ {
++	panel_enabled = 0;
+ 	return omap_dss_register_driver(&generic_driver);
+ }
+ 
+diff --git a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+index e866e76..9f09150 100644
+--- a/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/omap2/displays/panel-tpo-td043mtea1.c
+@@ -57,6 +57,7 @@ struct tpo_td043_device {
+ 	u32 mode;
+ 	u32 hmirror:1;
+ 	u32 vmirror:1;
++	int enabled;
+ };
+ 
+ static int tpo_td043_write(struct spi_device *spi, u8 addr, u8 data)
+@@ -269,6 +270,9 @@ static int tpo_td043_power_on(struct omap_dss_device *dssdev)
+ 	int nreset_gpio = dssdev->reset_gpio;
+ 	int r;
+ 
++	if (tpo_td043->enabled)
++		return 0;
++
+ 	r = omapdss_dpi_display_enable(dssdev);
+ 	if (r)
+ 		goto err0;
+@@ -295,6 +299,7 @@ static int tpo_td043_power_on(struct omap_dss_device *dssdev)
+ 	tpo_td043_write_mirror(tpo_td043->spi, tpo_td043->hmirror,
+ 			tpo_td043->vmirror);
+ 	tpo_td043_write_gamma(tpo_td043->spi, tpo_td043->gamma);
++	tpo_td043->enabled = 1;
+ 
+ 	return 0;
+ err1:
+@@ -308,6 +313,9 @@ static void tpo_td043_power_off(struct omap_dss_device *dssdev)
+ 	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&dssdev->dev);
+ 	int nreset_gpio = dssdev->reset_gpio;
+ 
++	if (tpo_td043->enabled == 0)
++		return;
++
+ 	tpo_td043_write(tpo_td043->spi, 3,
+ 			TPO_R03_VAL_STANDBY | TPO_R03_EN_PWM);
+ 
+@@ -325,6 +333,7 @@ static void tpo_td043_power_off(struct omap_dss_device *dssdev)
+ 		dssdev->platform_disable(dssdev);
+ 
+ 	omapdss_dpi_display_disable(dssdev);
++	tpo_td043->enabled = 0;
+ }
+ 
+ static int tpo_td043_enable(struct omap_dss_device *dssdev)
+-- 
+1.7.0.4
+

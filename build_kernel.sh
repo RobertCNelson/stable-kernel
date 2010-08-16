@@ -61,11 +61,7 @@ function patch_kernel {
 	cd ${DIR}/KERNEL
 	export DIR GIT_MODE
 	/bin/bash -e ${DIR}/patch.sh
-if [ "${KERNEL_PATCH}" ] ; then
-	sed -i 's/EXTRAVERSION = .'$STABLE_PATCH'/EXTRAVERSION = .'$STABLE_PATCH'-'$BUILD'/g' ${DIR}/KERNEL/Makefile
-else
-	sed -i 's/EXTRAVERSION =/EXTRAVERSION = -'$BUILD'/g' ${DIR}/KERNEL/Makefile
-fi
+
 if [ "${GIT_MODE}" ] ; then
 if [ "${KERNEL_PATCH}" ] ; then
         git add .
@@ -106,10 +102,8 @@ fi
 
 function make_uImage {
 	cd ${DIR}/KERNEL/
-	echo "make -j${CORES} ARCH=arm CROSS_COMPILE=\"${CCACHE} ${CC}\" CONFIG_DEBUG_SECTION_MISMATCH=y uImage"
-	time make -j${CORES} ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
-#2.6.35+
-#	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" CONFIG_DEBUG_SECTION_MISMATCH=y uImage"
+	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
 	cd ${DIR}
@@ -117,9 +111,7 @@ function make_uImage {
 
 function make_modules {
 	cd ${DIR}/KERNEL/
-	time make -j${CORES} ARCH=arm CROSS_COMPILE="${CCACHE} ${CC}" modules
-#2.6.35+
-#	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" modules
+	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" modules
 	rm -rfd ${DIR}/deploy/mod &> /dev/null || true
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod

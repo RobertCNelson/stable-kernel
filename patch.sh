@@ -3,76 +3,50 @@
 
 echo "Starting patch.sh"
 
-patch -s -p1 < "${DIR}/patches/rcn/CONFIG-enable-arm-rt2870-staging.diff"
+patch -s -p1 < "${DIR}/patches/rcn/bug16310.diff"
+
+patch -s -p1 < "${DIR}/patches/gpio/0001-ARM-OMAP-Beagle-revision-detection.patch"
+patch -s -p1 < "${DIR}/patches/gpio/0002-ARM-OMAP-Beagle-Cx-boards-use-revision-detection.patch"
+patch -s -p1 < "${DIR}/patches/gpio/0003-ARM-OMAP-Beagle-support-MMC-gpio_wp-differences-on-x.patch"
+
 
 function dss2 {
 echo "dss2 patches"
-
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0001-OMAP-Enable-DSS2-in-OMAP3EVM-defconfig.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0002-OMAP-AM3517-Enable-DSS2-in-AM3517EVM-defconfig.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0003-OMAP-DSS2-Add-Kconfig-option-for-DPI-display-type.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0004-OMAP-DSS2-Remove-redundant-enable-disable-calls-from.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0005-OMAP-DSS2-Use-vdds_sdi-regulator-supply-in-SDI.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0006-OMAP-DSS2-fix-lock_fb_info-and-omapfb_lock-locking-o.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0007-OMAP-DSS2-check-lock_fb_info-return-value.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0008-OMAP-DSS2-VENC-don-t-call-platform_enable-disable-tw.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0009-OMAP-DSS2-Fix-device-disable-when-driver-is-not-load.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0010-OMAP-DSS2-Make-partial-update-width-even.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0011-OMAP-DSS2-Taal-add-mutex-to-protect-panel-data.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0012-OMAP-DSS2-Taal-Fix-DSI-bus-locking-problem.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0013-OMAP-LCD-LS037V7DW01-Add-Backlight-driver-support.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0014-OMAP-DSS2-TPO-TD03MTEA1-fix-Kconfig-dependency.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0015-OMAP-RX51-Add-LCD-Panel-support.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0016-OMAP-RX51-Add-Touch-Controller-in-SPI-board-info.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0017-OMAP-DSS2-Add-ACX565AKM-Panel-Driver.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0018-OMAP-RX51-Update-board-defconfig.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0019-OMAP3630-DSS2-Updating-MAX-divider-value.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0020-OMAP2-DSS-Add-missing-line-for-update-bg-color.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0021-board-omap3-beagle-add-DSS2-support.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0022-OMAP-DSS2-omap_dss_probe-conditional-compilation-cle.patch
-patch -s -p1 < ${DIR}/patches/dss2/tomba/0023-OMAP-DSS2-Fix-omap_dss_probe-error-path.patch
-
 patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo-fixup.patch
-patch -s -p1 < ${DIR}/patches/dss2/reboot-fix.diff
+
+#http://www.spinics.net/lists/linux-omap/msg34582.html
+patch -s -p1 < "${DIR}/patches/dss2/0001-OMAP-DSS2-don-t-power-off-a-panel-twice.patch"
+
+patch -s -p1 < "${DIR}/patches/dss2/OMAP2-OMAPFB-Fix-invalid-bpp-for-PAL-and-NTSC-modes.patch"
+
 }
 
 function musb {
 echo "musb patches"
-patch -s -p1 < ${DIR}/patches/musb/force-fifo_mode-5.diff
-}
-
-function vfp {
-echo "vfp patches"
-#git am ${DIR}/patches/vfp/0002-Signal-handlers-can-use-floating-point-so-prevent-th.patch
+patch -s -p1 < "${DIR}/patches/musb/force-fifo_mode-5.diff"
 }
 
 function micrel {
 echo "micrel patches"
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/01_eeprom_93cx6_2.6.34.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/02_eeprom_93cx6_2.6.34.patch
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/01_eeprom_93cx6_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/02_eeprom_93cx6_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/03_ksz8851_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/04_ksz8851_2.6.35.patch"
 
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/03_ksz8851_2.6.34-fixup.patch
-#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/03_ksz8851_2.6.34.patch
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/06_ksz8851_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/07_ksz8851_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/08_ksz8851_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/09_ksz8851_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/10_ksz8851_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/11_ksz8851_2.6.35.patch"
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/12_ksz8851_2.6.35.patch"
 
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/04_ksz8851_2.6.34.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/05_ksz8851_2.6.34.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/06_ksz8851_2.6.34.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/07_ksz8851_2.6.34.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/08_ksz8851_2.6.34.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/09_ksz8851_2.6.34.patch
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/10_ksz8851_2.6.34.patch
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/15_ksz8851_2.6.35.patch"
 
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/11_ksz8851_2.6.34-fixup.patch
-#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/11_ksz8851_2.6.34.patch
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/18_ksz8851_2.6.35.patch"
 
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/12_ksz8851_2.6.34.patch
-
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/15_ksz8851_2.6.34-fixup.patch
-#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/15_ksz8851_2.6.34.patch
-
-#patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/16_compressed_2.6.33.patch
-
-patch -s -p1 < ${DIR}/patches/micrel/linux-2.6.34/18_ksz8851_2.6.34-rc7.patch
+#noticed by cwillu july 18th
+patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/null-pointer-memory-leak.patch"
 }
 
 function zippy {
@@ -88,6 +62,8 @@ patch -s -p1 < ${DIR}/patches/xm/xm-dvi-ehci-support.diff
 patch -s -p1 < ${DIR}/patches/xm/sakoman/0001-ARM-OMAP-Add-macros-for-comparing-silicon-revision.patch
 patch -s -p1 < ${DIR}/patches/xm/sakoman/0001-OMAP-DSS2-check-for-both-cpu-type-and-revision-rathe.patch
 patch -s -p1 < ${DIR}/patches/xm/sakoman/0001-OMAP-DSS2-enable-hsclk-in-dsi_pll_init-for-OMAP36XX.patch
+patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
+patch -s -p1 < "${DIR}/patches/arago-project/0001-AM37x-Switch-SGX-clocks-to-200MHz.patch"
 }
 
 function nand {
@@ -112,33 +88,25 @@ patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-2.6.32-PSP.diff
 patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-use-omap3630.diff
 }
 
-function dsp {
-echo "merge in dspbridge"
+function panda {
+echo "merge in panda support"
+patch -s -p1 < "${DIR}/patches/panda/0001-omap4-Add-OMAP4-Panda-Support.patch"
+}
 
-patch -s -p1 < ${DIR}/patches/dspbridge/0001-staging-ti-dspbridge-add-driver-documentation.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0002-staging-ti-dspbridge-add-core-driver-sources.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0003-staging-ti-dspbridge-add-platform-manager-code.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0004-staging-ti-dspbridge-add-resource-manager.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0005-staging-ti-dspbridge-add-MMU-support.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0006-staging-ti-dspbridge-add-generic-utilities.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0007-staging-ti-dspbridge-add-services.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0008-staging-ti-dspbridge-add-DOFF-binaries-loader.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0009-staging-ti-dspbridge-add-header-files.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0010-staging-ti-dspbridge-add-TODO-file.patch
-
-#patch -s -p1 < ${DIR}/patches/dspbridge/0011-staging-ti-dspbridge-enable-driver-building.patch
-patch -s -p1 < ${DIR}/patches/dspbridge/0011-staging-ti-dspbridge-enable-driver-building-fixup.patch
+function igepv2 {
+echo "igepv2 board related patches"
+patch -s -p1 < "${DIR}/patches/igepv2/0001-ARM-OMAP3-Add-S-Video-output-to-IGEPv2-board.patch"
 }
 
 dss2
 musb
-#vfp
 micrel
 zippy
 xm
 nand
 sgx
-#dsp
+panda
+igepv2
 
 echo "patch.sh ran successful"
 
