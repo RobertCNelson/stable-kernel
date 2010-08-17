@@ -1,5 +1,44 @@
+From e324d7fe11d677e587a8639aaa92f9f3a8cf28d4 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Tue, 17 Aug 2010 09:43:20 -0500
+Subject: [PATCH] OMAP3 SGX enable driver building
+
+---
+ drivers/staging/Kconfig                            |    2 +
+ drivers/staging/Makefile                           |    1 +
+ drivers/staging/omap3-sgx/Kbuild                   |  156 ++++++++++++++++++++
+ drivers/staging/omap3-sgx/Kconfig                  |    9 +
+ .../services4/3rdparty/bufferclass_ti/Kbuild       |    6 +-
+ .../services4/3rdparty/dc_omap3430_linux/Kbuild    |   13 +-
+ 6 files changed, 177 insertions(+), 10 deletions(-)
+ create mode 100644 drivers/staging/omap3-sgx/Kconfig
+
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 984a754..f873c94 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -147,5 +147,7 @@ source "drivers/staging/mrst-touchscreen/Kconfig"
+ 
+ source "drivers/staging/msm/Kconfig"
+ 
++source "drivers/staging/omap3-sgx/Kconfig"
++
+ endif # !STAGING_EXCLUDE_BUILD
+ endif # STAGING
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index 9fa2513..5a154f1 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -48,6 +48,7 @@ obj-$(CONFIG_FB_SM7XX)		+= sm7xx/
+ obj-$(CONFIG_DT3155)		+= dt3155/
+ obj-$(CONFIG_VIDEO_DT3155)	+= dt3155v4l/
+ obj-$(CONFIG_CRYSTALHD)		+= crystalhd/
++obj-$(CONFIG_OMAP3_SGX) 	+= omap3-sgx/
+ obj-$(CONFIG_CXT1E1)		+= cxt1e1/
+ obj-$(CONFIG_TI_ST)		+= ti-st/
+ obj-$(CONFIG_ADIS16255)		+= adis16255/
 diff --git a/drivers/staging/omap3-sgx/Kbuild b/drivers/staging/omap3-sgx/Kbuild
-index 875de78..630631a 100644
+index 875de78..2e482f0 100644
 --- a/drivers/staging/omap3-sgx/Kbuild
 +++ b/drivers/staging/omap3-sgx/Kbuild
 @@ -1,3 +1,159 @@
@@ -91,7 +130,7 @@ index 875de78..630631a 100644
 +SYS_CFLAGS.$(SUPPORT_POWER_MANAGEMENT)			+= -DSUPPORT_POWER_MANAGEMENT
 +SYS_CFLAGS.$(SUPPORT_BUFFER_CLASS)			+= -DSUPPORT_BUFFER_CLASS
 +
-+SYS_CFLAGS.$(SUPPORT_PERCONTEXT_PB)			+= -DSUPPORT_PERCONTEXT_PB 
++SYS_CFLAGS.$(SUPPORT_PERCONTEXT_PB)			+= -DSUPPORT_PERCONTEXT_PB
 +SYS_CFLAGS.$(SUPPORT_DYNAMIC_PBRESIZE)			+= -DSUPPORT_DYNAMIC_PBRESIZE
 +
 +SYS_CFLAGS.$(USE_FBDEV)					+= -DUSE_FBDEV
@@ -162,3 +201,59 @@ index 875de78..630631a 100644
  obj-m	:= pvrsrvkm.o
  
  FILES := \
+diff --git a/drivers/staging/omap3-sgx/Kconfig b/drivers/staging/omap3-sgx/Kconfig
+new file mode 100644
+index 0000000..f1ed658
+--- /dev/null
++++ b/drivers/staging/omap3-sgx/Kconfig
+@@ -0,0 +1,9 @@
++#
++# SGX Driver Support
++#
++
++config OMAP3_SGX
++	bool "OMAP3 SGX support (TI: 3.01.00.02)"
++	depends on OMAP2_DSS && m
++	help
++	  This is TI's OMAP3 SGX Kernel Modules 3.01.00.02
+diff --git a/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/Kbuild b/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/Kbuild
+index 52a6c65..52e5ba7 100644
+--- a/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/Kbuild
++++ b/drivers/staging/omap3-sgx/services4/3rdparty/bufferclass_ti/Kbuild
+@@ -1,6 +1,6 @@
+-EXTRA_CFLAGS =	-DLINUX \
+-               -I$(PVR_BUILD_DIR)/include4 \
+-               -I$(PVR_BUILD_DIR)/services4/include
++ccflags-y += -DLINUX
++ccflags-y += -Idrivers/staging/omap3-sgx/include4
++ccflags-y += -Idrivers/staging/omap3-sgx/services4/include
+ 
+ obj-m :=  bufferclass_ti.o
+ bufferclass_ti-y := bc_cat.o
+diff --git a/drivers/staging/omap3-sgx/services4/3rdparty/dc_omap3430_linux/Kbuild b/drivers/staging/omap3-sgx/services4/3rdparty/dc_omap3430_linux/Kbuild
+index eca3626..315ac8d 100644
+--- a/drivers/staging/omap3-sgx/services4/3rdparty/dc_omap3430_linux/Kbuild
++++ b/drivers/staging/omap3-sgx/services4/3rdparty/dc_omap3430_linux/Kbuild
+@@ -4,13 +4,12 @@ SUPPORT_TI_DSS_FW = 0
+ SYS_CFLAGS.$(SYS_USING_INTERRUPTS)                      += -DSYS_USING_INTERRUPTS
+ SYS_CFLAGS.$(SUPPORT_TI_DSS_FW)                         += -DSUPPORT_TI_DSS_FW
+ 
+-
+-EXTRA_CFLAGS =	-DLINUX \
+-		-I$(PVR_BUILD_DIR)/include4 \
+-		-I$(PVR_BUILD_DIR)/services4/include \
+-		-I$(PVR_BUILD_DIR)/services4/system/$(PVR_SYSTEM) \
+-		-I$(PVR_BUILD_DIR)/services4/system/include \
+-		$(SYS_CFLAGS.1) \
++ccflags-y += -DLINUX
++ccflags-y += -Idrivers/staging/omap3-sgx/include4
++ccflags-y += -Idrivers/staging/omap3-sgx/services4/include
++ccflags-y += -Idrivers/staging/omap3-sgx/services4/system/$(PVR_SYSTEM)
++ccflags-y += -Idrivers/staging/omap3-sgx/services4/system/include
++ccflags-y += $(SYS_CFLAGS.1)
+ 
+ obj-m := omaplfb.o
+ omaplfb-y := omaplfb_displayclass.o omaplfb_linux.o
+-- 
+1.7.0.4
+
