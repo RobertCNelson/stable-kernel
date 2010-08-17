@@ -74,18 +74,15 @@ patch -s -p1 < ${DIR}/patches/nand/0001-ARM-OMAP-Overo-use-new-gpmc-nand-infrast
 
 function sgx {
 echo "merge in ti sgx modules"
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-setup-staging-makefile.patch
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.02-mach-to-plat.diff
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-Kconfig-updates.diff
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.02-update-bufferclass_ti-Kbuild.diff
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.02-update-bufferclass_ti-kfree-kmalloc.diff
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.02-update-dc_omap3430_linux-Kbuild.diff
+patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
+patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-enable-driver-building.patch"
+
 #3.01.00.06
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.06-into-TI-3.01.00.02.patch
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-update-bufferclass_ti-kfree-kmalloc.diff
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-2.6.32-PSP.diff
-patch -s -p1 < ${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-use-omap3630.diff
+patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.06-into-TI-3.01.00.02.patch"
+#3.01.00.06 Patches
+patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-2.6.32-PSP.diff"
+patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-Compile-Fixes.patch"
+patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-use-omap3630.diff"
 }
 
 function panda {

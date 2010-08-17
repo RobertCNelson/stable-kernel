@@ -92,17 +92,8 @@ if [ -e /dev/pvrsrvkm ] ; then
 	rm -f /dev/pvrsrvkm
 fi
 
-#remove with 06
-if [ -e /dev/bc_cat ] ; then 
-	rm -f /dev/bc_cat
-fi
-
 mknod /dev/pvrsrvkm c \$pvr_maj 0 
 chmod 666 /dev/pvrsrvkm
-
-#remove with 06
-mknod /dev/bc_cat c \$bc_maj 0
-chmod 666 /dev/bc_cat
 
 touch /etc/powervr-esrev
 
