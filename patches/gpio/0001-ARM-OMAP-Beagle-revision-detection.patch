@@ -1,7 +1,7 @@
-From aa51da8cf36d18e787e0fe49168996373e14dc30 Mon Sep 17 00:00:00 2001
+From 2c7256776bd8da9ca511107d2bd04c3e137c3d9f Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Fri, 13 Aug 2010 08:40:21 -0500
-Subject: [PATCH v4 1/3] ARM: OMAP: Beagle: revision detection
+Date: Thu, 19 Aug 2010 10:31:39 -0500
+Subject: [PATCH v6 1/3] ARM: OMAP: Beagle: revision detection
 
 Due to the omap3530 ES3.0 Silicon being used on both the
 B5/B6 and C1/2/3 Beagle we can't use the cpu_is_omap34xx() 
@@ -13,19 +13,21 @@ lets use them.
 Changes:
 for older U-Boot's, use omap_mux_init_gpio()
 keep Beagle Rev in board-omap3beagle.c
+gpio_free on gpio request failure
 
 Tested on Beagle Revisions: B5, C2, C4, and xMA
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+Cc: Jarkko Nikula <jhnikula@gmail.com>
 ---
- arch/arm/mach-omap2/board-omap3beagle.c |   79 +++++++++++++++++++++++++++++++
- 1 files changed, 79 insertions(+), 0 deletions(-)
+ arch/arm/mach-omap2/board-omap3beagle.c |   88 +++++++++++++++++++++++++++++++
+ 1 files changed, 88 insertions(+), 0 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 87969c7..01a288f 100644
+index 87969c7..1aebb3f 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -50,6 +50,84 @@
+@@ -50,6 +50,93 @@
  
  #define NAND_BLOCK_SIZE		SZ_128K
  
@@ -39,7 +41,8 @@ index 87969c7..01a288f 100644
 + *	XM	= GPIO173, GPIO172, GPIO171: 0 0 0
 + */
 +enum {
-+	OMAP3BEAGLE_BOARD_AXBX = 0,
++	OMAP3BEAGLE_BOARD_UNKN = 0,
++	OMAP3BEAGLE_BOARD_AXBX,
 +	OMAP3BEAGLE_BOARD_C1_3,
 +	OMAP3BEAGLE_BOARD_C4,
 +	OMAP3BEAGLE_BOARD_XM,
@@ -47,12 +50,12 @@ index 87969c7..01a288f 100644
 +
 +static u8 omap3_beagle_version;
 +
-+u8 get_omap3_beagle_rev(void)
++static u8 omap3_beagle_get_rev(void)
 +{
 +	return omap3_beagle_version;
 +}
 +
-+static void __init omap3_beagle_get_revision(void)
++static void __init omap3_beagle_init_rev(void)
 +{
 +	int ret;
 +	u16 beagle_rev = 0;
@@ -63,15 +66,15 @@ index 87969c7..01a288f 100644
 +
 +	ret = gpio_request(171, "rev_id_0");
 +	if (ret < 0)
-+		goto fail;
++		goto fail0;
 +
 +	ret = gpio_request(172, "rev_id_1");
 +	if (ret < 0)
-+		goto fail;
++		goto fail1;
 +
 +	ret = gpio_request(173, "rev_id_2");
 +	if (ret < 0)
-+		goto fail;
++		goto fail2;
 +
 +	gpio_direction_input(171);
 +	gpio_direction_input(172);
@@ -99,22 +102,30 @@ index 87969c7..01a288f 100644
 +		break;
 +	default:
 +		printk(KERN_INFO "OMAP3 Beagle Rev: unknown %hd\n", beagle_rev);
-+		omap3_beagle_version = OMAP3BEAGLE_BOARD_XM;
++		omap3_beagle_version = OMAP3BEAGLE_BOARD_UNKN;
 +	}
 +
 +	return;
-+fail:
++
++fail2:
++	gpio_free(172);
++fail1:
++	gpio_free(171);
++fail0:
 +	printk(KERN_ERR "Unable to get revision detection GPIO pins\n");
++	omap3_beagle_version = OMAP3BEAGLE_BOARD_UNKN;
++
++	return;
 +}
 +
  static struct mtd_partition omap3beagle_nand_partitions[] = {
  	/* All the partition sizes are listed in terms of NAND block size */
  	{
-@@ -464,6 +542,7 @@ static struct omap_musb_board_data musb_board_data = {
+@@ -464,6 +551,7 @@ static struct omap_musb_board_data musb_board_data = {
  static void __init omap3_beagle_init(void)
  {
  	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
-+	omap3_beagle_get_revision();
++	omap3_beagle_init_rev();
  	omap3_beagle_i2c_init();
  	platform_add_devices(omap3_beagle_devices,
  			ARRAY_SIZE(omap3_beagle_devices));

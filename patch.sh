@@ -6,8 +6,8 @@ echo "Starting patch.sh"
 patch -s -p1 < "${DIR}/patches/rcn/bug16310.diff"
 
 patch -s -p1 < "${DIR}/patches/gpio/0001-ARM-OMAP-Beagle-revision-detection.patch"
-patch -s -p1 < "${DIR}/patches/gpio/0002-ARM-OMAP-Beagle-Cx-boards-use-revision-detection.patch"
-patch -s -p1 < "${DIR}/patches/gpio/0003-ARM-OMAP-Beagle-support-MMC-gpio_wp-differences-on-x.patch"
+patch -s -p1 < "${DIR}/patches/gpio/0002-ARM-OMAP-Beagle-only-Cx-boards-use-pin-23-for-write-.patch"
+patch -s -p1 < "${DIR}/patches/gpio/0003-ARM-OMAP-Beagle-no-gpio_wp-pin-connection-on-xM.patch"
 
 
 function dss2 {

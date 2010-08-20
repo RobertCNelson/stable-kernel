@@ -1,7 +1,7 @@
-From 33e7c8cda065df2491c17dc213db2d4a3efd9b87 Mon Sep 17 00:00:00 2001
+From 184a80d7605b4e759c16d8227ca51b8020acacf9 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Wed, 11 Aug 2010 12:12:31 -0500
-Subject: [PATCH v3 3/3] ARM: OMAP: Beagle: no gpio_wp pin connection on xM
+Date: Wed, 18 Aug 2010 09:39:50 -0500
+Subject: [PATCH v6 3/3] ARM: OMAP: Beagle: no gpio_wp pin connection on xM
 
 The omap3630 based BeagleBoard xM uses a MicroSD card slot with
 no write protection.
@@ -12,18 +12,18 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  1 files changed, 3 insertions(+), 1 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 08fa68f..449a776 100644
+index e9af4fd..1f455c3 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -244,7 +244,9 @@ static struct gpio_led gpio_leds[];
+@@ -274,7 +274,9 @@ static struct gpio_led gpio_leds[];
  static int beagle_twl_gpio_setup(struct device *dev,
  		unsigned gpio, unsigned ngpio)
  {
--	if ((get_omap3_beagle_rev() == OMAP3BEAGLE_BOARD_C1_3) ||
-+	if (get_omap3_beagle_rev() == OMAP3BEAGLE_BOARD_XM) {
+-	if ((omap3_beagle_get_rev() == OMAP3BEAGLE_BOARD_C1_3) ||
++	if (omap3_beagle_get_rev() == OMAP3BEAGLE_BOARD_XM) {
 +		mmc[0].gpio_wp = -EINVAL;
-+	} else if ((get_omap3_beagle_rev() == OMAP3BEAGLE_BOARD_C1_3) ||
- 		(get_omap3_beagle_rev() == OMAP3BEAGLE_BOARD_C4)) {
++	} else if ((omap3_beagle_get_rev() == OMAP3BEAGLE_BOARD_C1_3) ||
+ 		(omap3_beagle_get_rev() == OMAP3BEAGLE_BOARD_C4)) {
  		omap_mux_init_gpio(23, OMAP_PIN_INPUT);
  		mmc[0].gpio_wp = 23;
 -- 
