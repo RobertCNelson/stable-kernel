@@ -21,7 +21,7 @@ if [ "$PLATFORM" == "x86_64" ]; then
   fi
 fi
 
-SGX_VERSION=3_01_00_06
+SGX_VERSION=3_01_00_07
 
 SGX_BIN=OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}.bin
 
@@ -35,7 +35,6 @@ if [ -e ${DIR}/${SGX_BIN} ]; then
   if [ -e  ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/Makefile ]; then
     echo "Extracted ${SGX_BIN} found"
     echo ""
-    SGX+=E
   else
     echo "${SGX_BIN} needs to be executable"
     echo ""
@@ -44,19 +43,20 @@ if [ -e ${DIR}/${SGX_BIN} ]; then
     echo ""
     ${DIR}/${SGX_BIN} --mode console --prefix ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION} <<setupSDK
 Y
-Y
-q
 setupSDK
     cd ${DIR}
-    SGX+=E
   fi
 else
-  echo ""
-  echo "${SGX_BIN} not found"
-  echo "Download Latest from"
-  echo "DL From: http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/latest/index_FDS.html" 
-  echo "Copy to: ${DIR}"
-  echo ""
+	wget -c --directory-prefix=${DIR} --no-check-certificate http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/${SGX_VERSION}//exports/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}.bin
+
+	if [ -e ${DIR}/${SGX_BIN} ]; then
+	  echo "${SGX_BIN} found"
+	else
+	  echo "${SGX_BIN} still missing, wget error?"
+	  exit
+	fi
+
+	sgx_setup
 fi
 }
 
@@ -283,9 +283,6 @@ function tar_up_examples {
 }
 
  sgx_setup
-
-if [ "$SGX" = "E" ]; then
-	copy_sgx_system_files
-	tar_up_examples
-fi
+ copy_sgx_system_files
+ tar_up_examples
 
