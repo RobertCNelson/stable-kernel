@@ -8,7 +8,7 @@ patch -s -p1 < "${DIR}/patches/rcn/bug16310.diff"
 patch -s -p1 < "${DIR}/patches/gpio/0001-ARM-OMAP-Beagle-revision-detection.patch"
 patch -s -p1 < "${DIR}/patches/gpio/0002-ARM-OMAP-Beagle-only-Cx-boards-use-pin-23-for-write-.patch"
 patch -s -p1 < "${DIR}/patches/gpio/0003-ARM-OMAP-Beagle-no-gpio_wp-pin-connection-on-xM.patch"
-
+patch -s -p1 < "${DIR}/patches/beagle/0001-Adding-i2c-eeprom-driver-to-read-EDID.patch"
 
 function dss2 {
 echo "dss2 patches"
@@ -99,6 +99,11 @@ echo "igepv2 board related patches"
 patch -s -p1 < "${DIR}/patches/igepv2/0001-ARM-OMAP3-Add-S-Video-output-to-IGEPv2-board.patch"
 }
 
+function touchbook {
+echo "touchbook related patches"
+patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-based-on-schematic-there-is-no-wp.patch"
+}
+
 dss2
 musb
 micrel
@@ -108,6 +113,7 @@ nand
 sgx
 panda
 igepv2
+touchbook
 
 echo "patch.sh ran successful"
 
