@@ -10,9 +10,44 @@ patch -s -p1 < "${DIR}/patches/gpio/0002-ARM-OMAP-Beagle-only-Cx-boards-use-pin-
 patch -s -p1 < "${DIR}/patches/gpio/0003-ARM-OMAP-Beagle-no-gpio_wp-pin-connection-on-xM.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-Adding-i2c-eeprom-driver-to-read-EDID.patch"
 
+function sakoman {
+echo "sakoman's patches"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0001-video-add-timings-for-hd720.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0002-OMAP-hsmmc-boards-with-8-wires-are-also-capable-of-4.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0003-Don-t-turn-SDIO-cards-off-to-save-power.-Doing-so-wi.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0004-mmc-don-t-display-single-block-read-console-messages.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0005-scripts-Makefile.fwinst-fix-typo-missing-space-in-se.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0006-drivers-net-smsc911x-return-ENODEV-if-device-is-not-.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0007-drivers-input-touchscreen-ads7846-return-ENODEV-if-d.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0008-ASoC-enable-audio-capture-by-default-for-twl4030.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0009-ARM-OMAP-Overo-Add-support-for-second-ethernet-port.patch"
+#patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0010-ARM-OMAP-add-support-for-TCT-Zippy-to-Beagle-board-f.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0011-ARM-OMAP-Make-beagle-u-boot-partition-writable.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0012-MFD-enable-madc-clock.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0013-MFD-add-twl4030-madc-driver.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0014-ARM-OMAP-Add-twl4030-madc-support-to-Overo.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0015-ARM-OMAP-Add-twl4030-madc-support-to-Beagle.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0016-OMAP-DSS2-Add-support-for-Samsung-LTE430WQ-F0C-panel.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0017-OMAP-DSS2-Add-support-for-LG-Philips-LB035Q02-panel.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0018-OMAP-DSS2-Add-DSS2-support-for-Overo.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0019-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0020-ARM-OMAP2-mmc-twl4030-move-clock-input-selection-pri.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0021-RTC-add-support-for-backup-battery-recharge.patch"
+#patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0022-ARM-OMAP-automatically-set-musb-mode-in-platform-dat.patch"
+#patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0023-ARM-OMAP-Beagle-use-new-gpmc-nand-infrastructure.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0024-ARM-OMAP-Overo-use-new-gpmc-nand-infrastructure.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0025-MTD-silence-ecc-errors-on-mtdblock0.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0026-ARM-OMAP-Add-macros-for-comparing-silicon-revision.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0027-OMAP-DSS2-check-for-both-cpu-type-and-revision-rathe.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0028-OMAP-DSS2-enable-hsclk-in-dsi_pll_init-for-OMAP36XX.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0029-ARM-OMAP-Beagle-support-twl-gpio-differences-on-xM.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0030-Revert-Input-ads7846-add-regulator-support.patch"
+patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0031-Revert-omap2_mcspi-Flush-posted-writes.patch"
+
+}
+
 function dss2 {
 echo "dss2 patches"
-patch -s -p1 < ${DIR}/patches/dss2/DSS2-overo-fixup.patch
 
 #http://www.spinics.net/lists/linux-omap/msg34582.html
 patch -s -p1 < "${DIR}/patches/dss2/0001-OMAP-DSS2-don-t-power-off-a-panel-twice.patch"
@@ -58,10 +93,6 @@ patch -s -p1 < ${DIR}/patches/rcn/beagle-zippy-dont-load-i2c-on-boards-with-nozi
 
 function xm {
 echo "early xm support"
-patch -s -p1 < ${DIR}/patches/xm/xm-dvi-ehci-support.diff
-patch -s -p1 < ${DIR}/patches/xm/sakoman/0001-ARM-OMAP-Add-macros-for-comparing-silicon-revision.patch
-patch -s -p1 < ${DIR}/patches/xm/sakoman/0001-OMAP-DSS2-check-for-both-cpu-type-and-revision-rathe.patch
-patch -s -p1 < ${DIR}/patches/xm/sakoman/0001-OMAP-DSS2-enable-hsclk-in-dsi_pll_init-for-OMAP36XX.patch
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-AM37x-Switch-SGX-clocks-to-200MHz.patch"
 }
@@ -69,7 +100,6 @@ patch -s -p1 < "${DIR}/patches/arago-project/0001-AM37x-Switch-SGX-clocks-to-200
 function nand {
 echo "new nand interface"
 patch -s -p1 < ${DIR}/patches/nand/0001-ARM-OMAP-Beagle-use-new-gpmc-nand-infrastructure-fixup.patch
-patch -s -p1 < ${DIR}/patches/nand/0001-ARM-OMAP-Overo-use-new-gpmc-nand-infrastructure.patch
 }
 
 function sgx {
@@ -104,6 +134,7 @@ echo "touchbook related patches"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-based-on-schematic-there-is-no-wp.patch"
 }
 
+sakoman
 dss2
 musb
 micrel

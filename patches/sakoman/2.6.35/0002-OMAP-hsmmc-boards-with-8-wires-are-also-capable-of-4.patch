@@ -1,0 +1,25 @@
+From cdd0125ca765147c7f6c26b9e03c9a9ba9f11c78 Mon Sep 17 00:00:00 2001
+From: Steve Sakoman <steve@sakoman.com>
+Date: Thu, 25 Feb 2010 12:56:28 -0800
+Subject: [PATCH 02/31] OMAP hsmmc:  boards with 8 wires are also capable of 4 bit transfers!
+
+---
+ drivers/mmc/host/omap_hsmmc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index b032828..b429197 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -2097,7 +2097,7 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
+ 		     MMC_CAP_WAIT_WHILE_BUSY;
+ 
+ 	if (mmc_slot(host).wires >= 8)
+-		mmc->caps |= MMC_CAP_8_BIT_DATA;
++		mmc->caps |= (MMC_CAP_8_BIT_DATA | MMC_CAP_4_BIT_DATA);
+ 	else if (mmc_slot(host).wires >= 4)
+ 		mmc->caps |= MMC_CAP_4_BIT_DATA;
+ 
+-- 
+1.7.1
+

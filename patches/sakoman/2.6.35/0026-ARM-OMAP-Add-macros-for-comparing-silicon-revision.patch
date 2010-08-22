@@ -1,7 +1,7 @@
-From c37e1c8b73c2ee9ac40122526309d39bf5f692ed Mon Sep 17 00:00:00 2001
+From 119a66b5157d4db698dd5deda52c322e519c0f7f Mon Sep 17 00:00:00 2001
 From: Steve Sakoman <steve@sakoman.com>
 Date: Mon, 10 May 2010 13:42:45 -0700
-Subject: [PATCH] ARM: OMAP: Add macros for comparing silicon revision
+Subject: [PATCH 26/31] ARM: OMAP: Add macros for comparing silicon revision
 
 Adapted from arago project patch by Sanjeev Premi <premi@ti.com>
 ---
@@ -76,5 +76,5 @@ index 7514174..5e76126 100644
   *
   * CHIP_IS_OMAP{2420,2430,3430} indicate that a particular structure is
 -- 
-1.7.0.4
+1.7.1
 
