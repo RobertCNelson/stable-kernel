@@ -1,5 +1,14 @@
+From f842d27c44ead80a6fd6c3cc7b14d61fe8456cf8 Mon Sep 17 00:00:00 2001
+From: Steve Sakoman <steve@sakoman.com>
+Date: Fri, 18 Dec 2009 06:39:24 -0800
+Subject: [PATCH 18/31] OMAP: DSS2: Add DSS2 support for Overo
+
+---
+ arch/arm/mach-omap2/board-overo.c |  236 +++++++++++++++++++++++++++++++-----
+ 1 files changed, 203 insertions(+), 33 deletions(-)
+
 diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
-index d192dd9..0c58359 100644
+index 5a40683..825cc64 100644
 --- a/arch/arm/mach-omap2/board-overo.c
 +++ b/arch/arm/mach-omap2/board-overo.c
 @@ -28,6 +28,7 @@
@@ -10,7 +19,7 @@ index d192dd9..0c58359 100644
  
  #include <linux/mtd/mtd.h>
  #include <linux/mtd/nand.h>
-@@ -40,10 +41,12 @@
+@@ -40,10 +41,13 @@
  
  #include <plat/board.h>
  #include <plat/common.h>
@@ -20,10 +29,11 @@ index d192dd9..0c58359 100644
  #include <mach/hardware.h>
  #include <plat/nand.h>
 +#include <plat/mcspi.h>
++#include <plat/mux.h>
  #include <plat/usb.h>
  
  #include "mux.h"
-@@ -67,8 +70,6 @@
+@@ -69,8 +73,6 @@
  #if defined(CONFIG_TOUCHSCREEN_ADS7846) || \
  	defined(CONFIG_TOUCHSCREEN_ADS7846_MODULE)
  
@@ -32,7 +42,7 @@ index d192dd9..0c58359 100644
  #include <linux/spi/ads7846.h>
  
  static struct omap2_mcspi_device_config ads7846_mcspi_config = {
-@@ -93,18 +94,6 @@ static struct ads7846_platform_data ads7846_config = {
+@@ -95,18 +97,6 @@ static struct ads7846_platform_data ads7846_config = {
  	.keep_vref_on		= 1,
  };
  
@@ -51,7 +61,7 @@ index d192dd9..0c58359 100644
  static void __init overo_ads7846_init(void)
  {
  	if ((gpio_request(OVERO_GPIO_PENDOWN, "ADS7846_PENDOWN") == 0) &&
-@@ -114,9 +103,6 @@ static void __init overo_ads7846_init(void)
+@@ -116,9 +106,6 @@ static void __init overo_ads7846_init(void)
  		printk(KERN_ERR "could not obtain gpio for ADS7846_PENDOWN\n");
  		return;
  	}
@@ -61,7 +71,7 @@ index d192dd9..0c58359 100644
  }
  
  #else
-@@ -184,6 +170,137 @@ static inline void __init overo_init_smsc911x(void)
+@@ -234,6 +221,139 @@ static inline void __init overo_init_smsc911x(void)
  static inline void __init overo_init_smsc911x(void) { return; }
  #endif
  
@@ -114,6 +124,13 @@ index d192dd9..0c58359 100644
 +	.platform_disable	= overo_panel_disable_dvi,
 +};
 +
++static struct omap_dss_device overo_tv_device = {
++	.name = "tv",
++	.driver_name = "venc",
++	.type = OMAP_DISPLAY_TYPE_VENC,
++	.phy.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
++};
++
 +static int overo_panel_enable_lcd(struct omap_dss_device *dssdev)
 +{
 +	if (dvi_enabled) {
@@ -141,7 +158,6 @@ index d192dd9..0c58359 100644
 +	.name			= "lcd35",
 +	.driver_name		= "lgphilips_lb035q02_panel",
 +	.phy.dpi.data_lines	= 24,
-+	.panel.recommended_bpp	= 16,
 +	.platform_enable	= overo_panel_enable_lcd,
 +	.platform_disable	= overo_panel_disable_lcd,
 +};
@@ -154,7 +170,6 @@ index d192dd9..0c58359 100644
 +	.name			= "lcd43",
 +	.driver_name		= "samsung_lte_panel",
 +	.phy.dpi.data_lines	= 24,
-+	.panel.recommended_bpp	= 16,
 +	.platform_enable	= overo_panel_enable_lcd,
 +	.platform_disable	= overo_panel_disable_lcd,
 +};
@@ -162,6 +177,7 @@ index d192dd9..0c58359 100644
 +
 +static struct omap_dss_device *overo_dss_devices[] = {
 +	&overo_dvi_device,
++	&overo_tv_device,
 +#if defined(CONFIG_PANEL_LGPHILIPS_LB035Q02) || \
 +	defined(CONFIG_PANEL_LGPHILIPS_LB035Q02_MODULE)
 +	&overo_lcd35_device,
@@ -186,20 +202,16 @@ index d192dd9..0c58359 100644
 +	},
 +};
 +
-+static struct regulator_consumer_supply overo_vdda_dac_supply = {
-+	.supply		= "vdda_dac",
-+	.dev		= &overo_dss_device.dev,
-+};
++static struct regulator_consumer_supply overo_vdda_dac_supply =
++	REGULATOR_SUPPLY("vdda_dac", "omapdss");
 +
-+static struct regulator_consumer_supply overo_vdds_dsi_supply = {
-+	.supply		= "vdds_dsi",
-+	.dev		= &overo_dss_device.dev,
-+};
++static struct regulator_consumer_supply overo_vdds_dsi_supply =
++	REGULATOR_SUPPLY("vdds_dsi", "omapdss");
 +
  static struct mtd_partition overo_nand_partitions[] = {
  	{
  		.name           = "xloader",
-@@ -329,6 +446,37 @@ static struct regulator_init_data overo_vmmc1 = {
+@@ -379,6 +499,37 @@ static struct regulator_init_data overo_vmmc1 = {
  	.consumer_supplies	= &overo_vmmc1_supply,
  };
  
@@ -237,7 +249,16 @@ index d192dd9..0c58359 100644
  static struct twl4030_codec_audio_data overo_audio_data = {
  	.audio_mclk = 26000000,
  };
-@@ -347,6 +495,8 @@ static struct twl4030_platform_data overo_twldata = {
+@@ -388,8 +539,6 @@ static struct twl4030_codec_data overo_codec_data = {
+ 	.audio = &overo_audio_data,
+ };
+ 
+-/* mmc2 (WLAN) and Bluetooth don't use twl4030 regulators */
+-
+ static struct twl4030_madc_platform_data overo_madc_data = {
+ 	.irq_line	= 1,
+ };
+@@ -402,6 +551,8 @@ static struct twl4030_platform_data overo_twldata = {
  	.usb		= &overo_usb_data,
  	.codec		= &overo_codec_data,
  	.vmmc1		= &overo_vmmc1,
@@ -246,7 +267,7 @@ index d192dd9..0c58359 100644
  };
  
  static struct i2c_board_info __initdata overo_i2c_boardinfo[] = {
-@@ -367,23 +517,41 @@ static int __init overo_i2c_init(void)
+@@ -422,23 +573,41 @@ static int __init overo_i2c_init(void)
  	return 0;
  }
  
@@ -300,7 +321,7 @@ index d192dd9..0c58359 100644
  	omap2_init_common_hw(mt46h32m32lf6_sdrc_params,
  			     mt46h32m32lf6_sdrc_params);
  	omap_init_irq();
-@@ -391,7 +559,7 @@ static void __init overo_init_irq(void)
+@@ -446,7 +615,7 @@ static void __init overo_init_irq(void)
  }
  
  static struct platform_device *overo_devices[] __initdata = {
@@ -308,10 +329,10 @@ index d192dd9..0c58359 100644
 +	&overo_dss_device,
  };
  
- static struct ehci_hcd_omap_platform_data ehci_pdata __initconst = {
-@@ -422,8 +590,9 @@ static void __init overo_init(void)
+ static const struct ehci_hcd_omap_platform_data ehci_pdata __initconst = {
+@@ -483,8 +652,9 @@ static void __init overo_init(void)
  	overo_flash_init();
- 	usb_musb_init();
+ 	usb_musb_init(&musb_board_data);
  	usb_ehci_init(&ehci_pdata);
 -	overo_ads7846_init();
 +	overo_spi_init();
@@ -320,3 +341,6 @@ index d192dd9..0c58359 100644
  
  	/* Ensure SDRC pins are mux'd for self-refresh */
  	omap_mux_init_signal("sdrc_cke0", OMAP_PIN_OUTPUT);
+-- 
+1.7.1
+
