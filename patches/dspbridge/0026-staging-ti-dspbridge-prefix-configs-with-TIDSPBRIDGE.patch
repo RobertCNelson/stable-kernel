@@ -1,0 +1,580 @@
+From b3d23688a15c4c332942f9428e0d708e7362e29e Mon Sep 17 00:00:00 2001
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Date: Sun, 4 Jul 2010 16:36:23 +0300
+Subject: [PATCH 26/94] staging: ti dspbridge: prefix configs with TIDSPBRIDGE
+
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/Kconfig                |   18 +++++-----
+ drivers/staging/tidspbridge/core/io_sm.c           |    2 +-
+ drivers/staging/tidspbridge/core/tiomap3430_pwr.c  |   30 +++++++++---------
+ drivers/staging/tidspbridge/core/tiomap_io.c       |    4 +-
+ drivers/staging/tidspbridge/core/ue_deh.c          |    2 +-
+ drivers/staging/tidspbridge/core/wdt.c             |    4 +-
+ .../tidspbridge/include/dspbridge/_chnl_sm.h       |    2 +-
+ .../staging/tidspbridge/include/dspbridge/dbc.h    |    2 +-
+ .../staging/tidspbridge/include/dspbridge/drv.h    |    2 +-
+ .../staging/tidspbridge/include/dspbridge/io_sm.h  |    2 +-
+ drivers/staging/tidspbridge/rmgr/drv.c             |    2 +-
+ drivers/staging/tidspbridge/rmgr/drv_interface.c   |   32 ++++++++++----------
+ drivers/staging/tidspbridge/rmgr/node.c            |    6 ++--
+ drivers/staging/tidspbridge/rmgr/proc.c            |    8 ++--
+ 14 files changed, 58 insertions(+), 58 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/Kconfig b/drivers/staging/tidspbridge/Kconfig
+index 45372cd..6ce443a 100644
+--- a/drivers/staging/tidspbridge/Kconfig
++++ b/drivers/staging/tidspbridge/Kconfig
+@@ -14,7 +14,7 @@ menuconfig TIDSPBRIDGE
+ 
+ 	  This driver depends on OMAP Mailbox (OMAP_MBOX_FWK).
+ 
+-config BRIDGE_DVFS
++config TIDSPBRIDGE_DVFS
+ 	bool "Enable Bridge Dynamic Voltage and Frequency Scaling (DVFS)"
+ 	depends on TIDSPBRIDGE && OMAP_PM_SRF && CPU_FREQ
+ 	default n
+@@ -24,7 +24,7 @@ config BRIDGE_DVFS
+ 	  performance and power consumption to the current processing
+ 	  requirements.
+ 
+-config BRIDGE_MEMPOOL_SIZE
++config TIDSPBRIDGE_MEMPOOL_SIZE
+ 	hex "Physical memory pool size (Byte)"
+ 	depends on TIDSPBRIDGE
+ 	default 0x600000
+@@ -32,20 +32,20 @@ config BRIDGE_MEMPOOL_SIZE
+ 	  Allocate specified size of memory at booting time to avoid allocation
+ 	  failure under heavy memory fragmentation after some use time.
+ 
+-config BRIDGE_DEBUG
++config TIDSPBRIDGE_DEBUG
+ 	bool "DSP Bridge Debug Support"
+ 	depends on TIDSPBRIDGE
+ 	help
+ 	  Say Y to enable Bridge debugging capabilities
+ 
+-config BRIDGE_RECOVERY
++config TIDSPBRIDGE_RECOVERY
+ 	bool "DSP Recovery Support"
+ 	depends on TIDSPBRIDGE
+ 	help
+ 	  In case of DSP fatal error, BRIDGE driver will try to
+ 	  recover itself.
+ 
+-config BRIDGE_CACHE_LINE_CHECK
++config TIDSPBRIDGE_CACHE_LINE_CHECK
+ 	bool "Check buffers to be 128 byte aligned"
+ 	depends on TIDSPBRIDGE
+ 	default n
+@@ -59,7 +59,7 @@ config BRIDGE_CACHE_LINE_CHECK
+ 	  This can lead to heap corruption. Say Y, to enforce the check for 128
+ 	  byte alignment, buffers failing this check will be rejected.
+ 
+-config BRIDGE_WDT3
++config TIDSPBRIDGE_WDT3
+ 	bool "Enable WDT3 interruptions"
+ 	depends on TIDSPBRIDGE
+ 	default n
+@@ -68,9 +68,9 @@ config BRIDGE_WDT3
+ 	  charge of refreshing the timer before overflow, if the DSP hangs MPU
+ 	  will caught the interrupt and try to recover DSP.
+ 
+-config WDT_TIMEOUT
++config TIDSPBRIDGE_WDT_TIMEOUT
+ 	int "DSP watchdog timer timeout (in secs)"
+-	depends on BRIDGE_WDT3
++	depends on TIDSPBRIDGE_WDT3
+ 	default 5
+ 	help
+ 	   Watchdog timer timeout value, after that time if the watchdog timer
+@@ -79,7 +79,7 @@ config WDT_TIMEOUT
+ comment "Bridge Notifications"
+ 	depends on TIDSPBRIDGE
+ 
+-config BRIDGE_NTFY_PWRERR
++config TIDSPBRIDGE_NTFY_PWRERR
+ 	bool "Notify DSP Power Error"
+ 	depends on TIDSPBRIDGE
+ 	help
+diff --git a/drivers/staging/tidspbridge/core/io_sm.c b/drivers/staging/tidspbridge/core/io_sm.c
+index 7fb840d..ee33abb 100644
+--- a/drivers/staging/tidspbridge/core/io_sm.c
++++ b/drivers/staging/tidspbridge/core/io_sm.c
+@@ -1731,7 +1731,7 @@ void io_intr_dsp2(IN struct io_mgr *pio_mgr, IN u16 mb_val)
+  */
+ int io_sh_msetting(struct io_mgr *hio_mgr, u8 desc, void *pargs)
+ {
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	u32 i;
+ 	struct dspbridge_platform_data *pdata =
+ 	    omap_dspbridge_dev->dev.platform_data;
+diff --git a/drivers/staging/tidspbridge/core/tiomap3430_pwr.c b/drivers/staging/tidspbridge/core/tiomap3430_pwr.c
+index 00ebc0b..5df9421 100644
+--- a/drivers/staging/tidspbridge/core/tiomap3430_pwr.c
++++ b/drivers/staging/tidspbridge/core/tiomap3430_pwr.c
+@@ -52,7 +52,7 @@
+ int handle_constraints_set(struct bridge_dev_context *dev_context,
+ 				  IN void *pargs)
+ {
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	u32 *constraint_val;
+ 	struct dspbridge_platform_data *pdata =
+ 	    omap_dspbridge_dev->dev.platform_data;
+@@ -65,7 +65,7 @@ int handle_constraints_set(struct bridge_dev_context *dev_context,
+ 	/* Set the new opp value */
+ 	if (pdata->dsp_set_min_opp)
+ 		(*pdata->dsp_set_min_opp) ((u32) *(constraint_val + 1));
+-#endif /* #ifdef CONFIG_BRIDGE_DVFS */
++#endif /* #ifdef CONFIG_TIDSPBRIDGE_DVFS */
+ 	return 0;
+ }
+ 
+@@ -79,7 +79,7 @@ int handle_hibernation_from_dsp(struct bridge_dev_context *dev_context)
+ #ifdef CONFIG_PM
+ 	u16 timeout = PWRSTST_TIMEOUT / 10;
+ 	u32 pwr_state;
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	u32 opplevel;
+ 	struct io_mgr *hio_mgr;
+ #endif
+@@ -115,7 +115,7 @@ int handle_hibernation_from_dsp(struct bridge_dev_context *dev_context)
+ 		if (DSP_SUCCEEDED(status)) {
+ 			/* Update the Bridger Driver state */
+ 			dev_context->dw_brd_state = BRD_DSP_HIBERNATION;
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 			status =
+ 			    dev_get_io_mgr(dev_context->hdev_obj, &hio_mgr);
+ 			if (!hio_mgr) {
+@@ -131,7 +131,7 @@ int handle_hibernation_from_dsp(struct bridge_dev_context *dev_context)
+ 			if (pdata->dsp_set_min_opp)
+ 				(*pdata->dsp_set_min_opp) (VDD1_OPP1);
+ 			status = 0;
+-#endif /* CONFIG_BRIDGE_DVFS */
++#endif /* CONFIG_TIDSPBRIDGE_DVFS */
+ 		}
+ 	}
+ #endif
+@@ -147,9 +147,9 @@ int sleep_dsp(struct bridge_dev_context *dev_context, IN u32 dw_cmd,
+ {
+ 	int status = 0;
+ #ifdef CONFIG_PM
+-#ifdef CONFIG_BRIDGE_NTFY_PWRERR
++#ifdef CONFIG_TIDSPBRIDGE_NTFY_PWRERR
+ 	struct deh_mgr *hdeh_mgr;
+-#endif /* CONFIG_BRIDGE_NTFY_PWRERR */
++#endif /* CONFIG_TIDSPBRIDGE_NTFY_PWRERR */
+ 	u16 timeout = PWRSTST_TIMEOUT / 10;
+ 	u32 pwr_state, target_pwr_state;
+ 	struct dspbridge_platform_data *pdata =
+@@ -211,10 +211,10 @@ int sleep_dsp(struct bridge_dev_context *dev_context, IN u32 dw_cmd,
+ 	if (!timeout) {
+ 		pr_err("%s: Timed out waiting for DSP off mode, state %x\n",
+ 		       __func__, pwr_state);
+-#ifdef CONFIG_BRIDGE_NTFY_PWRERR
++#ifdef CONFIG_TIDSPBRIDGE_NTFY_PWRERR
+ 		dev_get_deh_mgr(dev_context->hdev_obj, &hdeh_mgr);
+ 		bridge_deh_notify(hdeh_mgr, DSP_PWRERROR, 0);
+-#endif /* CONFIG_BRIDGE_NTFY_PWRERR */
++#endif /* CONFIG_TIDSPBRIDGE_NTFY_PWRERR */
+ 		return -ETIMEDOUT;
+ 	} else {
+ 		/* Update the Bridger Driver state */
+@@ -230,7 +230,7 @@ int sleep_dsp(struct bridge_dev_context *dev_context, IN u32 dw_cmd,
+ 		status = dsp_clock_disable_all(dev_context->dsp_per_clks);
+ 		if (DSP_FAILED(status))
+ 			return status;
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 		else if (target_pwr_state == PWRDM_POWER_OFF) {
+ 			/*
+ 			 * Set the OPP to low level before moving to OFF mode
+@@ -238,7 +238,7 @@ int sleep_dsp(struct bridge_dev_context *dev_context, IN u32 dw_cmd,
+ 			if (pdata->dsp_set_min_opp)
+ 				(*pdata->dsp_set_min_opp) (VDD1_OPP1);
+ 		}
+-#endif /* CONFIG_BRIDGE_DVFS */
++#endif /* CONFIG_TIDSPBRIDGE_DVFS */
+ 	}
+ #endif /* CONFIG_PM */
+ 	return status;
+@@ -338,7 +338,7 @@ int dsp_peripheral_clk_ctrl(struct bridge_dev_context *dev_context,
+  */
+ int pre_scale_dsp(struct bridge_dev_context *dev_context, IN void *pargs)
+ {
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	u32 level;
+ 	u32 voltage_domain;
+ 
+@@ -360,7 +360,7 @@ int pre_scale_dsp(struct bridge_dev_context *dev_context, IN void *pargs)
+ 	} else {
+ 		return -EPERM;
+ 	}
+-#endif /* #ifdef CONFIG_BRIDGE_DVFS */
++#endif /* #ifdef CONFIG_TIDSPBRIDGE_DVFS */
+ 	return 0;
+ }
+ 
+@@ -373,7 +373,7 @@ int post_scale_dsp(struct bridge_dev_context *dev_context,
+ 							IN void *pargs)
+ {
+ 	int status = 0;
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	u32 level;
+ 	u32 voltage_domain;
+ 	struct io_mgr *hio_mgr;
+@@ -403,7 +403,7 @@ int post_scale_dsp(struct bridge_dev_context *dev_context,
+ 	} else {
+ 		status = -EPERM;
+ 	}
+-#endif /* #ifdef CONFIG_BRIDGE_DVFS */
++#endif /* #ifdef CONFIG_TIDSPBRIDGE_DVFS */
+ 	return status;
+ }
+ 
+diff --git a/drivers/staging/tidspbridge/core/tiomap_io.c b/drivers/staging/tidspbridge/core/tiomap_io.c
+index 3b2ea70..e7cfbee 100644
+--- a/drivers/staging/tidspbridge/core/tiomap_io.c
++++ b/drivers/staging/tidspbridge/core/tiomap_io.c
+@@ -388,7 +388,7 @@ int write_ext_dsp_data(struct bridge_dev_context *dev_context,
+ 
+ int sm_interrupt_dsp(struct bridge_dev_context *dev_context, u16 mb_val)
+ {
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	u32 opplevel = 0;
+ #endif
+ 	struct dspbridge_platform_data *pdata =
+@@ -405,7 +405,7 @@ int sm_interrupt_dsp(struct bridge_dev_context *dev_context, u16 mb_val)
+ 
+ 	if (dev_context->dw_brd_state == BRD_DSP_HIBERNATION ||
+ 	    dev_context->dw_brd_state == BRD_HIBERNATION) {
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 		if (pdata->dsp_get_opp)
+ 			opplevel = (*pdata->dsp_get_opp) ();
+ 		if (opplevel == VDD1_OPP1) {
+diff --git a/drivers/staging/tidspbridge/core/ue_deh.c b/drivers/staging/tidspbridge/core/ue_deh.c
+index f73604f..2bdf92e 100644
+--- a/drivers/staging/tidspbridge/core/ue_deh.c
++++ b/drivers/staging/tidspbridge/core/ue_deh.c
+@@ -250,7 +250,7 @@ void bridge_deh_notify(struct deh_mgr *deh, int event, int info)
+ 	/* Filter subsequent notifications when an error occurs */
+ 	if (dev_context->dw_brd_state != BRD_ERROR) {
+ 		ntfy_notify(deh->ntfy_obj, event);
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ 		bridge_recover_schedule();
+ #endif
+ 	}
+diff --git a/drivers/staging/tidspbridge/core/wdt.c b/drivers/staging/tidspbridge/core/wdt.c
+index 5881fe0..dd1afe7 100644
+--- a/drivers/staging/tidspbridge/core/wdt.c
++++ b/drivers/staging/tidspbridge/core/wdt.c
+@@ -25,7 +25,7 @@
+ #include <dspbridge/host_os.h>
+ 
+ 
+-#ifdef CONFIG_BRIDGE_WDT3
++#ifdef CONFIG_TIDSPBRIDGE_WDT3
+ 
+ #define OMAP34XX_WDT3_BASE 		(L4_PER_34XX_BASE + 0x30000)
+ 
+@@ -84,7 +84,7 @@ int dsp_wdt_init(void)
+ void dsp_wdt_sm_set(void *data)
+ {
+ 	dsp_wdt.sm_wdt = data;
+-	dsp_wdt.sm_wdt->wdt_overflow = CONFIG_WDT_TIMEOUT;
++	dsp_wdt.sm_wdt->wdt_overflow = CONFIG_TIDSPBRIDGE_WDT_TIMEOUT;
+ }
+ 
+ 
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/_chnl_sm.h b/drivers/staging/tidspbridge/include/dspbridge/_chnl_sm.h
+index cdca172..8efd1fb 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/_chnl_sm.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/_chnl_sm.h
+@@ -99,7 +99,7 @@ struct shm {
+ 	struct opp_rqst_struct opp_request;
+ 	/* load monitor information structure */
+ 	struct load_mon_struct load_mon_info;
+-#ifdef CONFIG_BRIDGE_WDT3
++#ifdef CONFIG_TIDSPBRIDGE_WDT3
+ 	/* Flag for WDT enable/disable F/I clocks */
+ 	u32 wdt_setclocks;
+ 	u32 wdt_overflow;	/* WDT overflow time */
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/dbc.h b/drivers/staging/tidspbridge/include/dspbridge/dbc.h
+index 76f049e..463760f 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/dbc.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/dbc.h
+@@ -26,7 +26,7 @@
+ #define DBC_
+ 
+ /* Assertion Macros: */
+-#ifdef CONFIG_BRIDGE_DEBUG
++#ifdef CONFIG_TIDSPBRIDGE_DEBUG
+ 
+ #define DBC_ASSERT(exp) \
+     if (!(exp)) \
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/drv.h b/drivers/staging/tidspbridge/include/dspbridge/drv.h
+index 66f12ef..020bed0 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/drv.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/drv.h
+@@ -419,7 +419,7 @@ extern int drv_release_resources(IN u32 dw_context,
+  */
+ int drv_request_bridge_res_dsp(void **phost_resources);
+ 
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ void bridge_recover_schedule(void);
+ #endif
+ 
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/io_sm.h b/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
+index 3ffd542..c3557ef 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
+@@ -41,7 +41,7 @@
+ #define IO_SET_LONG(pContext, type, base, field, value)  (base->field = value)
+ #define IO_GET_LONG(pContext, type, base, field)         (base->field)
+ 
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ /* The maximum number of OPPs that are supported */
+ extern s32 dsp_max_opps;
+ /* The Vdd1 opp table information */
+diff --git a/drivers/staging/tidspbridge/rmgr/drv.c b/drivers/staging/tidspbridge/rmgr/drv.c
+index c6e38e5..72e2804 100644
+--- a/drivers/staging/tidspbridge/rmgr/drv.c
++++ b/drivers/staging/tidspbridge/rmgr/drv.c
+@@ -517,7 +517,7 @@ int drv_get_dev_object(u32 index, struct drv_object *hdrv_obj,
+ 			      struct dev_object **phDevObject)
+ {
+ 	int status = 0;
+-#ifdef CONFIG_BRIDGE_DEBUG
++#ifdef CONFIG_TIDSPBRIDGE_DEBUG
+ 	/* used only for Assertions and debug messages */
+ 	struct drv_object *pdrv_obj = (struct drv_object *)hdrv_obj;
+ #endif
+diff --git a/drivers/staging/tidspbridge/rmgr/drv_interface.c b/drivers/staging/tidspbridge/rmgr/drv_interface.c
+index f0f089b..27db842 100644
+--- a/drivers/staging/tidspbridge/rmgr/drv_interface.c
++++ b/drivers/staging/tidspbridge/rmgr/drv_interface.c
+@@ -62,7 +62,7 @@
+ #include <dspbridge/drvdefs.h>
+ #include <dspbridge/drv.h>
+ 
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ #include <mach-omap2/omap3-opp.h>
+ #endif
+ 
+@@ -88,7 +88,7 @@ static char *base_img;
+ char *iva_img;
+ static s32 shm_size = 0x500000;	/* 5 MB */
+ static int tc_wordswapon;	/* Default value is always false */
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ #define REC_TIMEOUT 5000	/*recovery timeout in msecs */
+ static atomic_t bridge_cref;	/* number of bridge open handles */
+ static struct workqueue_struct *bridge_rec_queue;
+@@ -148,13 +148,13 @@ static const struct file_operations bridge_fops = {
+ 
+ #ifdef CONFIG_PM
+ static u32 time_out = 1000;
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ s32 dsp_max_opps = VDD1_OPP5;
+ #endif
+ 
+ /* Maximum Opps that can be requested by IVA */
+ /*vdd1 rate table */
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ const struct omap_opp vdd1_rate_table_bridge[] = {
+ 	{0, 0, 0},
+ 	/*OPP1 */
+@@ -187,7 +187,7 @@ u32 vdd1_dsp_freq[6][4] = {
+ 	{0, 430000, 355000, 430000},
+ };
+ 
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ static void bridge_recover(struct work_struct *work)
+ {
+ 	struct dev_object *dev;
+@@ -214,7 +214,7 @@ void bridge_recover_schedule(void)
+ 	queue_work(bridge_rec_queue, &bridge_recovery_work);
+ }
+ #endif
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ static int dspbridge_scale_notification(struct notifier_block *op,
+ 		unsigned long val, void *ptr)
+ {
+@@ -247,7 +247,7 @@ static int omap3_bridge_startup(struct platform_device *pdev)
+ 	u32 phys_membase, phys_memsize;
+ 	int err;
+ 
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ 	bridge_rec_queue = create_workqueue("bridge_rec_queue");
+ 	INIT_WORK(&bridge_recovery_work, bridge_recover);
+ 	INIT_COMPLETION(bridge_comp);
+@@ -258,7 +258,7 @@ static int omap3_bridge_startup(struct platform_device *pdev)
+ 	bridge_suspend_data.suspended = 0;
+ 	init_waitqueue_head(&bridge_suspend_data.suspend_wq);
+ 
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	for (i = 0; i < 6; i++)
+ 		pdata->mpu_speed[i] = vdd1_rate_table_bridge[i].rate;
+ 
+@@ -323,7 +323,7 @@ err3:
+ err2:
+ 	kfree(drv_datap);
+ err1:
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	cpufreq_unregister_notifier(&iva_clk_notifier,
+ 					CPUFREQ_TRANSITION_NOTIFIER);
+ #endif
+@@ -337,7 +337,7 @@ static int __devinit omap34_xx_bridge_probe(struct platform_device *pdev)
+ {
+ 	int err;
+ 	dev_t dev = 0;
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	int i = 0;
+ #endif
+ 
+@@ -400,12 +400,12 @@ static int __devexit omap34_xx_bridge_remove(struct platform_device *pdev)
+ 	if (DSP_FAILED(status))
+ 		goto func_cont;
+ 
+-#ifdef CONFIG_BRIDGE_DVFS
++#ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 	if (cpufreq_unregister_notifier(&iva_clk_notifier,
+ 						CPUFREQ_TRANSITION_NOTIFIER))
+ 		pr_err("%s: cpufreq_unregister_notifier failed for iva2_ck\n",
+ 		       __func__);
+-#endif /* #ifdef CONFIG_BRIDGE_DVFS */
++#endif /* #ifdef CONFIG_TIDSPBRIDGE_DVFS */
+ 
+ 	if (driver_context) {
+ 		/* Put the DSP in reset state */
+@@ -497,7 +497,7 @@ static int bridge_open(struct inode *ip, struct file *filp)
+ 	 * process context list.
+ 	 */
+ 
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ 	if (recover) {
+ 		if (filp->f_flags & O_NONBLOCK ||
+ 			wait_for_completion_interruptible(&bridge_open_comp))
+@@ -518,7 +518,7 @@ static int bridge_open(struct inode *ip, struct file *filp)
+ 	}
+ 
+ 	filp->private_data = pr_ctxt;
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ 	if (!status)
+ 		atomic_inc(&bridge_cref);
+ #endif
+@@ -548,7 +548,7 @@ static int bridge_release(struct inode *ip, struct file *filp)
+ 	filp->private_data = NULL;
+ 
+ err:
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ 	if (!atomic_dec_return(&bridge_cref))
+ 		complete(&bridge_comp);
+ #endif
+@@ -564,7 +564,7 @@ static long bridge_ioctl(struct file *filp, unsigned int code,
+ 	union Trapped_Args buf_in;
+ 
+ 	DBC_REQUIRE(filp != NULL);
+-#ifdef CONFIG_BRIDGE_RECOVERY
++#ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ 	if (recover) {
+ 		status = -EIO;
+ 		goto err;
+diff --git a/drivers/staging/tidspbridge/rmgr/node.c b/drivers/staging/tidspbridge/rmgr/node.c
+index b5c99dc..329fe5e 100644
+--- a/drivers/staging/tidspbridge/rmgr/node.c
++++ b/drivers/staging/tidspbridge/rmgr/node.c
+@@ -1156,7 +1156,7 @@ int node_create(struct node_object *hnode)
+ 	u32 proc_id = 255;
+ 	struct dsp_processorstate proc_state;
+ 	struct proc_object *hprocessor;
+-#if defined(CONFIG_BRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
++#if defined(CONFIG_TIDSPBRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
+ 	struct dspbridge_platform_data *pdata =
+ 	    omap_dspbridge_dev->dev.platform_data;
+ #endif
+@@ -1208,7 +1208,7 @@ int node_create(struct node_object *hnode)
+ 	if (DSP_SUCCEEDED(status)) {
+ 		/* If node's create function is not loaded, load it */
+ 		/* Boost the OPP level to max level that DSP can be requested */
+-#if defined(CONFIG_BRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
++#if defined(CONFIG_TIDSPBRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
+ 		if (pdata->cpu_set_freq)
+ 			(*pdata->cpu_set_freq) (pdata->mpu_speed[VDD1_OPP3]);
+ #endif
+@@ -1226,7 +1226,7 @@ int node_create(struct node_object *hnode)
+ 			       __func__, status);
+ 		}
+ 		/* Request the lowest OPP level */
+-#if defined(CONFIG_BRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
++#if defined(CONFIG_TIDSPBRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
+ 		if (pdata->cpu_set_freq)
+ 			(*pdata->cpu_set_freq) (pdata->mpu_speed[VDD1_OPP1]);
+ #endif
+diff --git a/drivers/staging/tidspbridge/rmgr/proc.c b/drivers/staging/tidspbridge/rmgr/proc.c
+index 084f7b9..d138d11 100644
+--- a/drivers/staging/tidspbridge/rmgr/proc.c
++++ b/drivers/staging/tidspbridge/rmgr/proc.c
+@@ -1081,7 +1081,7 @@ int proc_load(void *hprocessor, IN CONST s32 argc_index,
+ 	struct timeval tv2;
+ #endif
+ 
+-#if defined(CONFIG_BRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
++#if defined(CONFIG_TIDSPBRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
+ 	struct dspbridge_platform_data *pdata =
+ 	    omap_dspbridge_dev->dev.platform_data;
+ #endif
+@@ -1218,7 +1218,7 @@ int proc_load(void *hprocessor, IN CONST s32 argc_index,
+ 		/* Now, attempt to load an exec: */
+ 
+ 		/* Boost the OPP level to Maximum level supported by baseport */
+-#if defined(CONFIG_BRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
++#if defined(CONFIG_TIDSPBRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
+ 		if (pdata->cpu_set_freq)
+ 			(*pdata->cpu_set_freq) (pdata->mpu_speed[VDD1_OPP5]);
+ #endif
+@@ -1236,7 +1236,7 @@ int proc_load(void *hprocessor, IN CONST s32 argc_index,
+ 			}
+ 		}
+ 		/* Requesting the lowest opp supported */
+-#if defined(CONFIG_BRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
++#if defined(CONFIG_TIDSPBRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
+ 		if (pdata->cpu_set_freq)
+ 			(*pdata->cpu_set_freq) (pdata->mpu_speed[VDD1_OPP1]);
+ #endif
+@@ -1338,7 +1338,7 @@ int proc_map(void *hprocessor, void *pmpu_addr, u32 ul_size,
+ 	struct dmm_map_object *map_obj;
+ 	u32 tmp_addr = 0;
+ 
+-#ifdef CONFIG_BRIDGE_CACHE_LINE_CHECK
++#ifdef CONFIG_TIDSPBRIDGE_CACHE_LINE_CHECK
+ 	if ((ul_map_attr & BUFMODE_MASK) != RBUF) {
+ 		if (!IS_ALIGNED((u32)pmpu_addr, DSP_CACHE_LINE) ||
+ 		    !IS_ALIGNED(ul_size, DSP_CACHE_LINE)) {
+-- 
+1.7.0.4
+

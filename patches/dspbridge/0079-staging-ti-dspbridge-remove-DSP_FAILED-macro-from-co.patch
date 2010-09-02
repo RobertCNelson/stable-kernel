@@ -1,0 +1,450 @@
+From d1b2216d13679557b56c1e4a53e4e3c5683bf3d5 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Wed, 28 Jul 2010 09:45:29 -0500
+Subject: [PATCH 79/94] staging:ti dspbridge: remove DSP_FAILED macro from core
+
+Since status succeeded is 0, DSP_FAILED macro
+is not necessary anymore.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/core/chnl_sm.c        |   20 +++---
+ drivers/staging/tidspbridge/core/io_sm.c          |   64 ++++++++++----------
+ drivers/staging/tidspbridge/core/msg_sm.c         |    4 +-
+ drivers/staging/tidspbridge/core/tiomap3430.c     |    4 +-
+ drivers/staging/tidspbridge/core/tiomap3430_pwr.c |    2 +-
+ 5 files changed, 47 insertions(+), 47 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/core/chnl_sm.c b/drivers/staging/tidspbridge/core/chnl_sm.c
+index 1b23141..bee2b23 100644
+--- a/drivers/staging/tidspbridge/core/chnl_sm.c
++++ b/drivers/staging/tidspbridge/core/chnl_sm.c
+@@ -135,7 +135,7 @@ int bridge_chnl_add_io_req(struct chnl_object *chnl_obj, void *host_buf,
+ 	if (!dev_ctxt)
+ 		status = -EFAULT;
+ 
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 
+ 	if (pchnl->chnl_type == CHNL_PCPY && pchnl->chnl_id > 1 && host_buf) {
+@@ -266,7 +266,7 @@ int bridge_chnl_cancel_io(struct chnl_object *chnl_obj)
+ 	} else {
+ 		status = -EFAULT;
+ 	}
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 
+ 	/*  Mark this channel as cancelled, to prevent further IORequests or
+@@ -372,7 +372,7 @@ func_cont:
+ 		kfree(pchnl);
+ 		pchnl = NULL;
+ 	}
+-	DBC_ENSURE(DSP_FAILED(status) || !pchnl);
++	DBC_ENSURE(status || !pchnl);
+ 	return status;
+ }
+ 
+@@ -428,7 +428,7 @@ int bridge_chnl_create(struct chnl_mgr **channel_mgr,
+ 		status = -ENOMEM;
+ 	}
+ 
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		bridge_chnl_destroy(chnl_mgr_obj);
+ 		*channel_mgr = NULL;
+ 	} else {
+@@ -456,7 +456,7 @@ int bridge_chnl_destroy(struct chnl_mgr *hchnl_mgr)
+ 			status =
+ 			    bridge_chnl_close(chnl_mgr_obj->ap_channel
+ 					      [chnl_id]);
+-			if (DSP_FAILED(status))
++			if (status)
+ 				dev_dbg(bridge, "%s: Error status 0x%x\n",
+ 					__func__, status);
+ 		}
+@@ -509,7 +509,7 @@ int bridge_chnl_flush_io(struct chnl_object *chnl_obj, u32 timeout)
+ 			while (!LST_IS_EMPTY(pchnl->pio_requests) && !status) {
+ 				status = bridge_chnl_get_ioc(chnl_obj,
+ 						timeout, &chnl_ioc_obj);
+-				if (DSP_FAILED(status))
++				if (status)
+ 					continue;
+ 
+ 				if (chnl_ioc_obj.status & CHNL_IOCSTATTIMEOUT)
+@@ -522,7 +522,7 @@ int bridge_chnl_flush_io(struct chnl_object *chnl_obj, u32 timeout)
+ 			pchnl->dw_state &= ~CHNL_STATECANCEL;
+ 		}
+ 	}
+-	DBC_ENSURE(DSP_FAILED(status) || LST_IS_EMPTY(pchnl->pio_requests));
++	DBC_ENSURE(status || LST_IS_EMPTY(pchnl->pio_requests));
+ 	return status;
+ }
+ 
+@@ -592,7 +592,7 @@ int bridge_chnl_get_ioc(struct chnl_object *chnl_obj, u32 timeout,
+ 	if (!dev_ctxt)
+ 		status = -EFAULT;
+ 
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 
+ 	ioc.status = CHNL_IOCSTATCOMPLETE;
+@@ -806,7 +806,7 @@ int bridge_chnl_open(struct chnl_object **chnl,
+ 			}
+ 		}
+ 	}
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 
+ 	DBC_ASSERT(ch_id < chnl_mgr_obj->max_channels);
+@@ -860,7 +860,7 @@ int bridge_chnl_open(struct chnl_object **chnl,
+ 		}
+ 	}
+ 
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		/* Free memory */
+ 		if (pchnl->pio_completions) {
+ 			free_chirp_list(pchnl->pio_completions);
+diff --git a/drivers/staging/tidspbridge/core/io_sm.c b/drivers/staging/tidspbridge/core/io_sm.c
+index 1d433a9..02c660d 100644
+--- a/drivers/staging/tidspbridge/core/io_sm.c
++++ b/drivers/staging/tidspbridge/core/io_sm.c
+@@ -242,7 +242,7 @@ int bridge_io_create(struct io_mgr **io_man,
+ 		status = -EIO;
+ 	}
+ func_end:
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		/* Cleanup */
+ 		bridge_io_destroy(pio_mgr);
+ 		if (io_man)
+@@ -357,13 +357,13 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	/* Get start and length of channel part of shared memory */
+ 	status = cod_get_sym_value(cod_man, CHNL_SHARED_BUFFER_BASE_SYM,
+ 				   &ul_shm_base);
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+ 	status = cod_get_sym_value(cod_man, CHNL_SHARED_BUFFER_LIMIT_SYM,
+ 				   &ul_shm_limit);
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -414,18 +414,18 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 		status = cod_get_sym_value(cod_man, SHM0_SHARED_END_SYM,
+ 					   &shm0_end);
+ #endif
+-		if (DSP_FAILED(status))
++		if (status)
+ 			status = -EFAULT;
+ 	}
+ 	if (!status) {
+ 		status =
+ 		    cod_get_sym_value(cod_man, DYNEXTBASE, &ul_dyn_ext_base);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			status = -EFAULT;
+ 	}
+ 	if (!status) {
+ 		status = cod_get_sym_value(cod_man, EXTEND, &ul_ext_end);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			status = -EFAULT;
+ 	}
+ 	if (!status) {
+@@ -469,7 +469,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 			status = -ENOMEM;
+ 		}
+ 	}
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 
+ 	pa_curr = ul_gpp_pa;
+@@ -508,7 +508,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 						    pa_curr, va_curr,
+ 						    page_size[i], map_attrs,
+ 						    NULL);
+-				if (DSP_FAILED(status))
++				if (status)
+ 					goto func_end;
+ 				pa_curr += page_size[i];
+ 				va_curr += page_size[i];
+@@ -581,7 +581,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 					ae_proc[ndx].ul_gpp_va,
+ 					ae_proc[ndx].ul_dsp_va *
+ 					hio_mgr->word_size, page_size[i]);
+-				if (DSP_FAILED(status))
++				if (status)
+ 					goto func_end;
+ 			}
+ 			pa_curr += page_size[i];
+@@ -645,7 +645,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 				     NULL);
+ 			}
+ 		}
+-		if (DSP_FAILED(status))
++		if (status)
+ 			goto func_end;
+ 	}
+ 
+@@ -662,7 +662,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 		    (hio_mgr->hbridge_context, l4_peripheral_table[i].phys_addr,
+ 		     l4_peripheral_table[i].dsp_virt_addr, HW_PAGE_SIZE4KB,
+ 		     map_attrs, NULL);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			goto func_end;
+ 		i++;
+ 	}
+@@ -707,7 +707,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 		    hio_mgr->intf_fxns->pfn_dev_cntrl(hio_mgr->hbridge_context,
+ 						      BRDIOCTL_SETMMUCONFIG,
+ 						      ae_proc);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			goto func_end;
+ 		ul_shm_base = hio_mgr->ext_proc_info.ty_tlb[0].ul_gpp_phys;
+ 		ul_shm_base += ul_shm_base_offset;
+@@ -756,7 +756,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	/* Get the start address of trace buffer */
+ 	status = cod_get_sym_value(cod_man, SYS_PUTCBEG,
+ 				   &hio_mgr->ul_trace_buffer_begin);
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -767,7 +767,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	/* Get the end address of trace buffer */
+ 	status = cod_get_sym_value(cod_man, SYS_PUTCEND,
+ 				   &hio_mgr->ul_trace_buffer_end);
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -777,7 +777,7 @@ int bridge_io_on_loaded(struct io_mgr *hio_mgr)
+ 	/* Get the current address of DSP write pointer */
+ 	status = cod_get_sym_value(cod_man, BRIDGE_SYS_PUTC_CURRENT,
+ 				   &hio_mgr->ul_trace_buffer_current);
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		status = -EFAULT;
+ 		goto func_end;
+ 	}
+@@ -852,7 +852,7 @@ static void io_dispatch_pm(struct io_mgr *pio_mgr)
+ 		status = pio_mgr->intf_fxns->
+ 				pfn_dev_cntrl(pio_mgr->hbridge_context,
+ 					      BRDIOCTL_PWR_HIBERNATE, parg);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			pr_err("%s: hibernate cmd failed 0x%x\n",
+ 				       __func__, status);
+ 	} else if (parg[0] == MBX_PM_OPP_REQ) {
+@@ -861,16 +861,16 @@ static void io_dispatch_pm(struct io_mgr *pio_mgr)
+ 		status = pio_mgr->intf_fxns->
+ 				pfn_dev_cntrl(pio_mgr->hbridge_context,
+ 					BRDIOCTL_CONSTRAINT_REQUEST, parg);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			dev_dbg(bridge, "PM: Failed to set constraint "
+-				"= 0x%x \n", parg[1]);
++				"= 0x%x\n", parg[1]);
+ 	} else {
+ 		dev_dbg(bridge, "PM: clk control value of msg = 0x%x\n",
+ 			parg[0]);
+ 		status = pio_mgr->intf_fxns->
+ 				pfn_dev_cntrl(pio_mgr->hbridge_context,
+ 					      BRDIOCTL_CLK_CTRL, parg);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			dev_dbg(bridge, "PM: Failed to ctrl the DSP clk"
+ 				"= 0x%x\n", *parg);
+ 	}
+@@ -1849,7 +1849,7 @@ int print_dsp_trace_buffer(struct bridge_dev_context *hbridge_context)
+ 		status = cod_get_sym_value(cod_mgr, COD_TRACECURPOS,
+ 							&trace_cur_pos);
+ 
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 
+ 	ul_num_bytes = (ul_trace_end - ul_trace_begin);
+@@ -1857,7 +1857,7 @@ int print_dsp_trace_buffer(struct bridge_dev_context *hbridge_context)
+ 	ul_num_words = ul_num_bytes * ul_word_size;
+ 	status = dev_get_intf_fxns(dev_obj, &intf_fxns);
+ 
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 
+ 	psz_buf = kzalloc(ul_num_bytes + 2, GFP_ATOMIC);
+@@ -1867,7 +1867,7 @@ int print_dsp_trace_buffer(struct bridge_dev_context *hbridge_context)
+ 			(u8 *)psz_buf, (u32)ul_trace_begin,
+ 			ul_num_bytes, 0);
+ 
+-		if (DSP_FAILED(status))
++		if (status)
+ 			goto func_end;
+ 
+ 		/* Pack and do newline conversion */
+@@ -1881,7 +1881,7 @@ int print_dsp_trace_buffer(struct bridge_dev_context *hbridge_context)
+ 		status = (*intf_fxns->pfn_brd_read)(pbridge_context,
+ 				(u8 *)&trace_cur_pos, (u32)trace_cur_pos,
+ 				4, 0);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			goto func_end;
+ 		/* Pack and do newline conversion */
+ 		pr_info("DSP Trace Buffer Begin:\n"
+@@ -1967,7 +1967,7 @@ int print_dsp_trace_buffer(struct bridge_dev_context *hbridge_context)
+ 		status = -ENOMEM;
+ 	}
+ func_end:
+-	if (DSP_FAILED(status))
++	if (status)
+ 		dev_dbg(bridge, "%s Failed, status 0x%x\n", __func__, status);
+ 	return status;
+ }
+@@ -2025,7 +2025,7 @@ int dump_dsp_stack(struct bridge_dev_context *bridge_context)
+ 			cod_get_sym_value(code_mgr, COD_TRACEBEG, &trace_begin);
+ 		pr_debug("%s: trace_begin Value 0x%x\n",
+ 			__func__, trace_begin);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			pr_debug("%s: Failed on cod_get_sym_value.\n",
+ 								__func__);
+ 	}
+@@ -2049,7 +2049,7 @@ int dump_dsp_stack(struct bridge_dev_context *bridge_context)
+ 				(u8 *)&mmu_fault_dbg_info, (u32)trace_begin,
+ 				sizeof(mmu_fault_dbg_info), 0);
+ 
+-			if (DSP_FAILED(status))
++			if (status)
+ 				break;
+ 
+ 			poll_cnt++;
+@@ -2084,7 +2084,7 @@ int dump_dsp_stack(struct bridge_dev_context *bridge_context)
+ 		status = (*intf_fxns->pfn_brd_read)(bridge_context,
+ 				(u8 *)buffer, (u32)trace_begin,
+ 				total_size, 0);
+-		if (DSP_FAILED(status)) {
++		if (status) {
+ 			pr_debug("%s: Failed to Read Trace Buffer.\n",
+ 								__func__);
+ 			goto func_end;
+@@ -2101,7 +2101,7 @@ int dump_dsp_stack(struct bridge_dev_context *bridge_context)
+ 
+ 		status =
+ 		    cod_get_sym_value(code_mgr, DYNEXTBASE, &dyn_ext_base);
+-		if (DSP_FAILED(status)) {
++		if (status) {
+ 			status = -EFAULT;
+ 			goto func_end;
+ 		}
+@@ -2219,7 +2219,7 @@ void dump_dl_modules(struct bridge_dev_context *bridge_context)
+ 	int status = 0;
+ 
+ 	status = dev_get_intf_fxns(dev_object, &intf_fxns);
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		pr_debug("%s: Failed on dev_get_intf_fxns.\n", __func__);
+ 		goto func_end;
+ 	}
+@@ -2233,7 +2233,7 @@ void dump_dl_modules(struct bridge_dev_context *bridge_context)
+ 
+ 	/* Lookup  the address of the modules_header structure */
+ 	status = cod_get_sym_value(code_mgr, "_DLModules", &module_dsp_addr);
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		pr_debug("%s: Failed on cod_get_sym_value for _DLModules.\n",
+ 			__func__);
+ 		goto func_end;
+@@ -2245,7 +2245,7 @@ void dump_dl_modules(struct bridge_dev_context *bridge_context)
+ 	status = (*intf_fxns->pfn_brd_read)(bridge_context, (u8 *) &modules_hdr,
+ 				(u32) module_dsp_addr, sizeof(modules_hdr), 0);
+ 
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		pr_debug("%s: Failed failed to read modules header.\n",
+ 								__func__);
+ 		goto func_end;
+@@ -2280,7 +2280,7 @@ void dump_dl_modules(struct bridge_dev_context *bridge_context)
+ 		status = (*intf_fxns->pfn_brd_read)(bridge_context,
+ 			(u8 *)module_struct, module_dsp_addr, module_size, 0);
+ 
+-		if (DSP_FAILED(status)) {
++		if (status) {
+ 			pr_debug(
+ 			"%s: Failed to read dll_module stuct for 0x%x.\n",
+ 			__func__, module_dsp_addr);
+diff --git a/drivers/staging/tidspbridge/core/msg_sm.c b/drivers/staging/tidspbridge/core/msg_sm.c
+index 85ca448..87712e2 100644
+--- a/drivers/staging/tidspbridge/core/msg_sm.c
++++ b/drivers/staging/tidspbridge/core/msg_sm.c
+@@ -210,7 +210,7 @@ int bridge_msg_create_queue(struct msg_mgr *hmsg_mgr,
+ 				status = add_new_msg(msg_q->msg_free_list);
+ 			}
+ 		}
+-		if (DSP_FAILED(status)) {
++		if (status) {
+ 			/*  Stay inside CS to prevent others from taking any
+ 			 *  of the newly allocated message frames. */
+ 			delete_msg_queue(msg_q, num_allocated);
+@@ -439,7 +439,7 @@ int bridge_msg_put(struct msg_queue *msg_queue_obj,
+ 		syncs[1] = msg_queue_obj->sync_done;
+ 		status = sync_wait_on_multiple_events(syncs, 2, utimeout,
+ 						      &index);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			goto func_end;
+ 		/* Enter critical section */
+ 		spin_lock_bh(&hmsg_mgr->msg_mgr_lock);
+diff --git a/drivers/staging/tidspbridge/core/tiomap3430.c b/drivers/staging/tidspbridge/core/tiomap3430.c
+index 8f25a05..9673acb 100644
+--- a/drivers/staging/tidspbridge/core/tiomap3430.c
++++ b/drivers/staging/tidspbridge/core/tiomap3430.c
+@@ -1318,7 +1318,7 @@ static int bridge_brd_mem_map(struct bridge_dev_context *dev_ctxt,
+ 			}
+ 			status = pte_set(dev_context->pt_attrs, pa,
+ 					 va, HW_PAGE_SIZE4KB, &hw_attrs);
+-			if (DSP_FAILED(status))
++			if (status)
+ 				break;
+ 
+ 			va += HW_PAGE_SIZE4KB;
+@@ -1344,7 +1344,7 @@ static int bridge_brd_mem_map(struct bridge_dev_context *dev_ctxt,
+ 				status = pte_set(dev_context->pt_attrs,
+ 						 page_to_phys(mapped_page), va,
+ 						 HW_PAGE_SIZE4KB, &hw_attrs);
+-				if (DSP_FAILED(status))
++				if (status)
+ 					break;
+ 
+ 				if (mapped_pages)
+diff --git a/drivers/staging/tidspbridge/core/tiomap3430_pwr.c b/drivers/staging/tidspbridge/core/tiomap3430_pwr.c
+index d938645..b789f8f 100644
+--- a/drivers/staging/tidspbridge/core/tiomap3430_pwr.c
++++ b/drivers/staging/tidspbridge/core/tiomap3430_pwr.c
+@@ -228,7 +228,7 @@ int sleep_dsp(struct bridge_dev_context *dev_context, u32 dw_cmd,
+ 
+ 		/* Turn off DSP Peripheral clocks */
+ 		status = dsp_clock_disable_all(dev_context->dsp_per_clks);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			return status;
+ #ifdef CONFIG_TIDSPBRIDGE_DVFS
+ 		else if (target_pwr_state == PWRDM_POWER_OFF) {
+-- 
+1.7.0.4
+

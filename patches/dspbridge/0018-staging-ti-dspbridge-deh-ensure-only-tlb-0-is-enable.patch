@@ -1,0 +1,38 @@
+From 62f5242e2e275fe526d65733535591c065cc87a5 Mon Sep 17 00:00:00 2001
+From: Felipe Contreras <felipe.contreras@gmail.com>
+Date: Sun, 4 Jul 2010 16:34:32 +0300
+Subject: [PATCH 18/94] staging: ti dspbridge: deh: ensure only tlb #0 is enabled
+
+We don't want the DSP to continue writing into other mapped pages, no
+matter how unlikely.
+
+Based on extensive discussion with Fernando Guzman Lugo.
+
+Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/core/ue_deh.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/core/ue_deh.c b/drivers/staging/tidspbridge/core/ue_deh.c
+index 06167ed..793e982 100644
+--- a/drivers/staging/tidspbridge/core/ue_deh.c
++++ b/drivers/staging/tidspbridge/core/ue_deh.c
+@@ -186,6 +186,14 @@ void bridge_deh_notify(struct deh_mgr *deh_mgr, u32 ulEventMask, u32 dwErrInfo)
+ 		print_dsp_trace_buffer(dev_context);
+ 		dump_dl_modules(dev_context);
+ 
++		/*
++		 * Before acking the MMU fault, let's make sure MMU can only
++		 * access entry #0. Then add a new entry so that the DSP OS
++		 * can continue in order to dump the stack.
++		 */
++		hw_mmu_twl_disable(resources->dw_dmmu_base);
++		hw_mmu_tlb_flush_all(resources->dw_dmmu_base);
++
+ 		hw_mmu_tlb_add(resources->dw_dmmu_base,
+ 				virt_to_phys(dummy_va_addr), fault_addr,
+ 				HW_PAGE_SIZE4KB, 1,
+-- 
+1.7.0.4
+

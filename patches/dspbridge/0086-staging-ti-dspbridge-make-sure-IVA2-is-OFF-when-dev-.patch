@@ -1,0 +1,34 @@
+From a2205e487eb0a8af0bfc421038f1777ca6603ac4 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Wed, 28 Jul 2010 09:54:54 -0500
+Subject: [PATCH 86/94] staging:ti dspbridge: make sure IVA2 is OFF when dev is created
+
+Regardless the IVA2 power state before bridgedriver is
+installed, the driver must ensure that IVA2 power
+state is OFF when the device driver is created.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/core/tiomap3430.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/core/tiomap3430.c b/drivers/staging/tidspbridge/core/tiomap3430.c
+index 77527bd..e7584de 100644
+--- a/drivers/staging/tidspbridge/core/tiomap3430.c
++++ b/drivers/staging/tidspbridge/core/tiomap3430.c
+@@ -919,8 +919,10 @@ static int bridge_dev_create(struct bridge_dev_context
+ 	if (!status) {
+ 		dev_context->hdev_obj = hdev_obj;
+ 		/* Store current board state. */
+-		dev_context->dw_brd_state = BRD_STOPPED;
++		dev_context->dw_brd_state = BRD_UNKNOWN;
+ 		dev_context->resources = resources;
++		dsp_clk_enable(DSP_CLK_IVA2);
++		bridge_brd_stop(dev_context);
+ 		/* Return ptr to our device state to the DSP API for storage */
+ 		*dev_cntxt = dev_context;
+ 	} else {
+-- 
+1.7.0.4
+

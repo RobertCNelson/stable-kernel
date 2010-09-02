@@ -1,0 +1,53 @@
+From a2c2272194ac8bfe5ae3ec91e722a766d931d324 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Wed, 28 Jul 2010 09:54:52 -0500
+Subject: [PATCH 84/94] staging:ti dspbridge: fix bridge_brd_stop so IVA2 is set OFF
+
+right now, bridge_brd_stop is not changing the IVA2 power state
+to OFF since PM_PWSTST_IVA2 is not 0 after calling this function.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/core/tiomap3430.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/core/tiomap3430.c b/drivers/staging/tidspbridge/core/tiomap3430.c
+index 9673acb..77527bd 100644
+--- a/drivers/staging/tidspbridge/core/tiomap3430.c
++++ b/drivers/staging/tidspbridge/core/tiomap3430.c
+@@ -639,11 +639,11 @@ static int bridge_brd_stop(struct bridge_dev_context *dev_ctxt)
+ 	dsp_pwr_state = (*pdata->dsp_prm_read)(OMAP3430_IVA2_MOD, OMAP2_PM_PWSTST) &
+ 					OMAP_POWERSTATEST_MASK;
+ 	if (dsp_pwr_state != PWRDM_POWER_OFF) {
++		(*pdata->dsp_prm_rmw_bits)(OMAP3430_RST2_IVA2_MASK, 0,
++					OMAP3430_IVA2_MOD, OMAP2_RM_RSTCTRL);
+ 		sm_interrupt_dsp(dev_context, MBX_PM_DSPIDLE);
+ 		mdelay(10);
+ 
+-		clk_status = dsp_clk_disable(DSP_CLK_IVA2);
+-
+ 		/* IVA2 is not in OFF state */
+ 		/* Set PM_PWSTCTRL_IVA2  to OFF */
+ 		(*pdata->dsp_prm_rmw_bits)(OMAP_POWERSTATEST_MASK,
+@@ -651,8 +651,6 @@ static int bridge_brd_stop(struct bridge_dev_context *dev_ctxt)
+ 		/* Set the SW supervised state transition for Sleep */
+ 		(*pdata->dsp_cm_write)(OMAP34XX_CLKSTCTRL_FORCE_SLEEP,
+ 					OMAP3430_IVA2_MOD, OMAP2_CM_CLKSTCTRL);
+-	} else {
+-		clk_status = dsp_clk_disable(DSP_CLK_IVA2);
+ 	}
+ 	udelay(10);
+ 	/* Release the Ext Base virtual Address as the next DSP Program
+@@ -682,6 +680,8 @@ static int bridge_brd_stop(struct bridge_dev_context *dev_ctxt)
+ 	(*pdata->dsp_prm_write)(OMAP3430_RST1_IVA2_MASK | OMAP3430_RST2_IVA2_MASK |
+ 			OMAP3430_RST3_IVA2_MASK, OMAP3430_IVA2_MOD, OMAP2_RM_RSTCTRL);
+ 
++	clk_status = dsp_clk_disable(DSP_CLK_IVA2);
++
+ 	return status;
+ }
+ 
+-- 
+1.7.0.4
+

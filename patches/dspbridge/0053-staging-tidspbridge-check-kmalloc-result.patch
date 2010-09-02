@@ -1,0 +1,38 @@
+From dd85c9911d6eb44f398d07006a3c4ce57d36b7b9 Mon Sep 17 00:00:00 2001
+From: Kulikov Vasiliy <segooon@gmail.com>
+Date: Fri, 16 Jul 2010 20:14:11 +0400
+Subject: [PATCH 53/94] staging: tidspbridge: check kmalloc() result
+
+If kmalloc() fails then exit with -ENOMEM.
+
+Signed-off-by: Kulikov Vasiliy <segooon@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/pmgr/dspapi.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/pmgr/dspapi.c b/drivers/staging/tidspbridge/pmgr/dspapi.c
+index 1170798..57abe33 100644
+--- a/drivers/staging/tidspbridge/pmgr/dspapi.c
++++ b/drivers/staging/tidspbridge/pmgr/dspapi.c
+@@ -1407,6 +1407,8 @@ u32 strmwrap_allocate_buffer(union trapped_args *args, void *pr_ctxt)
+ 		return -EINVAL;
+ 
+ 	ap_buffer = kmalloc((num_bufs * sizeof(u8 *)), GFP_KERNEL);
++	if (ap_buffer == NULL)
++		return -ENOMEM;
+ 
+ 	status = strm_allocate_buffer(args->args_strm_allocatebuffer.hstream,
+ 				      args->args_strm_allocatebuffer.usize,
+@@ -1446,6 +1448,8 @@ u32 strmwrap_free_buffer(union trapped_args *args, void *pr_ctxt)
+ 		return -EINVAL;
+ 
+ 	ap_buffer = kmalloc((num_bufs * sizeof(u8 *)), GFP_KERNEL);
++	if (ap_buffer == NULL)
++		return -ENOMEM;
+ 
+ 	CP_FM_USR(ap_buffer, args->args_strm_freebuffer.ap_buffer, status,
+ 		  num_bufs);
+-- 
+1.7.0.4
+
