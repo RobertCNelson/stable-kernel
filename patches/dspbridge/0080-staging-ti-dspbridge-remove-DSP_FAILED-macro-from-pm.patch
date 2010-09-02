@@ -1,0 +1,394 @@
+From 51d5e099cc9a21960e59bcaee6cc5e2620ea6bb2 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Wed, 28 Jul 2010 09:45:30 -0500
+Subject: [PATCH 80/94] staging:ti dspbridge: remove DSP_FAILED macro from pmgr
+
+Since status succeeded is 0, DSP_FAILED macro
+is not necessary anymore.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/pmgr/chnl.c   |    2 +-
+ drivers/staging/tidspbridge/pmgr/cmm.c    |    2 +-
+ drivers/staging/tidspbridge/pmgr/cod.c    |    8 +++---
+ drivers/staging/tidspbridge/pmgr/dbll.c   |   12 +++++-----
+ drivers/staging/tidspbridge/pmgr/dev.c    |   24 ++++++++++------------
+ drivers/staging/tidspbridge/pmgr/dmm.c    |    2 +-
+ drivers/staging/tidspbridge/pmgr/dspapi.c |   30 ++++++++++++++--------------
+ 7 files changed, 39 insertions(+), 41 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/pmgr/chnl.c b/drivers/staging/tidspbridge/pmgr/chnl.c
+index 626a993..90317b5 100644
+--- a/drivers/staging/tidspbridge/pmgr/chnl.c
++++ b/drivers/staging/tidspbridge/pmgr/chnl.c
+@@ -100,7 +100,7 @@ int chnl_create(struct chnl_mgr **channel_mgr,
+ 		}
+ 	}
+ 
+-	DBC_ENSURE(DSP_FAILED(status) || chnl_mgr_obj);
++	DBC_ENSURE(status || chnl_mgr_obj);
+ 
+ 	return status;
+ }
+diff --git a/drivers/staging/tidspbridge/pmgr/cmm.c b/drivers/staging/tidspbridge/pmgr/cmm.c
+index 2f974c5..ce3dc88 100644
+--- a/drivers/staging/tidspbridge/pmgr/cmm.c
++++ b/drivers/staging/tidspbridge/pmgr/cmm.c
+@@ -1042,7 +1042,7 @@ int cmm_xlator_free_buf(struct cmm_xlatorobject *xlator, void *buf_va)
+ 		if (buf_pa) {
+ 			status = cmm_free_buf(xlator_obj->hcmm_mgr, buf_pa,
+ 					      xlator_obj->ul_seg_id);
+-			if (DSP_FAILED(status)) {
++			if (status) {
+ 				/* Uh oh, this shouldn't happen. Descriptor
+ 				 * gone! */
+ 				DBC_ASSERT(false);	/* CMM is leaking mem */
+diff --git a/drivers/staging/tidspbridge/pmgr/cod.c b/drivers/staging/tidspbridge/pmgr/cod.c
+index 9f902de..52989ab 100644
+--- a/drivers/staging/tidspbridge/pmgr/cod.c
++++ b/drivers/staging/tidspbridge/pmgr/cod.c
+@@ -257,7 +257,7 @@ int cod_create(struct cod_manager **mgr, char *str_zl_file,
+ 
+ 	status = mgr_new->fxns.create_fxn(&mgr_new->target, &zl_attrs);
+ 
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		cod_delete(mgr_new);
+ 		return -ESPIPE;
+ 	}
+@@ -529,7 +529,7 @@ int cod_load_base(struct cod_manager *cod_mgr_obj, u32 num_argc, char *args[],
+ 	status = cod_mgr_obj->fxns.load_fxn(cod_mgr_obj->base_lib, flags,
+ 					    &new_attrs,
+ 					    &cod_mgr_obj->ul_entry);
+-	if (DSP_FAILED(status))
++	if (status)
+ 		cod_mgr_obj->fxns.close_fxn(cod_mgr_obj->base_lib);
+ 
+ 	if (!status)
+@@ -570,7 +570,7 @@ int cod_open(struct cod_manager *hmgr, char *sz_coff_path,
+ 			*lib_obj = lib;
+ 	}
+ 
+-	if (DSP_FAILED(status))
++	if (status)
+ 		pr_err("%s: error status 0x%x, sz_coff_path: %s flags: 0x%x\n",
+ 		       __func__, status, sz_coff_path, flags);
+ 	return status;
+@@ -608,7 +608,7 @@ int cod_open_base(struct cod_manager *hmgr, char *sz_coff_path,
+ 		hmgr->sz_zl_file[COD_MAXPATHLENGTH - 1] = '\0';
+ 	}
+ 
+-	if (DSP_FAILED(status))
++	if (status)
+ 		pr_err("%s: error status 0x%x sz_coff_path: %s\n", __func__,
+ 		       status, sz_coff_path);
+ 	return status;
+diff --git a/drivers/staging/tidspbridge/pmgr/dbll.c b/drivers/staging/tidspbridge/pmgr/dbll.c
+index ea27824..2340638 100644
+--- a/drivers/staging/tidspbridge/pmgr/dbll.c
++++ b/drivers/staging/tidspbridge/pmgr/dbll.c
+@@ -256,7 +256,7 @@ int dbll_create(struct dbll_tar_obj **target_obj,
+ 			*target_obj = (struct dbll_tar_obj *)pzl_target;
+ 		}
+ 		DBC_ENSURE((!status && *target_obj) ||
+-				(DSP_FAILED(status) && *target_obj == NULL));
++				(status && *target_obj == NULL));
+ 	}
+ 
+ 	return status;
+@@ -559,7 +559,7 @@ int dbll_load(struct dbll_library_obj *lib, dbll_flags flags,
+ 	if (opened_doff)
+ 		dof_close(zl_lib);
+ 
+-	DBC_ENSURE(DSP_FAILED(status) || zl_lib->load_ref > 0);
++	DBC_ENSURE(status || zl_lib->load_ref > 0);
+ 
+ 	dev_dbg(bridge, "%s: lib: %p flags: 0x%x entry: %p, status 0x%x\n",
+ 		__func__, lib, flags, entry, status);
+@@ -631,7 +631,7 @@ int dbll_open(struct dbll_tar_obj *target, char *file, dbll_flags flags,
+ 	/*
+ 	 *  Set up objects needed by the dynamic loader
+ 	 */
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_cont;
+ 
+ 	/* Stream */
+@@ -713,7 +713,7 @@ func_cont:
+ 
+ 	}
+ 	DBC_ENSURE((!status && (zl_lib->open_ref > 0) && *lib_obj)
+-				|| (DSP_FAILED(status) && *lib_obj == NULL));
++				|| (status && *lib_obj == NULL));
+ 
+ 	dev_dbg(bridge, "%s: target: %p file: %s lib_obj: %p, status 0x%x\n",
+ 		__func__, target, file, lib_obj, status);
+@@ -756,7 +756,7 @@ int dbll_read_sect(struct dbll_library_obj *lib, char *name,
+ 	} else {
+ 		status = -EFAULT;
+ 	}
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_cont;
+ 
+ 	byte_size = 1;
+@@ -1314,7 +1314,7 @@ func_cont:
+ 						    (u32 *) &rmm_addr_obj,
+ 						    seg_id, req, false);
+ 	}
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		ret = false;
+ 	} else {
+ 		/* RMM gives word address. Need to convert to byte address */
+diff --git a/drivers/staging/tidspbridge/pmgr/dev.c b/drivers/staging/tidspbridge/pmgr/dev.c
+index 8f1e56a..4ddf03d 100644
+--- a/drivers/staging/tidspbridge/pmgr/dev.c
++++ b/drivers/staging/tidspbridge/pmgr/dev.c
+@@ -150,7 +150,7 @@ int dev_create_device(struct dev_object **device_obj,
+ 
+ 	status = drv_request_bridge_res_dsp((void *)&host_res);
+ 
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		dev_dbg(bridge, "%s: Failed to reserve bridge resources\n",
+ 			__func__);
+ 		goto leave;
+@@ -158,7 +158,7 @@ int dev_create_device(struct dev_object **device_obj,
+ 
+ 	/*  Get the Bridge driver interface functions */
+ 	bridge_drv_entry(&drv_fxns, driver_file_name);
+-	if (DSP_FAILED(cfg_get_object((u32 *) &hdrv_obj, REG_DRV_OBJECT))) {
++	if (cfg_get_object((u32 *) &hdrv_obj, REG_DRV_OBJECT)) {
+ 		/* don't propogate CFG errors from this PROC function */
+ 		status = -EPERM;
+ 	}
+@@ -189,7 +189,7 @@ int dev_create_device(struct dev_object **device_obj,
+ 			    (&dev_obj->hbridge_context, dev_obj,
+ 			     host_res);
+ 			/* Assert bridge_dev_create()'s ensure clause: */
+-			DBC_ASSERT(DSP_FAILED(status)
++			DBC_ASSERT(status
+ 				   || (dev_obj->hbridge_context != NULL));
+ 		} else {
+ 			status = -ENOMEM;
+@@ -276,8 +276,7 @@ leave:
+ 		*device_obj = NULL;
+ 	}
+ 
+-	DBC_ENSURE((!status && *device_obj) ||
+-		   (DSP_FAILED(status) && !*device_obj));
++	DBC_ENSURE((!status && *device_obj) || (status && !*device_obj));
+ 	return status;
+ }
+ 
+@@ -299,11 +298,11 @@ int dev_create2(struct dev_object *hdev_obj)
+ 	/* There can be only one Node Manager per DEV object */
+ 	DBC_ASSERT(!dev_obj->hnode_mgr);
+ 	status = node_create_mgr(&dev_obj->hnode_mgr, hdev_obj);
+-	if (DSP_FAILED(status))
++	if (status)
+ 		dev_obj->hnode_mgr = NULL;
+ 
+ 	DBC_ENSURE((!status && dev_obj->hnode_mgr != NULL)
+-		   || (DSP_FAILED(status) && dev_obj->hnode_mgr == NULL));
++		   || (status && dev_obj->hnode_mgr == NULL));
+ 	return status;
+ }
+ 
+@@ -321,15 +320,14 @@ int dev_destroy2(struct dev_object *hdev_obj)
+ 	DBC_REQUIRE(hdev_obj);
+ 
+ 	if (dev_obj->hnode_mgr) {
+-		if (DSP_FAILED(node_delete_mgr(dev_obj->hnode_mgr)))
++		if (node_delete_mgr(dev_obj->hnode_mgr))
+ 			status = -EPERM;
+ 		else
+ 			dev_obj->hnode_mgr = NULL;
+ 
+ 	}
+ 
+-	DBC_ENSURE((!status && dev_obj->hnode_mgr == NULL) ||
+-		   DSP_FAILED(status));
++	DBC_ENSURE((!status && dev_obj->hnode_mgr == NULL) || status);
+ 	return status;
+ }
+ 
+@@ -847,7 +845,7 @@ int dev_set_chnl_mgr(struct dev_object *hdev_obj,
+ 	else
+ 		status = -EFAULT;
+ 
+-	DBC_ENSURE(DSP_FAILED(status) || (dev_obj->hchnl_mgr == hmgr));
++	DBC_ENSURE(status || (dev_obj->hchnl_mgr == hmgr));
+ 	return status;
+ }
+ 
+@@ -885,7 +883,7 @@ int dev_start_device(struct cfg_devnode *dev_node_obj)
+ 	if (!status) {
+ 		/* Store away the hdev_obj with the DEVNODE */
+ 		status = cfg_set_dev_object(dev_node_obj, (u32) hdev_obj);
+-		if (DSP_FAILED(status)) {
++		if (status) {
+ 			/* Clean up */
+ 			dev_destroy_device(hdev_obj);
+ 			hdev_obj = NULL;
+@@ -895,7 +893,7 @@ int dev_start_device(struct cfg_devnode *dev_node_obj)
+ 		/* Create the Manager Object */
+ 		status = mgr_create(&hmgr_obj, dev_node_obj);
+ 	}
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		if (hdev_obj)
+ 			dev_destroy_device(hdev_obj);
+ 
+diff --git a/drivers/staging/tidspbridge/pmgr/dmm.c b/drivers/staging/tidspbridge/pmgr/dmm.c
+index ef28748..8685233 100644
+--- a/drivers/staging/tidspbridge/pmgr/dmm.c
++++ b/drivers/staging/tidspbridge/pmgr/dmm.c
+@@ -106,7 +106,7 @@ int dmm_create_tables(struct dmm_object *dmm_mgr, u32 addr, u32 size)
+ 		}
+ 	}
+ 
+-	if (DSP_FAILED(status))
++	if (status)
+ 		pr_err("%s: failure, status 0x%x\n", __func__, status);
+ 
+ 	return status;
+diff --git a/drivers/staging/tidspbridge/pmgr/dspapi.c b/drivers/staging/tidspbridge/pmgr/dspapi.c
+index 60d7410..1b0ab4a 100644
+--- a/drivers/staging/tidspbridge/pmgr/dspapi.c
++++ b/drivers/staging/tidspbridge/pmgr/dspapi.c
+@@ -170,7 +170,7 @@ static u8 size_cmd[] = {
+ static inline void _cp_fm_usr(void *to, const void __user * from,
+ 			      int *err, unsigned long bytes)
+ {
+-	if (DSP_FAILED(*err))
++	if (*err)
+ 		return;
+ 
+ 	if (unlikely(!from)) {
+@@ -188,7 +188,7 @@ static inline void _cp_fm_usr(void *to, const void __user * from,
+ static inline void _cp_to_usr(void __user *to, const void *from,
+ 			      int *err, unsigned long bytes)
+ {
+-	if (DSP_FAILED(*err))
++	if (*err)
+ 		return;
+ 
+ 	if (unlikely(!to)) {
+@@ -391,10 +391,10 @@ int api_init_complete2(void)
+ 	 *  requires KFILE. */
+ 	for (hdev_obj = dev_get_first(); hdev_obj != NULL;
+ 	     hdev_obj = dev_get_next(hdev_obj)) {
+-		if (DSP_FAILED(dev_get_dev_node(hdev_obj, &dev_node)))
++		if (dev_get_dev_node(hdev_obj, &dev_node))
+ 			continue;
+ 
+-		if (DSP_FAILED(dev_get_dev_type(hdev_obj, &dev_type)))
++		if (dev_get_dev_type(hdev_obj, &dev_type))
+ 			continue;
+ 
+ 		if ((dev_type == DSP_UNIT) || (dev_type == IVA_UNIT))
+@@ -486,7 +486,7 @@ u32 mgrwrap_register_object(union trapped_args *args, void *pr_ctxt)
+ 	int status = 0;
+ 
+ 	CP_FM_USR(&uuid_obj, args->args_mgr_registerobject.uuid_obj, status, 1);
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 	/* path_size is increased by 1 to accommodate NULL */
+ 	path_size = strlen_user((char *)
+@@ -523,7 +523,7 @@ u32 mgrwrap_unregister_object(union trapped_args *args, void *pr_ctxt)
+ 	struct dsp_uuid uuid_obj;
+ 
+ 	CP_FM_USR(&uuid_obj, args->args_mgr_registerobject.uuid_obj, status, 1);
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_end;
+ 
+ 	status = dcd_unregister_object(&uuid_obj,
+@@ -834,7 +834,7 @@ u32 procwrap_load(union trapped_args *args, void *pr_ctxt)
+ 	}
+ 
+ 	CP_FM_USR(argv, args->args_proc_load.user_args, status, count);
+-	if (DSP_FAILED(status)) {
++	if (status) {
+ 		kfree(argv);
+ 		argv = NULL;
+ 		goto func_cont;
+@@ -850,7 +850,7 @@ u32 procwrap_load(union trapped_args *args, void *pr_ctxt)
+ 			argv[i] = kmalloc(len, GFP_KERNEL);
+ 			if (argv[i]) {
+ 				CP_FM_USR(argv[i], temp, status, len);
+-				if (DSP_FAILED(status)) {
++				if (status) {
+ 					kfree(argv[i]);
+ 					argv[i] = NULL;
+ 					goto func_cont;
+@@ -876,7 +876,7 @@ u32 procwrap_load(union trapped_args *args, void *pr_ctxt)
+ 		}
+ 
+ 		CP_FM_USR(envp, args->args_proc_load.user_envp, status, count);
+-		if (DSP_FAILED(status)) {
++		if (status) {
+ 			kfree(envp);
+ 			envp = NULL;
+ 			goto func_cont;
+@@ -890,7 +890,7 @@ u32 procwrap_load(union trapped_args *args, void *pr_ctxt)
+ 			envp[i] = kmalloc(len, GFP_KERNEL);
+ 			if (envp[i]) {
+ 				CP_FM_USR(envp[i], temp, status, len);
+-				if (DSP_FAILED(status)) {
++				if (status) {
+ 					kfree(envp[i]);
+ 					envp[i] = NULL;
+ 					goto func_cont;
+@@ -1078,7 +1078,7 @@ u32 nodewrap_allocate(union trapped_args *args, void *pr_ctxt)
+ 			  cb_data_size);
+ 	}
+ 	CP_FM_USR(&node_uuid, args->args_node_allocate.node_id_ptr, status, 1);
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_cont;
+ 	/* Optional argument */
+ 	if (args->args_node_allocate.attr_in) {
+@@ -1097,7 +1097,7 @@ u32 nodewrap_allocate(union trapped_args *args, void *pr_ctxt)
+ 	}
+ 	if (!status) {
+ 		CP_TO_USR(args->args_node_allocate.ph_node, &hnode, status, 1);
+-		if (DSP_FAILED(status)) {
++		if (status) {
+ 			status = -EFAULT;
+ 			node_delete(hnode, pr_ctxt);
+ 		}
+@@ -1179,7 +1179,7 @@ u32 nodewrap_connect(union trapped_args *args, void *pr_ctxt)
+ 		}
+ 		CP_FM_USR(pargs, args->args_node_connect.conn_param, status,
+ 			  cb_data_size);
+-		if (DSP_FAILED(status))
++		if (status)
+ 			goto func_cont;
+ 	}
+ 	if (args->args_node_connect.pattrs) {	/* Optional argument */
+@@ -1378,7 +1378,7 @@ u32 nodewrap_get_uuid_props(union trapped_args *args, void *pr_ctxt)
+ 
+ 	CP_FM_USR(&node_uuid, args->args_node_getuuidprops.node_id_ptr, status,
+ 		  1);
+-	if (DSP_FAILED(status))
++	if (status)
+ 		goto func_cont;
+ 	pnode_props = kmalloc(sizeof(struct dsp_ndbprops), GFP_KERNEL);
+ 	if (pnode_props != NULL) {
+@@ -1416,7 +1416,7 @@ u32 strmwrap_allocate_buffer(union trapped_args *args, void *pr_ctxt)
+ 	if (!status) {
+ 		CP_TO_USR(args->args_strm_allocatebuffer.ap_buffer, ap_buffer,
+ 			  status, num_bufs);
+-		if (DSP_FAILED(status)) {
++		if (status) {
+ 			status = -EFAULT;
+ 			strm_free_buffer(args->args_strm_allocatebuffer.hstream,
+ 					 ap_buffer, num_bufs, pr_ctxt);
+-- 
+1.7.0.4
+

@@ -1,0 +1,90 @@
+From 86dd51e4c4d620dfe1aca584a1332b55f3a49c05 Mon Sep 17 00:00:00 2001
+From: Nishanth Menon <nm@ti.com>
+Date: Mon, 12 Jul 2010 17:56:00 -0500
+Subject: [PATCH 49/94] staging: tidspbridge: no need for custom NULL
+
+kernel has it's own NULL define, we dont need to introduce our own
+custom NULL type!
+
+Signed-off-by: Nishanth Menon <nm@ti.com>
+Reviewed-by: Felipe Contreras <felipe.contreras@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/dynload/header.h       |    4 ----
+ drivers/staging/tidspbridge/hw/GlobalTypes.h       |    9 ---------
+ .../staging/tidspbridge/include/dspbridge/dbtype.h |    8 --------
+ .../staging/tidspbridge/include/dspbridge/std.h    |    4 ----
+ 4 files changed, 0 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/dynload/header.h b/drivers/staging/tidspbridge/dynload/header.h
+index 04623f1..5b50a15 100644
+--- a/drivers/staging/tidspbridge/dynload/header.h
++++ b/drivers/staging/tidspbridge/dynload/header.h
+@@ -14,10 +14,6 @@
+  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+  */
+ 
+-#ifndef NULL
+-#define NULL 0
+-#endif
+-
+ #include <linux/string.h>
+ #define DL_STRCMP  strcmp
+ 
+diff --git a/drivers/staging/tidspbridge/hw/GlobalTypes.h b/drivers/staging/tidspbridge/hw/GlobalTypes.h
+index c67c91b..4d142a1 100644
+--- a/drivers/staging/tidspbridge/hw/GlobalTypes.h
++++ b/drivers/staging/tidspbridge/hw/GlobalTypes.h
+@@ -20,15 +20,6 @@
+ #define _GLOBALTYPES_H
+ 
+ /*
+- * Definition: NULL
+- *
+- * DESCRIPTION:  Invalid pointer
+- */
+-#ifndef NULL
+-#define NULL	(void *)0
+-#endif
+-
+-/*
+  * Definition: RET_CODE_BASE
+  *
+  * DESCRIPTION:  Base value for return code offsets
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/dbtype.h b/drivers/staging/tidspbridge/include/dspbridge/dbtype.h
+index 0b2cb93..ca5eaf8 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/dbtype.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/dbtype.h
+@@ -42,14 +42,6 @@
+ #endif
+ 
+ /*===========================================================================*/
+-/*  NULL    (Definition is language specific) */
+-/*===========================================================================*/
+-
+-#ifndef NULL
+-#define NULL    ((void *)0)	/* Null pointer. */
+-#endif
+-
+-/*===========================================================================*/
+ /*  NULL character   (normally used for string termination) */
+ /*===========================================================================*/
+ 
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/std.h b/drivers/staging/tidspbridge/include/dspbridge/std.h
+index 7e09fec..ca2827d 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/std.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/std.h
+@@ -74,10 +74,6 @@
+ 
+ typedef s32(*fxn) (void);	/* generic function type */
+ 
+-#ifndef NULL
+-#define NULL 0
+-#endif
+-
+ /*
+  * These macros are used to cast 'Arg' types to 's32' or 'Ptr'.
+  * These macros were added for the 55x since Arg is not the same
+-- 
+1.7.0.4
+

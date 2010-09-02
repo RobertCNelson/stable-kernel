@@ -1,0 +1,51 @@
+From 084f70ee096d385e363bd5d309cc7ff24fb98c53 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Wed, 28 Jul 2010 16:04:57 -0500
+Subject: [PATCH 94/94] staging: ti dspbridge: avoid errors if stream id is zero
+
+As 'zero' can be a perfectly good id, it can be picked up as
+a NULL from userspace, avoid issues in API and user apps if stream
+handle is zero.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/pmgr/dspapi.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/pmgr/dspapi.c b/drivers/staging/tidspbridge/pmgr/dspapi.c
+index 47892dd..7b42f72 100644
+--- a/drivers/staging/tidspbridge/pmgr/dspapi.c
++++ b/drivers/staging/tidspbridge/pmgr/dspapi.c
+@@ -1527,7 +1527,7 @@ inline void find_strm_handle(struct strm_res_object **strmres,
+ {
+ 	rcu_read_lock();
+ 	*strmres = idr_find(((struct process_context *)pr_ctxt)->stream_id,
+-							(int)hstream);
++							(int)hstream - 1);
+ 	rcu_read_unlock();
+ 	return;
+ }
+@@ -1724,6 +1724,7 @@ u32 strmwrap_open(union trapped_args *args, void *pr_ctxt)
+ 	struct strm_res_object *strm_res_obj;
+ 	struct dsp_streamattrin strm_attr_in;
+ 	struct node_res_object *node_res;
++	int strmid;
+ 
+ 	find_node_handle(&node_res, pr_ctxt, args->args_strm_open.hnode);
+ 
+@@ -1745,7 +1746,10 @@ u32 strmwrap_open(union trapped_args *args, void *pr_ctxt)
+ 			   args->args_strm_open.direction,
+ 			   args->args_strm_open.index, &attr, &strm_res_obj,
+ 			   pr_ctxt);
+-	CP_TO_USR(args->args_strm_open.ph_stream, &strm_res_obj->id, status, 1);
++	if (!status) {
++		strmid = strm_res_obj->id + 1;
++		CP_TO_USR(args->args_strm_open.ph_stream, &strmid, status, 1);
++	}
+ 	return status;
+ }
+ 
+-- 
+1.7.0.4
+

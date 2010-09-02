@@ -1,0 +1,32 @@
+From 54621f031c037d4df9844e5246ce1924c49a703e Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Wed, 28 Jul 2010 09:45:28 -0500
+Subject: [PATCH 78/94] staging:ti dspbridge: remove DSP_SUCCEEDED macro definition
+
+Since status succeeded is now 0 macro DSP_SUCCEEDED
+is not necessary anymore. This patch removes this
+define.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ .../staging/tidspbridge/include/dspbridge/dbdefs.h |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/dbdefs.h b/drivers/staging/tidspbridge/include/dspbridge/dbdefs.h
+index 397e2cb..2ccbfe1 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/dbdefs.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/dbdefs.h
+@@ -91,8 +91,7 @@
+ #define DSPWORD       unsigned char
+ #define DSPWORDSIZE     sizeof(DSPWORD)
+ 
+-/* Success & Failure macros */
+-#define DSP_SUCCEEDED(status)      likely((s32)(status) >= 0)
++/* Failure macro */
+ #define DSP_FAILED(status)         unlikely((s32)(status) < 0)
+ 
+ /* Power control enumerations */
+-- 
+1.7.0.4
+

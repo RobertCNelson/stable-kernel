@@ -1,0 +1,174 @@
+From 5c8111519953cd730f4e7f8333a7544e95e6580b Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Thu, 2 Sep 2010 11:35:29 -0500
+Subject: [PATCH] OUT-OF-TREE: tidspbridge: move platform_device_register under mach-omap2
+
+---
+ arch/arm/mach-omap2/Makefile    |    4 ++
+ arch/arm/mach-omap2/dspbridge.c |  109 +++++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/io.c        |    3 +
+ drivers/staging/Makefile        |    2 +-
+ 4 files changed, 117 insertions(+), 1 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/dspbridge.c
+
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index fed0f27..13e1da2 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -160,3 +160,7 @@ obj-y					+= $(nand-m) $(nand-y)
+ 
+ smc91x-$(CONFIG_SMC91X)			:= gpmc-smc91x.o
+ obj-y					+= $(smc91x-m) $(smc91x-y)
++
++# OMAP DSP stuff
++obj-y					+= dspbridge.o
++#dspbridge-objs = dspbridge.o
+diff --git a/arch/arm/mach-omap2/dspbridge.c b/arch/arm/mach-omap2/dspbridge.c
+new file mode 100644
+index 0000000..973274c
+--- /dev/null
++++ b/arch/arm/mach-omap2/dspbridge.c
+@@ -0,0 +1,109 @@
++/*
++ * TI's dspbridge platform device registration
++ *
++ * Copyright (C) 2005-2006 Texas Instruments, Inc.
++ * Copyright (C) 2009 Nokia Corporation
++ *
++ * Written by Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/platform_device.h>
++//#include <linux/lmb.h>
++#include <linux/bootmem.h>
++
++#include "prm.h"
++#include "cm.h"
++#ifdef CONFIG_BRIDGE_DVFS
++#include <plat/omap-pm.h>
++#endif
++
++#include "../../../drivers/staging/tidspbridge/include/dspbridge/host_os.h"
++
++static struct platform_device *dspbridge_pdev;
++
++static struct dspbridge_platform_data dspbridge_pdata __initdata = {
++#ifdef CONFIG_BRIDGE_DVFS
++	.dsp_set_min_opp = omap_pm_dsp_set_min_opp,
++	.dsp_get_opp	 = omap_pm_dsp_get_opp,
++	.cpu_set_freq	 = omap_pm_cpu_set_freq,
++	.cpu_get_freq	 = omap_pm_cpu_get_freq,
++#endif
++	.dsp_prm_read	= prm_read_mod_reg,
++	.dsp_prm_write	= prm_write_mod_reg,
++	.dsp_prm_rmw_bits = prm_rmw_mod_reg_bits,
++	.dsp_cm_read	= cm_read_mod_reg,
++	.dsp_cm_write	= cm_write_mod_reg,
++	.dsp_cm_rmw_bits = cm_rmw_mod_reg_bits,
++};
++
++static unsigned long dspbridge_phys_mempool_base;
++
++void __init dspbridge_reserve_sdram(void)
++{
++//	unsigned long va, size = CONFIG_TIDSPBRIDGE_MEMPOOL_SIZE; // LMB
++	void *va;
++	unsigned long size = CONFIG_TIDSPBRIDGE_MEMPOOL_SIZE;
++
++	if (!size)
++		return;
++
++//	va = lmb_alloc(size, SZ_1M);		//LMB
++	va = __alloc_bootmem_nopanic(size, SZ_1M, 0);
++	if (!va) {
++		pr_err("%s: Failed to bootmem allocation(%lu bytes)\n",
++			__func__, size);
++		return;
++	}
++
++//	dspbridge_phys_mempool_base = va;		//LMB
++	dspbridge_phys_mempool_base = virt_to_phys(va);
++}
++
++static int __init dspbridge_init(void)
++{
++	struct platform_device *pdev;
++	int err = -ENOMEM;
++	struct dspbridge_platform_data *pdata = &dspbridge_pdata;
++
++	pdata->phys_mempool_base = dspbridge_phys_mempool_base;
++	if (pdata->phys_mempool_base) {
++		pdata->phys_mempool_size = CONFIG_TIDSPBRIDGE_MEMPOOL_SIZE;
++		pr_info("%s: %x bytes @ %x\n", __func__,
++			pdata->phys_mempool_size, pdata->phys_mempool_base);
++	}
++
++	pdev = platform_device_alloc("C6410", -1);
++	if (!pdev)
++		goto err_out;
++
++	err = platform_device_add_data(pdev, pdata, sizeof(*pdata));
++	if (err)
++		goto err_out;
++
++	err = platform_device_add(pdev);
++	if (err)
++		goto err_out;
++
++	dspbridge_pdev = pdev;
++	return 0;
++
++err_out:
++	platform_device_put(pdev);
++	return err;
++}
++module_init(dspbridge_init);
++
++static void __exit dspbridge_exit(void)
++{
++	platform_device_unregister(dspbridge_pdev);
++}
++module_exit(dspbridge_exit);
++
++MODULE_AUTHOR("Hiroshi DOYU");
++MODULE_DESCRIPTION("TI's dspbridge platform device registration");
++MODULE_LICENSE("GPL v2");
++
+diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
+index 3cfb425..ad6b94a 100644
+--- a/arch/arm/mach-omap2/io.c
++++ b/arch/arm/mach-omap2/io.c
+@@ -47,6 +47,8 @@
+ #include "clockdomains.h"
+ #include <plat/omap_hwmod.h>
+ 
++#include "../../../drivers/staging/tidspbridge/include/dspbridge/host_os.h"
++
+ /*
+  * The machine specific code may provide the extra mapping besides the
+  * default mapping provided here.
+@@ -243,6 +245,7 @@ static void __init _omap2_map_common_io(void)
+ 	omap_sram_init();
+ 	omapfb_reserve_sdram();
+ 	omap_vram_reserve_sdram();
++	dspbridge_reserve_sdram();
+ }
+ 
+ #ifdef CONFIG_ARCH_OMAP2420
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index f2bdef8..61dc792 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -55,4 +55,4 @@ obj-$(CONFIG_ADIS16255)		+= adis16255/
+ obj-$(CONFIG_FB_XGI)		+= xgifb/
+ obj-$(CONFIG_TOUCHSCREEN_MRSTOUCH)	+= mrst-touchscreen/
+ obj-$(CONFIG_MSM_STAGING)	+= msm/
+-obj-$(CONFIG_TIDSPBRIDGE)      += tidspbridge/
++obj-$(CONFIG_TIDSPBRIDGE)	+= tidspbridge/
+-- 
+1.7.0.4
+

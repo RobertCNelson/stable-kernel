@@ -1,0 +1,769 @@
+From 4ec09714a0a5861c3e786967024ddfff00b0add6 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Wed, 28 Jul 2010 16:04:56 -0500
+Subject: [PATCH 93/94] staging: ti dspbridge: use stream id instead of kernel address
+
+Send stream ids to the user instead of handles, then when
+the id is coming from user dspbridge can retrive the handle
+using id and avoid using invalid handles.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ .../staging/tidspbridge/include/dspbridge/drv.h    |    5 +-
+ .../include/dspbridge/resourcecleanup.h            |    6 -
+ .../staging/tidspbridge/include/dspbridge/strm.h   |   22 ++--
+ drivers/staging/tidspbridge/pmgr/dspapi.c          |  115 +++++++++++++---
+ drivers/staging/tidspbridge/rmgr/drv.c             |  148 +++++++-------------
+ drivers/staging/tidspbridge/rmgr/drv_interface.c   |   13 ++-
+ drivers/staging/tidspbridge/rmgr/strm.c            |   54 +++----
+ 7 files changed, 193 insertions(+), 170 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/drv.h b/drivers/staging/tidspbridge/include/dspbridge/drv.h
+index 0b36a11..f365015 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/drv.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/drv.h
+@@ -131,7 +131,7 @@ struct strm_res_object {
+ 	void *hstream;
+ 	u32 num_bufs;
+ 	u32 dir;
+-	struct strm_res_object *next;
++	int id;
+ };
+ 
+ /* Overall Bridge process resource usage state */
+@@ -173,8 +173,7 @@ struct process_context {
+ 	struct dspheap_res_object *pdspheap_list;
+ 
+ 	/* Stream resources */
+-	struct strm_res_object *pstrm_list;
+-	struct mutex strm_mutex;
++	struct idr *stream_id;
+ };
+ 
+ /*
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/resourcecleanup.h b/drivers/staging/tidspbridge/include/dspbridge/resourcecleanup.h
+index d17c7fb..dfaf0c6 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/resourcecleanup.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/resourcecleanup.h
+@@ -47,12 +47,6 @@ extern int drv_proc_insert_strm_res_element(void *stream_obj,
+ 						   void *strm_res,
+ 						   void *process_ctxt);
+ 
+-extern int drv_get_strm_res_element(void *stream_obj, void *strm_resources,
+-					   void *process_ctxt);
+-
+-extern int drv_proc_remove_strm_res_element(void *strm_res,
+-						   void *process_ctxt);
+-
+ extern int drv_remove_all_strm_res_elements(void *process_ctxt);
+ 
+ extern enum node_state node_get_state(void *hnode);
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/strm.h b/drivers/staging/tidspbridge/include/dspbridge/strm.h
+index 0ddc797..3e4671e 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/strm.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/strm.h
+@@ -29,7 +29,7 @@
+  *  Purpose:
+  *      Allocate data buffer(s) for use with a stream.
+  *  Parameter:
+- *      stream_obj:     Stream handle returned from strm_open().
++ *      strmres:     Stream resource info handle returned from strm_open().
+  *      usize:          Size (GPP bytes) of the buffer(s).
+  *      num_bufs:       Number of buffers to allocate.
+  *      ap_buffer:       Array to hold buffer addresses.
+@@ -44,7 +44,7 @@
+  *      ap_buffer != NULL.
+  *  Ensures:
+  */
+-extern int strm_allocate_buffer(struct strm_object *stream_obj,
++extern int strm_allocate_buffer(struct strm_res_object *strmres,
+ 				       u32 usize,
+ 				       u8 **ap_buffer,
+ 				       u32 num_bufs,
+@@ -55,7 +55,7 @@ extern int strm_allocate_buffer(struct strm_object *stream_obj,
+  *  Purpose:
+  *      Close a stream opened with strm_open().
+  *  Parameter:
+- *      stream_obj:          Stream handle returned from strm_open().
++ *      strmres:          Stream resource info handle returned from strm_open().
+  *  Returns:
+  *      0:        Success.
+  *      -EFAULT:    Invalid stream_obj.
+@@ -66,7 +66,7 @@ extern int strm_allocate_buffer(struct strm_object *stream_obj,
+  *      strm_init(void) called.
+  *  Ensures:
+  */
+-extern int strm_close(struct strm_object *stream_obj,
++extern int strm_close(struct strm_res_object *strmres,
+ 			     struct process_context *pr_ctxt);
+ 
+ /*
+@@ -125,7 +125,7 @@ extern void strm_exit(void);
+  *  Purpose:
+  *      Free buffer(s) allocated with strm_allocate_buffer.
+  *  Parameter:
+- *      stream_obj:     Stream handle returned from strm_open().
++ *      strmres:     Stream resource info handle returned from strm_open().
+  *      ap_buffer:       Array containing buffer addresses.
+  *      num_bufs:       Number of buffers to be freed.
+  *  Returns:
+@@ -137,7 +137,7 @@ extern void strm_exit(void);
+  *      ap_buffer != NULL.
+  *  Ensures:
+  */
+-extern int strm_free_buffer(struct strm_object *stream_obj,
++extern int strm_free_buffer(struct strm_res_object *strmres,
+ 				   u8 **ap_buffer, u32 num_bufs,
+ 				   struct process_context *pr_ctxt);
+ 
+@@ -254,7 +254,7 @@ extern int strm_issue(struct strm_object *stream_obj, u8 * pbuf,
+  *      index:         Stream index.
+  *      pattr:          Pointer to structure containing attributes to be
+  *                      applied to stream. Cannot be NULL.
+- *      strm_objct:     Location to store stream handle on output.
++ *      strmres:     Location to store stream resuorce info handle on output.
+  *  Returns:
+  *      0:        Success.
+  *      -EFAULT:    Invalid hnode.
+@@ -264,15 +264,15 @@ extern int strm_issue(struct strm_object *stream_obj, u8 * pbuf,
+  *      -EINVAL:     Invalid index.
+  *  Requires:
+  *      strm_init(void) called.
+- *      strm_objct != NULL.
++ *      strmres != NULL.
+  *      pattr != NULL.
+  *  Ensures:
+- *      0:        *strm_objct is valid.
+- *      error:          *strm_objct == NULL.
++ *      0:        *strmres is valid.
++ *      error:          *strmres == NULL.
+  */
+ extern int strm_open(struct node_object *hnode, u32 dir,
+ 			    u32 index, struct strm_attr *pattr,
+-			    struct strm_object **strm_objct,
++			    struct strm_res_object **strmres,
+ 			    struct process_context *pr_ctxt);
+ 
+ /*
+diff --git a/drivers/staging/tidspbridge/pmgr/dspapi.c b/drivers/staging/tidspbridge/pmgr/dspapi.c
+index d7613eb..47892dd 100644
+--- a/drivers/staging/tidspbridge/pmgr/dspapi.c
++++ b/drivers/staging/tidspbridge/pmgr/dspapi.c
+@@ -1520,6 +1520,19 @@ func_cont:
+ }
+ 
+ /*
++ * ======== find_strm_handle =========
++ */
++inline void find_strm_handle(struct strm_res_object **strmres,
++				void *pr_ctxt, void *hstream)
++{
++	rcu_read_lock();
++	*strmres = idr_find(((struct process_context *)pr_ctxt)->stream_id,
++							(int)hstream);
++	rcu_read_unlock();
++	return;
++}
++
++/*
+  * ======== strmwrap_allocate_buffer ========
+  */
+ u32 strmwrap_allocate_buffer(union trapped_args *args, void *pr_ctxt)
+@@ -1527,6 +1540,13 @@ u32 strmwrap_allocate_buffer(union trapped_args *args, void *pr_ctxt)
+ 	int status;
+ 	u8 **ap_buffer = NULL;
+ 	u32 num_bufs = args->args_strm_allocatebuffer.num_bufs;
++	struct strm_res_object *strm_res;
++
++	find_strm_handle(&strm_res, pr_ctxt,
++		args->args_strm_allocatebuffer.hstream);
++
++	if (!strm_res)
++		return -EFAULT;
+ 
+ 	if (num_bufs > MAX_BUFS)
+ 		return -EINVAL;
+@@ -1535,7 +1555,7 @@ u32 strmwrap_allocate_buffer(union trapped_args *args, void *pr_ctxt)
+ 	if (ap_buffer == NULL)
+ 		return -ENOMEM;
+ 
+-	status = strm_allocate_buffer(args->args_strm_allocatebuffer.hstream,
++	status = strm_allocate_buffer(strm_res,
+ 				      args->args_strm_allocatebuffer.usize,
+ 				      ap_buffer, num_bufs, pr_ctxt);
+ 	if (!status) {
+@@ -1543,7 +1563,7 @@ u32 strmwrap_allocate_buffer(union trapped_args *args, void *pr_ctxt)
+ 			  status, num_bufs);
+ 		if (status) {
+ 			status = -EFAULT;
+-			strm_free_buffer(args->args_strm_allocatebuffer.hstream,
++			strm_free_buffer(strm_res,
+ 					 ap_buffer, num_bufs, pr_ctxt);
+ 		}
+ 	}
+@@ -1557,7 +1577,14 @@ u32 strmwrap_allocate_buffer(union trapped_args *args, void *pr_ctxt)
+  */
+ u32 strmwrap_close(union trapped_args *args, void *pr_ctxt)
+ {
+-	return strm_close(args->args_strm_close.hstream, pr_ctxt);
++	struct strm_res_object *strm_res;
++
++	find_strm_handle(&strm_res, pr_ctxt, args->args_strm_close.hstream);
++
++	if (!strm_res)
++		return -EFAULT;
++
++	return strm_close(strm_res, pr_ctxt);
+ }
+ 
+ /*
+@@ -1568,6 +1595,13 @@ u32 strmwrap_free_buffer(union trapped_args *args, void *pr_ctxt)
+ 	int status = 0;
+ 	u8 **ap_buffer = NULL;
+ 	u32 num_bufs = args->args_strm_freebuffer.num_bufs;
++	struct strm_res_object *strm_res;
++
++	find_strm_handle(&strm_res, pr_ctxt,
++			args->args_strm_freebuffer.hstream);
++
++	if (!strm_res)
++		return -EFAULT;
+ 
+ 	if (num_bufs > MAX_BUFS)
+ 		return -EINVAL;
+@@ -1579,10 +1613,10 @@ u32 strmwrap_free_buffer(union trapped_args *args, void *pr_ctxt)
+ 	CP_FM_USR(ap_buffer, args->args_strm_freebuffer.ap_buffer, status,
+ 		  num_bufs);
+ 
+-	if (!status) {
+-		status = strm_free_buffer(args->args_strm_freebuffer.hstream,
++	if (!status)
++		status = strm_free_buffer(strm_res,
+ 					  ap_buffer, num_bufs, pr_ctxt);
+-	}
++
+ 	CP_TO_USR(args->args_strm_freebuffer.ap_buffer, ap_buffer, status,
+ 		  num_bufs);
+ 	kfree(ap_buffer);
+@@ -1609,6 +1643,13 @@ u32 strmwrap_get_info(union trapped_args *args, void *pr_ctxt)
+ 	struct stream_info strm_info;
+ 	struct dsp_streaminfo user;
+ 	struct dsp_streaminfo *temp;
++	struct strm_res_object *strm_res;
++
++	find_strm_handle(&strm_res, pr_ctxt,
++			args->args_strm_getinfo.hstream);
++
++	if (!strm_res)
++		return -EFAULT;
+ 
+ 	CP_FM_USR(&strm_info, args->args_strm_getinfo.stream_info, status, 1);
+ 	temp = strm_info.user_strm;
+@@ -1616,7 +1657,7 @@ u32 strmwrap_get_info(union trapped_args *args, void *pr_ctxt)
+ 	strm_info.user_strm = &user;
+ 
+ 	if (!status) {
+-		status = strm_get_info(args->args_strm_getinfo.hstream,
++		status = strm_get_info(strm_res->hstream,
+ 				       &strm_info,
+ 				       args->args_strm_getinfo.
+ 				       stream_info_size);
+@@ -1633,9 +1674,14 @@ u32 strmwrap_get_info(union trapped_args *args, void *pr_ctxt)
+ u32 strmwrap_idle(union trapped_args *args, void *pr_ctxt)
+ {
+ 	u32 ret;
++	struct strm_res_object *strm_res;
++
++	find_strm_handle(&strm_res, pr_ctxt, args->args_strm_idle.hstream);
+ 
+-	ret = strm_idle(args->args_strm_idle.hstream,
+-			args->args_strm_idle.flush_flag);
++	if (!strm_res)
++		return -EFAULT;
++
++	ret = strm_idle(strm_res->hstream, args->args_strm_idle.flush_flag);
+ 
+ 	return ret;
+ }
+@@ -1646,6 +1692,12 @@ u32 strmwrap_idle(union trapped_args *args, void *pr_ctxt)
+ u32 strmwrap_issue(union trapped_args *args, void *pr_ctxt)
+ {
+ 	int status = 0;
++	struct strm_res_object *strm_res;
++
++	find_strm_handle(&strm_res, pr_ctxt, args->args_strm_issue.hstream);
++
++	if (!strm_res)
++		return -EFAULT;
+ 
+ 	if (!args->args_strm_issue.pbuffer)
+ 		return -EFAULT;
+@@ -1653,7 +1705,7 @@ u32 strmwrap_issue(union trapped_args *args, void *pr_ctxt)
+ 	/* No need of doing CP_FM_USR for the user buffer (pbuffer)
+ 	   as this is done in Bridge internal function bridge_chnl_add_io_req
+ 	   in chnl_sm.c */
+-	status = strm_issue(args->args_strm_issue.hstream,
++	status = strm_issue(strm_res->hstream,
+ 			    args->args_strm_issue.pbuffer,
+ 			    args->args_strm_issue.dw_bytes,
+ 			    args->args_strm_issue.dw_buf_size,
+@@ -1669,7 +1721,7 @@ u32 strmwrap_open(union trapped_args *args, void *pr_ctxt)
+ {
+ 	int status = 0;
+ 	struct strm_attr attr;
+-	struct strm_object *strm_obj;
++	struct strm_res_object *strm_res_obj;
+ 	struct dsp_streamattrin strm_attr_in;
+ 	struct node_res_object *node_res;
+ 
+@@ -1691,9 +1743,9 @@ u32 strmwrap_open(union trapped_args *args, void *pr_ctxt)
+ 	}
+ 	status = strm_open(node_res->hnode,
+ 			   args->args_strm_open.direction,
+-			   args->args_strm_open.index, &attr, &strm_obj,
++			   args->args_strm_open.index, &attr, &strm_res_obj,
+ 			   pr_ctxt);
+-	CP_TO_USR(args->args_strm_open.ph_stream, &strm_obj, status, 1);
++	CP_TO_USR(args->args_strm_open.ph_stream, &strm_res_obj->id, status, 1);
+ 	return status;
+ }
+ 
+@@ -1707,8 +1759,14 @@ u32 strmwrap_reclaim(union trapped_args *args, void *pr_ctxt)
+ 	u32 ul_bytes;
+ 	u32 dw_arg;
+ 	u32 ul_buf_size;
++	struct strm_res_object *strm_res;
++
++	find_strm_handle(&strm_res, pr_ctxt, args->args_strm_reclaim.hstream);
++
++	if (!strm_res)
++		return -EFAULT;
+ 
+-	status = strm_reclaim(args->args_strm_reclaim.hstream, &buf_ptr,
++	status = strm_reclaim(strm_res->hstream, &buf_ptr,
+ 			      &ul_bytes, &ul_buf_size, &dw_arg);
+ 	CP_TO_USR(args->args_strm_reclaim.buf_ptr, &buf_ptr, status, 1);
+ 	CP_TO_USR(args->args_strm_reclaim.bytes, &ul_bytes, status, 1);
+@@ -1729,12 +1787,19 @@ u32 strmwrap_register_notify(union trapped_args *args, void *pr_ctxt)
+ {
+ 	int status = 0;
+ 	struct dsp_notification notification;
++	struct strm_res_object *strm_res;
++
++	find_strm_handle(&strm_res, pr_ctxt,
++			args->args_strm_registernotify.hstream);
++
++	if (!strm_res)
++		return -EFAULT;
+ 
+ 	/* Initialize the notification data structure */
+ 	notification.ps_name = NULL;
+ 	notification.handle = NULL;
+ 
+-	status = strm_register_notify(args->args_strm_registernotify.hstream,
++	status = strm_register_notify(strm_res->hstream,
+ 				      args->args_strm_registernotify.event_mask,
+ 				      args->args_strm_registernotify.
+ 				      notify_type, &notification);
+@@ -1752,12 +1817,28 @@ u32 strmwrap_select(union trapped_args *args, void *pr_ctxt)
+ 	u32 mask;
+ 	struct strm_object *strm_tab[MAX_STREAMS];
+ 	int status = 0;
++	struct strm_res_object *strm_res;
++	int *ids[MAX_STREAMS];
++	int i;
+ 
+ 	if (args->args_strm_select.strm_num > MAX_STREAMS)
+ 		return -EINVAL;
+ 
+-	CP_FM_USR(strm_tab, args->args_strm_select.stream_tab, status,
+-		  args->args_strm_select.strm_num);
++	CP_FM_USR(ids, args->args_strm_select.stream_tab, status,
++		args->args_strm_select.strm_num);
++
++	if (status)
++		return status;
++
++	for (i = 0; i < args->args_strm_select.strm_num; i++) {
++		find_strm_handle(&strm_res, pr_ctxt, ids[i]);
++
++		if (!strm_res)
++			return -EFAULT;
++
++		strm_tab[i] = strm_res->hstream;
++	}
++
+ 	if (!status) {
+ 		status = strm_select(strm_tab, args->args_strm_select.strm_num,
+ 				     &mask, args->args_strm_select.utimeout);
+diff --git a/drivers/staging/tidspbridge/rmgr/drv.c b/drivers/staging/tidspbridge/rmgr/drv.c
+index c8d9d25..8a8dea6 100644
+--- a/drivers/staging/tidspbridge/rmgr/drv.c
++++ b/drivers/staging/tidspbridge/rmgr/drv.c
+@@ -211,70 +211,40 @@ int drv_proc_insert_strm_res_element(void *stream_obj,
+ 	    (struct strm_res_object **)strm_res;
+ 	struct process_context *ctxt = (struct process_context *)process_ctxt;
+ 	int status = 0;
+-	struct strm_res_object *temp_strm_res = NULL;
++	int retval;
+ 
+ 	*pstrm_res = kzalloc(sizeof(struct strm_res_object), GFP_KERNEL);
+-	if (*pstrm_res == NULL)
++	if (*pstrm_res == NULL) {
+ 		status = -EFAULT;
++		goto func_end;
++	}
+ 
+-	if (!status) {
+-		if (mutex_lock_interruptible(&ctxt->strm_mutex)) {
+-			kfree(*pstrm_res);
+-			return -EPERM;
++	(*pstrm_res)->hstream = stream_obj;
++	retval = idr_get_new(ctxt->stream_id, *pstrm_res,
++						&(*pstrm_res)->id);
++	if (retval == -EAGAIN) {
++		if (!idr_pre_get(ctxt->stream_id, GFP_KERNEL)) {
++			pr_err("%s: OUT OF MEMORY\n", __func__);
++			status = -ENOMEM;
++			goto func_end;
+ 		}
+-		(*pstrm_res)->hstream = stream_obj;
+-		if (ctxt->pstrm_list != NULL) {
+-			temp_strm_res = ctxt->pstrm_list;
+-			while (temp_strm_res->next != NULL)
+-				temp_strm_res = temp_strm_res->next;
+ 
+-			temp_strm_res->next = *pstrm_res;
+-		} else {
+-			ctxt->pstrm_list = *pstrm_res;
+-		}
+-		mutex_unlock(&ctxt->strm_mutex);
++		retval = idr_get_new(ctxt->stream_id, *pstrm_res,
++						&(*pstrm_res)->id);
+ 	}
+-	return status;
+-}
+-
+-/* Release Stream resource element context
+-* This function called after the actual resource is freed
+- */
+-int drv_proc_remove_strm_res_element(void *strm_res, void *process_ctxt)
+-{
+-	struct strm_res_object *pstrm_res = (struct strm_res_object *)strm_res;
+-	struct process_context *ctxt = (struct process_context *)process_ctxt;
+-	struct strm_res_object *temp_strm_res;
+-	int status = 0;
+-
+-	if (mutex_lock_interruptible(&ctxt->strm_mutex))
+-		return -EPERM;
+-	temp_strm_res = ctxt->pstrm_list;
+-
+-	if (ctxt->pstrm_list == pstrm_res) {
+-		ctxt->pstrm_list = pstrm_res->next;
+-	} else {
+-		while (temp_strm_res && temp_strm_res->next != pstrm_res)
+-			temp_strm_res = temp_strm_res->next;
+-		if (temp_strm_res == NULL)
+-			status = -ENOENT;
+-		else
+-			temp_strm_res->next = pstrm_res->next;
++	if (retval) {
++		pr_err("%s: FAILED, IDR is FULL\n", __func__);
++		status = -EPERM;
+ 	}
+-	mutex_unlock(&ctxt->strm_mutex);
+-	kfree(pstrm_res);
++
++func_end:
+ 	return status;
+ }
+ 
+-/* Release all Stream resources and its context
+-* This is called from .bridge_release.
+- */
+-int drv_remove_all_strm_res_elements(void *process_ctxt)
++static int drv_proc_free_strm_res(int id, void *p, void *process_ctxt)
+ {
+-	struct process_context *ctxt = (struct process_context *)process_ctxt;
+-	int status = 0;
+-	struct strm_res_object *strm_res = NULL;
+-	struct strm_res_object *strm_tmp = NULL;
++	struct process_context *ctxt = process_ctxt;
++	struct strm_res_object *strm_res = p;
+ 	struct stream_info strm_info;
+ 	struct dsp_streaminfo user;
+ 	u8 **ap_buffer = NULL;
+@@ -283,60 +253,38 @@ int drv_remove_all_strm_res_elements(void *process_ctxt)
+ 	u32 dw_arg;
+ 	s32 ul_buf_size;
+ 
+-	strm_tmp = ctxt->pstrm_list;
+-	while (strm_tmp) {
+-		strm_res = strm_tmp;
+-		strm_tmp = strm_tmp->next;
+-		if (strm_res->num_bufs) {
+-			ap_buffer = kmalloc((strm_res->num_bufs *
+-					sizeof(u8 *)), GFP_KERNEL);
+-			if (ap_buffer) {
+-				status = strm_free_buffer(strm_res->hstream,
+-							  ap_buffer,
+-							  strm_res->num_bufs,
+-							  ctxt);
+-				kfree(ap_buffer);
+-			}
++	if (strm_res->num_bufs) {
++		ap_buffer = kmalloc((strm_res->num_bufs *
++				       sizeof(u8 *)), GFP_KERNEL);
++		if (ap_buffer) {
++			strm_free_buffer(strm_res,
++						  ap_buffer,
++						  strm_res->num_bufs,
++						  ctxt);
++			kfree(ap_buffer);
+ 		}
+-		strm_info.user_strm = &user;
+-		user.number_bufs_in_stream = 0;
+-		strm_get_info(strm_res->hstream, &strm_info, sizeof(strm_info));
+-		while (user.number_bufs_in_stream--)
+-			strm_reclaim(strm_res->hstream, &buf_ptr, &ul_bytes,
+-				     (u32 *) &ul_buf_size, &dw_arg);
+-		status = strm_close(strm_res->hstream, ctxt);
+ 	}
+-	return status;
++	strm_info.user_strm = &user;
++	user.number_bufs_in_stream = 0;
++	strm_get_info(strm_res->hstream, &strm_info, sizeof(strm_info));
++	while (user.number_bufs_in_stream--)
++		strm_reclaim(strm_res->hstream, &buf_ptr, &ul_bytes,
++			     (u32 *) &ul_buf_size, &dw_arg);
++	strm_close(strm_res, ctxt);
++	return 0;
+ }
+ 
+-/* Getting the stream resource element */
+-int drv_get_strm_res_element(void *stream_obj, void *strm_resources,
+-				    void *process_ctxt)
++/* Release all Stream resources and its context
++* This is called from .bridge_release.
++ */
++int drv_remove_all_strm_res_elements(void *process_ctxt)
+ {
+-	struct strm_res_object **strm_res =
+-	    (struct strm_res_object **)strm_resources;
+-	struct process_context *ctxt = (struct process_context *)process_ctxt;
+-	int status = 0;
+-	struct strm_res_object *temp_strm2 = NULL;
+-	struct strm_res_object *temp_strm;
+-
+-	if (mutex_lock_interruptible(&ctxt->strm_mutex))
+-		return -EPERM;
+-
+-	temp_strm = ctxt->pstrm_list;
+-	while ((temp_strm != NULL) && (temp_strm->hstream != stream_obj)) {
+-		temp_strm2 = temp_strm;
+-		temp_strm = temp_strm->next;
+-	}
+-
+-	mutex_unlock(&ctxt->strm_mutex);
++	struct process_context *ctxt = process_ctxt;
+ 
+-	if (temp_strm != NULL)
+-		*strm_res = temp_strm;
+-	else
+-		status = -ENOENT;
++	idr_for_each(ctxt->stream_id, drv_proc_free_strm_res, ctxt);
++	idr_destroy(ctxt->stream_id);
+ 
+-	return status;
++	return 0;
+ }
+ 
+ /* Updating the stream resource element */
+diff --git a/drivers/staging/tidspbridge/rmgr/drv_interface.c b/drivers/staging/tidspbridge/rmgr/drv_interface.c
+index 900cdd3..7ee8949 100644
+--- a/drivers/staging/tidspbridge/rmgr/drv_interface.c
++++ b/drivers/staging/tidspbridge/rmgr/drv_interface.c
+@@ -511,17 +511,24 @@ static int bridge_open(struct inode *ip, struct file *filp)
+ 		INIT_LIST_HEAD(&pr_ctxt->dmm_map_list);
+ 		spin_lock_init(&pr_ctxt->dmm_rsv_lock);
+ 		INIT_LIST_HEAD(&pr_ctxt->dmm_rsv_list);
+-		mutex_init(&pr_ctxt->strm_mutex);
+ 
+ 		pr_ctxt->node_id = kzalloc(sizeof(struct idr), GFP_KERNEL);
+-		if (pr_ctxt->node_id)
++		if (pr_ctxt->node_id) {
+ 			idr_init(pr_ctxt->node_id);
++		} else {
++			status = -ENOMEM;
++			goto err;
++		}
++
++		pr_ctxt->stream_id = kzalloc(sizeof(struct idr), GFP_KERNEL);
++		if (pr_ctxt->stream_id)
++			idr_init(pr_ctxt->stream_id);
+ 		else
+ 			status = -ENOMEM;
+ 	} else {
+ 		status = -ENOMEM;
+ 	}
+-
++err:
+ 	filp->private_data = pr_ctxt;
+ #ifdef CONFIG_TIDSPBRIDGE_RECOVERY
+ 	if (!status)
+diff --git a/drivers/staging/tidspbridge/rmgr/strm.c b/drivers/staging/tidspbridge/rmgr/strm.c
+index df8458e..ef2ec94 100644
+--- a/drivers/staging/tidspbridge/rmgr/strm.c
++++ b/drivers/staging/tidspbridge/rmgr/strm.c
+@@ -96,15 +96,14 @@ static int delete_strm(struct strm_object *stream_obj);
+  *  Purpose:
+  *      Allocates buffers for a stream.
+  */
+-int strm_allocate_buffer(struct strm_object *stream_obj, u32 usize,
++int strm_allocate_buffer(struct strm_res_object *strmres, u32 usize,
+ 				u8 **ap_buffer, u32 num_bufs,
+ 				struct process_context *pr_ctxt)
+ {
+ 	int status = 0;
+ 	u32 alloc_cnt = 0;
+ 	u32 i;
+-
+-	void *hstrm_res;
++	struct strm_object *stream_obj = strmres->hstream;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(ap_buffer != NULL);
+@@ -134,14 +133,12 @@ int strm_allocate_buffer(struct strm_object *stream_obj, u32 usize,
+ 		}
+ 	}
+ 	if (status)
+-		strm_free_buffer(stream_obj, ap_buffer, alloc_cnt, pr_ctxt);
++		strm_free_buffer(strmres, ap_buffer, alloc_cnt, pr_ctxt);
+ 
+ 	if (status)
+ 		goto func_end;
+ 
+-	if (drv_get_strm_res_element(stream_obj, &hstrm_res, pr_ctxt) !=
+-	    -ENOENT)
+-		drv_proc_update_strm_res(num_bufs, hstrm_res);
++	drv_proc_update_strm_res(num_bufs, strmres);
+ 
+ func_end:
+ 	return status;
+@@ -152,14 +149,13 @@ func_end:
+  *  Purpose:
+  *      Close a stream opened with strm_open().
+  */
+-int strm_close(struct strm_object *stream_obj,
++int strm_close(struct strm_res_object *strmres,
+ 		      struct process_context *pr_ctxt)
+ {
+ 	struct bridge_drv_interface *intf_fxns;
+ 	struct chnl_info chnl_info_obj;
+ 	int status = 0;
+-
+-	void *hstrm_res;
++	struct strm_object *stream_obj = strmres->hstream;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 
+@@ -183,9 +179,7 @@ int strm_close(struct strm_object *stream_obj,
+ 	if (status)
+ 		goto func_end;
+ 
+-	if (drv_get_strm_res_element(stream_obj, &hstrm_res, pr_ctxt) !=
+-	    -ENOENT)
+-		drv_proc_remove_strm_res_element(hstrm_res, pr_ctxt);
++	idr_remove(pr_ctxt->stream_id, strmres->id);
+ func_end:
+ 	DBC_ENSURE(status == 0 || status == -EFAULT ||
+ 		   status == -EPIPE || status == -EPERM);
+@@ -270,13 +264,12 @@ void strm_exit(void)
+  *  Purpose:
+  *      Frees the buffers allocated for a stream.
+  */
+-int strm_free_buffer(struct strm_object *stream_obj, u8 ** ap_buffer,
++int strm_free_buffer(struct strm_res_object *strmres, u8 ** ap_buffer,
+ 			    u32 num_bufs, struct process_context *pr_ctxt)
+ {
+ 	int status = 0;
+ 	u32 i = 0;
+-
+-	void *hstrm_res = NULL;
++	struct strm_object *stream_obj = strmres->hstream;
+ 
+ 	DBC_REQUIRE(refs > 0);
+ 	DBC_REQUIRE(ap_buffer != NULL);
+@@ -295,9 +288,7 @@ int strm_free_buffer(struct strm_object *stream_obj, u8 ** ap_buffer,
+ 			ap_buffer[i] = NULL;
+ 		}
+ 	}
+-	if (drv_get_strm_res_element(stream_obj, hstrm_res, pr_ctxt) !=
+-	    -ENOENT)
+-		drv_proc_update_strm_res(num_bufs - i, hstrm_res);
++	drv_proc_update_strm_res(num_bufs - i, strmres);
+ 
+ 	return status;
+ }
+@@ -467,7 +458,7 @@ int strm_issue(struct strm_object *stream_obj, u8 *pbuf, u32 ul_bytes,
+  */
+ int strm_open(struct node_object *hnode, u32 dir, u32 index,
+ 		     struct strm_attr *pattr,
+-		     struct strm_object **strm_objct,
++		     struct strm_res_object **strmres,
+ 		     struct process_context *pr_ctxt)
+ {
+ 	struct strm_mgr *strm_mgr_obj;
+@@ -479,12 +470,12 @@ int strm_open(struct node_object *hnode, u32 dir, u32 index,
+ 	int status = 0;
+ 	struct cmm_object *hcmm_mgr = NULL;	/* Shared memory manager hndl */
+ 
+-	void *hstrm_res;
++	void *stream_res;
+ 
+ 	DBC_REQUIRE(refs > 0);
+-	DBC_REQUIRE(strm_objct != NULL);
++	DBC_REQUIRE(strmres != NULL);
+ 	DBC_REQUIRE(pattr != NULL);
+-	*strm_objct = NULL;
++	*strmres = NULL;
+ 	if (dir != DSP_TONODE && dir != DSP_FROMNODE) {
+ 		status = -EPERM;
+ 	} else {
+@@ -594,22 +585,25 @@ func_cont:
+ 		}
+ 	}
+ 	if (!status) {
+-		*strm_objct = strm_obj;
+-		drv_proc_insert_strm_res_element(*strm_objct, &hstrm_res,
+-						  pr_ctxt);
++		status = drv_proc_insert_strm_res_element(strm_obj,
++							&stream_res, pr_ctxt);
++		if (status)
++			delete_strm(strm_obj);
++		else
++			*strmres = (struct strm_res_object *)stream_res;
+ 	} else {
+ 		(void)delete_strm(strm_obj);
+ 	}
+ 
+ 	/* ensure we return a documented error code */
+-	DBC_ENSURE((!status && *strm_objct) ||
+-		   (*strm_objct == NULL && (status == -EFAULT ||
++	DBC_ENSURE((!status && strm_obj) ||
++		   (*strmres == NULL && (status == -EFAULT ||
+ 					status == -EPERM
+ 					|| status == -EINVAL)));
+ 
+ 	dev_dbg(bridge, "%s: hnode: %p dir: 0x%x index: 0x%x pattr: %p "
+-		"strm_objct: %p status: 0x%x\n", __func__,
+-		hnode, dir, index, pattr, strm_objct, status);
++		"strmres: %p status: 0x%x\n", __func__,
++		hnode, dir, index, pattr, strmres, status);
+ 	return status;
+ }
+ 
+-- 
+1.7.0.4
+

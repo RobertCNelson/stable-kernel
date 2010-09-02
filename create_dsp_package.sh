@@ -198,12 +198,12 @@ function file-DSP-startup {
 
 cat > ${DIR}/DSP/opt/dsp <<dspscript
 #!/bin/sh
-		
+
 case "\$1" in
 	start)
-		modprobe dspbridge
-		modprobe bridgedriver
-#		modprobe bridgedriver base_img=/lib/dsp/baseimage.dof
+#		modprobe dspbridge
+#		modprobe bridgedriver
+		modprobe bridgedriver base_img=/lib/dsp/baseimage.dof
 		;;
 esac
 

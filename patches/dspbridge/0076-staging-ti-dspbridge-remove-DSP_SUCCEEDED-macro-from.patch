@@ -1,0 +1,2218 @@
+From a741ea6efc0c78093ef5652c119262004ee7a8c9 Mon Sep 17 00:00:00 2001
+From: Ernesto Ramos <ernesto@ti.com>
+Date: Wed, 28 Jul 2010 09:45:26 -0500
+Subject: [PATCH 76/94] staging:ti dspbridge: remove DSP_SUCCEEDED macro from rmgr
+
+Since status succeeded is now 0 macro DSP_SUCCEEDED
+is not necessary anymore.
+
+Signed-off-by: Ernesto Ramos <ernesto@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/rmgr/dbdcd.c         |   24 ++--
+ drivers/staging/tidspbridge/rmgr/disp.c          |   34 +++---
+ drivers/staging/tidspbridge/rmgr/drv.c           |   31 ++---
+ drivers/staging/tidspbridge/rmgr/drv_interface.c |    2 +-
+ drivers/staging/tidspbridge/rmgr/dspdrv.c        |    8 +-
+ drivers/staging/tidspbridge/rmgr/mgr.c           |   20 ++--
+ drivers/staging/tidspbridge/rmgr/nldr.c          |   93 +++++++-------
+ drivers/staging/tidspbridge/rmgr/node.c          |  151 +++++++++++-----------
+ drivers/staging/tidspbridge/rmgr/proc.c          |   95 +++++++-------
+ drivers/staging/tidspbridge/rmgr/pwr.c           |   18 +--
+ drivers/staging/tidspbridge/rmgr/rmm.c           |    8 +-
+ drivers/staging/tidspbridge/rmgr/strm.c          |   48 ++++----
+ 12 files changed, 260 insertions(+), 272 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/rmgr/dbdcd.c b/drivers/staging/tidspbridge/rmgr/dbdcd.c
+index b96aea7..12d2d41 100644
+--- a/drivers/staging/tidspbridge/rmgr/dbdcd.c
++++ b/drivers/staging/tidspbridge/rmgr/dbdcd.c
+@@ -156,7 +156,7 @@ int dcd_create_manager(char *sz_zl_dll_name,
+ 		cod_delete(cod_mgr);
+ 	}
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status)) ||
++	DBC_ENSURE((!status) ||
+ 			((dcd_mgr_obj == NULL) && (status == -ENOMEM)));
+ 
+ func_end:
+@@ -252,7 +252,7 @@ int dcd_enumerate_object(s32 index, enum dsp_dcdobjtype obj_type,
+ 			}
+ 		}
+ 
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			len = strlen(sz_reg_key);
+ 			spin_lock(&dbdcd_lock);
+ 			list_for_each_entry(dcd_key, &reg_key_list, link) {
+@@ -269,7 +269,7 @@ int dcd_enumerate_object(s32 index, enum dsp_dcdobjtype obj_type,
+ 				status = -ENODATA;
+ 		}
+ 
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* Create UUID value using string retrieved from
+ 			 * registry. */
+ 			uuid_uuid_from_string(sz_value, &dsp_uuid_obj);
+@@ -446,7 +446,7 @@ int dcd_get_object_def(struct dcd_manager *hdcd_mgr,
+ 		/* Retrieve paths from the registry based on struct dsp_uuid */
+ 		dw_buf_size = DCD_MAXPATHLENGTH;
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		spin_lock(&dbdcd_lock);
+ 		list_for_each_entry(dcd_key, &reg_key_list, link) {
+ 			if (!strncmp(dcd_key->name, sz_reg_key,
+@@ -500,7 +500,7 @@ int dcd_get_object_def(struct dcd_manager *hdcd_mgr,
+ #else
+ 	status = cod_read_section(lib, sz_sect_name, psz_coff_buf, ul_len);
+ #endif
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Compres DSP buffer to conform to PC format. */
+ 		if (strstr(dcd_key->path, "iva") == NULL) {
+ 			compress_buf(psz_coff_buf, ul_len, DSPWORDSIZE);
+@@ -585,7 +585,7 @@ int dcd_get_objects(struct dcd_manager *hdcd_mgr,
+ 	status =
+ 	    cod_read_section(lib, DCD_REGISTER_SECTION, psz_coff_buf, ul_len);
+ #endif
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Compress DSP buffer to conform to PC format. */
+ 		if (strstr(sz_coff_path, "iva") == NULL) {
+ 			compress_buf(psz_coff_buf, ul_len, DSPWORDSIZE);
+@@ -699,7 +699,7 @@ int dcd_get_library_name(struct dcd_manager *hdcd_mgr,
+ 		status = -EINVAL;
+ 		DBC_ASSERT(false);
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if ((strlen(sz_reg_key) + strlen(sz_obj_type)) <
+ 		    DCD_MAXPATHLENGTH) {
+ 			strncat(sz_reg_key, sz_obj_type,
+@@ -714,7 +714,7 @@ int dcd_get_library_name(struct dcd_manager *hdcd_mgr,
+ 		else
+ 			status = -EPERM;
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		spin_lock(&dbdcd_lock);
+ 		list_for_each_entry(dcd_key, &reg_key_list, link) {
+ 			/*  See if the name matches. */
+@@ -767,7 +767,7 @@ int dcd_get_library_name(struct dcd_manager *hdcd_mgr,
+ 						0 : -ENOKEY;
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		memcpy(str_lib_name, dcd_key->path, strlen(dcd_key->path) + 1);
+ 	return status;
+ }
+@@ -955,7 +955,7 @@ int dcd_register_object(struct dsp_uuid *uuid_obj,
+ 			status = -EPERM;
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/*
+ 		 *  Because the node database has been updated through a
+ 		 *  successful object registration/de-registration operation,
+@@ -1441,11 +1441,11 @@ static int get_dep_lib_info(struct dcd_manager *hdcd_mgr,
+ 	}
+ 
+ 	/* Open the library */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status = cod_open(dcd_mgr_obj->cod_mgr, psz_file_name,
+ 				  COD_NOLOAD, &lib);
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Get dependent library section information. */
+ 		status = cod_get_section(lib, DEPLIBSECT, &ul_addr, &ul_len);
+ 
+diff --git a/drivers/staging/tidspbridge/rmgr/disp.c b/drivers/staging/tidspbridge/rmgr/disp.c
+index 417faeb..2d479b2 100644
+--- a/drivers/staging/tidspbridge/rmgr/disp.c
++++ b/drivers/staging/tidspbridge/rmgr/disp.c
+@@ -111,9 +111,9 @@ int disp_create(struct disp_object **dispatch_obj,
+ 		disp_obj->hdev_obj = hdev_obj;
+ 
+ 	/* Get Channel manager and Bridge function interface */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status = dev_get_chnl_mgr(hdev_obj, &(disp_obj->hchnl_mgr));
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			(void)dev_get_intf_fxns(hdev_obj, &intf_fxns);
+ 			disp_obj->intf_fxns = intf_fxns;
+ 		}
+@@ -146,7 +146,7 @@ int disp_create(struct disp_object **dispatch_obj,
+ 					      CHNL_MODETODSP, ul_chnl_id,
+ 					      &chnl_attr_obj);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		ul_chnl_id = disp_attrs->ul_chnl_offset + CHNLFROMRMSOFFSET;
+ 		status =
+ 		    (*intf_fxns->pfn_chnl_open) (&(disp_obj->chnl_from_dsp),
+@@ -154,7 +154,7 @@ int disp_create(struct disp_object **dispatch_obj,
+ 						 CHNL_MODEFROMDSP, ul_chnl_id,
+ 						 &chnl_attr_obj);
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Allocate buffer for commands, replies */
+ 		disp_obj->ul_bufsize = disp_attrs->ul_chnl_buf_size;
+ 		disp_obj->ul_bufsize_rms = RMS_COMMANDBUFSIZE;
+@@ -163,13 +163,13 @@ int disp_create(struct disp_object **dispatch_obj,
+ 			status = -ENOMEM;
+ 	}
+ func_cont:
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		*dispatch_obj = disp_obj;
+ 	else
+ 		delete_disp(disp_obj);
+ 
+ 	DBC_ENSURE(((DSP_FAILED(status)) && ((*dispatch_obj == NULL))) ||
+-				((DSP_SUCCEEDED(status)) && *dispatch_obj));
++				(!status && *dispatch_obj));
+ 	return status;
+ }
+ 
+@@ -345,7 +345,7 @@ int disp_node_create(struct disp_object *disp_obj,
+ 	 *  Socket Args (if DAIS socket node):
+ 	 *
+ 	 */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		total = 0;	/* Total number of words in buffer so far */
+ 		pdw_buf = (rms_word *) disp_obj->pbuf;
+ 		rms_cmd = (struct rms_command *)pdw_buf;
+@@ -439,7 +439,7 @@ int disp_node_create(struct disp_object *disp_obj,
+ 				offset = total;
+ 			}
+ 			for (i = 0; (i < task_arg_obj.num_outputs) &&
+-			     (DSP_SUCCEEDED(status)); i++) {
++			     (!status); i++) {
+ 				pdw_buf[sio_out_def_offset + i] =
+ 				    (offset - args_offset)
+ 				    * (sizeof(rms_word) / DSPWORDSIZE);
+@@ -455,12 +455,12 @@ int disp_node_create(struct disp_object *disp_obj,
+ 			status = -EPERM;
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		ul_bytes = total * sizeof(rms_word);
+ 		DBC_ASSERT(ul_bytes < (RMS_COMMANDBUFSIZE * sizeof(rms_word)));
+ 		status = send_message(disp_obj, node_get_timeout(hnode),
+ 				      ul_bytes, node_env);
+-		if (DSP_SUCCEEDED(status)) {
++		if (status >= 0) {
+ 			/*
+ 			 * Message successfully received from RMS.
+ 			 * Return the status of the Node's create function
+@@ -497,7 +497,7 @@ int disp_node_delete(struct disp_object *disp_obj,
+ 
+ 	status = dev_get_dev_type(disp_obj->hdev_obj, &dev_type);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 
+ 		if (dev_type == DSP_UNIT) {
+ 
+@@ -513,7 +513,7 @@ int disp_node_delete(struct disp_object *disp_obj,
+ 			status = send_message(disp_obj, node_get_timeout(hnode),
+ 					      sizeof(struct rms_command),
+ 					      &dw_arg);
+-			if (DSP_SUCCEEDED(status)) {
++			if (status >= 0) {
+ 				/*
+ 				 * Message successfully received from RMS.
+ 				 * Return the status of the Node's delete
+@@ -550,7 +550,7 @@ int disp_node_run(struct disp_object *disp_obj,
+ 
+ 	status = dev_get_dev_type(disp_obj->hdev_obj, &dev_type);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 
+ 		if (dev_type == DSP_UNIT) {
+ 
+@@ -566,7 +566,7 @@ int disp_node_run(struct disp_object *disp_obj,
+ 			status = send_message(disp_obj, node_get_timeout(hnode),
+ 					      sizeof(struct rms_command),
+ 					      &dw_arg);
+-			if (DSP_SUCCEEDED(status)) {
++			if (status >= 0) {
+ 				/*
+ 				 * Message successfully received from RMS.
+ 				 * Return the status of the Node's execute
+@@ -649,7 +649,7 @@ static int fill_stream_def(rms_word *pdw_buf, u32 *ptotal, u32 offset,
+ 		strm_def_obj->timeout = strm_def.utimeout;
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/*
+ 		 *  Since we haven't added the device name yet, subtract
+ 		 *  1 from total.
+@@ -709,7 +709,7 @@ static int send_message(struct disp_object *disp_obj, u32 timeout,
+ 
+ 	status =
+ 	    (*intf_fxns->pfn_chnl_get_ioc) (chnl_obj, timeout, &chnl_ioc_obj);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if (!CHNL_IS_IO_COMPLETE(chnl_ioc_obj)) {
+ 			if (CHNL_IS_TIMED_OUT(chnl_ioc_obj))
+ 				status = -ETIME;
+@@ -730,7 +730,7 @@ static int send_message(struct disp_object *disp_obj, u32 timeout,
+ 
+ 	status =
+ 	    (*intf_fxns->pfn_chnl_get_ioc) (chnl_obj, timeout, &chnl_ioc_obj);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if (CHNL_IS_TIMED_OUT(chnl_ioc_obj)) {
+ 			status = -ETIME;
+ 		} else if (chnl_ioc_obj.byte_size < ul_bytes) {
+diff --git a/drivers/staging/tidspbridge/rmgr/drv.c b/drivers/staging/tidspbridge/rmgr/drv.c
+index 2ce0737..93e9369 100644
+--- a/drivers/staging/tidspbridge/rmgr/drv.c
++++ b/drivers/staging/tidspbridge/rmgr/drv.c
+@@ -90,7 +90,7 @@ int drv_insert_node_res_element(void *hnode, void *node_resource,
+ 	if (*node_res_obj == NULL)
+ 		status = -EFAULT;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if (mutex_lock_interruptible(&ctxt->node_mutex)) {
+ 			kfree(*node_res_obj);
+ 			return -EPERM;
+@@ -282,7 +282,7 @@ int drv_proc_insert_strm_res_element(void *stream_obj,
+ 	if (*pstrm_res == NULL)
+ 		status = -EFAULT;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if (mutex_lock_interruptible(&ctxt->strm_mutex)) {
+ 			kfree(*pstrm_res);
+ 			return -EPERM;
+@@ -453,9 +453,9 @@ int drv_create(struct drv_object **drv_obj)
+ 		status = -ENOMEM;
+ 	}
+ 	/* Store the DRV Object in the Registry */
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = cfg_set_object((u32) pdrv_object, REG_DRV_OBJECT);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		*drv_obj = pdrv_object;
+ 	} else {
+ 		kfree(pdrv_object->dev_list);
+@@ -556,7 +556,7 @@ u32 drv_get_first_dev_object(void)
+ 	u32 dw_dev_object = 0;
+ 	struct drv_object *pdrv_obj;
+ 
+-	if (DSP_SUCCEEDED(cfg_get_object((u32 *) &pdrv_obj, REG_DRV_OBJECT))) {
++	if (!cfg_get_object((u32 *) &pdrv_obj, REG_DRV_OBJECT)) {
+ 		if ((pdrv_obj->dev_list != NULL) &&
+ 		    !LST_IS_EMPTY(pdrv_obj->dev_list))
+ 			dw_dev_object = (u32) lst_first(pdrv_obj->dev_list);
+@@ -576,7 +576,7 @@ u32 drv_get_first_dev_extension(void)
+ 	u32 dw_dev_extension = 0;
+ 	struct drv_object *pdrv_obj;
+ 
+-	if (DSP_SUCCEEDED(cfg_get_object((u32 *) &pdrv_obj, REG_DRV_OBJECT))) {
++	if (!cfg_get_object((u32 *) &pdrv_obj, REG_DRV_OBJECT)) {
+ 
+ 		if ((pdrv_obj->dev_node_string != NULL) &&
+ 		    !LST_IS_EMPTY(pdrv_obj->dev_node_string)) {
+@@ -602,7 +602,7 @@ u32 drv_get_next_dev_object(u32 hdev_obj)
+ 
+ 	DBC_REQUIRE(hdev_obj != 0);
+ 
+-	if (DSP_SUCCEEDED(cfg_get_object((u32 *) &pdrv_obj, REG_DRV_OBJECT))) {
++	if (!cfg_get_object((u32 *) &pdrv_obj, REG_DRV_OBJECT)) {
+ 
+ 		if ((pdrv_obj->dev_list != NULL) &&
+ 		    !LST_IS_EMPTY(pdrv_obj->dev_list)) {
+@@ -629,7 +629,7 @@ u32 drv_get_next_dev_extension(u32 dev_extension)
+ 
+ 	DBC_REQUIRE(dev_extension != 0);
+ 
+-	if (DSP_SUCCEEDED(cfg_get_object((u32 *) &pdrv_obj, REG_DRV_OBJECT))) {
++	if (!cfg_get_object((u32 *) &pdrv_obj, REG_DRV_OBJECT)) {
+ 		if ((pdrv_obj->dev_node_string != NULL) &&
+ 		    !LST_IS_EMPTY(pdrv_obj->dev_node_string)) {
+ 			dw_dev_extension =
+@@ -668,7 +668,6 @@ int drv_init(void)
+ int drv_insert_dev_object(struct drv_object *driver_obj,
+ 				 struct dev_object *hdev_obj)
+ {
+-	int status = 0;
+ 	struct drv_object *pdrv_object = (struct drv_object *)driver_obj;
+ 
+ 	DBC_REQUIRE(refs > 0);
+@@ -678,10 +677,9 @@ int drv_insert_dev_object(struct drv_object *driver_obj,
+ 
+ 	lst_put_tail(pdrv_object->dev_list, (struct list_head *)hdev_obj);
+ 
+-	DBC_ENSURE(DSP_SUCCEEDED(status)
+-		   && !LST_IS_EMPTY(pdrv_object->dev_list));
++	DBC_ENSURE(!LST_IS_EMPTY(pdrv_object->dev_list));
+ 
+-	return status;
++	return 0;
+ }
+ 
+ /*
+@@ -746,7 +744,7 @@ int drv_request_resources(u32 dw_context, u32 *dev_node_strg)
+ 	 */
+ 
+ 	status = cfg_get_object((u32 *) &pdrv_object, REG_DRV_OBJECT);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		pszdev_node = kzalloc(sizeof(struct drv_ext), GFP_KERNEL);
+ 		if (pszdev_node) {
+ 			lst_init_elem(&pszdev_node->link);
+@@ -767,7 +765,7 @@ int drv_request_resources(u32 dw_context, u32 *dev_node_strg)
+ 		*dev_node_strg = 0;
+ 	}
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && dev_node_strg != NULL &&
++	DBC_ENSURE((!status && dev_node_strg != NULL &&
+ 		    !LST_IS_EMPTY(pdrv_object->dev_node_string)) ||
+ 		   (DSP_FAILED(status) && *dev_node_strg == 0));
+ 
+@@ -820,7 +818,6 @@ int drv_release_resources(u32 dw_context, struct drv_object *hdrv_obj)
+  */
+ static int request_bridge_resources(struct cfg_hostres *res)
+ {
+-	int status = 0;
+ 	struct cfg_hostres *host_res = res;
+ 
+ 	/* num_mem_windows must not be more than CFG_MAXMEMREGISTERS */
+@@ -845,7 +842,7 @@ static int request_bridge_resources(struct cfg_hostres *res)
+ 	host_res->dw_num_chnls = CHNL_MAXCHANNELS;
+ 	host_res->dw_chnl_buf_size = 0x400;
+ 
+-	return status;
++	return 0;
+ }
+ 
+ /*
+@@ -919,7 +916,7 @@ int drv_request_bridge_res_dsp(void **phost_resources)
+ 					dma_addr, shm_size);
+ 			}
+ 		}
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* These are hard-coded values */
+ 			host_res->birq_registers = 0;
+ 			host_res->birq_attrib = 0;
+diff --git a/drivers/staging/tidspbridge/rmgr/drv_interface.c b/drivers/staging/tidspbridge/rmgr/drv_interface.c
+index 340c92d..b1dcf4a 100644
+--- a/drivers/staging/tidspbridge/rmgr/drv_interface.c
++++ b/drivers/staging/tidspbridge/rmgr/drv_interface.c
+@@ -588,7 +588,7 @@ static long bridge_ioctl(struct file *filp, unsigned int code,
+ 		status = api_call_dev_ioctl(code, &buf_in, &retval,
+ 					     filp->private_data);
+ 
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			status = retval;
+ 		} else {
+ 			dev_dbg(bridge, "%s: IOCTL Failed, code: 0x%x "
+diff --git a/drivers/staging/tidspbridge/rmgr/dspdrv.c b/drivers/staging/tidspbridge/rmgr/dspdrv.c
+index 8fedf18..0a10d88 100644
+--- a/drivers/staging/tidspbridge/rmgr/dspdrv.c
++++ b/drivers/staging/tidspbridge/rmgr/dspdrv.c
+@@ -64,7 +64,7 @@ u32 dsp_init(u32 *init_status)
+ 	/* End drv_create */
+ 	/* Request Resources */
+ 	status = drv_request_resources((u32) &dev_node, &device_node_string);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Attempt to Start the Device */
+ 		status = dev_start_device((struct cfg_devnode *)
+ 					  device_node_string);
+@@ -97,7 +97,7 @@ u32 dsp_init(u32 *init_status)
+ 	}			/* Unwinding the loaded drivers */
+ func_cont:
+ 	/* Attempt to Start the Board */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* BRD_AutoStart could fail if the dsp execuetable is not the
+ 		 * correct one. We should not propagate that error
+ 		 * into the device loader. */
+@@ -105,7 +105,7 @@ func_cont:
+ 	} else {
+ 		dev_dbg(bridge, "%s: Failed\n", __func__);
+ 	}			/* End api_init_complete2 */
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && drv_obj != NULL) ||
++	DBC_ENSURE((!status && drv_obj != NULL) ||
+ 		   (DSP_FAILED(status) && drv_obj == NULL));
+ 	*init_status = status;
+ 	/* Return the Driver Object */
+@@ -133,7 +133,7 @@ bool dsp_deinit(u32 device_context)
+ 
+ 	/* Get the Manager Object from Registry
+ 	 * MGR Destroy will unload the DCD dll */
+-	if (DSP_SUCCEEDED(cfg_get_object((u32 *) &mgr_obj, REG_MGR_OBJECT)))
++	if (!cfg_get_object((u32 *) &mgr_obj, REG_MGR_OBJECT))
+ 		(void)mgr_destroy(mgr_obj);
+ 
+ 	api_exit();
+diff --git a/drivers/staging/tidspbridge/rmgr/mgr.c b/drivers/staging/tidspbridge/rmgr/mgr.c
+index 805d3ca..57ae807 100644
+--- a/drivers/staging/tidspbridge/rmgr/mgr.c
++++ b/drivers/staging/tidspbridge/rmgr/mgr.c
+@@ -65,10 +65,10 @@ int mgr_create(struct mgr_object **mgr_obj,
+ 	pmgr_obj = kzalloc(sizeof(struct mgr_object), GFP_KERNEL);
+ 	if (pmgr_obj) {
+ 		status = dcd_create_manager(ZLDLLNAME, &pmgr_obj->hdcd_mgr);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* If succeeded store the handle in the MGR Object */
+ 			status = cfg_set_object((u32) pmgr_obj, REG_MGR_OBJECT);
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				*mgr_obj = pmgr_obj;
+ 			} else {
+ 				dcd_destroy_manager(pmgr_obj->hdcd_mgr);
+@@ -148,7 +148,7 @@ int mgr_enum_node_info(u32 node_id, struct dsp_ndbprops *pndb_props,
+ 
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if (node_id > (node_index - 1)) {
+ 			status = -EINVAL;
+ 		} else {
+@@ -156,7 +156,7 @@ int mgr_enum_node_info(u32 node_id, struct dsp_ndbprops *pndb_props,
+ 						    (struct dsp_uuid *)
+ 						    &node_uuid, DSP_DCDNODETYPE,
+ 						    &gen_obj);
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				/* Get the Obj def */
+ 				*pndb_props =
+ 				    gen_obj.obj_data.node_obj.ndb_props;
+@@ -166,7 +166,7 @@ int mgr_enum_node_info(u32 node_id, struct dsp_ndbprops *pndb_props,
+ 	}
+ 
+ func_cont:
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && *pu_num_nodes > 0) ||
++	DBC_ENSURE((!status && *pu_num_nodes > 0) ||
+ 		   (DSP_FAILED(status) && *pu_num_nodes == 0));
+ 
+ 	return status;
+@@ -204,15 +204,15 @@ int mgr_enum_processor_info(u32 processor_id,
+ 
+ 	*pu_num_procs = 0;
+ 	status = cfg_get_object((u32 *) &hdrv_obj, REG_DRV_OBJECT);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status = drv_get_dev_object(processor_id, hdrv_obj, &hdev_obj);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			status = dev_get_dev_type(hdev_obj, (u8 *) &dev_type);
+ 			status = dev_get_dev_node(hdev_obj, &dev_node);
+ 			if (dev_type != DSP_UNIT)
+ 				status = -EPERM;
+ 
+-			if (DSP_SUCCEEDED(status))
++			if (!status)
+ 				processor_info->processor_type = DSPTYPE64;
+ 		}
+ 	}
+@@ -243,7 +243,7 @@ int mgr_enum_processor_info(u32 processor_id,
+ 		status2 = dcd_get_object_def(pmgr_obj->hdcd_mgr,
+ 					     (struct dsp_uuid *)&temp_uuid,
+ 					     DSP_DCDPROCESSORTYPE, &gen_obj);
+-		if (DSP_SUCCEEDED(status2)) {
++		if (!status2) {
+ 			/* Get the Obj def */
+ 			if (processor_info_size <
+ 			    sizeof(struct mgr_processorextinfo)) {
+@@ -318,7 +318,7 @@ int mgr_get_dcd_handle(struct mgr_object *mgr_handle,
+ 		*dcd_handle = (u32) pmgr_obj->hdcd_mgr;
+ 		status = 0;
+ 	}
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && *dcd_handle != (u32) NULL) ||
++	DBC_ENSURE((!status && *dcd_handle != (u32) NULL) ||
+ 		   (DSP_FAILED(status) && *dcd_handle == (u32) NULL));
+ 
+ 	return status;
+diff --git a/drivers/staging/tidspbridge/rmgr/nldr.c b/drivers/staging/tidspbridge/rmgr/nldr.c
+index 23b44cf..993a9be 100644
+--- a/drivers/staging/tidspbridge/rmgr/nldr.c
++++ b/drivers/staging/tidspbridge/rmgr/nldr.c
+@@ -402,7 +402,7 @@ int nldr_allocate(struct nldr_object *nldr_obj, void *priv_ref,
+ 	if (DSP_FAILED(status) && nldr_node_obj)
+ 		kfree(nldr_node_obj);
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && *nldr_nodeobj)
++	DBC_ENSURE((!status && *nldr_nodeobj)
+ 		   || (DSP_FAILED(status) && *nldr_nodeobj == NULL));
+ 	return status;
+ }
+@@ -444,13 +444,13 @@ int nldr_create(struct nldr_object **nldr,
+ 		dev_get_cod_mgr(hdev_obj, &cod_mgr);
+ 		if (cod_mgr) {
+ 			status = cod_get_loader(cod_mgr, &nldr_obj->dbll);
+-			DBC_ASSERT(DSP_SUCCEEDED(status));
++			DBC_ASSERT(!status);
+ 			status = cod_get_base_lib(cod_mgr, &nldr_obj->base_lib);
+-			DBC_ASSERT(DSP_SUCCEEDED(status));
++			DBC_ASSERT(!status);
+ 			status =
+ 			    cod_get_base_name(cod_mgr, sz_zl_file,
+ 							COD_MAXPATHLENGTH);
+-			DBC_ASSERT(DSP_SUCCEEDED(status));
++			DBC_ASSERT(!status);
+ 		}
+ 		status = 0;
+ 		/* end lazy status checking */
+@@ -464,16 +464,16 @@ int nldr_create(struct nldr_object **nldr,
+ 		status = -ENOMEM;
+ 	}
+ 	/* Create the DCD Manager */
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = dcd_create_manager(NULL, &nldr_obj->hdcd_mgr);
+ 
+ 	/* Get dynamic loading memory sections from base lib */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status =
+ 		    nldr_obj->ldr_fxns.get_sect_fxn(nldr_obj->base_lib,
+ 						    DYNMEMSECT, &ul_addr,
+ 						    &ul_len);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			psz_coff_buf =
+ 				kzalloc(ul_len * nldr_obj->us_dsp_mau_size,
+ 								GFP_KERNEL);
+@@ -487,21 +487,21 @@ int nldr_create(struct nldr_object **nldr,
+ 				"segments: 0x%x\n", __func__, status);
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status) && ul_len > 0) {
++	if (!status && ul_len > 0) {
+ 		/* Read section containing dynamic load mem segments */
+ 		status =
+ 		    nldr_obj->ldr_fxns.read_sect_fxn(nldr_obj->base_lib,
+ 						     DYNMEMSECT, psz_coff_buf,
+ 						     ul_len);
+ 	}
+-	if (DSP_SUCCEEDED(status) && ul_len > 0) {
++	if (!status && ul_len > 0) {
+ 		/* Parse memory segment data */
+ 		dload_segs = (u16) (*((u32 *) psz_coff_buf));
+ 		if (dload_segs > MAXMEMSEGS)
+ 			status = -EBADF;
+ 	}
+ 	/* Parse dynamic load memory segments */
+-	if (DSP_SUCCEEDED(status) && dload_segs > 0) {
++	if (!status && dload_segs > 0) {
+ 		rmm_segs = kzalloc(sizeof(struct rmm_segment) * dload_segs,
+ 								GFP_KERNEL);
+ 		nldr_obj->seg_table =
+@@ -526,10 +526,10 @@ int nldr_create(struct nldr_object **nldr,
+ 		}
+ 	}
+ 	/* Create Remote memory manager */
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = rmm_create(&nldr_obj->rmm, rmm_segs, dload_segs);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* set the alloc, free, write functions for loader */
+ 		nldr_obj->ldr_fxns.get_attrs_fxn(nldr_obj->dbll, &save_attrs);
+ 		new_attrs = save_attrs;
+@@ -547,17 +547,17 @@ int nldr_create(struct nldr_object **nldr,
+ 	kfree(psz_coff_buf);
+ 
+ 	/* Get overlay nodes */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status =
+ 		    cod_get_base_name(cod_mgr, sz_zl_file, COD_MAXPATHLENGTH);
+ 		/* lazy check */
+-		DBC_ASSERT(DSP_SUCCEEDED(status));
++		DBC_ASSERT(!status);
+ 		/* First count number of overlay nodes */
+ 		status =
+ 		    dcd_get_objects(nldr_obj->hdcd_mgr, sz_zl_file,
+ 				    add_ovly_node, (void *)nldr_obj);
+ 		/* Now build table of overlay nodes */
+-		if (DSP_SUCCEEDED(status) && nldr_obj->ovly_nodes > 0) {
++		if (!status && nldr_obj->ovly_nodes > 0) {
+ 			/* Allocate table for overlay nodes */
+ 			nldr_obj->ovly_table =
+ 					kzalloc(sizeof(struct ovly_node) *
+@@ -570,7 +570,7 @@ int nldr_create(struct nldr_object **nldr,
+ 		}
+ 	}
+ 	/* Do a fake reload of the base image to get overlay section info */
+-	if (DSP_SUCCEEDED(status) && nldr_obj->ovly_nodes > 0) {
++	if (!status && nldr_obj->ovly_nodes > 0) {
+ 		save_attrs.write = fake_ovly_write;
+ 		save_attrs.log_write = add_ovly_info;
+ 		save_attrs.log_write_handle = nldr_obj;
+@@ -578,7 +578,7 @@ int nldr_create(struct nldr_object **nldr,
+ 		status = nldr_obj->ldr_fxns.load_fxn(nldr_obj->base_lib, flags,
+ 						     &save_attrs, &ul_entry);
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		*nldr = (struct nldr_object *)nldr_obj;
+ 	} else {
+ 		if (nldr_obj)
+@@ -587,7 +587,7 @@ int nldr_create(struct nldr_object **nldr,
+ 		*nldr = NULL;
+ 	}
+ 	/* FIXME:Temp. Fix. Must be removed */
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && *nldr)
++	DBC_ENSURE((!status && *nldr)
+ 		   || (DSP_FAILED(status) && (*nldr == NULL)));
+ 	return status;
+ }
+@@ -774,8 +774,7 @@ int nldr_get_rmm_manager(struct nldr_object *nldr,
+ 		status = -EFAULT;
+ 	}
+ 
+-	DBC_ENSURE(DSP_SUCCEEDED(status) || ((rmm_mgr != NULL) &&
+-					     (*rmm_mgr == NULL)));
++	DBC_ENSURE(!status || (rmm_mgr != NULL && *rmm_mgr == NULL));
+ 
+ 	return status;
+ }
+@@ -826,7 +825,7 @@ int nldr_load(struct nldr_nodeobject *nldr_node_obj,
+ 		    load_lib(nldr_node_obj, &nldr_node_obj->root, lib_uuid,
+ 			     false, nldr_node_obj->lib_path, phase, 0);
+ 
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			if (*nldr_node_obj->pf_phase_split) {
+ 				switch (phase) {
+ 				case NLDR_CREATE:
+@@ -956,7 +955,7 @@ static int add_ovly_info(void *handle, struct dbll_sect_info *sect_info,
+ 					  &nldr_obj->
+ 					  ovly_table[i].create_sects_list,
+ 					  sect_info, &sect_exists, addr, bytes);
+-			if (DSP_SUCCEEDED(status) && !sect_exists)
++			if (!status && !sect_exists)
+ 				nldr_obj->ovly_table[i].create_sects++;
+ 
+ 		} else if (strncmp(pch, PDELETE, strlen(PDELETE)) == 0) {
+@@ -965,7 +964,7 @@ static int add_ovly_info(void *handle, struct dbll_sect_info *sect_info,
+ 					  &nldr_obj->
+ 					  ovly_table[i].delete_sects_list,
+ 					  sect_info, &sect_exists, addr, bytes);
+-			if (DSP_SUCCEEDED(status) && !sect_exists)
++			if (!status && !sect_exists)
+ 				nldr_obj->ovly_table[i].delete_sects++;
+ 
+ 		} else if (strncmp(pch, PEXECUTE, strlen(PEXECUTE)) == 0) {
+@@ -974,7 +973,7 @@ static int add_ovly_info(void *handle, struct dbll_sect_info *sect_info,
+ 					  &nldr_obj->
+ 					  ovly_table[i].execute_sects_list,
+ 					  sect_info, &sect_exists, addr, bytes);
+-			if (DSP_SUCCEEDED(status) && !sect_exists)
++			if (!status && !sect_exists)
+ 				nldr_obj->ovly_table[i].execute_sects++;
+ 
+ 		} else {
+@@ -984,7 +983,7 @@ static int add_ovly_info(void *handle, struct dbll_sect_info *sect_info,
+ 					  &nldr_obj->
+ 					  ovly_table[i].other_sects_list,
+ 					  sect_info, &sect_exists, addr, bytes);
+-			if (DSP_SUCCEEDED(status) && !sect_exists)
++			if (!status && !sect_exists)
+ 				nldr_obj->ovly_table[i].other_sects++;
+ 
+ 		}
+@@ -1096,7 +1095,7 @@ static int add_ovly_sect(struct nldr_object *nldr_obj,
+ 		}
+ 
+ 		/* Add to the list */
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			if (*lst == NULL) {
+ 				/* First in the list */
+ 				*lst = new_sect;
+@@ -1263,7 +1262,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 	if (psz_file_name == NULL)
+ 		status = -ENOMEM;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Get the name of the library */
+ 		if (depth == 0) {
+ 			status =
+@@ -1280,7 +1279,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 						 NULL);
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Open the library, don't load symbols */
+ 		status =
+ 		    nldr_obj->ldr_fxns.open_fxn(nldr_obj->dbll, psz_file_name,
+@@ -1290,7 +1289,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 	kfree(psz_file_name);
+ 
+ 	/* Check to see if library not already loaded */
+-	if (DSP_SUCCEEDED(status) && root_prstnt) {
++	if (!status && root_prstnt) {
+ 		lib_status =
+ 		    find_in_persistent_lib_array(nldr_node_obj, root->lib);
+ 		/* Close library */
+@@ -1299,7 +1298,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 			return 0;
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Check for circular dependencies. */
+ 		for (i = 0; i < depth; i++) {
+ 			if (root->lib == lib_path[i]) {
+@@ -1309,7 +1308,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 			}
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Add library to current path in dependency tree */
+ 		lib_path[depth] = root->lib;
+ 		depth++;
+@@ -1319,7 +1318,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 					 &uuid, &nd_libs, &np_libs, phase);
+ 	}
+ 	DBC_ASSERT(nd_libs >= np_libs);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if (!(*nldr_node_obj->pf_phase_split))
+ 			np_libs = 0;
+ 
+@@ -1344,7 +1343,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 
+ 			}
+ 
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				/* Get the dependent library UUIDs */
+ 				status =
+ 				    dcd_get_dep_libs(nldr_node_obj->
+@@ -1359,7 +1358,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 	/*
+ 	 *  Recursively load dependent libraries.
+ 	 */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		for (i = 0; i < nd_libs; i++) {
+ 			/* If root library is NOT persistent, and dep library
+ 			 * is, then record it.  If root library IS persistent,
+@@ -1388,7 +1387,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 					  persistent_dep_libs[i], lib_path,
+ 					  phase, depth);
+ 
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				if ((status != 0) &&
+ 				    !root_prstnt && persistent_dep_libs[i] &&
+ 				    *nldr_node_obj->pf_phase_split) {
+@@ -1406,7 +1405,7 @@ static int load_lib(struct nldr_nodeobject *nldr_node_obj,
+ 	}
+ 
+ 	/* Now we can load the root library */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		new_attrs = nldr_obj->ldr_attrs;
+ 		new_attrs.sym_arg = root;
+ 		new_attrs.rmm_handle = nldr_node_obj;
+@@ -1523,7 +1522,7 @@ static int load_ovly(struct nldr_nodeobject *nldr_node_obj,
+ 		/* reserve *//* align */
+ 		status = rmm_alloc(nldr_obj->rmm, 0, ovly_section->size, 0,
+ 				   &(ovly_section->sect_run_addr), true);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			ovly_section = ovly_section->next_sect;
+ 			alloc_num++;
+ 		} else {
+@@ -1533,7 +1532,7 @@ static int load_ovly(struct nldr_nodeobject *nldr_node_obj,
+ 	if (other_ref && *other_ref == 0) {
+ 		/* 'Allocate' memory for other overlay sections
+ 		 * (create phase) */
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			ovly_section = other_sects_list;
+ 			while (ovly_section) {
+ 				/* page not supported *//* align */
+@@ -1543,7 +1542,7 @@ static int load_ovly(struct nldr_nodeobject *nldr_node_obj,
+ 					      ovly_section->size, 0,
+ 					      &(ovly_section->sect_run_addr),
+ 					      true);
+-				if (DSP_SUCCEEDED(status)) {
++				if (!status) {
+ 					ovly_section = ovly_section->next_sect;
+ 					other_alloc++;
+ 				} else {
+@@ -1553,10 +1552,10 @@ static int load_ovly(struct nldr_nodeobject *nldr_node_obj,
+ 		}
+ 	}
+ 	if (*ref_count == 0) {
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* Load sections for this phase */
+ 			ovly_section = phase_sects;
+-			while (ovly_section && DSP_SUCCEEDED(status)) {
++			while (ovly_section && !status) {
+ 				bytes =
+ 				    (*nldr_obj->ovly_fxn) (nldr_node_obj->
+ 							   priv_ref,
+@@ -1574,10 +1573,10 @@ static int load_ovly(struct nldr_nodeobject *nldr_node_obj,
+ 		}
+ 	}
+ 	if (other_ref && *other_ref == 0) {
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* Load other sections (create phase) */
+ 			ovly_section = other_sects_list;
+-			while (ovly_section && DSP_SUCCEEDED(status)) {
++			while (ovly_section && !status) {
+ 				bytes =
+ 				    (*nldr_obj->ovly_fxn) (nldr_node_obj->
+ 							   priv_ref,
+@@ -1600,7 +1599,7 @@ static int load_ovly(struct nldr_nodeobject *nldr_node_obj,
+ 		free_sects(nldr_obj, other_sects_list, other_alloc);
+ 	}
+ func_end:
+-	if (DSP_SUCCEEDED(status) && (ref_count != NULL)) {
++	if (!status && (ref_count != NULL)) {
+ 		*ref_count += 1;
+ 		if (other_ref)
+ 			*other_ref += 1;
+@@ -1702,8 +1701,8 @@ static int remote_alloc(void **ref, u16 mem_sect, u32 size,
+ 				continue;
+ 
+ 			status = rmm_alloc(rmm, i, word_size, align,
+-					   dsp_address, false);
+-			if (DSP_SUCCEEDED(status)) {
++					dsp_address, false);
++			if (!status) {
+ 				/* Save segid for freeing later */
+ 				rmm_addr_obj->segid = i;
+ 				break;
+@@ -1723,7 +1722,7 @@ func_cont:
+ 
+ 			status = rmm_alloc(rmm, i, word_size, align,
+ 					   dsp_address, false);
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				/* Save segid */
+ 				rmm_addr_obj->segid = i;
+ 				break;
+diff --git a/drivers/staging/tidspbridge/rmgr/node.c b/drivers/staging/tidspbridge/rmgr/node.c
+index 9f07c81..d8593fd 100644
+--- a/drivers/staging/tidspbridge/rmgr/node.c
++++ b/drivers/staging/tidspbridge/rmgr/node.c
+@@ -338,7 +338,7 @@ int node_allocate(struct proc_object *hprocessor,
+ 		goto func_end;
+ 
+ 	status = proc_get_dev_object(hprocessor, &hdev_obj);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status = dev_get_node_manager(hdev_obj, &hnode_mgr);
+ 		if (hnode_mgr == NULL)
+ 			status = -EPERM;
+@@ -475,7 +475,7 @@ func_cont:
+ 		pnode->prio = attr_in->prio;
+ 	}
+ 	/* Create object to manage notifications */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		pnode->ntfy_obj = kmalloc(sizeof(struct ntfy_object),
+ 							GFP_KERNEL);
+ 		if (pnode->ntfy_obj)
+@@ -484,7 +484,7 @@ func_cont:
+ 			status = -ENOMEM;
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		node_type = node_get_type(pnode);
+ 		/*  Allocate dsp_streamconnect array for device, task, and
+ 		 *  dais socket nodes. */
+@@ -497,7 +497,7 @@ func_cont:
+ 				status = -ENOMEM;
+ 
+ 		}
+-		if (DSP_SUCCEEDED(status) && (node_type == NODE_TASK ||
++		if (!status && (node_type == NODE_TASK ||
+ 					      node_type == NODE_DAISSOCKET)) {
+ 			/* Allocate arrays for maintainig stream connections */
+ 			pnode->inputs = kzalloc(MAX_INPUTS(pnode) *
+@@ -520,7 +520,7 @@ func_cont:
+ 				status = -ENOMEM;
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status) && (node_type != NODE_DEVICE)) {
++	if (!status && (node_type != NODE_DEVICE)) {
+ 		/* Create an event that will be posted when RMS_EXIT is
+ 		 * received. */
+ 		pnode->sync_done = kzalloc(sizeof(struct sync_object),
+@@ -530,17 +530,17 @@ func_cont:
+ 		else
+ 			status = -ENOMEM;
+ 
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/*Get the shared mem mgr for this nodes dev object */
+ 			status = cmm_get_handle(hprocessor, &hcmm_mgr);
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				/* Allocate a SM addr translator for this node
+ 				 * w/ deflt attr */
+ 				status = cmm_xlator_create(&pnode->xlator,
+ 							   hcmm_mgr, NULL);
+ 			}
+ 		}
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* Fill in message args */
+ 			if ((pargs != NULL) && (pargs->cb_data > 0)) {
+ 				pmsg_args =
+@@ -559,7 +559,7 @@ func_cont:
+ 		}
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status) && node_type != NODE_DEVICE) {
++	if (!status && node_type != NODE_DEVICE) {
+ 		/* Create a message queue for this node */
+ 		intf_fxns = hnode_mgr->intf_fxns;
+ 		status =
+@@ -571,7 +571,7 @@ func_cont:
+ 							pnode);
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Create object for dynamic loading */
+ 
+ 		status = hnode_mgr->nldr_fxns.pfn_allocate(hnode_mgr->nldr_obj,
+@@ -587,7 +587,7 @@ func_cont:
+ 	 * STACKSEGLABEL, if yes read the Address of STACKSEGLABEL, calculate
+ 	 * GPP Address, Read the value in that address and override the
+ 	 * stack_seg value in task args */
+-	if (DSP_SUCCEEDED(status) &&
++	if (!status &&
+ 	    (char *)pnode->dcd_props.obj_data.node_obj.ndb_props.
+ 	    stack_seg_name != NULL) {
+ 		if (strcmp((char *)
+@@ -635,7 +635,7 @@ func_cont:
+ 		}
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Add the node to the node manager's list of allocated
+ 		 * nodes. */
+ 		lst_init_elem((struct list_head *)pnode);
+@@ -653,7 +653,7 @@ func_cont:
+ 		 * (for overlay and dll) */
+ 		pnode->phase_split = true;
+ 
+-		if (DSP_SUCCEEDED(status))
++		if (!status)
+ 			*ph_node = pnode;
+ 
+ 		/* Notify all clients registered for DSP_NODESTATECHANGE. */
+@@ -665,13 +665,13 @@ func_cont:
+ 
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		drv_insert_node_res_element(*ph_node, &node_res, pr_ctxt);
+ 		drv_proc_node_update_heap_status(node_res, true);
+ 		drv_proc_node_update_status(node_res, true);
+ 	}
+ 	DBC_ENSURE((DSP_FAILED(status) && (*ph_node == NULL)) ||
+-			(DSP_SUCCEEDED(status) && *ph_node));
++			(!status && *ph_node));
+ func_end:
+ 	dev_dbg(bridge, "%s: hprocessor: %p node_uuid: %p pargs: %p attr_in:"
+ 		" %p ph_node: %p status: 0x%x\n", __func__, hprocessor,
+@@ -730,7 +730,7 @@ DBAPI node_alloc_msg_buf(struct node_object *hnode, u32 usize,
+ 		status = cmm_xlator_info(pnode->xlator, pbuffer, usize,
+ 					 pattr->segment_id, set_info);
+ 	}
+-	if (DSP_SUCCEEDED(status) && (!va_flag)) {
++	if (!status && (!va_flag)) {
+ 		if (pattr->segment_id != 1) {
+ 			/* Node supports single SM segment only. */
+ 			status = -EBADR;
+@@ -749,7 +749,7 @@ DBAPI node_alloc_msg_buf(struct node_object *hnode, u32 usize,
+ 			status = -EPERM;
+ 			break;
+ 		}
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* allocate physical buffer from seg_id in node's
+ 			 * translator */
+ 			(void)cmm_xlator_alloc_buf(pnode->xlator, pbuffer,
+@@ -815,7 +815,7 @@ int node_change_priority(struct node_object *hnode, s32 prio)
+ 						      [RMSCHANGENODEPRIORITY],
+ 						      hnode->node_env, prio);
+ 		}
+-		if (DSP_SUCCEEDED(status))
++		if (status >= 0)
+ 			NODE_SET_PRIORITY(hnode, prio);
+ 
+ 	}
+@@ -857,7 +857,7 @@ int node_connect(struct node_object *node1, u32 stream1,
+ 	    (node2 != (struct node_object *)DSP_HGPPNODE && !node2))
+ 		status = -EFAULT;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* The two nodes must be on the same processor */
+ 		if (node1 != (struct node_object *)DSP_HGPPNODE &&
+ 		    node2 != (struct node_object *)DSP_HGPPNODE &&
+@@ -868,7 +868,7 @@ int node_connect(struct node_object *node1, u32 stream1,
+ 			status = -EPERM;
+ 
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* node_get_type() will return NODE_GPP if hnode =
+ 		 * DSP_HGPPNODE. */
+ 		node1_type = node_get_type(node1);
+@@ -882,7 +882,7 @@ int node_connect(struct node_object *node1, u32 stream1,
+ 							  MAX_INPUTS(node2)))
+ 			status = -EINVAL;
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/*
+ 		 *  Only the following types of connections are allowed:
+ 		 *      task/dais socket < == > task/dais socket
+@@ -900,7 +900,7 @@ int node_connect(struct node_object *node1, u32 stream1,
+ 	/*
+ 	 * Check stream mode. Default is STRMMODE_PROCCOPY.
+ 	 */
+-	if (DSP_SUCCEEDED(status) && pattrs) {
++	if (!status && pattrs) {
+ 		if (pattrs->strm_mode != STRMMODE_PROCCOPY)
+ 			status = -EPERM;	/* illegal stream mode */
+ 
+@@ -924,7 +924,7 @@ int node_connect(struct node_object *node1, u32 stream1,
+ 	if (node2_type != NODE_GPP && node_get_state(node2) != NODE_ALLOCATED)
+ 		status = -EBADR;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/*  Check that stream indices for task and dais socket nodes
+ 		 *  are not already be used. (Device nodes checked later) */
+ 		if (node1_type == NODE_TASK || node1_type == NODE_DAISSOCKET) {
+@@ -945,7 +945,7 @@ int node_connect(struct node_object *node1, u32 stream1,
+ 		}
+ 	}
+ 	/* Connecting two task nodes? */
+-	if (DSP_SUCCEEDED(status) && ((node1_type == NODE_TASK ||
++	if (!status && ((node1_type == NODE_TASK ||
+ 				       node1_type == NODE_DAISSOCKET)
+ 				      && (node2_type == NODE_TASK
+ 					  || node2_type == NODE_DAISSOCKET))) {
+@@ -981,7 +981,7 @@ int node_connect(struct node_object *node1, u32 stream1,
+ 		}
+ 	}
+ 	/* Connecting task node to host? */
+-	if (DSP_SUCCEEDED(status) && (node1_type == NODE_GPP ||
++	if (!status && (node1_type == NODE_GPP ||
+ 				      node2_type == NODE_GPP)) {
+ 		if (node1_type == NODE_GPP) {
+ 			chnl_mode = CHNL_MODETODSP;
+@@ -1047,7 +1047,7 @@ int node_connect(struct node_object *node1, u32 stream1,
+ 		}
+ 		status = -ENOMEM;
+ func_cont2:
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			if (node1 == (struct node_object *)DSP_HGPPNODE) {
+ 				node2->inputs[stream2].type = HOSTCONNECT;
+ 				node2->inputs[stream2].dev_id = chnl_id;
+@@ -1061,7 +1061,7 @@ func_cont2:
+ 		}
+ 	}
+ 	/* Connecting task node to device node? */
+-	if (DSP_SUCCEEDED(status) && ((node1_type == NODE_DEVICE) ||
++	if (!status && ((node1_type == NODE_DEVICE) ||
+ 				      (node2_type == NODE_DEVICE))) {
+ 		if (node2_type == NODE_DEVICE) {
+ 			/* node1 == > device */
+@@ -1101,7 +1101,7 @@ func_cont2:
+ 			dev_node_obj->device_owner = hnode;
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Fill in create args */
+ 		if (node1_type == NODE_TASK || node1_type == NODE_DAISSOCKET) {
+ 			node1->create_args.asa.task_arg_obj.num_outputs++;
+@@ -1187,7 +1187,7 @@ int node_create(struct node_object *hnode)
+ 	if (node_get_state(hnode) != NODE_ALLOCATED)
+ 		status = -EBADR;
+ 
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = proc_get_processor_id(pnode->hprocessor, &proc_id);
+ 
+ 	if (DSP_FAILED(status))
+@@ -1203,7 +1203,7 @@ int node_create(struct node_object *hnode)
+ 	     hnode->num_outputs - 1))
+ 		status = -ENOTCONN;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* If node's create function is not loaded, load it */
+ 		/* Boost the OPP level to max level that DSP can be requested */
+ #if defined(CONFIG_TIDSPBRIDGE_DVFS) && !defined(CONFIG_CPU_FREQ)
+@@ -1213,7 +1213,7 @@ int node_create(struct node_object *hnode)
+ 		status = hnode_mgr->nldr_fxns.pfn_load(hnode->nldr_node_obj,
+ 						       NLDR_CREATE);
+ 		/* Get address of node's create function */
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			hnode->loaded = true;
+ 			if (node_type != NODE_DEVICE) {
+ 				status = get_fxn_address(hnode, &ul_create_fxn,
+@@ -1229,7 +1229,7 @@ int node_create(struct node_object *hnode)
+ 			(*pdata->cpu_set_freq) (pdata->mpu_speed[VDD1_OPP1]);
+ #endif
+ 		/* Get address of iAlg functions, if socket node */
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			if (node_type == NODE_DAISSOCKET) {
+ 				status = hnode_mgr->nldr_fxns.pfn_get_fxn_addr
+ 				    (hnode->nldr_node_obj,
+@@ -1240,7 +1240,7 @@ int node_create(struct node_object *hnode)
+ 			}
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if (node_type != NODE_DEVICE) {
+ 			status = disp_node_create(hnode_mgr->disp_obj, hnode,
+ 						  hnode_mgr->ul_fxn_addrs
+@@ -1248,7 +1248,7 @@ int node_create(struct node_object *hnode)
+ 						  ul_create_fxn,
+ 						  &(hnode->create_args),
+ 						  &(hnode->node_env));
+-			if (DSP_SUCCEEDED(status)) {
++			if (status >= 0) {
+ 				/* Set the message queue id to the node env
+ 				 * pointer */
+ 				intf_fxns = hnode_mgr->intf_fxns;
+@@ -1272,7 +1272,7 @@ int node_create(struct node_object *hnode)
+ 		       __func__, status1);
+ func_cont2:
+ 	/* Update node state and node manager state */
+-	if (DSP_SUCCEEDED(status)) {
++	if (status >= 0) {
+ 		NODE_SET_STATE(hnode, NODE_CREATED);
+ 		hnode_mgr->num_created++;
+ 		goto func_cont;
+@@ -1285,7 +1285,7 @@ func_cont:
+ 	/* Free access to node dispatcher */
+ 	mutex_unlock(&hnode_mgr->node_mgr_lock);
+ func_end:
+-	if (DSP_SUCCEEDED(status)) {
++	if (status >= 0) {
+ 		proc_notify_clients(hnode->hprocessor, DSP_NODESTATECHANGE);
+ 		ntfy_notify(hnode->ntfy_obj, DSP_NODESTATECHANGE);
+ 	}
+@@ -1341,19 +1341,19 @@ int node_create_mgr(struct node_mgr **node_man,
+ 		status = -ENOMEM;
+ 	}
+ 	/* get devNodeType */
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = dev_get_dev_type(hdev_obj, &dev_type);
+ 
+ 	/* Create the DCD Manager */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status =
+ 		    dcd_create_manager(sz_zl_file, &node_mgr_obj->hdcd_mgr);
+-		if (DSP_SUCCEEDED(status))
++		if (!status)
+ 			status = get_proc_props(node_mgr_obj, hdev_obj);
+ 
+ 	}
+ 	/* Create NODE Dispatcher */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		disp_attr_obj.ul_chnl_offset = node_mgr_obj->ul_chnl_offset;
+ 		disp_attr_obj.ul_chnl_buf_size = node_mgr_obj->ul_chnl_buf_size;
+ 		disp_attr_obj.proc_family = node_mgr_obj->proc_family;
+@@ -1363,10 +1363,10 @@ int node_create_mgr(struct node_mgr **node_man,
+ 				&disp_attr_obj);
+ 	}
+ 	/* Create a STRM Manager */
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = strm_create(&node_mgr_obj->strm_mgr_obj, hdev_obj);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		dev_get_intf_fxns(hdev_obj, &node_mgr_obj->intf_fxns);
+ 		/* Get msg_ctrl queue manager */
+ 		dev_get_msg_mgr(hdev_obj, &node_mgr_obj->msg_mgr_obj);
+@@ -1393,7 +1393,7 @@ int node_create_mgr(struct node_mgr **node_man,
+ 			       node_mgr_obj->ul_chnl_offset + 1);
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* NO RM Server on the IVA */
+ 		if (dev_type != IVA_UNIT) {
+ 			/* Get addresses of any RMS functions loaded */
+@@ -1402,10 +1402,10 @@ int node_create_mgr(struct node_mgr **node_man,
+ 	}
+ 
+ 	/* Get loader functions and create loader */
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		node_mgr_obj->nldr_fxns = nldr_fxns;	/* Dyn loader funcs */
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		nldr_attrs_obj.pfn_ovly = ovly;
+ 		nldr_attrs_obj.pfn_write = mem_write;
+ 		nldr_attrs_obj.us_dsp_word_size = node_mgr_obj->udsp_word_size;
+@@ -1416,13 +1416,13 @@ int node_create_mgr(struct node_mgr **node_man,
+ 						       hdev_obj,
+ 						       &nldr_attrs_obj);
+ 	}
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		*node_man = node_mgr_obj;
+ 	else
+ 		delete_node_mgr(node_mgr_obj);
+ 
+ 	DBC_ENSURE((DSP_FAILED(status) && (*node_man == NULL)) ||
+-			(DSP_SUCCEEDED(status) && *node_man));
++			(!status && *node_man));
+ 
+ 	return status;
+ }
+@@ -1506,7 +1506,7 @@ int node_delete(struct node_object *hnode,
+ 				status =
+ 				    hnode_mgr->nldr_fxns.
+ 				    pfn_load(hnode->nldr_node_obj, NLDR_DELETE);
+-				if (DSP_SUCCEEDED(status))
++				if (!status)
+ 					hnode->loaded = true;
+ 				else
+ 					pr_err("%s: fail - load delete code:"
+@@ -1514,7 +1514,7 @@ int node_delete(struct node_object *hnode,
+ 			}
+ 		}
+ func_cont1:
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* Unblock a thread trying to terminate the node */
+ 			(void)sync_set_event(hnode->sync_done);
+ 			if (proc_id == DSP_UNIT) {
+@@ -1524,7 +1524,7 @@ func_cont1:
+ 							 DELETEPHASE);
+ 			} else if (proc_id == IVA_UNIT)
+ 				ul_delete_fxn = (u32) hnode->node_env;
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				status = proc_get_state(hprocessor,
+ 						&proc_state,
+ 						sizeof(struct
+@@ -1690,7 +1690,7 @@ int node_free_msg_buf(struct node_object *hnode, u8 * pbuffer,
+ 	}
+ 	status = proc_get_processor_id(pnode->hprocessor, &proc_id);
+ 	if (proc_id == DSP_UNIT) {
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			if (pattr == NULL) {
+ 				/* set defaults */
+ 				pattr = &node_dfltbufattrs;
+@@ -1889,8 +1889,7 @@ int node_get_nldr_obj(struct node_mgr *hnode_mgr,
+ 	else
+ 		*nldr_ovlyobj = node_mgr_obj->nldr_obj;
+ 
+-	DBC_ENSURE(DSP_SUCCEEDED(status) || ((nldr_ovlyobj != NULL) &&
+-					     (*nldr_ovlyobj == NULL)));
++	DBC_ENSURE(!status || (nldr_ovlyobj != NULL && *nldr_ovlyobj == NULL));
+ 	return status;
+ }
+ 
+@@ -2039,7 +2038,7 @@ int node_pause(struct node_object *hnode)
+ 	if (proc_id == IVA_UNIT)
+ 		status = -ENOSYS;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		hnode_mgr = hnode->hnode_mgr;
+ 
+ 		/* Enter critical section */
+@@ -2068,14 +2067,14 @@ int node_pause(struct node_object *hnode)
+ 			hnode->node_env, NODE_SUSPENDEDPRI);
+ 
+ 		/* Update state */
+-		if (DSP_SUCCEEDED(status))
++		if (status >= 0)
+ 			NODE_SET_STATE(hnode, NODE_PAUSED);
+ 
+ func_cont:
+ 		/* End of sync_enter_cs */
+ 		/* Leave critical section */
+ 		mutex_unlock(&hnode_mgr->node_mgr_lock);
+-		if (DSP_SUCCEEDED(status)) {
++		if (status >= 0) {
+ 			proc_notify_clients(hnode->hprocessor,
+ 					    DSP_NODESTATECHANGE);
+ 			ntfy_notify(hnode->ntfy_obj, DSP_NODESTATECHANGE);
+@@ -2130,7 +2129,7 @@ int node_put_message(struct node_object *hnode,
+ 	    node_type != NODE_DAISSOCKET)
+ 		status = -EPERM;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/*  Check node state. Can't send messages to a node after
+ 		 *  we've sent the RMS_EXIT command. There is still the
+ 		 *  possibility that node_terminate can be called after we've
+@@ -2175,7 +2174,7 @@ int node_put_message(struct node_object *hnode,
+ 			status = -ESRCH;
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		intf_fxns = hnode_mgr->intf_fxns;
+ 		status = (*intf_fxns->pfn_msg_put) (hnode->msg_queue_obj,
+ 						    &new_msg, utimeout);
+@@ -2217,7 +2216,7 @@ int node_register_notify(struct node_object *hnode, u32 event_mask,
+ 		if (event_mask == (DSP_NODESTATECHANGE | DSP_NODEMESSAGEREADY))
+ 			status = -EINVAL;
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		if (event_mask == DSP_NODESTATECHANGE) {
+ 			status = ntfy_register(hnode->ntfy_obj, hnotification,
+ 					       event_mask & DSP_NODESTATECHANGE,
+@@ -2294,7 +2293,7 @@ int node_run(struct node_object *hnode)
+ 	if (state != NODE_CREATED && state != NODE_PAUSED)
+ 		status = -EBADR;
+ 
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = proc_get_processor_id(pnode->hprocessor, &proc_id);
+ 
+ 	if (DSP_FAILED(status))
+@@ -2309,14 +2308,14 @@ int node_run(struct node_object *hnode)
+ 			status =
+ 			    hnode_mgr->nldr_fxns.pfn_load(hnode->nldr_node_obj,
+ 							  NLDR_EXECUTE);
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				hnode->loaded = true;
+ 			} else {
+ 				pr_err("%s: fail - load execute code: 0x%x\n",
+ 				       __func__, status);
+ 			}
+ 		}
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/* Get address of node's execute function */
+ 			if (proc_id == IVA_UNIT)
+ 				ul_execute_fxn = (u32) hnode->node_env;
+@@ -2325,7 +2324,7 @@ int node_run(struct node_object *hnode)
+ 							 EXECUTEPHASE);
+ 			}
+ 		}
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			ul_fxn_addr = hnode_mgr->ul_fxn_addrs[RMSEXECUTENODE];
+ 			status =
+ 			    disp_node_run(hnode_mgr->disp_obj, hnode,
+@@ -2343,14 +2342,14 @@ int node_run(struct node_object *hnode)
+ 	}
+ func_cont1:
+ 	/* Update node state. */
+-	if (DSP_SUCCEEDED(status))
++	if (status >= 0)
+ 		NODE_SET_STATE(hnode, NODE_RUNNING);
+ 	else			/* Set state back to previous value */
+ 		NODE_SET_STATE(hnode, state);
+ 	/*End of sync_enter_cs */
+ 	/* Exit critical section */
+ 	mutex_unlock(&hnode_mgr->node_mgr_lock);
+-	if (DSP_SUCCEEDED(status)) {
++	if (status >= 0) {
+ 		proc_notify_clients(hnode->hprocessor, DSP_NODESTATECHANGE);
+ 		ntfy_notify(hnode->ntfy_obj, DSP_NODESTATECHANGE);
+ 	}
+@@ -2391,13 +2390,13 @@ int node_terminate(struct node_object *hnode, int *pstatus)
+ 	}
+ 	status = proc_get_processor_id(pnode->hprocessor, &proc_id);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		hnode_mgr = hnode->hnode_mgr;
+ 		node_type = node_get_type(hnode);
+ 		if (node_type != NODE_TASK && node_type != NODE_DAISSOCKET)
+ 			status = -EPERM;
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Check node state */
+ 		mutex_lock(&hnode_mgr->node_mgr_lock);
+ 		state = node_get_state(hnode);
+@@ -2414,7 +2413,7 @@ int node_terminate(struct node_object *hnode, int *pstatus)
+ 		/* end of sync_enter_cs */
+ 		mutex_unlock(&hnode_mgr->node_mgr_lock);
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/*
+ 		 *  Send exit message. Do not change state to NODE_DONE
+ 		 *  here. That will be done in callback.
+@@ -2476,7 +2475,7 @@ int node_terminate(struct node_object *hnode, int *pstatus)
+ 		}
+ 	}
+ func_cont:
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Enter CS before getting exit status, in case node was
+ 		 * deleted. */
+ 		mutex_lock(&hnode_mgr->node_mgr_lock);
+@@ -2903,7 +2902,7 @@ static int get_node_props(struct dcd_manager *hdcd_mgr,
+ 	status = dcd_get_object_def(hdcd_mgr, (struct dsp_uuid *)node_uuid,
+ 				    DSP_DCDNODETYPE, dcd_prop);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		hnode->ntype = node_type = pndb_props->ntype;
+ 
+ 		/* Create UUID value to set in registry. */
+@@ -2935,7 +2934,7 @@ static int get_node_props(struct dcd_manager *hdcd_mgr,
+ 			}
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Fill in create args that come from NDB */
+ 		if (node_type == NODE_TASK || node_type == NODE_DAISSOCKET) {
+ 			task_arg_obj = &(hnode->create_args.asa.task_arg_obj);
+@@ -2973,7 +2972,7 @@ static int get_proc_props(struct node_mgr *hnode_mgr,
+ 	if (!pbridge_context)
+ 		status = -EFAULT;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		host_res = pbridge_context->resources;
+ 		if (!host_res)
+ 			return -EPERM;
+@@ -3058,7 +3057,7 @@ int node_get_uuid_props(void *hprocessor,
+ 		(struct dsp_uuid *)node_uuid, DSP_DCDNODETYPE,
+ 		(struct dcd_genericobj *)&dcd_node_props);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		*node_props = dcd_node_props.ndb_props;
+ 		kfree(dcd_node_props.pstr_create_phase_fxn);
+ 
+@@ -3148,12 +3147,12 @@ static u32 ovly(void *priv_ref, u32 dsp_run_addr, u32 dsp_load_addr,
+ 	/* Call new MemCopy function */
+ 	intf_fxns = hnode_mgr->intf_fxns;
+ 	status = dev_get_bridge_context(hnode_mgr->hdev_obj, &hbridge_context);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status =
+ 		    (*intf_fxns->pfn_brd_mem_copy) (hbridge_context,
+ 						dsp_run_addr, dsp_load_addr,
+ 						ul_num_bytes, (u32) mem_space);
+-		if (DSP_SUCCEEDED(status))
++		if (!status)
+ 			ul_bytes = ul_num_bytes;
+ 		else
+ 			pr_debug("%s: failed to copy brd memory, status 0x%x\n",
+@@ -3220,7 +3219,7 @@ int node_find_addr(struct node_mgr *node_mgr, u32 sym_addr,
+ 		status = nldr_find_addr(node_obj->nldr_node_obj, sym_addr,
+ 			offset_range, sym_addr_output, sym_name);
+ 
+-		if (DSP_SUCCEEDED(status))
++		if (!status)
+ 			break;
+ 
+ 		node_obj = (struct node_object *) (node_obj->list_elem.next);
+diff --git a/drivers/staging/tidspbridge/rmgr/proc.c b/drivers/staging/tidspbridge/rmgr/proc.c
+index 5f189dc..570927f 100644
+--- a/drivers/staging/tidspbridge/rmgr/proc.c
++++ b/drivers/staging/tidspbridge/rmgr/proc.c
+@@ -292,14 +292,14 @@ proc_attach(u32 processor_id,
+ 
+ 	/* Get the Driver and Manager Object Handles */
+ 	status = cfg_get_object((u32 *) &hdrv_obj, REG_DRV_OBJECT);
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = cfg_get_object((u32 *) &hmgr_obj, REG_MGR_OBJECT);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Get the Device Object */
+ 		status = drv_get_dev_object(processor_id, hdrv_obj, &hdev_obj);
+ 	}
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = dev_get_dev_type(hdev_obj, &dev_type);
+ 
+ 	if (DSP_FAILED(status))
+@@ -326,7 +326,7 @@ proc_attach(u32 processor_id,
+ 		p_proc_object->utimeout = PROC_DFLT_TIMEOUT;
+ 
+ 	status = dev_get_intf_fxns(hdev_obj, &p_proc_object->intf_fxns);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status = dev_get_bridge_context(hdev_obj,
+ 					     &p_proc_object->hbridge_context);
+ 		if (DSP_FAILED(status))
+@@ -348,7 +348,7 @@ proc_attach(u32 processor_id,
+ 	else
+ 		status = -ENOMEM;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Insert the Processor Object into the DEV List.
+ 		 * Return handle to this Processor Object:
+ 		 * Find out if the Device is already attached to a
+@@ -358,7 +358,7 @@ proc_attach(u32 processor_id,
+ 						(u32) p_proc_object,
+ 						&p_proc_object->
+ 						is_already_attached);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			if (p_proc_object->is_already_attached)
+ 				status = 0;
+ 		} else {
+@@ -369,7 +369,7 @@ proc_attach(u32 processor_id,
+ 
+ 			kfree(p_proc_object);
+ 		}
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			*ph_processor = (void *)p_proc_object;
+ 			pr_ctxt->hprocessor = *ph_processor;
+ 			(void)proc_notify_clients(p_proc_object,
+@@ -381,7 +381,7 @@ proc_attach(u32 processor_id,
+ 	}
+ func_end:
+ 	DBC_ENSURE((status == -EPERM && *ph_processor == NULL) ||
+-		   (DSP_SUCCEEDED(status) && p_proc_object) ||
++		   (!status && p_proc_object) ||
+ 		   (status == 0 && p_proc_object));
+ 
+ 	return status;
+@@ -448,7 +448,7 @@ int proc_auto_start(struct cfg_devnode *dev_node_obj,
+ 	p_proc_object->hdev_obj = hdev_obj;
+ 	p_proc_object->hmgr_obj = hmgr_obj;
+ 	status = dev_get_intf_fxns(hdev_obj, &p_proc_object->intf_fxns);
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = dev_get_bridge_context(hdev_obj,
+ 					     &p_proc_object->hbridge_context);
+ 	if (DSP_FAILED(status))
+@@ -465,12 +465,12 @@ int proc_auto_start(struct cfg_devnode *dev_node_obj,
+ 	p_proc_object->processor_id = dev_type;
+ 	status = get_exec_file(dev_node_obj, hdev_obj, sizeof(sz_exec_file),
+ 			       sz_exec_file);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		argv[0] = sz_exec_file;
+ 		argv[1] = NULL;
+ 		/* ...and try to load it: */
+ 		status = proc_load(p_proc_object, 1, (const char **)argv, NULL);
+-		if (DSP_SUCCEEDED(status))
++		if (!status)
+ 			status = proc_start(p_proc_object);
+ 	}
+ 	kfree(p_proc_object->psz_last_coff);
+@@ -522,7 +522,7 @@ int proc_ctrl(void *hprocessor, u32 dw_cmd, struct dsp_cbdata * arg)
+ 			/* timeout = arg->cb_data; */
+ 			status = pwr_wake_dsp(timeout);
+ 		} else
+-		    if (DSP_SUCCEEDED((*p_proc_object->intf_fxns->pfn_dev_cntrl)
++		    if (!((*p_proc_object->intf_fxns->pfn_dev_cntrl)
+ 				      (p_proc_object->hbridge_context, dw_cmd,
+ 				       arg))) {
+ 			status = 0;
+@@ -595,7 +595,7 @@ int proc_enum_nodes(void *hprocessor, void **node_tab,
+ 	DBC_REQUIRE(pu_allocated != NULL);
+ 
+ 	if (p_proc_object) {
+-		if (DSP_SUCCEEDED(dev_get_node_manager(p_proc_object->hdev_obj,
++		if (!(dev_get_node_manager(p_proc_object->hdev_obj,
+ 						       &hnode_mgr))) {
+ 			if (hnode_mgr) {
+ 				status = node_enum_nodes(hnode_mgr, node_tab,
+@@ -880,7 +880,7 @@ int proc_get_resource_info(void *hprocessor, u32 resource_type,
+ 		}
+ 
+ 		status = node_get_nldr_obj(hnode_mgr, &nldr_obj);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			status = nldr_get_rmm_manager(nldr_obj, &rmm);
+ 			if (rmm) {
+ 				if (!rmm_stat(rmm,
+@@ -952,7 +952,7 @@ int proc_get_dev_object(void *hprocessor,
+ 		status = -EFAULT;
+ 	}
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && *device_obj != NULL) ||
++	DBC_ENSURE((!status && *device_obj != NULL) ||
+ 		   (DSP_FAILED(status) && *device_obj == NULL));
+ 
+ 	return status;
+@@ -979,7 +979,7 @@ int proc_get_state(void *hprocessor,
+ 		/* First, retrieve BRD state information */
+ 		status = (*p_proc_object->intf_fxns->pfn_brd_status)
+ 		    (p_proc_object->hbridge_context, &brd_status);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			switch (brd_status) {
+ 			case BRD_STOPPED:
+ 				proc_state_obj->proc_state = PROC_STOPPED;
+@@ -1131,7 +1131,7 @@ int proc_load(void *hprocessor, const s32 argc_index,
+ 			/* Get the DCD Handle */
+ 			status = mgr_get_dcd_handle(p_proc_object->hmgr_obj,
+ 						    (u32 *) &hdcd_handle);
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				/*  Before proceeding with new load,
+ 				 *  check if a previously registered COFF
+ 				 *  exists.
+@@ -1157,12 +1157,12 @@ int proc_load(void *hprocessor, const s32 argc_index,
+ 	} else {
+ 		status = -ENOMEM;
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Auto-register data base */
+ 		/* Get the DCD Handle */
+ 		status = mgr_get_dcd_handle(p_proc_object->hmgr_obj,
+ 					    (u32 *) &hdcd_handle);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			/*  Auto register nodes in specified COFF
+ 			 *  file.  If registration did not fail,
+ 			 *  (status = 0 or -EACCES)
+@@ -1194,18 +1194,18 @@ int proc_load(void *hprocessor, const s32 argc_index,
+ 		}
+ 	}
+ 	/* Update shared memory address and size */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/*  Create the message manager. This must be done
+ 		 *  before calling the IOOnLoaded function. */
+ 		dev_get_msg_mgr(p_proc_object->hdev_obj, &hmsg_mgr);
+ 		if (!hmsg_mgr) {
+ 			status = msg_create(&hmsg_mgr, p_proc_object->hdev_obj,
+ 					    (msg_onexit) node_on_exit);
+-			DBC_ASSERT(DSP_SUCCEEDED(status));
++			DBC_ASSERT(!status);
+ 			dev_set_msg_mgr(p_proc_object->hdev_obj, hmsg_mgr);
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Set the Device object's message manager */
+ 		status = dev_get_io_mgr(p_proc_object->hdev_obj, &hio_mgr);
+ 		if (hio_mgr)
+@@ -1214,7 +1214,7 @@ int proc_load(void *hprocessor, const s32 argc_index,
+ 		else
+ 			status = -EFAULT;
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Now, attempt to load an exec: */
+ 
+ 		/* Boost the OPP level to Maximum level supported by baseport */
+@@ -1242,28 +1242,28 @@ int proc_load(void *hprocessor, const s32 argc_index,
+ #endif
+ 
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Update the Processor status to loaded */
+ 		status = (*p_proc_object->intf_fxns->pfn_brd_set_state)
+ 		    (p_proc_object->hbridge_context, BRD_LOADED);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			p_proc_object->proc_state = PROC_LOADED;
+ 			if (p_proc_object->ntfy_obj)
+ 				proc_notify_clients(p_proc_object,
+ 						    DSP_PROCESSORSTATECHANGE);
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status = proc_get_processor_id(hprocessor, &proc_id);
+ 		if (proc_id == DSP_UNIT) {
+ 			/* Use all available DSP address space after EXTMEM
+ 			 * for DMM */
+-			if (DSP_SUCCEEDED(status))
++			if (!status)
+ 				status = cod_get_sym_value(cod_mgr, EXTEND,
+ 							   &dw_ext_end);
+ 
+ 			/* Reset DMM structs and add an initial free chunk */
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				status =
+ 				    dev_get_dmm_mgr(p_proc_object->hdev_obj,
+ 						    &dmm_mgr);
+@@ -1285,8 +1285,8 @@ int proc_load(void *hprocessor, const s32 argc_index,
+ 	/* Restore the original argv[0] */
+ 	kfree(new_envp);
+ 	user_args[0] = pargv0;
+-	if (DSP_SUCCEEDED(status)) {
+-		if (DSP_SUCCEEDED((*p_proc_object->intf_fxns->pfn_brd_status)
++	if (!status) {
++		if (!((*p_proc_object->intf_fxns->pfn_brd_status)
+ 				(p_proc_object->hbridge_context, &brd_state))) {
+ 			pr_info("%s: Processor Loaded %s\n", __func__, pargv0);
+ 			kfree(drv_datap->base_img);
+@@ -1305,7 +1305,7 @@ func_end:
+ 	if (DSP_FAILED(status))
+ 		pr_err("%s: Processor failed to load\n", __func__);
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status)
++	DBC_ENSURE((!status
+ 		    && p_proc_object->proc_state == PROC_LOADED)
+ 		   || DSP_FAILED(status));
+ #ifdef OPT_LOAD_TIME_INSTRUMENTATION
+@@ -1368,7 +1368,7 @@ int proc_map(void *hprocessor, void *pmpu_addr, u32 ul_size,
+ 		status = -EFAULT;
+ 
+ 	/* Add mapping to the page tables. */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 
+ 		/* Mapped address = MSB of VA | LSB of PA */
+ 		tmp_addr = (va_align | ((u32) pmpu_addr & (PG_SIZE4K - 1)));
+@@ -1382,7 +1382,7 @@ int proc_map(void *hprocessor, void *pmpu_addr, u32 ul_size,
+ 			    (p_proc_object->hbridge_context, pa_align, va_align,
+ 			     size_align, ul_map_attr, map_obj->pages);
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Mapped address = MSB of VA | LSB of PA */
+ 		*pp_map_addr = (void *) tmp_addr;
+ 	} else {
+@@ -1436,7 +1436,7 @@ int proc_register_notify(void *hprocessor, u32 event_mask,
+ 	if (notify_type != DSP_SIGNALEVENT)
+ 		status = -EINVAL;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* If event mask is not DSP_SYSERROR, DSP_MMUFAULT,
+ 		 * or DSP_PWRERROR then register event immediately. */
+ 		if (event_mask &
+@@ -1568,7 +1568,7 @@ int proc_start(void *hprocessor)
+ 
+ 	/* Call dev_create2 */
+ 	status = dev_create2(p_proc_object->hdev_obj);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		p_proc_object->proc_state = PROC_RUNNING;
+ 		/* Deep sleep switces off the peripheral clocks.
+ 		 * we just put the DSP CPU in idle in the idle loop.
+@@ -1586,8 +1586,8 @@ int proc_start(void *hprocessor)
+ 		p_proc_object->proc_state = PROC_STOPPED;
+ 	}
+ func_cont:
+-	if (DSP_SUCCEEDED(status)) {
+-		if (DSP_SUCCEEDED((*p_proc_object->intf_fxns->pfn_brd_status)
++	if (!status) {
++		if (!((*p_proc_object->intf_fxns->pfn_brd_status)
+ 				(p_proc_object->hbridge_context, &brd_state))) {
+ 			pr_info("%s: dsp in running state\n", __func__);
+ 			DBC_ASSERT(brd_state != BRD_HIBERNATION);
+@@ -1597,7 +1597,7 @@ func_cont:
+ 	}
+ 
+ func_end:
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && p_proc_object->proc_state ==
++	DBC_ENSURE((!status && p_proc_object->proc_state ==
+ 		    PROC_RUNNING) || DSP_FAILED(status));
+ 	return status;
+ }
+@@ -1626,7 +1626,7 @@ int proc_stop(void *hprocessor)
+ 	}
+ 	/* check if there are any running nodes */
+ 	status = dev_get_node_manager(p_proc_object->hdev_obj, &hnode_mgr);
+-	if (DSP_SUCCEEDED(status) && hnode_mgr) {
++	if (!status && hnode_mgr) {
+ 		status = node_enum_nodes(hnode_mgr, &hnode, node_tab_size,
+ 					 &num_nodes, &nodes_allocated);
+ 		if ((status == -EINVAL) || (nodes_allocated > 0)) {
+@@ -1640,19 +1640,18 @@ int proc_stop(void *hprocessor)
+ 	status =
+ 	    (*p_proc_object->intf_fxns->
+ 	     pfn_brd_stop) (p_proc_object->hbridge_context);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		dev_dbg(bridge, "%s: processor in standby mode\n", __func__);
+ 		p_proc_object->proc_state = PROC_STOPPED;
+ 		/* Destory the Node Manager, msg_ctrl Manager */
+-		if (DSP_SUCCEEDED(dev_destroy2(p_proc_object->hdev_obj))) {
++		if (!(dev_destroy2(p_proc_object->hdev_obj))) {
+ 			/* Destroy the msg_ctrl by calling msg_delete */
+ 			dev_get_msg_mgr(p_proc_object->hdev_obj, &hmsg_mgr);
+ 			if (hmsg_mgr) {
+ 				msg_delete(hmsg_mgr);
+ 				dev_set_msg_mgr(p_proc_object->hdev_obj, NULL);
+ 			}
+-			if (DSP_SUCCEEDED
+-			    ((*p_proc_object->
++			if (!((*p_proc_object->
+ 			      intf_fxns->pfn_brd_status) (p_proc_object->
+ 							  hbridge_context,
+ 							  &brd_state)))
+@@ -1700,7 +1699,7 @@ int proc_un_map(void *hprocessor, void *map_addr,
+ 	 */
+ 	status = dmm_un_map_memory(dmm_mgr, (u32) va_align, &size_align);
+ 	/* Remove mapping from the page tables. */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status = (*p_proc_object->intf_fxns->pfn_brd_mem_un_map)
+ 		    (p_proc_object->hbridge_context, va_align, size_align);
+ 	}
+@@ -1800,7 +1799,7 @@ static int proc_monitor(struct proc_object *proc_obj)
+ 	/* This is needed only when Device is loaded when it is
+ 	 * already 'ACTIVE' */
+ 	/* Destory the Node Manager, msg_ctrl Manager */
+-	if (DSP_SUCCEEDED(dev_destroy2(proc_obj->hdev_obj))) {
++	if (!dev_destroy2(proc_obj->hdev_obj)) {
+ 		/* Destroy the msg_ctrl by calling msg_delete */
+ 		dev_get_msg_mgr(proc_obj->hdev_obj, &hmsg_mgr);
+ 		if (hmsg_mgr) {
+@@ -1809,15 +1808,15 @@ static int proc_monitor(struct proc_object *proc_obj)
+ 		}
+ 	}
+ 	/* Place the Board in the Monitor State */
+-	if (DSP_SUCCEEDED((*proc_obj->intf_fxns->pfn_brd_monitor)
++	if (!((*proc_obj->intf_fxns->pfn_brd_monitor)
+ 			  (proc_obj->hbridge_context))) {
+ 		status = 0;
+-		if (DSP_SUCCEEDED((*proc_obj->intf_fxns->pfn_brd_status)
++		if (!((*proc_obj->intf_fxns->pfn_brd_status)
+ 				  (proc_obj->hbridge_context, &brd_state)))
+ 			DBC_ASSERT(brd_state == BRD_IDLE);
+ 	}
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && brd_state == BRD_IDLE) ||
++	DBC_ENSURE((!status && brd_state == BRD_IDLE) ||
+ 		   DSP_FAILED(status));
+ 	return status;
+ }
+diff --git a/drivers/staging/tidspbridge/rmgr/pwr.c b/drivers/staging/tidspbridge/rmgr/pwr.c
+index 13f5ed6..69c2e19 100644
+--- a/drivers/staging/tidspbridge/rmgr/pwr.c
++++ b/drivers/staging/tidspbridge/rmgr/pwr.c
+@@ -91,12 +91,10 @@ int pwr_wake_dsp(const u32 timeout)
+ 	     hdev_obj != NULL;
+ 	     hdev_obj = (struct dev_object *)drv_get_next_dev_object
+ 	     ((u32) hdev_obj)) {
+-		if (DSP_SUCCEEDED(dev_get_bridge_context(hdev_obj,
++		if (!(dev_get_bridge_context(hdev_obj,
+ 						      (struct bridge_dev_context
+ 						       **)&dw_context))) {
+-			if (DSP_SUCCEEDED
+-			    (dev_get_intf_fxns
+-			     (hdev_obj,
++			if (!(dev_get_intf_fxns(hdev_obj,
+ 			      (struct bridge_drv_interface **)&intf_fxns))) {
+ 				status =
+ 				    (*intf_fxns->pfn_dev_cntrl) (dw_context,
+@@ -127,12 +125,10 @@ int pwr_pm_pre_scale(u16 voltage_domain, u32 level)
+ 	     hdev_obj != NULL;
+ 	     hdev_obj = (struct dev_object *)drv_get_next_dev_object
+ 	     ((u32) hdev_obj)) {
+-		if (DSP_SUCCEEDED(dev_get_bridge_context(hdev_obj,
++		if (!(dev_get_bridge_context(hdev_obj,
+ 						      (struct bridge_dev_context
+ 						       **)&dw_context))) {
+-			if (DSP_SUCCEEDED
+-			    (dev_get_intf_fxns
+-			     (hdev_obj,
++			if (!(dev_get_intf_fxns(hdev_obj,
+ 			      (struct bridge_drv_interface **)&intf_fxns))) {
+ 				status =
+ 				    (*intf_fxns->pfn_dev_cntrl) (dw_context,
+@@ -163,12 +159,10 @@ int pwr_pm_post_scale(u16 voltage_domain, u32 level)
+ 	     hdev_obj != NULL;
+ 	     hdev_obj = (struct dev_object *)drv_get_next_dev_object
+ 	     ((u32) hdev_obj)) {
+-		if (DSP_SUCCEEDED(dev_get_bridge_context(hdev_obj,
++		if (!(dev_get_bridge_context(hdev_obj,
+ 						      (struct bridge_dev_context
+ 						       **)&dw_context))) {
+-			if (DSP_SUCCEEDED
+-			    (dev_get_intf_fxns
+-			     (hdev_obj,
++			if (!(dev_get_intf_fxns(hdev_obj,
+ 			      (struct bridge_drv_interface **)&intf_fxns))) {
+ 				status =
+ 				    (*intf_fxns->pfn_dev_cntrl) (dw_context,
+diff --git a/drivers/staging/tidspbridge/rmgr/rmm.c b/drivers/staging/tidspbridge/rmgr/rmm.c
+index 6db9ace..633d441 100644
+--- a/drivers/staging/tidspbridge/rmgr/rmm.c
++++ b/drivers/staging/tidspbridge/rmgr/rmm.c
+@@ -139,7 +139,7 @@ int rmm_alloc(struct rmm_target_obj *target, u32 segid, u32 size,
+ 							(struct list_head *)
+ 							sect);
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* No overlap - allocate list element for new section. */
+ 		new_sect = kzalloc(sizeof(struct rmm_ovly_sect), GFP_KERNEL);
+ 		if (new_sect == NULL) {
+@@ -230,7 +230,7 @@ int rmm_create(struct rmm_target_obj **target_obj,
+ 	}
+ func_cont:
+ 	/* Initialize overlay memory list */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		target->ovly_list = kzalloc(sizeof(struct lst_list),
+ 							GFP_KERNEL);
+ 		if (target->ovly_list == NULL)
+@@ -239,7 +239,7 @@ func_cont:
+ 			INIT_LIST_HEAD(&target->ovly_list->head);
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		*target_obj = target;
+ 	} else {
+ 		*target_obj = NULL;
+@@ -248,7 +248,7 @@ func_cont:
+ 
+ 	}
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && *target_obj)
++	DBC_ENSURE((!status && *target_obj)
+ 		   || (DSP_FAILED(status) && *target_obj == NULL));
+ 
+ 	return status;
+diff --git a/drivers/staging/tidspbridge/rmgr/strm.c b/drivers/staging/tidspbridge/rmgr/strm.c
+index 6c184c6..35d6378 100644
+--- a/drivers/staging/tidspbridge/rmgr/strm.c
++++ b/drivers/staging/tidspbridge/rmgr/strm.c
+@@ -172,7 +172,7 @@ int strm_close(struct strm_object *stream_obj,
+ 		status =
+ 		    (*intf_fxns->pfn_chnl_get_info) (stream_obj->chnl_obj,
+ 						     &chnl_info_obj);
+-		DBC_ASSERT(DSP_SUCCEEDED(status));
++		DBC_ASSERT(!status);
+ 
+ 		if (chnl_info_obj.cio_cs > 0 || chnl_info_obj.cio_reqs > 0)
+ 			status = -EPIPE;
+@@ -219,21 +219,21 @@ int strm_create(struct strm_mgr **strm_man,
+ 		strm_mgr_obj->dev_obj = dev_obj;
+ 
+ 	/* Get Channel manager and Bridge function interface */
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		status = dev_get_chnl_mgr(dev_obj, &(strm_mgr_obj->hchnl_mgr));
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			(void)dev_get_intf_fxns(dev_obj,
+ 						&(strm_mgr_obj->intf_fxns));
+ 			DBC_ASSERT(strm_mgr_obj->intf_fxns != NULL);
+ 		}
+ 	}
+ 
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		*strm_man = strm_mgr_obj;
+ 	else
+ 		kfree(strm_mgr_obj);
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && *strm_man) ||
++	DBC_ENSURE((!status && *strm_man) ||
+ 				(DSP_FAILED(status) && *strm_man == NULL));
+ 
+ 	return status;
+@@ -285,7 +285,7 @@ int strm_free_buffer(struct strm_object *stream_obj, u8 ** ap_buffer,
+ 	if (!stream_obj)
+ 		status = -EFAULT;
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		for (i = 0; i < num_bufs; i++) {
+ 			DBC_ASSERT(stream_obj->xlator != NULL);
+ 			status =
+@@ -445,7 +445,7 @@ int strm_issue(struct strm_object *stream_obj, u8 *pbuf, u32 ul_bytes,
+ 				status = -ESRCH;
+ 
+ 		}
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			status = (*intf_fxns->pfn_chnl_add_io_req)
+ 			    (stream_obj->chnl_obj, pbuf, ul_bytes, ul_buf_size,
+ 			     (u32) tmp_buf, dw_arg);
+@@ -492,10 +492,10 @@ int strm_open(struct node_object *hnode, u32 dir, u32 index,
+ 		/* Get the channel id from the node (set in node_connect()) */
+ 		status = node_get_channel_id(hnode, dir, index, &ul_chnl_id);
+ 	}
+-	if (DSP_SUCCEEDED(status))
++	if (!status)
+ 		status = node_get_strm_mgr(hnode, &strm_mgr_obj);
+ 
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		strm_obj = kzalloc(sizeof(struct strm_object), GFP_KERNEL);
+ 		if (strm_obj == NULL) {
+ 			status = -ENOMEM;
+@@ -550,10 +550,10 @@ int strm_open(struct node_object *hnode, u32 dir, u32 index,
+ 	DBC_ASSERT(strm_obj->strm_mode != STRMMODE_LDMA);
+ 	/* Get the shared mem mgr for this streams dev object */
+ 	status = dev_get_cmm_mgr(strm_mgr_obj->dev_obj, &hcmm_mgr);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/*Allocate a SM addr translator for this strm. */
+ 		status = cmm_xlator_create(&strm_obj->xlator, hcmm_mgr, NULL);
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			DBC_ASSERT(strm_obj->segment_id > 0);
+ 			/*  Set translators Virt Addr attributes */
+ 			status = cmm_xlator_info(strm_obj->xlator,
+@@ -563,7 +563,7 @@ int strm_open(struct node_object *hnode, u32 dir, u32 index,
+ 		}
+ 	}
+ func_cont:
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		/* Open channel */
+ 		chnl_mode = (dir == DSP_TONODE) ?
+ 		    CHNL_MODETODSP : CHNL_MODEFROMDSP;
+@@ -594,7 +594,7 @@ func_cont:
+ 			}
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		*strm_objct = strm_obj;
+ 		drv_proc_insert_strm_res_element(*strm_objct, &hstrm_res,
+ 						  pr_ctxt);
+@@ -603,7 +603,7 @@ func_cont:
+ 	}
+ 
+ 	/* ensure we return a documented error code */
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && *strm_objct) ||
++	DBC_ENSURE((!status && *strm_objct) ||
+ 		   (*strm_objct == NULL && (status == -EFAULT ||
+ 					status == -EPERM
+ 					|| status == -EINVAL)));
+@@ -642,7 +642,7 @@ int strm_reclaim(struct strm_object *stream_obj, u8 ** buf_ptr,
+ 	    (*intf_fxns->pfn_chnl_get_ioc) (stream_obj->chnl_obj,
+ 					    stream_obj->utimeout,
+ 					    &chnl_ioc_obj);
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		*nbytes = chnl_ioc_obj.byte_size;
+ 		if (buff_size)
+ 			*buff_size = chnl_ioc_obj.buf_size;
+@@ -659,7 +659,7 @@ int strm_reclaim(struct strm_object *stream_obj, u8 ** buf_ptr,
+ 			}
+ 		}
+ 		/* Translate zerocopy buffer if channel not canceled. */
+-		if (DSP_SUCCEEDED(status)
++		if (!status
+ 		    && (!CHNL_IS_IO_CANCELLED(chnl_ioc_obj))
+ 		    && (stream_obj->strm_mode == STRMMODE_ZEROCOPY)) {
+ 			/*
+@@ -688,7 +688,7 @@ int strm_reclaim(struct strm_object *stream_obj, u8 ** buf_ptr,
+ 	}
+ func_end:
+ 	/* ensure we return a documented return code */
+-	DBC_ENSURE(DSP_SUCCEEDED(status) || status == -EFAULT ||
++	DBC_ENSURE(!status || status == -EFAULT ||
+ 		   status == -ETIME || status == -ESRCH ||
+ 		   status == -EPERM);
+ 
+@@ -723,7 +723,7 @@ int strm_register_notify(struct strm_object *stream_obj, u32 event_mask,
+ 			status = -ENOSYS;
+ 
+ 	}
+-	if (DSP_SUCCEEDED(status)) {
++	if (!status) {
+ 		intf_fxns = stream_obj->strm_mgr_obj->intf_fxns;
+ 
+ 		status =
+@@ -734,7 +734,7 @@ int strm_register_notify(struct strm_object *stream_obj, u32 event_mask,
+ 							    hnotification);
+ 	}
+ 	/* ensure we return a documented return code */
+-	DBC_ENSURE(DSP_SUCCEEDED(status) || status == -EFAULT ||
++	DBC_ENSURE(!status || status == -EFAULT ||
+ 		   status == -ETIME || status == -ESRCH ||
+ 		   status == -ENOSYS || status == -EPERM);
+ 	return status;
+@@ -783,7 +783,7 @@ int strm_select(struct strm_object **strm_tab, u32 strms,
+ 
+ 		}
+ 	}
+-	if (DSP_SUCCEEDED(status) && utimeout > 0 && *pmask == 0) {
++	if (!status && utimeout > 0 && *pmask == 0) {
+ 		/* Non-zero timeout */
+ 		sync_events = kmalloc(strms * sizeof(struct sync_object *),
+ 								GFP_KERNEL);
+@@ -804,11 +804,11 @@ int strm_select(struct strm_object **strm_tab, u32 strms,
+ 
+ 			}
+ 		}
+-		if (DSP_SUCCEEDED(status)) {
++		if (!status) {
+ 			status =
+ 			    sync_wait_on_multiple_events(sync_events, strms,
+ 							 utimeout, &index);
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				/* Since we waited on the event, we have to
+ 				 * reset it */
+ 				sync_set_event(sync_events[index]);
+@@ -819,7 +819,7 @@ int strm_select(struct strm_object **strm_tab, u32 strms,
+ func_end:
+ 	kfree(sync_events);
+ 
+-	DBC_ENSURE((DSP_SUCCEEDED(status) && (*pmask != 0 || utimeout == 0)) ||
++	DBC_ENSURE((!status && (*pmask != 0 || utimeout == 0)) ||
+ 		   (DSP_FAILED(status) && *pmask == 0));
+ 
+ 	return status;
+@@ -843,7 +843,7 @@ static int delete_strm(struct strm_object *stream_obj)
+ 			status = (*intf_fxns->pfn_chnl_close)
+ 					(stream_obj->chnl_obj);
+ 			/* Free all SM address translator resources */
+-			if (DSP_SUCCEEDED(status)) {
++			if (!status) {
+ 				if (stream_obj->xlator) {
+ 					/* force free */
+ 					(void)cmm_xlator_delete(stream_obj->
+-- 
+1.7.0.4
+
