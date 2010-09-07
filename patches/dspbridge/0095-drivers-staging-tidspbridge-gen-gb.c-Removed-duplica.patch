@@ -1,0 +1,26 @@
+From 42cd0f56b72a51afb170929332856c46074badc8 Mon Sep 17 00:00:00 2001
+From: Andrea Gelmini <andrea.gelmini@gelma.net>
+Date: Wed, 11 Aug 2010 21:07:36 +0200
+Subject: [PATCH 095/110] drivers: staging: tidspbridge: gen: gb.c: Removed duplicated #include
+
+Signed-off-by: Andrea Gelmini <andrea.gelmini@gelma.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/gen/gb.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/gen/gb.c b/drivers/staging/tidspbridge/gen/gb.c
+index 06eb3d3..9f59023 100644
+--- a/drivers/staging/tidspbridge/gen/gb.c
++++ b/drivers/staging/tidspbridge/gen/gb.c
+@@ -15,7 +15,6 @@
+  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+  */
+-#include <linux/types.h>
+ 
+ /*  ----------------------------------- DSP/BIOS Bridge */
+ #include <linux/types.h>
+-- 
+1.7.0.4
+

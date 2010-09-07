@@ -1,0 +1,203 @@
+From bd5dc30e3ee68f0aa6c1e282d88740f2d1fa909a Mon Sep 17 00:00:00 2001
+From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+Date: Wed, 25 Aug 2010 17:09:04 -0500
+Subject: [PATCH 106/110] staging: tidspbridge: Remove services.c and services.h
+
+The services_init() and services_exit() functions don't do anything,
+so they are removed, and as these are the only two functions defined
+in services.c and services.h, then these files are also removed.
+
+Signed-off-by: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/Makefile               |    1 -
+ .../tidspbridge/include/dspbridge/services.h       |   50 -----------------
+ drivers/staging/tidspbridge/pmgr/dspapi.c          |    1 -
+ drivers/staging/tidspbridge/rmgr/drv_interface.c   |    4 --
+ drivers/staging/tidspbridge/services/services.c    |   57 --------------------
+ 5 files changed, 0 insertions(+), 113 deletions(-)
+ delete mode 100644 drivers/staging/tidspbridge/include/dspbridge/services.h
+ delete mode 100644 drivers/staging/tidspbridge/services/services.c
+
+diff --git a/drivers/staging/tidspbridge/Makefile b/drivers/staging/tidspbridge/Makefile
+index 8f0ca88..8082d5c 100644
+--- a/drivers/staging/tidspbridge/Makefile
++++ b/drivers/staging/tidspbridge/Makefile
+@@ -1,7 +1,6 @@
+ obj-$(CONFIG_TIDSPBRIDGE)	+= bridgedriver.o
+ 
+ libgen = gen/gb.o gen/gs.o gen/gh.o gen/uuidutil.o
+-libservices = services/services.o
+ libcore = core/chnl_sm.o core/msg_sm.o core/io_sm.o core/tiomap3430.o \
+ 		core/tiomap3430_pwr.o core/tiomap_io.o \
+ 		core/ue_deh.o core/wdt.o core/dsp-clock.o core/sync.o
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/services.h b/drivers/staging/tidspbridge/include/dspbridge/services.h
+deleted file mode 100644
+index eb26c86..0000000
+--- a/drivers/staging/tidspbridge/include/dspbridge/services.h
++++ /dev/null
+@@ -1,50 +0,0 @@
+-/*
+- * services.h
+- *
+- * DSP-BIOS Bridge driver support functions for TI OMAP processors.
+- *
+- * Provide loading and unloading of SERVICES modules.
+- *
+- * Copyright (C) 2005-2006 Texas Instruments, Inc.
+- *
+- * This package is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * THIS PACKAGE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+- */
+-
+-#ifndef SERVICES_
+-#define SERVICES_
+-
+-#include <dspbridge/host_os.h>
+-/*
+- *  ======== services_exit ========
+- *  Purpose:
+- *      Discontinue usage of module; free resources when reference count
+- *      reaches 0.
+- *  Parameters:
+- *  Returns:
+- *  Requires:
+- *      SERVICES initialized.
+- *  Ensures:
+- *      Resources used by module are freed when cRef reaches zero.
+- */
+-extern void services_exit(void);
+-
+-/*
+- *  ======== services_init ========
+- *  Purpose:
+- *      Initializes SERVICES modules.
+- *  Parameters:
+- *  Returns:
+- *      TRUE if all modules initialized; otherwise FALSE.
+- *  Requires:
+- *  Ensures:
+- *      SERVICES modules initialized.
+- */
+-extern bool services_init(void);
+-
+-#endif /* SERVICES_ */
+diff --git a/drivers/staging/tidspbridge/pmgr/dspapi.c b/drivers/staging/tidspbridge/pmgr/dspapi.c
+index 10a1444..b23591b 100644
+--- a/drivers/staging/tidspbridge/pmgr/dspapi.c
++++ b/drivers/staging/tidspbridge/pmgr/dspapi.c
+@@ -29,7 +29,6 @@
+ 
+ /*  ----------------------------------- OS Adaptation Layer */
+ #include <dspbridge/ntfy.h>
+-#include <dspbridge/services.h>
+ 
+ /*  ----------------------------------- Platform Manager */
+ #include <dspbridge/chnl.h>
+diff --git a/drivers/staging/tidspbridge/rmgr/drv_interface.c b/drivers/staging/tidspbridge/rmgr/drv_interface.c
+index ae28b96..4c0b9ee 100644
+--- a/drivers/staging/tidspbridge/rmgr/drv_interface.c
++++ b/drivers/staging/tidspbridge/rmgr/drv_interface.c
+@@ -39,7 +39,6 @@
+ #include <dspbridge/dbc.h>
+ 
+ /*  ----------------------------------- OS Adaptation Layer */
+-#include <dspbridge/services.h>
+ #include <dspbridge/clk.h>
+ #include <dspbridge/sync.h>
+ 
+@@ -270,7 +269,6 @@ static int omap3_bridge_startup(struct platform_device *pdev)
+ #endif
+ 
+ 	dsp_clk_init();
+-	services_init();
+ 
+ 	drv_datap = kzalloc(sizeof(struct drv_data), GFP_KERNEL);
+ 	if (!drv_datap) {
+@@ -327,7 +325,6 @@ err1:
+ 					CPUFREQ_TRANSITION_NOTIFIER);
+ #endif
+ 	dsp_clk_exit();
+-	services_exit();
+ 
+ 	return err;
+ }
+@@ -420,7 +417,6 @@ func_cont:
+ 	mem_ext_phys_pool_release();
+ 
+ 	dsp_clk_exit();
+-	services_exit();
+ 
+ 	devno = MKDEV(driver_major, 0);
+ 	cdev_del(&bridge_cdev);
+diff --git a/drivers/staging/tidspbridge/services/services.c b/drivers/staging/tidspbridge/services/services.c
+deleted file mode 100644
+index 3d0497e..0000000
+--- a/drivers/staging/tidspbridge/services/services.c
++++ /dev/null
+@@ -1,57 +0,0 @@
+-/*
+- * services.c
+- *
+- * DSP-BIOS Bridge driver support functions for TI OMAP processors.
+- *
+- * Provide SERVICES loading.
+- *
+- * Copyright (C) 2005-2006 Texas Instruments, Inc.
+- *
+- * This package is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * THIS PACKAGE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
+- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+- * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+- */
+-
+-#include <linux/types.h>
+-
+-#include <dspbridge/host_os.h>
+-
+-/*  ----------------------------------- DSP/BIOS Bridge */
+-#include <dspbridge/dbdefs.h>
+-
+-/*  ----------------------------------- Trace & Debug */
+-#include <dspbridge/dbc.h>
+-
+-/*  ----------------------------------- OS Adaptation Layer */
+-#include <dspbridge/ntfy.h>
+-#include <dspbridge/sync.h>
+-#include <dspbridge/clk.h>
+-
+-/*  ----------------------------------- This */
+-#include <dspbridge/services.h>
+-
+-/*
+- *  ======== services_exit ========
+- *  Purpose:
+- *      Discontinue usage of module; free resources when reference count
+- *      reaches 0.
+- */
+-void services_exit(void)
+-{
+-}
+-
+-/*
+- *  ======== services_init ========
+- *  Purpose:
+- *      Initializes SERVICES modules.
+- */
+-bool services_init(void)
+-{
+-	bool ret = true;
+-
+-	return ret;
+-}
+-- 
+1.7.0.4
+
