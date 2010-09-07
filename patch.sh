@@ -53,6 +53,7 @@ echo "dss2 patches"
 patch -s -p1 < "${DIR}/patches/dss2/0001-OMAP-DSS2-don-t-power-off-a-panel-twice.patch"
 
 patch -s -p1 < "${DIR}/patches/dss2/OMAP2-OMAPFB-Fix-invalid-bpp-for-PAL-and-NTSC-modes.patch"
+patch -s -p1 < "${DIR}/patches/dss2/Combine-dsi-and-sdi-under-the-same-vdds-supply..patch"
 
 }
 
@@ -132,6 +133,7 @@ patch -s -p1 < "${DIR}/patches/igepv2/0001-ARM-OMAP3-Add-S-Video-output-to-IGEPv
 function touchbook {
 echo "touchbook related patches"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-based-on-schematic-there-is-no-wp.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-u-boot-readwrite.patch"
 }
 
 function dspbridge {
@@ -233,6 +235,25 @@ patch -s -p1 < "${DIR}/patches/dspbridge/0093-staging-ti-dspbridge-use-stream-id
 patch -s -p1 < "${DIR}/patches/dspbridge/0094-staging-ti-dspbridge-avoid-errors-if-stream-id-is-ze.patch"
 
 patch -s -p1 < "${DIR}/patches/dspbridge/0001-OUT-OF-TREE-tidspbridge-move-platform_device_registe.patch"
+
+#2.6.37 - staging-for-next
+patch -s -p1 < "${DIR}/patches/dspbridge/0095-drivers-staging-tidspbridge-gen-gb.c-Removed-duplica.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0096-staging-tidspbridge-Move-sync.c-from-services-to-cor.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0097-staging-tidspbridge-Remove-ntfy.c.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0098-staging-tidspbridge-Remove-cfg_get_auto_start.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0099-staging-tidspbridge-Remove-cfg_init-and-cfg_exit.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0100-staging-tidspbridge-Remove-cfg_get_dev_object-and-do.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0101-staging-tidspbridge-Remove-cfg_get_exec_file.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0102-staging-tidspbridge-Remove-cfg_get_object.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0103-staging-tidspbridge-Remove-cfg_set_dev_object.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0104-staging-tidspbridge-Remove-cfg_set_object.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0105-staging-tidspbridge-Remove-cfg.c-and-cfg.h-files.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0106-staging-tidspbridge-Remove-services.c-and-services.h.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0107-staging-trivial-fix-typos-concerning-address.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0108-staging-trivial-fix-typos-concerning-initiali-zs-e.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0109-staging-tidspbridge-check-return-code-of-kzalloc.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0110-staging-tidspbridge-check-return-code-of-get_user.patch"
+
 }
 
 sakoman

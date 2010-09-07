@@ -1,0 +1,140 @@
+From 315a1a20aa01138c6469fbdab4df097c35344353 Mon Sep 17 00:00:00 2001
+From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+Date: Wed, 25 Aug 2010 17:08:59 -0500
+Subject: [PATCH 101/110] staging: tidspbridge: Remove cfg_get_exec_file()
+
+As the services directory is going to be removed, the cfg_get_exec_file
+function has also to be removed.
+
+This patch also avoids a possible NULL pointer dereference in function
+cfg_get_exec_file(), when drv_datap is checked for NULL and then pass
+drv_datap->base_img as argument to strlen().
+
+Signed-off-by: Ivan Gomez Castellanos <ivan.gomez@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ .../staging/tidspbridge/include/dspbridge/cfg.h    |   22 --------------
+ drivers/staging/tidspbridge/rmgr/proc.c            |   27 ++++++++++++-----
+ drivers/staging/tidspbridge/services/cfg.c         |   31 --------------------
+ 3 files changed, 19 insertions(+), 61 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/include/dspbridge/cfg.h b/drivers/staging/tidspbridge/include/dspbridge/cfg.h
+index 9a259a1..11f5bde 100644
+--- a/drivers/staging/tidspbridge/include/dspbridge/cfg.h
++++ b/drivers/staging/tidspbridge/include/dspbridge/cfg.h
+@@ -41,28 +41,6 @@
+ extern int cfg_get_cd_version(u32 *version);
+ 
+ /*
+- *  ======== cfg_get_exec_file ========
+- *  Purpose:
+- *      Retreive the default executable, if any, for this board.
+- *  Parameters:
+- *      dev_node_obj: Handle to the dev_node who's driver we are querying.
+- *      buf_size:       Size of buffer.
+- *      str_exec_file:  Ptr to character buf to hold ExecFile.
+- *  Returns:
+- *      0:                Success.
+- *      -EFAULT:  dev_node_obj is invalid or str_exec_file is invalid.
+- *      -ENODATA: The resource is not available.
+- *  Requires:
+- *      CFG initialized.
+- *  Ensures:
+- *      0:    Not more than buf_size bytes were copied into str_exec_file,
+- *                  and *str_exec_file contains default executable for this
+- *                  devnode.
+- */
+-extern int cfg_get_exec_file(struct cfg_devnode *dev_node_obj,
+-				    u32 buf_size, char *str_exec_file);
+-
+-/*
+  *  ======== cfg_get_object ========
+  *  Purpose:
+  *      Retrieve the Driver Object handle From the Registry
+diff --git a/drivers/staging/tidspbridge/rmgr/proc.c b/drivers/staging/tidspbridge/rmgr/proc.c
+index 44c26e1..0a7e30b 100644
+--- a/drivers/staging/tidspbridge/rmgr/proc.c
++++ b/drivers/staging/tidspbridge/rmgr/proc.c
+@@ -393,18 +393,29 @@ static int get_exec_file(struct cfg_devnode *dev_node_obj,
+ {
+ 	u8 dev_type;
+ 	s32 len;
++	struct drv_data *drv_datap = dev_get_drvdata(bridge);
+ 
+ 	dev_get_dev_type(hdev_obj, (u8 *) &dev_type);
++
++	if (!exec_file)
++		return -EFAULT;
++
+ 	if (dev_type == DSP_UNIT) {
+-		return cfg_get_exec_file(dev_node_obj, size, exec_file);
+-	} else if (dev_type == IVA_UNIT) {
+-		if (iva_img) {
+-			len = strlen(iva_img);
+-			strncpy(exec_file, iva_img, len + 1);
+-			return 0;
+-		}
++		if (!drv_datap || !drv_datap->base_img)
++			return -EFAULT;
++
++		if (strlen(drv_datap->base_img) > size)
++			return -EINVAL;
++
++		strcpy(exec_file, drv_datap->base_img);
++	} else if (dev_type == IVA_UNIT && iva_img) {
++		len = strlen(iva_img);
++		strncpy(exec_file, iva_img, len + 1);
++	} else {
++		return -ENOENT;
+ 	}
+-	return -ENOENT;
++
++	return 0;
+ }
+ 
+ /*
+diff --git a/drivers/staging/tidspbridge/services/cfg.c b/drivers/staging/tidspbridge/services/cfg.c
+index 587c71a..302eadd 100644
+--- a/drivers/staging/tidspbridge/services/cfg.c
++++ b/drivers/staging/tidspbridge/services/cfg.c
+@@ -31,37 +31,6 @@
+ #include <dspbridge/drv.h>
+ 
+ /*
+- *  ======== cfg_get_exec_file ========
+- *  Purpose:
+- *      Retreive the default executable, if any, for this board.
+- */
+-int cfg_get_exec_file(struct cfg_devnode *dev_node_obj, u32 buf_size,
+-			     char *str_exec_file)
+-{
+-	int status = 0;
+-	struct drv_data *drv_datap = dev_get_drvdata(bridge);
+-
+-	if (!dev_node_obj)
+-		status = -EFAULT;
+-
+-	else if (!str_exec_file || !drv_datap)
+-		status = -EFAULT;
+-
+-	if (strlen(drv_datap->base_img) > buf_size)
+-		status = -EINVAL;
+-
+-	if (!status && drv_datap->base_img)
+-		strcpy(str_exec_file, drv_datap->base_img);
+-
+-	if (status)
+-		pr_err("%s: Failed, status 0x%x\n", __func__, status);
+-	DBC_ENSURE(((status == 0) &&
+-		    (strlen(str_exec_file) <= buf_size))
+-		   || (status != 0));
+-	return status;
+-}
+-
+-/*
+  *  ======== cfg_get_object ========
+  *  Purpose:
+  *      Retrieve the Object handle from the Registry
+-- 
+1.7.0.4
+
