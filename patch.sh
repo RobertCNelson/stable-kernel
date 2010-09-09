@@ -134,6 +134,7 @@ function touchbook {
 echo "touchbook related patches"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-based-on-schematic-there-is-no-wp.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-u-boot-readwrite.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-adis7846-use-mux-init-gpio.patch"
 }
 
 function dspbridge {
