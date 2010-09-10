@@ -1,0 +1,32 @@
+From 49636048df481f21751f36f278fdfdcb982b8551 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Fri, 10 Sep 2010 15:02:42 -0500
+Subject: [PATCH 2/3] ARM OMAP Touchbook move omap3_mux_init beagle like
+
+---
+ arch/arm/mach-omap2/board-omap3touchbook.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-omap3touchbook.c b/arch/arm/mach-omap2/board-omap3touchbook.c
+index aea6596..2f7480f 100644
+--- a/arch/arm/mach-omap2/board-omap3touchbook.c
++++ b/arch/arm/mach-omap2/board-omap3touchbook.c
+@@ -507,7 +507,6 @@ static struct omap_board_mux board_mux[] __initdata = {
+ 
+ static void __init omap3_touchbook_init_irq(void)
+ {
+-	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
+ 	omap2_init_common_hw(mt46h32m32lf6_sdrc_params,
+ 			     mt46h32m32lf6_sdrc_params);
+ 	omap_init_irq();
+@@ -606,6 +605,7 @@ static void __init omap3_touchbook_init(void)
+ {
+ 	pm_power_off = omap3_touchbook_poweroff;
+ 
++	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
+ 	omap3_touchbook_i2c_init();
+ 	platform_add_devices(omap3_touchbook_devices,
+ 			ARRAY_SIZE(omap3_touchbook_devices));
+-- 
+1.7.1
+

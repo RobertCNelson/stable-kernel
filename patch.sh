@@ -132,8 +132,10 @@ patch -s -p1 < "${DIR}/patches/igepv2/0001-ARM-OMAP3-Add-S-Video-output-to-IGEPv
 
 function touchbook {
 echo "touchbook related patches"
+patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-DSS2-support.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0002-ARM-OMAP-Touchbook-move-omap3_mux_init-beagle-like.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0003-ARM-OMAP-Touchbook-DSS2-support-fix-supplies.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-based-on-schematic-there-is-no-wp.patch"
-patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-u-boot-readwrite.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-adis7846-use-mux-init-gpio.patch"
 }
 
