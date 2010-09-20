@@ -1,17 +1,17 @@
-From 3d1d5a1770417599bb70ec29793b2dc71fe87dac Mon Sep 17 00:00:00 2001
+From 6240d9bd2fc1fd33b52cdb3d78c5ad9032eff088 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Fri, 10 Sep 2010 15:04:41 -0500
-Subject: [PATCH 3/3] ARM OMAP Touchbook DSS2 support fix supplies
+Subject: [PATCH 03/22] ARM OMAP Touchbook DSS2 support fix supplies
 
 ---
  arch/arm/mach-omap2/board-omap3touchbook.c |    5 ++---
  1 files changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-omap3touchbook.c b/arch/arm/mach-omap2/board-omap3touchbook.c
-index 2f7480f..5202b06 100644
+index ce9ddb2..7c5863b 100644
 --- a/arch/arm/mach-omap2/board-omap3touchbook.c
 +++ b/arch/arm/mach-omap2/board-omap3touchbook.c
-@@ -328,7 +328,6 @@ static struct regulator_init_data touchbook_vdac = {
+@@ -311,7 +311,6 @@ static struct regulator_init_data touchbook_vdac = {
  /* VPLL2 for digital video outputs */
  static struct regulator_init_data touchbook_vpll2 = {
  	.constraints = {
@@ -19,7 +19,7 @@ index 2f7480f..5202b06 100644
  		.min_uV			= 1800000,
  		.max_uV			= 1800000,
  		.valid_modes_mask	= REGULATOR_MODE_NORMAL
-@@ -336,8 +335,8 @@ static struct regulator_init_data touchbook_vpll2 = {
+@@ -319,8 +318,8 @@ static struct regulator_init_data touchbook_vpll2 = {
  		.valid_ops_mask		= REGULATOR_CHANGE_MODE
  					| REGULATOR_CHANGE_STATUS,
  	},

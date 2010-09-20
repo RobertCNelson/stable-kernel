@@ -1,17 +1,17 @@
-From 83d0a86461e960a0123183de8644d6e050435fd8 Mon Sep 17 00:00:00 2001
+From 9aadeac6bb05a8bc41474d8441376f57554dff0e Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Sat, 21 Aug 2010 11:45:20 -0500
-Subject: [PATCH] ARM OMAP Touchbook based on schematic there is no wp pin
+Subject: [PATCH 04/22] ARM OMAP Touchbook based on schematic there is no wp pin
 
 ---
  arch/arm/mach-omap2/board-omap3touchbook.c |    8 +-------
  1 files changed, 1 insertions(+), 7 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-omap3touchbook.c b/arch/arm/mach-omap2/board-omap3touchbook.c
-index 663c62d..5b207a6 100644
+index 7c5863b..098a3b0 100644
 --- a/arch/arm/mach-omap2/board-omap3touchbook.c
 +++ b/arch/arm/mach-omap2/board-omap3touchbook.c
-@@ -109,7 +109,7 @@ static struct omap2_hsmmc_info mmc[] = {
+@@ -204,7 +204,7 @@ static struct omap2_hsmmc_info mmc[] = {
  	{
  		.mmc		= 1,
  		.wires		= 8,
@@ -20,7 +20,7 @@ index 663c62d..5b207a6 100644
  	},
  	{}	/* Terminator */
  };
-@@ -136,12 +136,6 @@ static struct gpio_led gpio_leds[];
+@@ -222,12 +222,6 @@ static struct gpio_led gpio_leds[];
  static int touchbook_twl_gpio_setup(struct device *dev,
  		unsigned gpio, unsigned ngpio)
  {
@@ -34,5 +34,5 @@ index 663c62d..5b207a6 100644
  	mmc[0].gpio_cd = gpio + 0;
  	omap2_hsmmc_init(mmc);
 -- 
-1.7.0.4
+1.7.1
 

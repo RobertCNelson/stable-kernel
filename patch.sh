@@ -135,8 +135,45 @@ echo "touchbook related patches"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-DSS2-support.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0002-ARM-OMAP-Touchbook-move-omap3_mux_init-beagle-like.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0003-ARM-OMAP-Touchbook-DSS2-support-fix-supplies.patch"
-patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-based-on-schematic-there-is-no-wp.patch"
-patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-adis7846-use-mux-init-gpio.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0004-ARM-OMAP-Touchbook-based-on-schematic-there-is-no-wp.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0005-ARM-OMAP-Touchbook-adis7846-use-mux-init-gpio.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0006-ARM-OMAP-Touchbook-upstream-sync-remove-NAND_BLOCK_S.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0007-ARM-OMAP-Touchbook-upstream-sync-formatting.patch"
+
+patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-2.6.35-omap3touchbook-to-touchboo.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0008-ARM-OMAP-Touchbook-upstream-omap3touchbook-to-touchb.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0009-ARM-OMAP-Touchbook-upstream-mmc-to-touchbook_mmc.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0010-ARM-OMAP-Touchbook-upstream-add-madc.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0011-ARM-OMAP-Touchbook-upstream-use-super_init.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0012-ARM-OMAP-Touchbook-upstream-omap3_ads_init-to-touchb.patch"
+
+patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-touchbook-2.6.35-rename-touchbook_irq.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0013-ARM-OMAP-Touchbook-upstream-rename-touchbook_irq.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0014-ARM-OMAP-Touchbook-upstream-rename-i2c_init.patch"
+patch -s -p1 < "${DIR}/patches/touchbook/0015-ARM-OMAP-Touchbook-upstream-rename-both-i2c-boardinf.patch"
+
+##patch -s -p1 < "${DIR}/patches/touchbook/touchscreen-chacha.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0016-ARM-OMAP-Touchbook-upstream-Chacha-Tablet-driver.patch"
+
+##patch -s -p1 < "${DIR}/patches/touchbook/battery2-bq27x00-charging-management.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0017-ARM-OMAP-Touchbook-upstream-add-bq27x00-battery-driv.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0018-ARM-OMAP-Touchbook-upstream-add-Chacha-Tablet.patch"
+
+#patch -s -p1 < "${DIR}/patches/touchbook/0019-MMA7455L-driver.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0020-ARM-OMAP-Touchbook-upstream-add-move-touchbook_init_.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0021-ARM-OMAP-Touchbook-upstream-add-moving-touchscreen-i.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0022-ARM-OMAP-Touchbook-upstream-add-accelerometer.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0001-chacha-tablet-kzalloc-fix.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0001-chacha-tablet-fix-id.patch"
+
+#patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-upstream-match-leds-keys-gpio.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0002-ARM-OMAP-Touchbook-upstream-board_mux.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0003-ARM-OMAP-Touchbook-upstream-revision-and-musb.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0004-ARM-OMAP-Touchbook-upstream-power-off.patch"
+#patch -s -p1 < "${DIR}/patches/touchbook/0005-ARM-OMAP-Touchbook-upstream-echi.patch"
+
+##patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-upstream-power-supply.patch"
+##patch -s -p1 < "${DIR}/patches/touchbook/0002-ARM-OMAP-Touchbook-upstream-backlight.patch"
 }
 
 function dspbridge {
