@@ -21,9 +21,15 @@ if [ "$PLATFORM" == "x86_64" ]; then
   fi
 fi
 
-SGX_VERSION=3_01_00_07
+#SGX_VERSION=3_01_00_06
+#SGX_VERSION=3_01_00_07
+#SGX_BIN_NAME="OMAP35x_Graphics_SDK_setuplinux"
 
-SGX_BIN=OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}.bin
+SGX_VERSION=4_00_00_01
+SGX_BIN_NAME="Graphics_SDK_setuplinux"
+
+SGX_BIN=${SGX_BIN_NAME}_${SGX_VERSION}.bin
+
 
 sudo rm -rfd ${DIR}/SDK/ || true
 mkdir -p ${DIR}/SDK/
@@ -32,7 +38,7 @@ mkdir -p ${DIR}/SDK_BIN/
 function sgx_setup {
 if [ -e ${DIR}/${SGX_BIN} ]; then
   echo "${SGX_BIN} found"
-  if [ -e  ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/Makefile ]; then
+  if [ -e  ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/Makefile ]; then
     echo "Extracted ${SGX_BIN} found"
     echo ""
   else
@@ -41,13 +47,13 @@ if [ -e ${DIR}/${SGX_BIN} ]; then
     sudo chmod +x ${DIR}/${SGX_BIN}
     echo "running ${SGX_BIN}"
     echo ""
-    ${DIR}/${SGX_BIN} --mode console --prefix ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION} <<setupSDK
+    ${DIR}/${SGX_BIN} --mode console --prefix ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION} <<setupSDK
 Y
 setupSDK
     cd ${DIR}
   fi
 else
-	wget -c --directory-prefix=${DIR} --no-check-certificate http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/${SGX_VERSION}//exports/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}.bin
+	wget -c --directory-prefix=${DIR} --no-check-certificate http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/${SGX_VERSION}//exports/${SGX_BIN_NAME}_${SGX_VERSION}.bin
 
 	if [ -e ${DIR}/${SGX_BIN} ]; then
 	  echo "${SGX_BIN} found"
@@ -225,14 +231,14 @@ function copy_sgx_system_files {
 
 	mkdir -p ${DIR}/SDK/libs/opt/
 
-	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/lib* ${DIR}/SDK/libs/usr/lib/ES2.0
-	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es2.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES2.0
+	sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/lib* ${DIR}/SDK/libs/usr/lib/ES2.0
+	sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES2.0
 
-	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/lib* ${DIR}/SDK/libs/usr/lib/ES3.0
-	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es3.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES3.0
+	sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/lib* ${DIR}/SDK/libs/usr/lib/ES3.0
+	sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES3.0
 
-	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es5.x/lib* ${DIR}/SDK/libs/usr/lib/ES5.0
-	sudo cp ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/gfx_rel_es5.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES5.0
+	sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/lib* ${DIR}/SDK/libs/usr/lib/ES5.0
+	sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/p[dv]* ${DIR}/SDK/libs/usr/bin/ES5.0
 
 file-pvr-startup
 
@@ -258,7 +264,7 @@ file-run-SGX
 function tar_up_examples {
 	cd ${DIR}
 	mkdir -p ${DIR}/SDK/
-	cp -r ${DIR}/SDK_BIN/OMAP35x_Graphics_SDK_setuplinux_${SGX_VERSION}/GFX_Linux_SDK ${DIR}/SDK/
+	cp -r ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/GFX_Linux_SDK ${DIR}/SDK/
 	echo ""
 	echo "taring SDK example files for use on the OMAP board"
 
