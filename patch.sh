@@ -181,6 +181,21 @@ patch -s -p1 < "${DIR}/patches/touchbook/0015-ARM-OMAP-Touchbook-upstream-rename
 ##patch -s -p1 < "${DIR}/patches/touchbook/0002-ARM-OMAP-Touchbook-upstream-backlight.patch"
 }
 
+function devkit8000 {
+echo "devkit8000 from 2.6.36"
+patch -s -p1 < "${DIR}/patches/devkit8000/0001-OMAP2-Devkit8000-Cleanup-for-power-supplies.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0002-OMAP2-Devkit8000-change-panel-to-generic-panel.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0003-OMAP2-Devkit8000-Enable-DVI-D-output.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0004-OMAP2-Devkit8000-Setup-LCD-reset.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0005-OMAP2-Devkit8000-Remove-unneeded-VDVI-supply.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0006-OMAP2-Devkit8000-Remove-non-existing-vsim-supply.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0007-OMAP2-Devkit8000-Remove-en-disable-for-tv-panel.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0008-OMAP2-Devkit8000-Using-the-REGULATOR_SUPPLY-macro.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0009-OMAP2-Devkit8000-Using-gpio_is_valid-macro.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0010-OMAP2-Devkit8000-Remove-unused-omap_board_config.patch"
+patch -s -p1 < "${DIR}/patches/devkit8000/0011-OMAP2-Devkit8000-Fix-regulator-for-power-supply.patch"
+}
+
 function dspbridge {
 echo "dspbridge from staging"
 patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-ti-dspbridge-add-driver-documentation.patch"
@@ -312,6 +327,7 @@ sgx
 panda
 igepv2
 touchbook
+devkit8000
 dspbridge
 
 echo "patch.sh ran successful"

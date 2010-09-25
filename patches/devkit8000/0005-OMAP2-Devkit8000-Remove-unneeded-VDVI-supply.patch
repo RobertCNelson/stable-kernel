@@ -1,0 +1,40 @@
+From a7707a335acc58e307e6c4f1d5c596765199cda2 Mon Sep 17 00:00:00 2001
+From: Thomas Weber <weber@corscience.de>
+Date: Mon, 5 Jul 2010 17:04:41 +0300
+Subject: [PATCH 05/11] OMAP2: Devkit8000: Remove unneeded VDVI supply
+
+The VDVI power supply is no longer needed in
+board code with the new DSS2 interface.
+
+Signed-off-by: Thomas Weber <weber@corscience.de>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-devkit8000.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index a86d001..83f28ae 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -314,10 +314,6 @@ static struct twl4030_gpio_platform_data devkit8000_gpio_data = {
+ 
+ static struct regulator_consumer_supply devkit8000_vpll1_supplies[] = {
+ 	{
+-	.supply		= "vdvi",
+-	.dev		= &devkit8000_lcd_device.dev,
+-	},
+-	{
+ 	.supply		= "vdds_dsi",
+ 	.dev		= &devkit8000_dss_device.dev,
+ 	}
+@@ -370,7 +366,6 @@ static struct regulator_init_data devkit8000_vdac = {
+ /* VPLL1 for digital video outputs */
+ static struct regulator_init_data devkit8000_vpll1 = {
+ 	.constraints = {
+-		.name			= "VDVI",
+ 		.min_uV			= 1800000,
+ 		.max_uV			= 1800000,
+ 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
+-- 
+1.7.1
+

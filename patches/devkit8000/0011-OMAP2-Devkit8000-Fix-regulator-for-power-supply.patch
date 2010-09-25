@@ -1,0 +1,31 @@
+From 0cbe70eeaad7141a7f932cbbfab6857a25f6d20a Mon Sep 17 00:00:00 2001
+From: Thomas Weber <weber@corscience.de>
+Date: Mon, 5 Jul 2010 17:04:42 +0300
+Subject: [PATCH 11/11] OMAP2: Devkit8000: Fix regulator for power supply
+
+Devkit8000 uses the TPS65930 and not the TWL4030.
+The TPS65930 uses only a subset of the power supplies
+of the TWL4030.
+
+Signed-off-by: Thomas Weber <weber@corscience.de>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-devkit8000.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index 4ad57d2..ca4d521 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -380,7 +380,7 @@ static struct twl4030_platform_data devkit8000_twldata = {
+ 
+ static struct i2c_board_info __initdata devkit8000_i2c_boardinfo[] = {
+ 	{
+-		I2C_BOARD_INFO("twl4030", 0x48),
++		I2C_BOARD_INFO("tps65930", 0x48),
+ 		.flags = I2C_CLIENT_WAKE,
+ 		.irq = INT_34XX_SYS_NIRQ,
+ 		.platform_data = &devkit8000_twldata,
+-- 
+1.7.1
+
