@@ -133,6 +133,14 @@ patch -s -p1 < "${DIR}/patches/panda/0001-omap4-Add-OMAP4-Panda-Support.patch"
 function igepv2 {
 echo "igepv2 board related patches"
 patch -s -p1 < "${DIR}/patches/igepv2/0001-ARM-OMAP3-Add-S-Video-output-to-IGEPv2-board.patch"
+
+# posted for 2.6.37 merge
+patch -s -p1 < "${DIR}/patches/igepv2/0001-omap3-Add-GPIO-s-for-external-VBUS-power-switch-and-.patch"
+patch -s -p1 < "${DIR}/patches/igepv2/0002-omap3-fix-and-improve-the-LED-handling-on-IGEP-v2-bo.patch"
+patch -s -p1 < "${DIR}/patches/igepv2/0003-omap3-Introduce-function-to-detect-the-IGEP-v2-hardw.patch"
+patch -s -p1 < "${DIR}/patches/igepv2/0004-omap3-Fix-handling-some-GPIO-s-for-WLAN-BT-combo-on-.patch"
+patch -s -p1 < "${DIR}/patches/igepv2/0005-omap3-Add-i2c-eeprom-driver-to-read-EDID-on-IGEP-v2.patch"
+patch -s -p1 < "${DIR}/patches/igepv2/0006-omap3-Remove-VMMC2-regulator-on-IGEP-v2-because-it-s.patch"
 }
 
 function touchbook {
