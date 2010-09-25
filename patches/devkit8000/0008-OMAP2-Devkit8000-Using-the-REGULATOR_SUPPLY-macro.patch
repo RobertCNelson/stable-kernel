@@ -1,0 +1,90 @@
+From 1f489f9eac1979ac1d1c862b55d73b9259a6cdf9 Mon Sep 17 00:00:00 2001
+From: Thomas Weber <weber@corscience.de>
+Date: Mon, 5 Jul 2010 17:04:41 +0300
+Subject: [PATCH 08/11] OMAP2: Devkit8000: Using the REGULATOR_SUPPLY macro
+
+Replacing supplies with the REGULATOR_SUPPLY macro.
+
+Signed-off-by: Thomas Weber <weber@corscience.de>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/board-devkit8000.c |   33 ++++++++++++-------------------
+ 1 files changed, 13 insertions(+), 20 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index 13ce242..c461e96 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -158,14 +158,13 @@ static void devkit8000_panel_disable_dvi(struct omap_dss_device *dssdev)
+ 		gpio_set_value(dssdev->reset_gpio, 0);
+ }
+ 
+-static struct regulator_consumer_supply devkit8000_vmmc1_supply = {
+-	.supply			= "vmmc",
+-};
++static struct regulator_consumer_supply devkit8000_vmmc1_supply =
++	REGULATOR_SUPPLY("vmmc", "mmci-omap-hs.0");
++
+ 
+ /* ads7846 on SPI */
+-static struct regulator_consumer_supply devkit8000_vio_supplies[] = {
+-	REGULATOR_SUPPLY("vcc", "spi2.0")
+-};
++static struct regulator_consumer_supply devkit8000_vio_supply =
++	REGULATOR_SUPPLY("vcc", "spi2.0");
+ 
+ static struct omap_dss_device devkit8000_lcd_device = {
+ 	.name                   = "lcd",
+@@ -214,10 +213,8 @@ static struct platform_device devkit8000_dss_device = {
+ 	},
+ };
+ 
+-static struct regulator_consumer_supply devkit8000_vdda_dac_supply = {
+-	.supply = "vdda_dac",
+-	.dev	= &devkit8000_dss_device.dev,
+-};
++static struct regulator_consumer_supply devkit8000_vdda_dac_supply =
++	REGULATOR_SUPPLY("vdda_dac", "omapdss");
+ 
+ static int board_keymap[] = {
+ 	KEY(0, 0, KEY_1),
+@@ -294,12 +291,8 @@ static struct twl4030_gpio_platform_data devkit8000_gpio_data = {
+ 	.setup		= devkit8000_twl_gpio_setup,
+ };
+ 
+-static struct regulator_consumer_supply devkit8000_vpll1_supplies[] = {
+-	{
+-	.supply		= "vdds_dsi",
+-	.dev		= &devkit8000_dss_device.dev,
+-	}
+-};
++static struct regulator_consumer_supply devkit8000_vpll1_supply =
++	REGULATOR_SUPPLY("vdds_dsi", "omapdss");
+ 
+ /* VMMC1 for MMC1 pins CMD, CLK, DAT0..DAT3 (20 mA, plus card == max 220 mA) */
+ static struct regulator_init_data devkit8000_vmmc1 = {
+@@ -340,8 +333,8 @@ static struct regulator_init_data devkit8000_vpll1 = {
+ 		.valid_ops_mask		= REGULATOR_CHANGE_MODE
+ 					| REGULATOR_CHANGE_STATUS,
+ 	},
+-	.num_consumer_supplies	= ARRAY_SIZE(devkit8000_vpll1_supplies),
+-	.consumer_supplies	= devkit8000_vpll1_supplies,
++	.num_consumer_supplies	= 1,
++	.consumer_supplies	= &devkit8000_vpll1_supply,
+ };
+ 
+ /* VAUX4 for ads7846 and nubs */
+@@ -355,8 +348,8 @@ static struct regulator_init_data devkit8000_vio = {
+ 		.valid_ops_mask         = REGULATOR_CHANGE_MODE
+ 			| REGULATOR_CHANGE_STATUS,
+ 	},
+-	.num_consumer_supplies  = ARRAY_SIZE(devkit8000_vio_supplies),
+-	.consumer_supplies      = devkit8000_vio_supplies,
++	.num_consumer_supplies  = 1,
++	.consumer_supplies      = &devkit8000_vio_supply,
+ };
+ 
+ static struct twl4030_usb_data devkit8000_usb_data = {
+-- 
+1.7.1
+
