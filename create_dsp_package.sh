@@ -15,7 +15,7 @@ BIOS=bios_setuplinux_${BIOS_VER}.bin
 BIOS_DIR=bios_${BIOS_VER}
 BIOS_FILE=DSP_BIOS_${BIOS_FILE_VER}_Components
 
-CGVERSION=7.0.3
+CGVERSION=7.0.4
 CGTOOLS_BIN=ti_cgt_c6000_${CGVERSION}_setup_linux_x86.bin
 
 TI_DSP_BIN=3.09
