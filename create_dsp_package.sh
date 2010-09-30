@@ -18,7 +18,10 @@ BIOS_FILE=DSP_BIOS_${BIOS_FILE_VER}_Components
 CGVERSION=7.0.4
 CGTOOLS_BIN=ti_cgt_c6000_${CGVERSION}_setup_linux_x86.bin
 
-TI_DSP_BIN=3.09
+TI_DSP_BIN=DSPbinaries-3.09
+TI_DSP_DIR=285/3260
+#TI_DSP_BIN=TI_DSPbinaries_RLS23.i3.8-3.12
+#TI_DSP_DIR=352/3680
 
 DL_DIR=${DIR}/dl
 
@@ -173,22 +176,22 @@ cd ${DIR}
 
 function ti_DSP_binaries {
 
-if [ -e ${DIR}/dl/DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install ]; then
+if [ -e ${DIR}/dl/${TI_DSP_BIN}-Linux-x86-Install ]; then
   echo "DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install found..."
   if [ -e  ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/Binaries/baseimage.dof ]; then
-    echo "Installed DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install found..."
+    echo "Installed ${TI_DSP_BIN}-Linux-x86-Install found..."
   else
     cd ${DIR}/dl/
-    echo "Setting permissions DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install needs to be executable..."
-    sudo chmod +x ${DIR}/dl/DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install
-    ${DIR}/dl/DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install --mode console --prefix ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/ <<setupDSP
+    echo "Setting permissions ${TI_DSP_BIN}-Linux-x86-Install needs to be executable..."
+    sudo chmod +x ${DIR}/dl/${TI_DSP_BIN}-Linux-x86-Install
+    ${DIR}/dl/${TI_DSP_BIN}-Linux-x86-Install --mode console --prefix ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/ <<setupDSP
 Y
 setupDSP
 
     cd ${DIR}
   fi
 else
-  wget -c --directory-prefix=${DL_DIR} --no-check-certificate https://gforge.ti.com/gf/download/frsrelease/285/3260/DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install
+  wget -c --directory-prefix=${DL_DIR} --no-check-certificate https://gforge.ti.com/gf/download/frsrelease/${TI_DSP_DIR}/${TI_DSP_BIN}-Linux-x86-Install
   ti_DSP_binaries
 fi
 
@@ -201,8 +204,6 @@ cat > ${DIR}/DSP/opt/dsp <<dspscript
 
 case "\$1" in
 	start)
-#		modprobe dspbridge
-#		modprobe bridgedriver
 		modprobe bridgedriver base_img=/lib/dsp/baseimage.dof
 		;;
 esac
