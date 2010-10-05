@@ -1,7 +1,7 @@
 From 3448c5481cc4ae8bf19fae5002f0c4e43007da40 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:40:49 -0500
-Subject: [PATCH 70/94] staging:ti dspbridge: remove unnecessary check for NULL pointer in cmm.c
+Subject: [PATCH 070/116] staging:ti dspbridge: remove unnecessary check for NULL pointer in cmm.c
 
 Remove unnecessary check for NULL pointer in cmm.c.
 
@@ -35,5 +35,5 @@ index 8e808d9..874ed64 100644
  
  /*
 -- 
-1.7.0.4
+1.7.1
 

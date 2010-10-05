@@ -1,7 +1,7 @@
 From c8c1ad8ce317c1e213db47f094d6eee8dec7d280 Mon Sep 17 00:00:00 2001
 From: Rene Sapiens <rene.sapiens@ti.com>
 Date: Fri, 9 Jul 2010 21:24:09 -0500
-Subject: [PATCH 47/94] staging: ti dspbridge: make variables in prototypes match within functions definitions
+Subject: [PATCH 047/116] staging: ti dspbridge: make variables in prototypes match within functions definitions
 
 This patch renames the variables in the parameter lists and in the function
 definitions to make them match.
@@ -1307,5 +1307,5 @@ index ac23b09..86c8da4 100644
  	return status;
  }
 -- 
-1.7.0.4
+1.7.1
 

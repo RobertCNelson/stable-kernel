@@ -1,7 +1,7 @@
 From 8df327c3904d34527b89d4881bd3ce2966f0e07f Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 16:04:54 -0500
-Subject: [PATCH 91/94] staging: ti dspbridge: avoid errors if node handle is zero
+Subject: [PATCH 091/116] staging: ti dspbridge: avoid errors if node handle is zero
 
 As 'zero' can be a perfectly good id, it can be picked up as
 a NULL from userspace, avoid issues in API and user apps if node
@@ -45,5 +45,5 @@ index 6eda7c5..f46aaf6 100644
  		if (status) {
  			status = -EFAULT;
 -- 
-1.7.0.4
+1.7.1
 

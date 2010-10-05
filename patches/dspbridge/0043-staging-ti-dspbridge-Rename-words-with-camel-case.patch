@@ -1,7 +1,7 @@
 From 318b5df99bbbe58eb9f80105d9534117ac2f25ce Mon Sep 17 00:00:00 2001
 From: Rene Sapiens <rene.sapiens@ti.com>
 Date: Fri, 9 Jul 2010 21:24:05 -0500
-Subject: [PATCH 43/94] staging: ti dspbridge: Rename words with camel case
+Subject: [PATCH 043/116] staging: ti dspbridge: Rename words with camel case
 
 The intention of this patch is to rename the remaining variables with camel
 case. Variables will be renamed avoiding camel case and Hungarian notation.
@@ -887,5 +887,5 @@ index 91a5d8c..cdae2c8 100644
  	return status;
  }
 -- 
-1.7.0.4
+1.7.1
 

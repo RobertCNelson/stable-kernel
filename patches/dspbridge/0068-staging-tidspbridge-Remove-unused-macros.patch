@@ -1,7 +1,7 @@
 From 14de72b0aa56e20f24f9ecc1a449da1ed4fd5cda Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Thu, 22 Jul 2010 20:25:34 -0500
-Subject: [PATCH 68/94] staging: tidspbridge: Remove unused macros
+Subject: [PATCH 068/116] staging: tidspbridge: Remove unused macros
 
 This patch removes a couple of macros that are not
 being used
@@ -174,5 +174,5 @@ index 33d2872..23b44cf 100644
       *  These names may be embedded in overlay sections to identify which
       *  node phase the section should be overlayed.
 -- 
-1.7.0.4
+1.7.1
 

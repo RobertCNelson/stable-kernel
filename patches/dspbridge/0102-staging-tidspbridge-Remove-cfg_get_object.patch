@@ -1,7 +1,7 @@
 From 73b87a916697999bfafd4c43956ba98a2905ecfe Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:09:00 -0500
-Subject: [PATCH 102/110] staging: tidspbridge: Remove cfg_get_object()
+Subject: [PATCH 102/116] staging: tidspbridge: Remove cfg_get_object()
 
 As the services directory is going to be removed, the cfg_get_object
 function has also to be removed.
@@ -420,5 +420,5 @@ index 302eadd..94d8ebe 100644
   *  Purpose:
   *      Store the Device Object handle and dev_node pointer for a given devnode.
 -- 
-1.7.0.4
+1.7.1
 

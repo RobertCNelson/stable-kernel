@@ -1,7 +1,7 @@
 From 9d7d0a526193359b5289d933768e7465d9bbd91e Mon Sep 17 00:00:00 2001
 From: Menon, Nishanth <nm@ti.com>
 Date: Thu, 22 Jul 2010 16:03:47 -0500
-Subject: [PATCH 56/94] staging: tidspbridge: remove IN modifier
+Subject: [PATCH 056/116] staging: tidspbridge: remove IN modifier
 
 IN modifier does not exist. remove it
 
@@ -1970,5 +1970,5 @@ index 2a04003..a439053 100644
  {
  	u32 index;
 -- 
-1.7.0.4
+1.7.1
 

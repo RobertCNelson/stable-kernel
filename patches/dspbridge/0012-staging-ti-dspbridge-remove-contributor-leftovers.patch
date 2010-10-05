@@ -1,7 +1,7 @@
 From 0bd35016dd8c4e751ea208f5e813456a85070c56 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:31:47 +0300
-Subject: [PATCH 12/94] staging: ti dspbridge: remove contributor leftovers
+Subject: [PATCH 012/116] staging: ti dspbridge: remove contributor leftovers
 
 The old history (before git) had these two character ids that never
 stood any chance to identify anybody.
@@ -61,5 +61,5 @@ index b40e7a6..86f5787 100644
 -	vp
 -	ww
 -- 
-1.7.0.4
+1.7.1
 

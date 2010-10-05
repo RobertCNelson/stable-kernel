@@ -1,7 +1,7 @@
 From e6bf74f06f5178fcccb66acf51d1f6ebc4e6c5d0 Mon Sep 17 00:00:00 2001
 From: Menon, Nishanth <nm@ti.com>
 Date: Thu, 22 Jul 2010 16:03:49 -0500
-Subject: [PATCH 58/94] staging: tidspbridge: remove OUT define
+Subject: [PATCH 058/116] staging: tidspbridge: remove OUT define
 
 Remove OUT modifier which makes no sense for linux kernel
 
@@ -2193,5 +2193,5 @@ index f7e5e7f..4ab3cd7 100644
  	int status = -EINVAL;
  	struct drv_data *drv_datap = dev_get_drvdata(bridge);
 -- 
-1.7.0.4
+1.7.1
 

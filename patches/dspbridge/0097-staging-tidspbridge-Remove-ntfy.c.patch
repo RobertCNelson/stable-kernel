@@ -1,7 +1,7 @@
 From 27e7f23f64090ad2738e791d3693ef6e70c20327 Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:08:55 -0500
-Subject: [PATCH 097/110] staging: tidspbridge: Remove ntfy.c
+Subject: [PATCH 097/116] staging: tidspbridge: Remove ntfy.c
 
 As the services directory is going to be removed, this patch is needed.
 
@@ -101,5 +101,5 @@ index a2ea698..0000000
 -}
 -
 -- 
-1.7.0.4
+1.7.1
 

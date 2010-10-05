@@ -1,7 +1,7 @@
 From 345c8bec42d7c55f98167da596ea5ca5f53d9f7d Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:08:57 -0500
-Subject: [PATCH 099/110] staging: tidspbridge: Remove cfg_init() and cfg_exit()
+Subject: [PATCH 099/116] staging: tidspbridge: Remove cfg_init() and cfg_exit()
 
 The functions cfg_init() and cfg_exit() do nothing, so they are removed.
 
@@ -126,5 +126,5 @@ index 6a7dd6f..47bac21 100644
  	return ret;
  }
 -- 
-1.7.0.4
+1.7.1
 

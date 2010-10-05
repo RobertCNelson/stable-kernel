@@ -1,7 +1,7 @@
 From 4ec09714a0a5861c3e786967024ddfff00b0add6 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 16:04:56 -0500
-Subject: [PATCH 93/94] staging: ti dspbridge: use stream id instead of kernel address
+Subject: [PATCH 093/116] staging: ti dspbridge: use stream id instead of kernel address
 
 Send stream ids to the user instead of handles, then when
 the id is coming from user dspbridge can retrive the handle
@@ -765,5 +765,5 @@ index df8458e..ef2ec94 100644
  }
  
 -- 
-1.7.0.4
+1.7.1
 

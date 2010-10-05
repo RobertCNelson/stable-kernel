@@ -1,7 +1,7 @@
 From b6871448bf070c61e1d9c60ad2722387279d8269 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:35 +0300
-Subject: [PATCH 21/94] staging: ti dspbridge: deh: remove err_info
+Subject: [PATCH 021/116] staging: ti dspbridge: deh: remove err_info
 
 We only use it to pass the MMU fault address.
 
@@ -170,5 +170,5 @@ index aba8a86..9462a96 100644
  
  /*
 -- 
-1.7.0.4
+1.7.1
 

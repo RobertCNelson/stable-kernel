@@ -1,7 +1,7 @@
 From a47d4deebf3ecf6c092a9c510af7ccbaedc1610a Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:09:01 -0500
-Subject: [PATCH 103/110] staging: tidspbridge: Remove cfg_set_dev_object()
+Subject: [PATCH 103/116] staging: tidspbridge: Remove cfg_set_dev_object()
 
 As the services directory is going to be removed, the cfg_set_dev_object
 function has also to be removed.
@@ -138,5 +138,5 @@ index 94d8ebe..5517201 100644
   *  Purpose:
   *      Store the Driver Object handle
 -- 
-1.7.0.4
+1.7.1
 

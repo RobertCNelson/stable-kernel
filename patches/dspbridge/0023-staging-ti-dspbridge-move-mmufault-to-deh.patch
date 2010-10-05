@@ -1,7 +1,7 @@
 From 1961c9ccd5a570a8e1bfa935284349490ecafee5 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:37 +0300
-Subject: [PATCH 23/94] staging: ti dspbridge: move mmufault to deh
+Subject: [PATCH 023/116] staging: ti dspbridge: move mmufault to deh
 
 Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -239,5 +239,5 @@ index 904b837..26aec91 100644
  		struct dev_object *hdev_obj)
  {
 -- 
-1.7.0.4
+1.7.1
 

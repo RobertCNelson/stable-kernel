@@ -1,7 +1,7 @@
 From b3d23688a15c4c332942f9428e0d708e7362e29e Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:36:23 +0300
-Subject: [PATCH 26/94] staging: ti dspbridge: prefix configs with TIDSPBRIDGE
+Subject: [PATCH 026/116] staging: ti dspbridge: prefix configs with TIDSPBRIDGE
 
 Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -576,5 +576,5 @@ index 084f7b9..d138d11 100644
  		if (!IS_ALIGNED((u32)pmpu_addr, DSP_CACHE_LINE) ||
  		    !IS_ALIGNED(ul_size, DSP_CACHE_LINE)) {
 -- 
-1.7.0.4
+1.7.1
 

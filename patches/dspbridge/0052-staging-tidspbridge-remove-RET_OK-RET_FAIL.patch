@@ -1,7 +1,7 @@
 From 4018e396518e56a156fd99a2a44a675bc87437dd Mon Sep 17 00:00:00 2001
 From: Nishanth Menon <nm@ti.com>
 Date: Mon, 12 Jul 2010 17:56:03 -0500
-Subject: [PATCH 52/94] staging: tidspbridge: remove RET_OK RET_FAIL
+Subject: [PATCH 052/116] staging: tidspbridge: remove RET_OK RET_FAIL
 
 RET_OK is 0 and RET_FAIL is a -1, replace these custom returns with
 a standard errno
@@ -296,5 +296,5 @@ index 969b5fc..0dabb09 100644
  
  	/*Check the input Parameters */
 -- 
-1.7.0.4
+1.7.1
 

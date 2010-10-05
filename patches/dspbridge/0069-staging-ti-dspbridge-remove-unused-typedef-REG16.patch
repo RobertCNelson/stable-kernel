@@ -1,7 +1,7 @@
 From 3fee78f6becabffdcc46719e8bf13567cab73beb Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:40:48 -0500
-Subject: [PATCH 69/94] staging:ti dspbridge: remove unused typedef REG16
+Subject: [PATCH 069/116] staging:ti dspbridge: remove unused typedef REG16
 
 Remove unused typedef REG16 in dspbridge.
 
@@ -25,5 +25,5 @@ index b754e49..1c1f157 100644
  #define SET_BIT(reg, mask)               (reg |= mask)
  
 -- 
-1.7.0.4
+1.7.1
 

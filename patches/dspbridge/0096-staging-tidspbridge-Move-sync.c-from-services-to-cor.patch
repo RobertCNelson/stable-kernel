@@ -1,7 +1,7 @@
 From 3aa1e0e6c7cf290bcf1cec011e10620159beb634 Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:08:54 -0500
-Subject: [PATCH 096/110] staging: tidspbridge: Move sync.c from services to core
+Subject: [PATCH 096/116] staging: tidspbridge: Move sync.c from services to core
 
 As the services directory is going to be removed, the file sync.c is moved
 from services to core.
@@ -255,5 +255,5 @@ index 9010b37..0000000
 -}
 -
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From 654fe1b20dd9e3c753bf5667682c8d3ee2a2ae8e Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:34 +0300
-Subject: [PATCH 20/94] staging: ti dspbridge: deh: remove get_info
+Subject: [PATCH 020/116] staging: ti dspbridge: deh: remove get_info
 
 Nobody is using it.
 
@@ -147,5 +147,5 @@ index b1979ce..c31f8b8 100644
  		status = -EFAULT;
  	}
 -- 
-1.7.0.4
+1.7.1
 

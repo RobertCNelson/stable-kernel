@@ -1,7 +1,7 @@
 From 9b0131cb24182ef6cc478a89fc56fc6e004651e7 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 Date: Wed, 1 Sep 2010 15:40:25 +0200
-Subject: [PATCH 108/110] staging/trivial: fix typos concerning "initiali[zs]e"
+Subject: [PATCH 108/116] staging/trivial: fix typos concerning "initiali[zs]e"
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -54,5 +54,5 @@ index 4c00ba5..36193db 100644
   */
  int dsp_wdt_init(void);
 -- 
-1.7.0.4
+1.7.1
 

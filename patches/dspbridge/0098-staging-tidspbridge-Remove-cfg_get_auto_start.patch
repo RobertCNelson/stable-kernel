@@ -1,7 +1,7 @@
 From 4a6595625c1688077047e508370cf5146d59f359 Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:08:56 -0500
-Subject: [PATCH 098/110] staging: tidspbridge: Remove cfg_get_auto_start()
+Subject: [PATCH 098/116] staging: tidspbridge: Remove cfg_get_auto_start()
 
 As the services directory is going to be removed, this patch is needed.
 
@@ -115,5 +115,5 @@ index a7af74f..e9cdbf6 100644
   *  Purpose:
   *      Retrieve the Device Object handle for a given devnode.
 -- 
-1.7.0.4
+1.7.1
 

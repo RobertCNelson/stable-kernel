@@ -1,7 +1,7 @@
 From 21aaf42ec990e7e169fff67ffb97b2f13e0b7ed3 Mon Sep 17 00:00:00 2001
 From: Menon, Nishanth <nm@ti.com>
 Date: Thu, 22 Jul 2010 16:03:48 -0500
-Subject: [PATCH 57/94] staging: tidspbridge: remove OPTIONAL
+Subject: [PATCH 057/116] staging: tidspbridge: remove OPTIONAL
 
 OPTIONAL modifier makes no sense in linux kernel
 
@@ -273,5 +273,5 @@ index c1559ee..be137ad 100644
  {
  	int status = 0;
 -- 
-1.7.0.4
+1.7.1
 

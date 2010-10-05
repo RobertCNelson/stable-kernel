@@ -1,7 +1,7 @@
 From 82f575e5bb27ca30e3e27b537228610cb7ee26c6 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:45:32 -0500
-Subject: [PATCH 82/94] staging:ti dspbridge: remove DSP_FAILED macro from services
+Subject: [PATCH 082/116] staging:ti dspbridge: remove DSP_FAILED macro from services
 
 Since status succeeded is 0, DSP_FAILED macro
 is not necessary anymore.
@@ -68,5 +68,5 @@ index c3f33f6..a7af74f 100644
  	return status;
  }
 -- 
-1.7.0.4
+1.7.1
 

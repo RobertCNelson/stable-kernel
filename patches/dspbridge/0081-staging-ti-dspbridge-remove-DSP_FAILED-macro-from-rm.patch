@@ -1,7 +1,7 @@
 From b66e0986f900db194f637149e68c00345863195b Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:45:31 -0500
-Subject: [PATCH 81/94] staging:ti dspbridge: remove DSP_FAILED macro from rmgr
+Subject: [PATCH 081/116] staging:ti dspbridge: remove DSP_FAILED macro from rmgr
 
 Since status succeeded is 0, DSP_FAILED macro
 is not necessary anymore.
@@ -1178,5 +1178,5 @@ index 35d6378..df8458e 100644
  	return status;
  }
 -- 
-1.7.0.4
+1.7.1
 

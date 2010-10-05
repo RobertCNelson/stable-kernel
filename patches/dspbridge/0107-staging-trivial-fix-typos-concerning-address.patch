@@ -1,7 +1,7 @@
 From 25a606c36af7948d6351eb601e3de74845d640e1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 Date: Wed, 1 Sep 2010 15:40:24 +0200
-Subject: [PATCH 107/110] staging/trivial: fix typos concerning "address"
+Subject: [PATCH 107/116] staging/trivial: fix typos concerning "address"
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -26,5 +26,5 @@ index 2340638..878aa50 100644
   *			started.
   * @cur_best_offset:	Best offset to start looking for the DSP symbol
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From cfa6b297506c8e19e240016acf4776bb16dc5aa2 Mon Sep 17 00:00:00 2001
 From: Menon, Nishanth <nm@ti.com>
 Date: Thu, 22 Jul 2010 16:03:50 -0500
-Subject: [PATCH 59/94] staging: tidspbridge: remove dbdefs.h
+Subject: [PATCH 059/116] staging: tidspbridge: remove dbdefs.h
 
 Remove yet another custom definition header
 
@@ -114,5 +114,5 @@ index a91c136..6b4feb4 100644
  #include <linux/clk.h>
  #include <plat/mailbox.h>
 -- 
-1.7.0.4
+1.7.1
 

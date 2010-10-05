@@ -1,7 +1,7 @@
 From 28eeb6a737e17c65119354ef7c149746ca0591c0 Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Thu, 22 Jul 2010 20:25:30 -0500
-Subject: [PATCH 64/94] staging: tidspbridge: Remove redundant macro from cod.c
+Subject: [PATCH 064/116] staging: tidspbridge: Remove redundant macro from cod.c
 
 This patch removes a redundant macro from cod.c simply used
 to verify that a field was not NULL
@@ -135,5 +135,5 @@ index 10db8cf..0cbe6e5 100644
  	DBC_REQUIRE(str_content != NULL);
  
 -- 
-1.7.0.4
+1.7.1
 

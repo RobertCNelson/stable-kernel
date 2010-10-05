@@ -1,7 +1,7 @@
 From 0624f52f77e11a6edfc48827a12190f874d572b8 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 16:04:53 -0500
-Subject: [PATCH 90/94] staging: ti dspbridge: use node id instead of kernel address
+Subject: [PATCH 090/116] staging: ti dspbridge: use node id instead of kernel address
 
 Use idr kernel library to send/receive node ids to the
 user instead of kernel address.
@@ -935,5 +935,5 @@ index e2d02c4..6e9441e 100644
  }
  
 -- 
-1.7.0.4
+1.7.1
 

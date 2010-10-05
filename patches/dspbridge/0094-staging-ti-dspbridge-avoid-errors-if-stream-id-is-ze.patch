@@ -1,7 +1,7 @@
 From 084f70ee096d385e363bd5d309cc7ff24fb98c53 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 16:04:57 -0500
-Subject: [PATCH 94/94] staging: ti dspbridge: avoid errors if stream id is zero
+Subject: [PATCH 094/116] staging: ti dspbridge: avoid errors if stream id is zero
 
 As 'zero' can be a perfectly good id, it can be picked up as
 a NULL from userspace, avoid issues in API and user apps if stream
@@ -47,5 +47,5 @@ index 47892dd..7b42f72 100644
  }
  
 -- 
-1.7.0.4
+1.7.1
 

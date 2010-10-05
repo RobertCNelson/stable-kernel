@@ -1,7 +1,7 @@
 From 86dd51e4c4d620dfe1aca584a1332b55f3a49c05 Mon Sep 17 00:00:00 2001
 From: Nishanth Menon <nm@ti.com>
 Date: Mon, 12 Jul 2010 17:56:00 -0500
-Subject: [PATCH 49/94] staging: tidspbridge: no need for custom NULL
+Subject: [PATCH 049/116] staging: tidspbridge: no need for custom NULL
 
 kernel has it's own NULL define, we dont need to introduce our own
 custom NULL type!
@@ -86,5 +86,5 @@ index 7e09fec..ca2827d 100644
   * These macros are used to cast 'Arg' types to 's32' or 'Ptr'.
   * These macros were added for the 55x since Arg is not the same
 -- 
-1.7.0.4
+1.7.1
 

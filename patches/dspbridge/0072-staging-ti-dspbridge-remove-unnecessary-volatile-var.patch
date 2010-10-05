@@ -1,7 +1,7 @@
 From b3c8aef0a2334e088c21757d3143954c774c6da0 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:40:51 -0500
-Subject: [PATCH 72/94] staging:ti dspbridge: remove unnecessary volatile variables
+Subject: [PATCH 072/116] staging:ti dspbridge: remove unnecessary volatile variables
 
 Remove unnecessary volatile variables; use accessor
 functions __raw_readl/__raw_writel instead when applicable.
@@ -102,5 +102,5 @@ index 874ed64..b7cba1b 100644
  	}
  	return pbuf;
 -- 
-1.7.0.4
+1.7.1
 

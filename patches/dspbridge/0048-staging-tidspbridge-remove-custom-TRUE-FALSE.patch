@@ -1,7 +1,7 @@
 From 5e7680679e4ac852db7b03e232f3472f86d4c47f Mon Sep 17 00:00:00 2001
 From: Nishanth Menon <nm@ti.com>
 Date: Mon, 12 Jul 2010 17:55:59 -0500
-Subject: [PATCH 48/94] staging: tidspbridge: remove custom TRUE FALSE
+Subject: [PATCH 048/116] staging: tidspbridge: remove custom TRUE FALSE
 
 bool has standard true and false, we dont need to introduce
 our own TRUE and FALSE macros.
@@ -171,5 +171,5 @@ index 7601108..c931721 100644
  	}
  
 -- 
-1.7.0.4
+1.7.1
 

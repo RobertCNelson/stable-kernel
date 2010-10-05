@@ -1,7 +1,7 @@
 From 51d5e099cc9a21960e59bcaee6cc5e2620ea6bb2 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:45:30 -0500
-Subject: [PATCH 80/94] staging:ti dspbridge: remove DSP_FAILED macro from pmgr
+Subject: [PATCH 080/116] staging:ti dspbridge: remove DSP_FAILED macro from pmgr
 
 Since status succeeded is 0, DSP_FAILED macro
 is not necessary anymore.
@@ -390,5 +390,5 @@ index 60d7410..1b0ab4a 100644
  			strm_free_buffer(args->args_strm_allocatebuffer.hstream,
  					 ap_buffer, num_bufs, pr_ctxt);
 -- 
-1.7.0.4
+1.7.1
 

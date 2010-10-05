@@ -1,7 +1,7 @@
 From c4ca3d5a4b02b484fdb1bab59489699b94998fad Mon Sep 17 00:00:00 2001
 From: Omar Ramirez Luna <omar.ramirez@ti.com>
 Date: Wed, 23 Jun 2010 16:01:57 +0300
-Subject: [PATCH 03/94] staging: ti dspbridge: add platform manager code
+Subject: [PATCH 003/116] staging: ti dspbridge: add platform manager code
 
 Add TI's DSP Bridge platform manager driver sources
 
@@ -7482,5 +7482,5 @@ index 0000000..14ca633
 +
 +#endif /* MSGOBJ_ */
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From 54621f031c037d4df9844e5246ce1924c49a703e Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:45:28 -0500
-Subject: [PATCH 78/94] staging:ti dspbridge: remove DSP_SUCCEEDED macro definition
+Subject: [PATCH 078/116] staging:ti dspbridge: remove DSP_SUCCEEDED macro definition
 
 Since status succeeded is now 0 macro DSP_SUCCEEDED
 is not necessary anymore. This patch removes this
@@ -28,5 +28,5 @@ index 397e2cb..2ccbfe1 100644
  
  /* Power control enumerations */
 -- 
-1.7.0.4
+1.7.1
 

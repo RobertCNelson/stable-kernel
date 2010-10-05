@@ -1,7 +1,7 @@
 From fe15ea8b86f19bf7c4d1a4ea7452f1bb04b8933a Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Thu, 22 Jul 2010 20:25:31 -0500
-Subject: [PATCH 65/94] staging: tidspbridge: Remove unused magic number
+Subject: [PATCH 065/116] staging: tidspbridge: Remove unused magic number
 
 This patch removes an unused magic number from the cod_manager
 structure.
@@ -52,5 +52,5 @@ index 0cbe6e5..81102d2 100644
  }
  
 -- 
-1.7.0.4
+1.7.1
 

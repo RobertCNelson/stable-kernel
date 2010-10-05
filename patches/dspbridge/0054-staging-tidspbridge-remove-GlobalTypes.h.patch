@@ -1,7 +1,7 @@
 From 38bf20a9b6d6416563f0a261e90fa7081e273dfa Mon Sep 17 00:00:00 2001
 From: Menon, Nishanth <nm@ti.com>
 Date: Thu, 22 Jul 2010 16:03:45 -0500
-Subject: [PATCH 54/94] staging: tidspbridge: remove GlobalTypes.h
+Subject: [PATCH 054/116] staging: tidspbridge: remove GlobalTypes.h
 
 Remove custom globaltypes.h header
 
@@ -423,5 +423,5 @@ index 0dabb09..014f5d5 100644
  	mmu_ram_reg = (mmu_ram_reg) | ((endianism << 9) | (element_size << 7) |
  				       (mixed_size << 6));
 -- 
-1.7.0.4
+1.7.1
 

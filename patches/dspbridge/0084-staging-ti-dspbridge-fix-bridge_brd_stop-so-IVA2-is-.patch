@@ -1,7 +1,7 @@
 From a2c2272194ac8bfe5ae3ec91e722a766d931d324 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:54:52 -0500
-Subject: [PATCH 84/94] staging:ti dspbridge: fix bridge_brd_stop so IVA2 is set OFF
+Subject: [PATCH 084/116] staging:ti dspbridge: fix bridge_brd_stop so IVA2 is set OFF
 
 right now, bridge_brd_stop is not changing the IVA2 power state
 to OFF since PM_PWSTST_IVA2 is not 0 after calling this function.
@@ -49,5 +49,5 @@ index 9673acb..77527bd 100644
  }
  
 -- 
-1.7.0.4
+1.7.1
 

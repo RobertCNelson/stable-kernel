@@ -1,7 +1,7 @@
 From 157990f0d7f70aaa2b0158f959994eb0f65c05c0 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:45:25 -0500
-Subject: [PATCH 75/94] staging:ti dspbridge: remove DSP_SUCCEEDED macro from pmgr
+Subject: [PATCH 075/116] staging:ti dspbridge: remove DSP_SUCCEEDED macro from pmgr
 
 Since status succeeded is now 0 macro DSP_SUCCEEDED
 is not necessary anymore.
@@ -929,5 +929,5 @@ index 884f8b5..abd4365 100644
  		 * structure */
  		msg_mgr_obj = (struct msg_mgr_ *)hmsg_mgr;
 -- 
-1.7.0.4
+1.7.1
 

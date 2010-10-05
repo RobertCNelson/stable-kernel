@@ -1,7 +1,7 @@
 From dd85c9911d6eb44f398d07006a3c4ce57d36b7b9 Mon Sep 17 00:00:00 2001
 From: Kulikov Vasiliy <segooon@gmail.com>
 Date: Fri, 16 Jul 2010 20:14:11 +0400
-Subject: [PATCH 53/94] staging: tidspbridge: check kmalloc() result
+Subject: [PATCH 053/116] staging: tidspbridge: check kmalloc() result
 
 If kmalloc() fails then exit with -ENOMEM.
 
@@ -34,5 +34,5 @@ index 1170798..57abe33 100644
  	CP_FM_USR(ap_buffer, args->args_strm_freebuffer.ap_buffer, status,
  		  num_bufs);
 -- 
-1.7.0.4
+1.7.1
 

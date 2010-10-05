@@ -1,7 +1,7 @@
 From 599ede1cf3ac199e72089234ae911aaf299a0692 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:28 +0300
-Subject: [PATCH 14/94] staging: ti dspbridge: mmufault: trivial cleanups
+Subject: [PATCH 014/116] staging: ti dspbridge: mmufault: trivial cleanups
 
 No functional changes.
 
@@ -149,5 +149,5 @@ index 5c0124f..42fe23f 100644
 +	return IRQ_HANDLED;
  }
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From ec528652a92e18975bb6fe3e2f4f8f927b71ec88 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:30 +0300
-Subject: [PATCH 16/94] staging: ti dspbridge: remove unused code
+Subject: [PATCH 016/116] staging: ti dspbridge: remove unused code
 
 Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -123,5 +123,5 @@ index c5a8b6b..b1979ce 100644
  	status = dev_get_node_manager(p_proc_object->hdev_obj, &hnode_mgr);
  	if (DSP_SUCCEEDED(status) && hnode_mgr) {
 -- 
-1.7.0.4
+1.7.1
 

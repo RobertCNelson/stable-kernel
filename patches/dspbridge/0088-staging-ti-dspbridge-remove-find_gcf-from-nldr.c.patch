@@ -1,7 +1,7 @@
 From 0c4a938ed4a2cd0c2d31c5c616594bae0865d7f3 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:56:01 -0500
-Subject: [PATCH 88/94] staging:ti dspbridge: remove find_gcf from nldr.c
+Subject: [PATCH 088/116] staging:ti dspbridge: remove find_gcf from nldr.c
 
 Remove find_gcf from nldr.c and use kernel function
 gcd().
@@ -62,5 +62,5 @@ index 55dfb98..d8f4eeb 100644
  /**
   * nldr_find_addr() - Find the closest symbol to the given address based on
 -- 
-1.7.0.4
+1.7.1
 

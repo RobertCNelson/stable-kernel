@@ -1,7 +1,7 @@
 From d1b2216d13679557b56c1e4a53e4e3c5683bf3d5 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:45:29 -0500
-Subject: [PATCH 79/94] staging:ti dspbridge: remove DSP_FAILED macro from core
+Subject: [PATCH 079/116] staging:ti dspbridge: remove DSP_FAILED macro from core
 
 Since status succeeded is 0, DSP_FAILED macro
 is not necessary anymore.
@@ -446,5 +446,5 @@ index d938645..b789f8f 100644
  #ifdef CONFIG_TIDSPBRIDGE_DVFS
  		else if (target_pwr_state == PWRDM_POWER_OFF) {
 -- 
-1.7.0.4
+1.7.1
 

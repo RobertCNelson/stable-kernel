@@ -1,7 +1,7 @@
 From a741ea6efc0c78093ef5652c119262004ee7a8c9 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:45:26 -0500
-Subject: [PATCH 76/94] staging:ti dspbridge: remove DSP_SUCCEEDED macro from rmgr
+Subject: [PATCH 076/116] staging:ti dspbridge: remove DSP_SUCCEEDED macro from rmgr
 
 Since status succeeded is now 0 macro DSP_SUCCEEDED
 is not necessary anymore.
@@ -2214,5 +2214,5 @@ index 6c184c6..35d6378 100644
  					/* force free */
  					(void)cmm_xlator_delete(stream_obj->
 -- 
-1.7.0.4
+1.7.1
 

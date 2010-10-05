@@ -1,7 +1,7 @@
 From e8184e6c2d32eb4418f6084155ac1ffb08c751e8 Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:08:58 -0500
-Subject: [PATCH 100/110] staging: tidspbridge: Remove cfg_get_dev_object() and do a trivial cleanup
+Subject: [PATCH 100/116] staging: tidspbridge: Remove cfg_get_dev_object() and do a trivial cleanup
 
 The cfg_get_dev_object function is only used in one place and because of
 its simplicity, it can be removed.
@@ -159,5 +159,5 @@ index b9c3882..587c71a 100644
   *  ======== cfg_get_exec_file ========
   *  Purpose:
 -- 
-1.7.0.4
+1.7.1
 
