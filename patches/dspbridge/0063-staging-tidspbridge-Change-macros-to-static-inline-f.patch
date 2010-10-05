@@ -1,7 +1,7 @@
 From a563510fb2f18f0d7f2fbf815e7d7052f280a61d Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Thu, 22 Jul 2010 20:25:29 -0500
-Subject: [PATCH 63/94] staging: tidspbridge: Change macros to static inline functions used in cload
+Subject: [PATCH 063/116] staging: tidspbridge: Change macros to static inline functions used in cload
 
 This patch changes the macros to static inline function used
 in cload as well adds two definition of const to avoid using magic
@@ -144,5 +144,5 @@ index 7b593fc..81314d2 100644
  
  	if (ret_val == 0)
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From 7454c8f6b83be292dc22e1b47d4b6c28ac32a76d Mon Sep 17 00:00:00 2001
 From: Ohad Ben-Cohen <ohad@wizery.com>
 Date: Wed, 23 Jun 2010 16:13:22 +0300
-Subject: [PATCH 10/94] staging: ti dspbridge: add TODO file
+Subject: [PATCH 010/116] staging: ti dspbridge: add TODO file
 
 Add a general cleaning roadmap TODO file to TI's DSP Bridge
 staging driver.
@@ -38,5 +38,5 @@ index 0000000..54f4a29
 +Please send any patches to Greg Kroah-Hartman <greg@kroah.com>
 +and Omar Ramirez Luna <omar.ramirez@ti.com>.
 -- 
-1.7.0.4
+1.7.1
 

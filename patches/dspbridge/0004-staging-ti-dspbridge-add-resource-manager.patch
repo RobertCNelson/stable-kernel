@@ -1,7 +1,7 @@
 From 7d55524d3039e3e70756ee0a45f2fe59b7ed3fd2 Mon Sep 17 00:00:00 2001
 From: Omar Ramirez Luna <omar.ramirez@ti.com>
 Date: Wed, 23 Jun 2010 16:01:58 +0300
-Subject: [PATCH 04/94] staging: ti dspbridge: add resource manager
+Subject: [PATCH 004/116] staging: ti dspbridge: add resource manager
 
 Add TI's DSP Bridge resource manager driver sources
 
@@ -13380,5 +13380,5 @@ index 0000000..e537ee8
 +		kfree(strm_mgr_obj);
 +}
 -- 
-1.7.0.4
+1.7.1
 

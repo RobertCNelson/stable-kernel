@@ -1,7 +1,7 @@
 From cd4f13c02a5d72e1fc367c51cc0fd955f65538e0 Mon Sep 17 00:00:00 2001
 From: Menon, Nishanth <nm@ti.com>
 Date: Thu, 22 Jul 2010 16:03:46 -0500
-Subject: [PATCH 55/94] staging: tidspbridge: replace CONST with c standard const
+Subject: [PATCH 055/116] staging: tidspbridge: replace CONST with c standard const
 
 Signed-off-by: Nishanth Menon <nm@ti.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -703,5 +703,5 @@ index 2d81743..2884502 100644
  	struct bridge_drv_interface *intf_fxns;
  	struct bridge_dev_context *dw_context;
 -- 
-1.7.0.4
+1.7.1
 

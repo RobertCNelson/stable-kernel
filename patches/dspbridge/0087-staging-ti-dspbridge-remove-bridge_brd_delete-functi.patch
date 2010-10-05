@@ -1,7 +1,7 @@
 From 7c9305b80cb81c94d12c7109f8abfe4bc5b08a23 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ernesto-desktop.(none)>
 Date: Wed, 28 Jul 2010 09:54:55 -0500
-Subject: [PATCH 87/94] staging:ti dspbridge: remove bridge_brd_delete function
+Subject: [PATCH 087/116] staging:ti dspbridge: remove bridge_brd_delete function
 
 Remove bridge_brd_delete() function since it is
 doing the same that bridge_brd_stop().
@@ -88,5 +88,5 @@ index e7584de..f914829 100644
  		pt_attrs = dev_context->pt_attrs;
  		kfree(pt_attrs->pg_info);
 -- 
-1.7.0.4
+1.7.1
 

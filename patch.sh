@@ -302,8 +302,6 @@ patch -s -p1 < "${DIR}/patches/dspbridge/0092-staging-ti-dspbridge-use-processor
 patch -s -p1 < "${DIR}/patches/dspbridge/0093-staging-ti-dspbridge-use-stream-id-instead-of-kernel.patch"
 patch -s -p1 < "${DIR}/patches/dspbridge/0094-staging-ti-dspbridge-avoid-errors-if-stream-id-is-ze.patch"
 
-patch -s -p1 < "${DIR}/patches/dspbridge/0001-OUT-OF-TREE-tidspbridge-move-platform_device_registe.patch"
-
 #2.6.37 - staging-for-next
 patch -s -p1 < "${DIR}/patches/dspbridge/0095-drivers-staging-tidspbridge-gen-gb.c-Removed-duplica.patch"
 patch -s -p1 < "${DIR}/patches/dspbridge/0096-staging-tidspbridge-Move-sync.c-from-services-to-cor.patch"
@@ -321,6 +319,17 @@ patch -s -p1 < "${DIR}/patches/dspbridge/0107-staging-trivial-fix-typos-concerni
 patch -s -p1 < "${DIR}/patches/dspbridge/0108-staging-trivial-fix-typos-concerning-initiali-zs-e.patch"
 patch -s -p1 < "${DIR}/patches/dspbridge/0109-staging-tidspbridge-check-return-code-of-kzalloc.patch"
 patch -s -p1 < "${DIR}/patches/dspbridge/0110-staging-tidspbridge-check-return-code-of-get_user.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0111-staging-ti-dspbridge-remove-cmm_xlator_delete-wrappe.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0112-staging-ti-dspbridge-Replace-find_lcm-with-lcm-kerne.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0113-staging-ti-dspbridge-disable-all-peripherals-at-brid.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0114-staging-tidspbridge-replace-iommu-custom-for-opensou.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0115-staging-tidspbridge-remove-duplicated-include.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0116-staging-tidspbridge-use-omap_dsp_platform_data.patch"
+
+#2.6.35
+patch -s -p1 < "${DIR}/patches/dspbridge/0001-OUT-OF-TREE-tidspbridge-move-platform_device_registe.patch"
+#2.6.36
+#patch -s -p1 < "${DIR}/patches/dspbridge/0001-omap-add-dsp-platform-device.patch"
 
 }
 

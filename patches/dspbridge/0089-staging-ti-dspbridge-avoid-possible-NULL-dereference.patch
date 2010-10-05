@@ -1,7 +1,7 @@
 From 35f338e4f2fcd2614f6fdff33f38920cf9434f86 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 11:50:36 -0500
-Subject: [PATCH 89/94] staging: ti dspbridge: avoid possible NULL dereference panic
+Subject: [PATCH 089/116] staging: ti dspbridge: avoid possible NULL dereference panic
 
 When dsp_notifications array is received from user,
 dspbridge verifies the array has valid pointers
@@ -56,5 +56,5 @@ index 1b0ab4a..da08dfc 100644
  
  /*
 -- 
-1.7.0.4
+1.7.1
 

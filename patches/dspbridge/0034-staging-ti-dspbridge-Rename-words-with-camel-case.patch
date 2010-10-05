@@ -1,7 +1,7 @@
 From e68906924d742dfb33564d7eb4ea7db0b4e65ae4 Mon Sep 17 00:00:00 2001
 From: Rene Sapiens <rene.sapiens@ti.com>
 Date: Fri, 9 Jul 2010 21:23:56 -0500
-Subject: [PATCH 34/94] staging: ti dspbridge: Rename words with camel case.
+Subject: [PATCH 034/116] staging: ti dspbridge: Rename words with camel case.
 
 The intention of this patch is to rename the remaining variables with camel
 case. Variables will be renamed avoiding camel case and Hungarian notation.
@@ -1803,5 +1803,5 @@ index 8bcb128..03497e2 100644
  	if (p_proc_object)
  		*procID = p_proc_object->processor_id;
 -- 
-1.7.0.4
+1.7.1
 

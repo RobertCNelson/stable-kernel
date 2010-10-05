@@ -1,7 +1,7 @@
 From ec71c8fe23ca236119c7176a8a3e77529a393283 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:33 +0300
-Subject: [PATCH 19/94] staging: ti dspbridge: deh: refactor in mmu_fault_print_stack()
+Subject: [PATCH 019/116] staging: ti dspbridge: deh: refactor in mmu_fault_print_stack()
 
 All this code is just to print the stack, so make it clearer.
 
@@ -112,5 +112,5 @@ index 793e982..1e506d7 100644
  #ifdef CONFIG_BRIDGE_NTFY_PWRERR
  	case DSP_PWRERROR:
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From e5a7dc54eedde81e87832e02ba0f6b8c5a4d2d48 Mon Sep 17 00:00:00 2001
 From: Vasiliy Kulikov <segooon@gmail.com>
 Date: Sun, 5 Sep 2010 22:32:49 +0400
-Subject: [PATCH 109/110] staging: tidspbridge: check return code of kzalloc
+Subject: [PATCH 109/116] staging: tidspbridge: check return code of kzalloc
 
 Function kzalloc may fail. Check for it.
 
@@ -38,5 +38,5 @@ index f71e860..3581a55 100644
  	if (strstr(sz_coff_path, "iva") == NULL) {
  		/* Locate section by objectID and read its content. */
 -- 
-1.7.0.4
+1.7.1
 

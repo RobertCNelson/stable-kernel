@@ -1,7 +1,7 @@
 From 5cc28e622f2f7ecb7711c370f99a2b7fb4226e2f Mon Sep 17 00:00:00 2001
 From: Omar Ramirez Luna <omar.ramirez@ti.com>
 Date: Wed, 23 Jun 2010 16:01:59 +0300
-Subject: [PATCH 05/94] staging: ti dspbridge: add MMU support
+Subject: [PATCH 005/116] staging: ti dspbridge: add MMU support
 
 Add TI's DSP Bridge MMU support
 
@@ -1541,5 +1541,5 @@ index 0000000..9b13468
 +
 +#endif /* _HW_MMU_H */
 -- 
-1.7.0.4
+1.7.1
 

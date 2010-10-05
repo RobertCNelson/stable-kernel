@@ -1,7 +1,7 @@
 From 6bcc9beed2d46c0db479a3750af4b2cbd7a92401 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 16:04:55 -0500
-Subject: [PATCH 92/94] staging: ti dspbridge: use processor handle from context instead of user's
+Subject: [PATCH 092/116] staging: ti dspbridge: use processor handle from context instead of user's
 
 Make sure dspbridge driver uses a valid processor handle by
 using the handle stored in process context.
@@ -247,5 +247,5 @@ index f46aaf6..d7613eb 100644
  	CP_TO_USR(args->args_cmm_gethandle.ph_cmm_mgr, &hcmm_mgr, status, 1);
  
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From bf968b0a521fc5fd3faf66afa315d8183246c72f Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Thu, 22 Jul 2010 20:25:33 -0500
-Subject: [PATCH 67/94] staging: tidspbridge: Change macros to static inline functions
+Subject: [PATCH 067/116] staging: tidspbridge: Change macros to static inline functions
 
 This patch changes preprocesing macros to static inline
 funcions. Also the function is_equal_uuid (IS_EQUAL_UUID) now uses the
@@ -126,5 +126,5 @@ index 4d3db7e..5f189dc 100644
  
  	if (!p_proc_object) {
 -- 
-1.7.0.4
+1.7.1
 

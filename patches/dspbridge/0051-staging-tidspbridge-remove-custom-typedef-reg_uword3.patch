@@ -1,7 +1,7 @@
 From 7124cb171108dea386b2c81334605da1d6f4554a Mon Sep 17 00:00:00 2001
 From: Nishanth Menon <nm@ti.com>
 Date: Mon, 12 Jul 2010 17:56:02 -0500
-Subject: [PATCH 51/94] staging: tidspbridge: remove custom typedef reg_uword32
+Subject: [PATCH 051/116] staging: tidspbridge: remove custom typedef reg_uword32
 
 use readl, writel to get and set the register instead.
 
@@ -295,5 +295,5 @@ index d53d340..6bb65ea 100644
  			dev_dbg(bridge, "%s: StackSegVal = 0x%x, StackSegAddr ="
  				" 0x%x\n", __func__, ul_stack_seg_val,
 -- 
-1.7.0.4
+1.7.1
 

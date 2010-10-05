@@ -1,7 +1,7 @@
 From 7227b671f7dd2f0d0c7cc700b184f0cdf5d6ee65 Mon Sep 17 00:00:00 2001
 From: Omar Ramirez Luna <omar.ramirez@ti.com>
 Date: Wed, 23 Jun 2010 16:02:00 +0300
-Subject: [PATCH 06/94] staging: ti dspbridge: add generic utilities
+Subject: [PATCH 006/116] staging: ti dspbridge: add generic utilities
 
 Add TI's DSP Bridge generic utilities driver sources
 
@@ -750,5 +750,5 @@ index 0000000..ce9319d
 +	}
 +}
 -- 
-1.7.0.4
+1.7.1
 

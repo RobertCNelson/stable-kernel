@@ -1,7 +1,7 @@
 From 74ea8ff93b3759f27e6677076fe80c0c9c3f209d Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:40:50 -0500
-Subject: [PATCH 71/94] staging:ti dspbridge: remove function delete_strm_mgr
+Subject: [PATCH 071/116] staging:ti dspbridge: remove function delete_strm_mgr
 
 Remove function delete_strm_mgr in strm.c and
 use kfree instead.
@@ -58,5 +58,5 @@ index 73888e3..6c184c6 100644
 -		kfree(strm_mgr_obj);
 -}
 -- 
-1.7.0.4
+1.7.1
 

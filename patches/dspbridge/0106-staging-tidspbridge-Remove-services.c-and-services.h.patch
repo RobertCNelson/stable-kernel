@@ -1,7 +1,7 @@
 From bd5dc30e3ee68f0aa6c1e282d88740f2d1fa909a Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:09:04 -0500
-Subject: [PATCH 106/110] staging: tidspbridge: Remove services.c and services.h
+Subject: [PATCH 106/116] staging: tidspbridge: Remove services.c and services.h
 
 The services_init() and services_exit() functions don't do anything,
 so they are removed, and as these are the only two functions defined
@@ -199,5 +199,5 @@ index 3d0497e..0000000
 -	return ret;
 -}
 -- 
-1.7.0.4
+1.7.1
 

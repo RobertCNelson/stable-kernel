@@ -1,7 +1,7 @@
 From 2094f12d440c5a9fae032932266fa4a44135194c Mon Sep 17 00:00:00 2001
 From: Nishanth Menon <nm@ti.com>
 Date: Mon, 12 Jul 2010 17:56:01 -0500
-Subject: [PATCH 50/94] staging: tidspbridge: remove std.h
+Subject: [PATCH 050/116] staging: tidspbridge: remove std.h
 
 std.h introduces _TI_ _FLOAT_ _FIXED_ _TARGET_ ARG_TO_INT ARG_TO_PTR
 which are no longer being used anywhere. we dont really need the
@@ -722,5 +722,5 @@ index 23be95c..6a7dd6f 100644
  
  /*  ----------------------------------- Trace & Debug */
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From a2205e487eb0a8af0bfc421038f1777ca6603ac4 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:54:54 -0500
-Subject: [PATCH 86/94] staging:ti dspbridge: make sure IVA2 is OFF when dev is created
+Subject: [PATCH 086/116] staging:ti dspbridge: make sure IVA2 is OFF when dev is created
 
 Regardless the IVA2 power state before bridgedriver is
 installed, the driver must ensure that IVA2 power
@@ -30,5 +30,5 @@ index 77527bd..e7584de 100644
  		*dev_cntxt = dev_context;
  	} else {
 -- 
-1.7.0.4
+1.7.1
 

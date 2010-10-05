@@ -1,7 +1,7 @@
 From cbf05091e53de6a879d16fcdb88ed9ab26295448 Mon Sep 17 00:00:00 2001
 From: Omar Ramirez Luna <omar.ramirez@ti.com>
 Date: Thu, 24 Jun 2010 16:40:07 +0300
-Subject: [PATCH 11/94] staging: ti dspbridge: enable driver building
+Subject: [PATCH 011/116] staging: ti dspbridge: enable driver building
 
 Add Kconfig + Makefile for TI's DSP Bridge driver
 and expose it to the staging menu.
@@ -27,35 +27,12 @@ Signed-off-by: Phil Carmody <ext-phil.2.carmody@nokia.com>
 Signed-off-by: Ohad Ben-Cohen <ohad@wizery.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/staging/Kconfig              |    2 +
- drivers/staging/Makefile             |    1 +
  drivers/staging/tidspbridge/Kconfig  |   88 ++++++++++++++++++++++++++++++++++
  drivers/staging/tidspbridge/Makefile |   34 +++++++++++++
- 4 files changed, 125 insertions(+), 0 deletions(-)
+ 2 files changed, 122 insertions(+), 0 deletions(-)
  create mode 100644 drivers/staging/tidspbridge/Kconfig
  create mode 100644 drivers/staging/tidspbridge/Makefile
 
-diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index 3de4bca..72de5fa 100644
---- a/drivers/staging/Kconfig
-+++ b/drivers/staging/Kconfig
-@@ -153,5 +153,7 @@ source "drivers/staging/easycap/Kconfig"
- 
- source "drivers/staging/solo6x10/Kconfig"
- 
-+source "drivers/staging/tidspbridge/Kconfig"
-+
- endif # !STAGING_EXCLUDE_BUILD
- endif # STAGING
-diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
-index b28d820..952b64e 100644
---- a/drivers/staging/Makefile
-+++ b/drivers/staging/Makefile
-@@ -57,3 +57,4 @@ obj-$(CONFIG_TOUCHSCREEN_MRSTOUCH)	+= mrst-touchscreen/
- obj-$(CONFIG_MSM_STAGING)	+= msm/
- obj-$(CONFIG_EASYCAP)		+= easycap/
- obj-$(CONFIG_SOLO6X10)		+= solo6x10/
-+obj-$(CONFIG_TIDSPBRIDGE)	+= tidspbridge/
 diff --git a/drivers/staging/tidspbridge/Kconfig b/drivers/staging/tidspbridge/Kconfig
 new file mode 100644
 index 0000000..45372cd
@@ -191,5 +168,5 @@ index 0000000..6082ef0
 +ccflags-y += -Iarch/arm
 +
 -- 
-1.7.0.4
+1.7.1
 

@@ -1,7 +1,7 @@
 From b04462a143afde542ad9e5a1df4fcfbff6d30249 Mon Sep 17 00:00:00 2001
 From: Vasiliy Kulikov <segooon@gmail.com>
 Date: Sun, 5 Sep 2010 22:32:45 +0400
-Subject: [PATCH 110/110] staging: tidspbridge: check return code of get_user
+Subject: [PATCH 110/116] staging: tidspbridge: check return code of get_user
 
 Function get_user may fail. Check for it.
 
@@ -29,5 +29,5 @@ index b23591b..faf8304 100644
  		} while (temp);
  		envp = kmalloc(count * sizeof(u8 *), GFP_KERNEL);
 -- 
-1.7.0.4
+1.7.1
 

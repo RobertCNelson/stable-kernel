@@ -1,7 +1,7 @@
 From 8204bd384660b035bf0077f45b6b9635e5cd1c19 Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Thu, 22 Jul 2010 20:25:26 -0500
-Subject: [PATCH 60/94] staging: tidspbridge: Remove Redundant wrappers
+Subject: [PATCH 060/116] staging: tidspbridge: Remove Redundant wrappers
 
 This patch removes redundant wrappers from io_sm.c file
 
@@ -193,5 +193,5 @@ index e9a6c19..8b51c37 100644
  
  #ifdef CONFIG_TIDSPBRIDGE_BACKTRACE
 -- 
-1.7.0.4
+1.7.1
 

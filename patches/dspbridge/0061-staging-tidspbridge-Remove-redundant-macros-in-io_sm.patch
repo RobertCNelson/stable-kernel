@@ -1,7 +1,7 @@
 From 9e342489d7b8a8ac4ba4a728169564e4ab205bbd Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Thu, 22 Jul 2010 20:25:27 -0500
-Subject: [PATCH 61/94] staging: tidspbridge: Remove redundant macros in io_sm.c
+Subject: [PATCH 061/116] staging: tidspbridge: Remove redundant macros in io_sm.c
 
 This patch removes 4 redundant macros used to perform
 read/write operations in shared memory region from io_sm.c.
@@ -183,5 +183,5 @@ index 8b51c37..f1c44f8 100644
  #ifdef CONFIG_TIDSPBRIDGE_DVFS
  /* The maximum number of OPPs that are supported */
 -- 
-1.7.0.4
+1.7.1
 

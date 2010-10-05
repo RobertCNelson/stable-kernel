@@ -1,7 +1,7 @@
 From 96904b06b96fb75e39b70751415edf4fb99db256 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:38 +0300
-Subject: [PATCH 24/94] staging: ti dspbridge: deh: tidying up
+Subject: [PATCH 024/116] staging: ti dspbridge: deh: tidying up
 
 Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -356,5 +356,5 @@ index f2bfd89..eca56a5 100644
  
  #endif /* DSPDEH_ */
 -- 
-1.7.0.4
+1.7.1
 

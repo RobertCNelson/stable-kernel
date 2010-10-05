@@ -1,7 +1,7 @@
 From 4f551c8f6b89902a83328fbf50585ec7ee03ed5a Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:36:26 +0300
-Subject: [PATCH 29/94] staging: ti dspbridge: add _BACKTRACE config
+Subject: [PATCH 029/116] staging: ti dspbridge: add _BACKTRACE config
 
 We only want this code when testing.
 
@@ -326,5 +326,5 @@ index 329fe5e..1870b80 100644
 -
 +#endif
 -- 
-1.7.0.4
+1.7.1
 

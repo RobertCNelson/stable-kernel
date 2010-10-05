@@ -1,7 +1,7 @@
 From 3a8965fda925361c291cb03f7aced2e3e51116b9 Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:45:33 -0500
-Subject: [PATCH 83/94] staging:ti dspbridge: remove DSP_FAILED macro definition
+Subject: [PATCH 083/116] staging:ti dspbridge: remove DSP_FAILED macro definition
 
 Since status succeeded is now 0 macro DSP_FAILED
 is not necessary anymore. This patch removes this
@@ -28,5 +28,5 @@ index 2ccbfe1..5af075d 100644
  #define PROC_PWRCONTROL             0x8070
  
 -- 
-1.7.0.4
+1.7.1
 

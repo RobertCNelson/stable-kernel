@@ -1,7 +1,7 @@
 From 94e7e5260723870329f04b0bd8eeb41322895bf1 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:39 +0300
-Subject: [PATCH 25/94] staging: ti dspbridge: deh: update copyright notice
+Subject: [PATCH 025/116] staging: ti dspbridge: deh: update copyright notice
 
 Add myself... git blame seems to agree :)
 
@@ -50,5 +50,5 @@ index eca56a5..d258ab6 100644
   * This package is free software; you can redistribute it and/or modify
   * it under the terms of the GNU General Public License version 2 as
 -- 
-1.7.0.4
+1.7.1
 

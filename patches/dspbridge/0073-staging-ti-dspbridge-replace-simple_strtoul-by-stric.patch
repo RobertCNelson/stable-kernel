@@ -1,7 +1,7 @@
 From ecd3d0ca4006f86a542bfd5ed1277cac6b2df3be Mon Sep 17 00:00:00 2001
 From: Ernesto Ramos <ernesto@ti.com>
 Date: Wed, 28 Jul 2010 09:40:52 -0500
-Subject: [PATCH 73/94] staging:ti dspbridge: replace simple_strtoul by strict_strtoul
+Subject: [PATCH 073/116] staging:ti dspbridge: replace simple_strtoul by strict_strtoul
 
 Replace simple_strtoul by strict_strtoul in atoi function.
 
@@ -36,5 +36,5 @@ index cceceb9..b96aea7 100644
  
  /*
 -- 
-1.7.0.4
+1.7.1
 

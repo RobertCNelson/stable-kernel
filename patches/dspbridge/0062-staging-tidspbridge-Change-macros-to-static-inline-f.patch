@@ -1,7 +1,7 @@
 From c18c9c910dbcc4cc55a440c38fad300f1ecf8dbb Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Thu, 22 Jul 2010 20:25:28 -0500
-Subject: [PATCH 62/94] staging: tidspbridge: Change macros to static inline functions in io_sm
+Subject: [PATCH 062/116] staging: tidspbridge: Change macros to static inline functions in io_sm
 
 This patch change to macros to static inline functions, these
 macros are used to perform write/read operations in shared memory
@@ -82,5 +82,5 @@ index f1c44f8..841ff94 100644
  /* The maximum number of OPPs that are supported */
  extern s32 dsp_max_opps;
 -- 
-1.7.0.4
+1.7.1
 

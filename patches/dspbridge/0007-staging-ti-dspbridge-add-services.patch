@@ -1,7 +1,7 @@
 From 6a88a4fe0937325f1fc3df835f3e9b1698992899 Mon Sep 17 00:00:00 2001
 From: Omar Ramirez Luna <omar.ramirez@ti.com>
 Date: Wed, 23 Jun 2010 16:02:01 +0300
-Subject: [PATCH 07/94] staging: ti dspbridge: add services
+Subject: [PATCH 007/116] staging: ti dspbridge: add services
 
 Add TI's DSP Bridge driver services code
 
@@ -515,5 +515,5 @@ index 0000000..9010b37
 +}
 +
 -- 
-1.7.0.4
+1.7.1
 

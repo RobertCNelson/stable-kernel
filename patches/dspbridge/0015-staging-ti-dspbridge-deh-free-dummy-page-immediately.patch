@@ -1,7 +1,7 @@
 From 0d8631d2907092a4a58b93bdc636eb6ee001cf03 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Sun, 4 Jul 2010 16:34:29 +0300
-Subject: [PATCH 15/94] staging: ti dspbridge: deh: free dummy page immediately
+Subject: [PATCH 015/116] staging: ti dspbridge: deh: free dummy page immediately
 
 There's no need to keep it around. DSP should stop trying to access
 system memory.
@@ -51,5 +51,5 @@ index ee2d23a..50868a4 100644
 -	dummy_va_addr = NULL;
  }
 -- 
-1.7.0.4
+1.7.1
 

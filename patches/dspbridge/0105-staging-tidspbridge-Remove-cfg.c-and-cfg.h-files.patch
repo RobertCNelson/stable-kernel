@@ -1,7 +1,7 @@
 From 220344f25418b698f01e2e6e4b6eb00b7cfa21ef Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:09:03 -0500
-Subject: [PATCH 105/110] staging: tidspbridge: Remove cfg.c and cfg.h files
+Subject: [PATCH 105/116] staging: tidspbridge: Remove cfg.c and cfg.h files
 
 So far, the cfg.c file is empty, and the function prototypes in cfg.h
 are not used in any place. So they can be removed.
@@ -422,5 +422,5 @@ index 47bac21..3d0497e 100644
  #include <dspbridge/sync.h>
  #include <dspbridge/clk.h>
 -- 
-1.7.0.4
+1.7.1
 

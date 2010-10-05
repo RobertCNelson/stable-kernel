@@ -1,7 +1,7 @@
 From b87561f7485f4d5c961079184f1f545ce6537f65 Mon Sep 17 00:00:00 2001
 From: Ivan Gomez Castellanos <ivan.gomez@ti.com>
 Date: Wed, 25 Aug 2010 17:09:02 -0500
-Subject: [PATCH 104/110] staging: tidspbridge: Remove cfg_set_object()
+Subject: [PATCH 104/116] staging: tidspbridge: Remove cfg_set_object()
 
 As the services directory is going to be removed, the cfg_set_object
 function has also to be removed.
@@ -190,5 +190,5 @@ index 5517201..32bb934 100644
 -	return status;
 -}
 -- 
-1.7.0.4
+1.7.1
 
