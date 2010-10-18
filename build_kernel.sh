@@ -74,8 +74,7 @@ else
 fi
 fi
 #Test Patches:
-patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-a2-3-fix-dvi-reset-gpio.patch"
-exit
+#exit
 	cd ${DIR}/
 }
 
