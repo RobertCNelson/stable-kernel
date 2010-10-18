@@ -1,15 +1,15 @@
-From abc6d3da9f75211a83fa96a4c3a3cea7dd0aa7b6 Mon Sep 17 00:00:00 2001
+From bfbdf9a07e029183ff95c8034e4b6aae30a751ab Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
-Date: Mon, 18 Oct 2010 10:05:35 -0500
+Date: Mon, 18 Oct 2010 10:50:05 -0500
 Subject: [PATCH] omap: beagle: a2/3 fix dvi reset gpio
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
- arch/arm/mach-omap2/board-omap3beagle.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ arch/arm/mach-omap2/board-omap3beagle.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index e6e4f6b..59b8cd5 100644
+index e6e4f6b..8404529 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
 @@ -380,7 +380,6 @@ static struct omap_dss_device beagle_dvi_device = {
@@ -20,7 +20,7 @@ index e6e4f6b..59b8cd5 100644
  	.platform_enable = beagle_enable_dvi,
  	.platform_disable = beagle_disable_dvi,
  };
-@@ -484,14 +483,20 @@ static int beagle_twl_gpio_setup(struct device *dev,
+@@ -484,6 +483,9 @@ static int beagle_twl_gpio_setup(struct device *dev,
  	 */
  
  	if (cpu_is_omap3630()) {
@@ -30,10 +30,8 @@ index e6e4f6b..59b8cd5 100644
  		gpio_request(gpio + 1, "nDVI_PWR_EN");
  		gpio_direction_output(gpio + 1, 0);
  
- 		/* TWL4030_GPIO_MAX + 0 == ledA, EHCI nEN_USB_PWR (out, active low) */
- 		gpio_request(gpio + TWL4030_GPIO_MAX, "nEN_USB_PWR");
--		gpio_direction_output(gpio + TWL4030_GPIO_MAX, 1);
-+		gpio_direction_output(gpio + TWL4030_GPIO_MAX, 0);
+@@ -492,6 +494,9 @@ static int beagle_twl_gpio_setup(struct device *dev,
+ 		gpio_direction_output(gpio + TWL4030_GPIO_MAX, 1);
  	}
  	else {
 +		/* DVI reset GPIO is different between revisions */
