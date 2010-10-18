@@ -97,6 +97,7 @@ echo "early xm support"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-AM37x-Switch-SGX-clocks-to-200MHz.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-a2-3-fix-dvi-reset-gpio.patch"
+patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-use-GPIO2-on-the-xM-A3-to-turn-DVI-on.patch"
 }
 
 function nand {
