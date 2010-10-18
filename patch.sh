@@ -96,6 +96,7 @@ function xm {
 echo "early xm support"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-AM37x-Switch-SGX-clocks-to-200MHz.patch"
+patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-a2-3-fix-dvi-reset-gpio.patch"
 }
 
 function nand {
@@ -319,12 +320,12 @@ patch -s -p1 < "${DIR}/patches/dspbridge/0107-staging-trivial-fix-typos-concerni
 patch -s -p1 < "${DIR}/patches/dspbridge/0108-staging-trivial-fix-typos-concerning-initiali-zs-e.patch"
 patch -s -p1 < "${DIR}/patches/dspbridge/0109-staging-tidspbridge-check-return-code-of-kzalloc.patch"
 patch -s -p1 < "${DIR}/patches/dspbridge/0110-staging-tidspbridge-check-return-code-of-get_user.patch"
-patch -s -p1 < "${DIR}/patches/dspbridge/0111-staging-ti-dspbridge-remove-cmm_xlator_delete-wrappe.patch"
-patch -s -p1 < "${DIR}/patches/dspbridge/0112-staging-ti-dspbridge-Replace-find_lcm-with-lcm-kerne.patch"
-patch -s -p1 < "${DIR}/patches/dspbridge/0113-staging-ti-dspbridge-disable-all-peripherals-at-brid.patch"
-patch -s -p1 < "${DIR}/patches/dspbridge/0114-staging-tidspbridge-replace-iommu-custom-for-opensou.patch"
-patch -s -p1 < "${DIR}/patches/dspbridge/0115-staging-tidspbridge-remove-duplicated-include.patch"
-patch -s -p1 < "${DIR}/patches/dspbridge/0116-staging-tidspbridge-use-omap_dsp_platform_data.patch"
+#patch -s -p1 < "${DIR}/patches/dspbridge/0111-staging-ti-dspbridge-remove-cmm_xlator_delete-wrappe.patch"
+#patch -s -p1 < "${DIR}/patches/dspbridge/0112-staging-ti-dspbridge-Replace-find_lcm-with-lcm-kerne.patch"
+#patch -s -p1 < "${DIR}/patches/dspbridge/0113-staging-ti-dspbridge-disable-all-peripherals-at-brid.patch"
+#patch -s -p1 < "${DIR}/patches/dspbridge/0114-staging-tidspbridge-replace-iommu-custom-for-opensou.patch"
+#patch -s -p1 < "${DIR}/patches/dspbridge/0115-staging-tidspbridge-remove-duplicated-include.patch"
+#patch -s -p1 < "${DIR}/patches/dspbridge/0116-staging-tidspbridge-use-omap_dsp_platform_data.patch"
 
 #2.6.35
 patch -s -p1 < "${DIR}/patches/dspbridge/0001-OUT-OF-TREE-tidspbridge-move-platform_device_registe.patch"
