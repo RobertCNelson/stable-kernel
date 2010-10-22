@@ -94,40 +94,29 @@ modprobe bufferclass_ti
 pvr_maj=\$(grep "pvrsrvkm$" /proc/devices | cut -b1,2,3)
 bc_maj=\$(grep "bc" /proc/devices | cut -b1,2,3)
 
-if [ -e /dev/pvrsrvkm ] ; then 
+if [ -e /dev/pvrsrvkm ] ; then
 	rm -f /dev/pvrsrvkm
 fi
 
-mknod /dev/pvrsrvkm c \$pvr_maj 0 
+mknod /dev/pvrsrvkm c \$pvr_maj 0
 chmod 666 /dev/pvrsrvkm
 
 touch /etc/powervr-esrev
 
 SAVED_ESREVISION="\$(cat /etc/powervr-esrev)"
-ES_REVISION="\$(cat /proc/cpuinfo | grep "CPU revision" | awk -F: '{print \$2}')"
-XM_REVISION="\$(dmesg | grep "OMAP3630 ES1.0" | awk '{print \$3}')"
 
-if [ "\${XM_REVISION}" = "OMAP3630" ] ; then 
-ES_REVISION=' 5'
-fi
+devmem2 0x48004B48 w 0x2 > /dev/null
+devmem2 0x48004B10 w 0x1 > /dev/null
+devmem2 0x48004B00 w 0x2 > /dev/null
+
+ES_REVISION="\$(devmem2 0x50000014 | sed -e s:0x10205:5: -e s:0x10201:3: -e s:0x10003:2: | tail -n1 | awk -F': ' '{print \$2}')"
 
 if [ "\${ES_REVISION}" != "\${SAVED_ESREVISION}" ] ; then
+
 	echo -n "Starting SGX fixup for"
-	if [ "\${ES_REVISION}" = " 5" ] ; then 
-	echo " ES5.x"
-	cp -a /usr/lib/ES5.0/* /usr/lib
-	cp -a /usr/bin/ES5.0/* /usr/bin	
-	else if [ "\${ES_REVISION}" = " 3" ] ; then
-	echo " ES3.x"
-	cp -a /usr/lib/ES3.0/* /usr/lib
-	cp -a /usr/bin/ES3.0/* /usr/bin	
-	else
-	echo " ES2.x"
-	cp -a /usr/lib/ES2.0/* /usr/lib
-	cp -a /usr/bin/ES2.0/* /usr/bin	
-	fi
-	fi
-	
+	echo " ES\${ES_REVISION}.x"
+	cp -a /usr/lib/ES\${ES_REVISION}.0/* /usr/lib
+	cp -a /usr/bin/ES\${ES_REVISION}.0/* /usr/bin
 	echo "\${ES_REVISION}" > /etc/powervr-esrev
 fi
 
@@ -136,7 +125,6 @@ fi
 pvrscript
 
 }
-
 
 function file-install-SGX {
 
@@ -157,11 +145,21 @@ if [ \$(uname -m) == "armv7l" ] ; then
 
   if which lsb_release >/dev/null 2>&1 && [ "\$(lsb_release -is)" = Ubuntu ]; then
 
+    if [ ! \$(which devmem2) ];then
+        if ls /devmem2*_armel.deb >/dev/null 2>&1;then
+          sudo dpkg -i /devmem2*_armel.deb
+        fi
+    fi
+
+    if ls /devmem2*_armel.deb >/dev/null 2>&1;then
+        sudo rm -f /devmem2*_armel.deb
+    fi
+
     if [ \$(lsb_release -sc) == "jaunty" ]; then
       sudo cp /opt/pvr /etc/rcS.d/S60pvr.sh
       sudo chmod +x /etc/rcS.d/S60pvr.sh
     else
-      #karmic/lucid/maverick/etc
+      #karmic/lucid/maverick/natty etc
       sudo cp /opt/pvr /etc/init.d/pvr
       sudo chmod +x /etc/init.d/pvr
       sudo update-rc.d pvr defaults
@@ -243,6 +241,13 @@ function copy_sgx_system_files {
 file-pvr-startup
 
 	cd ${DIR}/SDK/libs
+
+	#download devmem2
+	rm -f /tmp/index.html || true
+	wget --directory-prefix=/tmp http://ports.ubuntu.com/pool/universe/d/devmem2/
+	DEVMEM2=$(cat /tmp/index.html | grep _armel.deb | head -1 | awk -F"\"" '{print $8}')
+	wget -c http://ports.ubuntu.com/pool/universe/d/devmem2/${DEVMEM2}
+
 	tar czf ${DIR}/SDK/target_libs.tar.gz *
 	cd ${DIR}
 	sudo rm -rfd ${DIR}/SDK/libs || true
@@ -258,7 +263,6 @@ file-run-SGX
 
 	sudo rm -rfd ${DIR}/SDK/ || true
 	echo "SGX libs are in: GFX_${SGX_VERSION}_libs.tar.gz"
-	
 }
 
 function tar_up_examples {
