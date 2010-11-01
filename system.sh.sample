@@ -3,10 +3,15 @@
 
 ARCH=$(uname -m)
 
-#Recommended:
-#Use Angstrom's Cross Compiler: http://www.angstrom-distribution.org/building-angstrom (select beagleboard for machine)
-#Follow all steps upto Step 3, "MACHINE=beagleboard bitbake base-image" Should be enough
-#
+#Ubuntu Maverick:
+#gcc-4.4
+#sudo apt-get install gcc-4.4-arm-linux-gnueabi
+#or gcc-4.5
+#sudo apt-get install gcc-4.5-arm-linux-gnueabi
+
+#Angstrom's Cross Compiler:
+#DL from: http://www.angstrom-distribution.org/toolchains/
+#angstrom-XXXX.X-test-X-armv7a-linux-gnueabi-toolchain.tar.bz2
 #Otherwise
 #Use CodeSourcery: http://www.codesourcery.com/sgpp/lite/arm/portal/subscription?@template=lite (GNU/Linux)
 #Just download and extract...
@@ -18,6 +23,8 @@ then
 else
  #using Cross Compiler
  CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
+ #ubuntu:
+ #CC=arm-linux-gnueabi-
 fi
 
 #Allow the usage of git to help create kernel patches

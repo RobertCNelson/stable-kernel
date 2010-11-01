@@ -112,11 +112,32 @@ function make_uImage {
 function make_modules {
 	cd ${DIR}/KERNEL/
 	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y modules
+
+	echo ""
+	echo "Building Module Archive"
+	echo ""
+
 	rm -rfd ${DIR}/deploy/mod &> /dev/null || true
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
 	cd ${DIR}/deploy/mod
 	tar czf ../${KERNEL_UTS}-modules.tar.gz *
+	cd ${DIR}
+}
+
+function make_headers {
+	cd ${DIR}/KERNEL/
+
+	echo ""
+	echo "Building Header Archive"
+	echo ""
+
+	rm -rfd ${DIR}/deploy/headers &> /dev/null || true
+	mkdir -p ${DIR}/deploy/headers/usr
+	make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
+	cd ${DIR}/deploy/headers
+
+	tar czf ../${KERNEL_UTS}-headers.tar.gz *
 	cd ${DIR}
 }
 
@@ -143,6 +164,7 @@ fi
 	make_menuconfig
 	make_uImage
 	make_modules
+	make_headers
 else
 	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
 	echo "cp system.sh.sample system.sh"
