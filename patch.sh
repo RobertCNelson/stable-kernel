@@ -205,6 +205,12 @@ patch -s -p1 < "${DIR}/patches/devkit8000/0008-OMAP2-Devkit8000-Using-the-REGULA
 patch -s -p1 < "${DIR}/patches/devkit8000/0009-OMAP2-Devkit8000-Using-gpio_is_valid-macro.patch"
 patch -s -p1 < "${DIR}/patches/devkit8000/0010-OMAP2-Devkit8000-Remove-unused-omap_board_config.patch"
 patch -s -p1 < "${DIR}/patches/devkit8000/0011-OMAP2-Devkit8000-Fix-regulator-for-power-supply.patch"
+
+#https://patchwork.kernel.org/patch/296132/
+patch -s -p1 < "${DIR}/patches/devkit8000/0001-OMAP2-Devkit8000-Fix-mmc-regulator-failure.patch"
+
+#noticed by Robert Skretkowicz
+patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel.patch"
 }
 
 function dspbridge {
