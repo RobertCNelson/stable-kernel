@@ -9,6 +9,7 @@ patch -s -p1 < "${DIR}/patches/gpio/0001-ARM-OMAP-Beagle-revision-detection.patc
 patch -s -p1 < "${DIR}/patches/gpio/0002-ARM-OMAP-Beagle-only-Cx-boards-use-pin-23-for-write-.patch"
 patch -s -p1 < "${DIR}/patches/gpio/0003-ARM-OMAP-Beagle-no-gpio_wp-pin-connection-on-xM.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-Adding-i2c-eeprom-driver-to-read-EDID.patch"
+patch -s -p1 < "${DIR}/patches/beagle/0001-omap-Beagle-detect-new-xM-revision-B.patch"
 
 function sakoman {
 echo "sakoman's patches"
