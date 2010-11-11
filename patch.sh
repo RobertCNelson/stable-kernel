@@ -212,6 +212,9 @@ patch -s -p1 < "${DIR}/patches/devkit8000/0001-OMAP2-Devkit8000-Fix-mmc-regulato
 
 #noticed by Robert Skretkowicz
 patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel.patch"
+
+patch -s -p1 < "${DIR}/patches/devkit8000/0001-omap-devkit8000-fix-regulator.patch"
+
 }
 
 function dspbridge {
