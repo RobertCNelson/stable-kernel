@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux kernel version: 2.6.35.5
-# Mon Sep 20 18:28:03 2010
+# Linux kernel version: 2.6.35.8
+# Sun Nov 14 17:12:51 2010
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -1419,7 +1419,9 @@ CONFIG_MII=y
 # CONFIG_AX88796 is not set
 # CONFIG_SMC91X is not set
 # CONFIG_TI_DAVINCI_EMAC is not set
-# CONFIG_DM9000 is not set
+CONFIG_DM9000=m
+CONFIG_DM9000_DEBUGLEVEL=4
+CONFIG_DM9000_FORCE_SIMPLE_PHY_POLL=y
 CONFIG_ENC28J60=m
 # CONFIG_ENC28J60_WRITEVERIFY is not set
 # CONFIG_ETHOC is not set
