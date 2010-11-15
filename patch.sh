@@ -215,6 +215,8 @@ patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-s
 
 patch -s -p1 < "${DIR}/patches/devkit8000/0001-omap-devkit8000-fix-regulator.patch"
 
+patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-update-nand-to-2.6.36.patch"
+
 }
 
 function dspbridge {
