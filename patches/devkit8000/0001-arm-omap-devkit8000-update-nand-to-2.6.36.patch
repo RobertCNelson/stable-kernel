@@ -1,0 +1,26 @@
+From 3352e27ff798e7e0a21091ad740e4f8172388ba1 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Mon, 15 Nov 2010 14:19:30 -0600
+Subject: [PATCH] arm omap devkit8000 update nand to 2.6.36
+
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ arch/arm/mach-omap2/board-devkit8000.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
+index 2e14168..5bbc7bd 100644
+--- a/arch/arm/mach-omap2/board-devkit8000.c
++++ b/arch/arm/mach-omap2/board-devkit8000.c
+@@ -603,7 +603,7 @@ static void __init devkit8000_flash_init(void)
+ 			(gpmc_base_add);
+ 
+ 		printk(KERN_INFO "Registering NAND on CS%d\n", nandcs);
+-		if (platform_device_register(&devkit8000_nand_device) < 0)
++		if (gpmc_nand_init(&devkit8000_nand_device) < 0)
+ 			printk(KERN_ERR "Unable to register NAND device\n");
+ 	}
+ }
+-- 
+1.7.1
+
