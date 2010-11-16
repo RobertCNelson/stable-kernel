@@ -17,7 +17,7 @@ index 2e14168..5bbc7bd 100644
  
  		printk(KERN_INFO "Registering NAND on CS%d\n", nandcs);
 -		if (platform_device_register(&devkit8000_nand_device) < 0)
-+		if (gpmc_nand_init(&devkit8000_nand_device) < 0)
++		if (gpmc_nand_init(&devkit8000_nand_data) < 0)
  			printk(KERN_ERR "Unable to register NAND device\n");
  	}
  }
