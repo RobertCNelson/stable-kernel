@@ -11,6 +11,8 @@ patch -s -p1 < "${DIR}/patches/gpio/0003-ARM-OMAP-Beagle-no-gpio_wp-pin-connecti
 patch -s -p1 < "${DIR}/patches/beagle/0001-Adding-i2c-eeprom-driver-to-read-EDID.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-omap-Beagle-detect-new-xM-revision-B.patch"
 
+patch -s -p1 < "${DIR}/patches/trivial/0001-staging-add-airlink-awll7025-id-for-rt2860.patch"
+
 function sakoman {
 echo "sakoman's patches"
 patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0001-video-add-timings-for-hd720.patch"
