@@ -102,6 +102,7 @@ patch -s -p1 < "${DIR}/patches/arago-project/0001-AM37x-Switch-SGX-clocks-to-200
 patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-a2-3-fix-dvi-reset-gpio.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-use-GPIO2-on-the-xM-A3-to-turn-DVI-on.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-smsc95xx-generate-random-MAC-address-once-not-every-.patch"
+#patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-set-core-voltage-to-1.35-for-xM.patch"
 }
 
 function nand {
