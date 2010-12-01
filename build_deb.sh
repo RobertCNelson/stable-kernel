@@ -82,7 +82,7 @@ if [ -e ${DIR}/system.sh ]; then
 
 if [ "${IS_LUCID}" ] ; then
 	echo ""
-	echo "Building for Lucid (10.04) & Maverick (10.10)"
+	echo "Building for Lucid (10.04) & Maverick (10.10) & Natty (11.04)"
 	echo ""
 else
 	echo ""
