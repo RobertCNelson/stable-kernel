@@ -12,6 +12,7 @@ patch -s -p1 < "${DIR}/patches/beagle/0001-Adding-i2c-eeprom-driver-to-read-EDID
 patch -s -p1 < "${DIR}/patches/beagle/0001-omap-Beagle-detect-new-xM-revision-B.patch"
 
 patch -s -p1 < "${DIR}/patches/trivial/0001-staging-add-airlink-awll7025-id-for-rt2860.patch"
+patch -s -p1 < "${DIR}/patches/trivial/0001-OMAP4-enable-smc-instruction-in-new-assembler-versio.patch"
 
 function sakoman {
 echo "sakoman's patches"
