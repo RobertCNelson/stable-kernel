@@ -9,10 +9,6 @@ ARCH=$(uname -m)
 #or gcc-4.5
 #sudo apt-get install gcc-4.5-arm-linux-gnueabi
 
-#Angstrom's Cross Compiler:
-#DL from: http://www.angstrom-distribution.org/toolchains/
-#angstrom-XXXX.X-test-X-armv7a-linux-gnueabi-toolchain.tar.bz2
-#Otherwise
 #Use CodeSourcery: http://www.codesourcery.com/sgpp/lite/arm/portal/subscription?@template=lite (GNU/Linux)
 #Just download and extract...
 
@@ -21,8 +17,6 @@ then
  #using native gcc
  CC=
 else
- #using Cross Compiler
- CC=/OE/angstrom-dev/cross/armv7a/bin/arm-angstrom-linux-gnueabi-
  #ubuntu:
  #CC=arm-linux-gnueabi-
 fi
@@ -33,5 +27,5 @@ fi
 #Use with Caution, mount locations can change... This define's SD/MMC card mount location for load_uImage.sh script.
 #MMC=/dev/sde
 
-#For lucid & Maverick we need a specific defconfig not compatible with squeeze/jaunty/karmic..
-#IS_LUCID=1
+#Old Stuff, Such as: Debian Lenny, Ubuntu Jaunty, Ubuntu Karmic need this:
+#NO_DEVTMPS=1

@@ -9,19 +9,8 @@ if [ $(uname -m) == "armv7l" ] ; then
   exit
 fi
 
-BIOS_VER=5_33_06
-BIOS_FILE_VER=5.33.06
-BIOS=bios_setuplinux_${BIOS_VER}.bin
-BIOS_DIR=bios_${BIOS_VER}
-BIOS_FILE=DSP_BIOS_${BIOS_FILE_VER}_Components
-
-CGVERSION=7.0.4
-CGTOOLS_BIN=ti_cgt_c6000_${CGVERSION}_setup_linux_x86.bin
-
-TI_DSP_BIN=DSPbinaries-3.09
-TI_DSP_DIR=285/3260
-#TI_DSP_BIN=TI_DSPbinaries_RLS23.i3.8-3.12
-#TI_DSP_DIR=352/3680
+TI_DSP_BIN=TI_DSPbinaries_RLS23.i3.8-3.12
+TI_DSP_DIR=352/3680
 
 DL_DIR=${DIR}/dl
 
@@ -33,144 +22,14 @@ DIST=$(lsb_release -sc)
 if [ $(uname -m) == "x86_64" ] ; then
 	LIBSTD=$(file /usr/lib32/libstdc++.so.5 | grep -v ERROR | awk '{print $1}')
 	if [ "-$LIBSTD-" = "--" ] ; then
-		if [ "-$DIST-" = "-karmic-" ] ; then
-			sudo apt-get install -y ia32-libs
-		else
-			cd /tmp
-			wget -c http://security.ubuntu.com/ubuntu/pool/universe/i/ia32-libs/ia32-libs_2.7ubuntu6.1_amd64.deb
-			dpkg-deb -x ia32-libs_2.7ubuntu6.1_amd64.deb ia32-libs
-			sudo cp ia32-libs/usr/lib32/libstdc++.so.5.0.7 /usr/lib32/
-			cd /usr/lib32
-			sudo ln -s libstdc++.so.5.0.7 libstdc++.so.5
-		fi
+		sudo apt-get install -y ia32-libs
 	fi
 else
 	LIBSTD=$(file /usr/lib/libstdc++.so.5 | grep -v ERROR | awk '{print $1}')
 	if [ "-$LIBSTD-" = "--" ] ; then
-		if [ "-$DIST-" != "--" ] ; then
-			cd /tmp
-			wget -c http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-3.3/libstdc++5_3.3.6-17ubuntu1_i386.deb
-			dpkg-deb -x libstdc++5_3.3.6-17ubuntu1_i386.deb libs
-			sudo cp libs/usr/lib/libstdc++.so.5.0.7 /usr/lib/
-			cd /usr/lib
-			sudo ln -s libstdc++.so.5.0.7 libstdc++.so.5
-		fi
+		sudo apt-get install libstdc++5
 	fi
 fi
-cd ${DIR}
-}
-
-function check_dsp_bios {
-if [ -e ${DIR}/dl/${BIOS} ]; then
-  echo "${BIOS} found..."
-  if [ -e  ${DIR}/dl/${BIOS_DIR}/${BIOS_FILE} ]; then
-    echo "Installed ${BIOS} found..."
-  else
-    cd ${DIR}/dl/
-    echo "Setting permissions ${BIOS} needs to be executable..."
-    sudo chmod +x ${DIR}/dl/${BIOS}
-    ${DIR}/dl/${BIOS} --mode console --prefix ${DIR}/dl/${BIOS_DIR} <<setupBIOS
-Y
- 
-q Y
-setupBIOS
-
-    cd ${DIR}
-  fi
-else
-  echo ""
-  echo "${BIOS} not found"
-  echo "Download ${BIOS}"
-  echo "DL From: http://software-dl.ti.com/dsps/dsps_registered_sw/sdo_sb/targetcontent/bios/index.html"
-  echo "Copy to: ${DIR}/dl"
-  echo ""
-  exit
-fi
-}
-
-function check_cgtools {
-if [ -e ${DIR}/dl/${CGTOOLS_BIN} ]; then
-  echo "${CGTOOLS_BIN} found..."
-  if [ -e  ${DIR}/dl/TI_CGT_C6000_${CGVERSION}/uninstall_cgt_c6000.bin ]; then
-    echo "Installed ${CGTOOLS_BIN} found..."
-  else
-    cd ${DIR}/dl/
-    echo "Setting permissions ${CGTOOLS_BIN} needs to be executable..."
-    sudo chmod +x ${DIR}/dl/${CGTOOLS_BIN}
-    ${DIR}/dl/${CGTOOLS_BIN} --mode console --prefix ${DIR}/dl/TI_CGT_C6000_${CGVERSION} <<setupCG
-Y
- 
-q Y
- 
- 
- 
-setupCG
-
-    cd ${DIR}
-  fi
-else
-  echo ""
-  echo "${CGTOOLS_BIN} not found"
-  echo "Download ${CGTOOLS_BIN}"
-  echo "DL From: https://www-a.ti.com/downloads/sds_support/TICodegenerationTools/download.htm" 
-  echo "Copy to: ${DIR}/dl"
-  echo ""
-  exit
-fi
-}
-
-function check_dspbridge_userspace {
-if [ -e ${DIR}/dl/userspace-dspbridge/source/Makefile ]; then
-  cd ${DIR}/dl/userspace-dspbridge/
-  git checkout master -f
-  git pull
-  cd ${DIR}
-  BUILD+=G
-else
-  cd ${DIR}/dl/
-  git clone git://dev.omapzoom.org/pub/scm/tidspbridge/userspace-dspbridge.git
-  cd ${DIR}/dl/userspace-dspbridge/
-  cd ${DIR}
-if [ -e ${DIR}/dl/userspace-dspbridge/source/Makefile ]; then
-  echo "userspace available"
-else
-  exit
-fi
-fi
-}
-
-function build_dsp_userspace {
-sudo rm -rfd /tmp/dsp-tc/ || true
-mkdir -p /tmp/dsp-tc/
-mkdir -p /tmp/dsp-tc/bios_${BIOS_VER}
-mkdir -p /tmp/dsp-tc/cgt6x-${CGVERSION}
-cp -r ${DIR}/dl/${BIOS_DIR}/*  /tmp/dsp-tc/bios_${BIOS_VER}
-
-if [ -e  /tmp/dsp-tc/bios_5_33_04/DSP_BIOS_5.33.04_Components ] ; then
-	echo "Fixing BIOS 5.33.04 Permissions"
-	sudo chmod -R +x /tmp/dsp-tc/bios_5_33_04/xdctools
-fi
-
-cp -r ${DIR}/dl/TI_CGT_C6000_${CGVERSION}/* /tmp/dsp-tc/cgt6x-${CGVERSION}
-
-export DEPOT=/tmp/dsp-tc
-
-cd ${DIR}/dl/userspace-dspbridge/source/
-
-#Fix evil makefile
-sed -i -e 's:SABIOS_VER   = 5.33.04:SABIOS_VER   = '$BIOS_FILE_VER':g' product.mak
-sed -i -e 's:SABIOS_VER_2 = 5_33_04:SABIOS_VER_2 = '$BIOS_VER':g' product.mak
-sed -i -e 's:CGT6X_VER = 6.0.7:CGT6X_VER = '$CGVERSION':g' product.mak
-
-make clean
-make ARCH=arm CROSS=${CC} all
-
-cd ${DIR}/dl/userspace-dspbridge/source/
-
-sed -i -e 's:SABIOS_VER   = '$BIOS_FILE_VER':SABIOS_VER   = 5.33.04:g' product.mak
-sed -i -e 's:SABIOS_VER_2 = '$BIOS_VER':SABIOS_VER_2 = 5_33_04:g' product.mak
-sed -i -e 's:CGT6X_VER = '$CGVERSION':CGT6X_VER = 6.0.7:g' product.mak
-
 cd ${DIR}
 }
 
@@ -204,6 +63,7 @@ cat > ${DIR}/DSP/opt/dsp <<dspscript
 
 case "\$1" in
 	start)
+		modprobe mailbox_mach
 		modprobe bridgedriver base_img=/lib/dsp/baseimage.dof
 		;;
 esac
@@ -260,6 +120,73 @@ installDSP
 
 }
 
+function file-install-gst-dsp {
+
+cat > ${DIR}/DSP/install-gst-dsp.sh <<installgst
+#!/bin/bash
+
+DIR=\$PWD
+
+function no_connection {
+
+echo "setup internet connection before running.."
+exit
+
+}
+
+if [ \$(uname -m) == "armv7l" ] ; then
+
+ping -c 1 -w 100 www.google.com  | grep "ttl=" || no_connection
+
+sudo apt-get -y install git-core pkg-config build-essential gstreamer-tools libgstreamer0.10-dev
+
+mkdir -p \${DIR}/git/
+
+if ! ls \${DIR}/git/gst-dsp >/dev/null 2>&1;then
+cd \${DIR}/git/
+git clone git://github.com/felipec/gst-dsp.git
+fi
+
+cd \${DIR}/git/gst-dsp
+make clean
+git pull
+make CROSS_COMPILE= 
+sudo make install
+cd \${DIR}/
+
+if ! ls \${DIR}/git/gst-omapfb >/dev/null 2>&1;then
+cd \${DIR}/git/
+git clone git://github.com/felipec/gst-omapfb.git
+fi
+
+cd \${DIR}/git/gst-omapfb
+make clean
+git pull
+make CROSS_COMPILE= 
+sudo make install
+cd \${DIR}/
+
+if ! ls \${DIR}/git/dsp-tools >/dev/null 2>&1;then
+cd \${DIR}/git/
+git clone git://github.com/felipec/dsp-tools.git
+fi
+
+cd \${DIR}/git/dsp-tools
+make clean
+git pull
+make CROSS_COMPILE= 
+sudo make install
+cd \${DIR}/
+
+else
+ echo "This script is to be run on an armv7 platform"
+ exit
+fi
+
+installgst
+
+}
+
 function create_DSP_package {
 	cd ${DIR}
 	sudo rm -rfd ${DIR}/DSP/
@@ -267,9 +194,9 @@ function create_DSP_package {
 	mkdir -p ${DIR}/DSP/lib/dsp
 	mkdir -p ${DIR}/DSP/opt/
 
-	sudo cp -rv ${DIR}/dl/userspace-dspbridge/source/target/dspbridge/ ${DIR}/DSP/opt/
-	sudo cp -v ${DIR}/dl/userspace-dspbridge/source/target/lib/* ${DIR}/DSP/lib/
-	sudo cp -v ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/Binaries/* ${DIR}/DSP/lib/dsp
+#	sudo cp -rv ${DIR}/dl/userspace-dspbridge/source/target/dspbridge/ ${DIR}/DSP/opt/
+#	sudo cp -v ${DIR}/dl/userspace-dspbridge/source/target/lib/* ${DIR}/DSP/lib/
+	sudo cp -v ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/binaries/* ${DIR}/DSP/lib/dsp
 
 file-DSP-startup
 
@@ -285,6 +212,9 @@ file-DSP-startup
 file-install-DSP
 	chmod +x ./DSP/install-DSP.sh
 
+file-install-gst-dsp
+	chmod +x ./DSP/install-gst-dsp.sh
+
 	cd ${DIR}/DSP
 	tar czf ${DIR}/DSP_Install_libs.tar.gz *
 	cd ${DIR}
@@ -298,13 +228,8 @@ if [ -e ${DIR}/system.sh ]; then
 	. system.sh
 
 	libstd_dependicy
-	check_dsp_bios
-	check_cgtools
-	check_dspbridge_userspace
 	ti_DSP_binaries
 
-echo "Starting UserSpace Build"
-	build_dsp_userspace
 	create_DSP_package
 
 else
