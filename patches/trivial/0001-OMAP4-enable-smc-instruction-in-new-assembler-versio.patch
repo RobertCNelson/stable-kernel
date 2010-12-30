@@ -12,23 +12,23 @@ enable the former in AFLAGS for files that use smc.
 Checked on both old and new binutils to verify that it does
 not break old versions.
 
-Tweaked for 2.6.35: Robert Nelson <robertcnelson@gmail.com>
-
 Signed-off-by: John Rigby <john.rigby@linaro.org>
 ---
- arch/arm/mach-omap2/Makefile |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/arm/mach-omap2/Makefile |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
-index 13e1da2..e979fcf 100644
+index 60e51bc..ee9ef4f 100644
 --- a/arch/arm/mach-omap2/Makefile
 +++ b/arch/arm/mach-omap2/Makefile
-@@ -24,7 +24,8 @@ obj-$(CONFIG_SMP)			+= omap-smp.o omap-headsmp.o
- obj-$(CONFIG_LOCAL_TIMERS)		+= timer-mpu.o
+@@ -26,8 +26,9 @@ obj-$(CONFIG_LOCAL_TIMERS)		+= timer-mpu.o
+ obj-$(CONFIG_HOTPLUG_CPU)		+= omap-hotplug.o
  obj-$(CONFIG_ARCH_OMAP4)		+= omap44xx-smc.o omap4-common.o
  
+-AFLAGS_omap-headsmp.o			:=-Wa,-march=armv7-a
 -AFLAGS_omap44xx-smc.o			:=-Wa,-march=armv7-a
 +plus_sec := $(call as-instr,.arch_extension sec,+sec)
++AFLAGS_omap-headsmp.o			:=-Wa,-march=armv7-a$(plus_sec)
 +AFLAGS_omap44xx-smc.o			:=-Wa,-march=armv7-a$(plus_sec)
  
  # Functions loaded to SRAM

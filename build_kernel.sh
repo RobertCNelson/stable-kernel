@@ -2,10 +2,12 @@
 
 unset KERNEL_REL
 unset KERNEL_PATCH
+unset RC_KERNEL
+unset RC_PATCH
 unset BUILD
 unset CC
 unset GIT_MODE
-unset IS_LUCID
+unset NO_DEVTMPS
 
 ARCH=$(uname -m)
 CCACHE=ccache
@@ -28,7 +30,11 @@ function dl_kernel {
 	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
 
 if [ "${KERNEL_PATCH}" ] ; then
-	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_PATCH}.bz2
+    if [ "${RC_PATCH}" ] ; then
+		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/testing/${DL_PATCH}.bz2
+	else
+		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_PATCH}.bz2
+    fi
 fi
 }
 
@@ -81,8 +87,8 @@ fi
 function copy_defconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} distclean
-if [ "${IS_LUCID}" ] ; then
-	cp ${DIR}/patches/lucid-defconfig .config
+if [ "${NO_DEVTMPS}" ] ; then
+	cp ${DIR}/patches/no_devtmps-defconfig .config
 else
 	cp ${DIR}/patches/defconfig .config
 fi
@@ -92,8 +98,8 @@ fi
 function make_menuconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} menuconfig
-if [ "${IS_LUCID}" ] ; then
-	cp .config ${DIR}/patches/lucid-defconfig
+if [ "${NO_DEVTMPS}" ] ; then
+	cp .config ${DIR}/patches/no_devtmps-defconfig
 else
 	cp .config ${DIR}/patches/defconfig
 fi
@@ -136,7 +142,7 @@ function make_headers {
 	mkdir -p ${DIR}/deploy/headers/usr
 	make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
 	cd ${DIR}/deploy/headers
-
+	echo "Building ${KERNEL_UTS}-headers.tar.gz"
 	tar czf ../${KERNEL_UTS}-headers.tar.gz *
 	cd ${DIR}
 }
@@ -149,11 +155,17 @@ if [ -e ${DIR}/system.sh ]; then
 
 if [ "${IS_LUCID}" ] ; then
 	echo ""
-	echo "Building for Lucid (10.04) & Maverick (10.10) & Natty (11.04)"
+	echo "IS_LUCID setting in system.sh is Depreciated"
+	echo ""
+fi
+
+if [ "${NO_DEVTMPS}" ] ; then
+	echo ""
+	echo "Building for Debian Lenny & Ubuntu 9.04/9.10"
 	echo ""
 else
 	echo ""
-	echo "Building for Debian Lenny/Squeeze/Sid & Ubuntu 9.04/9.10"
+	echo "Building for Debian Squeeze/Sid & Ubuntu 10.04/10.10/11.04"
 	echo ""
 fi
 
