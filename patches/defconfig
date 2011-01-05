@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
-# Linux/arm 2.6.37-rc8 Kernel Configuration
-# Thu Dec 30 16:38:28 2010
+# Linux/arm 2.6.37 Kernel Configuration
+# Wed Jan  5 07:16:24 2011
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -1866,7 +1866,6 @@ CONFIG_I2C_CHARDEV=y
 CONFIG_I2C_HELPER_AUTO=y
 CONFIG_I2C_SMBUS=m
 CONFIG_I2C_ALGOBIT=m
-# CONFIG_I2C_ALGOPCF is not set
 CONFIG_I2C_ALGOPCA=m
 
 #
