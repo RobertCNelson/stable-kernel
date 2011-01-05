@@ -1,7 +1,6 @@
 #!/bin/bash -e
 #yeah, i'm getting lazy..
 
-unset IS_LUCID
 REPO=2.6-stable
 
 DIR=$PWD
@@ -15,7 +14,7 @@ if [ -e ${DIR}/version.sh ]; then
 		bzr push lp:~beagleboard-kernel/+junk/${REPO}
 	else
 		bzr commit -m "${KERNEL_REL}-${BUILD} release"
-		bzr tag "${KERNEL_REL}.${STABLE_PATCH}"
+		bzr tag "${KERNEL_REL}-${BUILD}"
 		bzr push lp:~beagleboard-kernel/+junk/${REPO}
 	fi
 fi
