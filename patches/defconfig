@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux/arm 2.6.37 Kernel Configuration
-# Wed Jan  5 07:16:24 2011
+# Thu Jan  6 12:30:44 2011
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -1506,8 +1506,7 @@ CONFIG_MAC80211_HWSIM=m
 CONFIG_ATH_COMMON=m
 # CONFIG_ATH_DEBUG is not set
 # CONFIG_ATH9K_HTC is not set
-CONFIG_AR9170_USB=m
-CONFIG_AR9170_LEDS=y
+# CONFIG_AR9170_USB is not set
 CONFIG_CARL9170=m
 CONFIG_CARL9170_LEDS=y
 # CONFIG_CARL9170_DEBUGFS is not set
