@@ -89,9 +89,8 @@ patch -s -p1 < "${DIR}/patches/beagle/0001-omap-Beagle-detect-new-xM-revision-B.
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-AM37x-Switch-SGX-clocks-to-200MHz.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-use-GPIO2-on-the-xM-A3-to-turn-DVI-on.patch"
-#patch -s -p1 < "${DIR}/patches/beagle/0001-revert-audio-seems-to-work-on-the-beagle-with-gone.patch"
-patch -s -p1 < "${DIR}/patches/beagle/0001-omap-hsmmc-increase-dto-value-and-print-value-to-dme.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-xM-audio-fix-from-Ashok.patch"
+patch -s -p1 < "${DIR}/patches/beagle/0001-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
 }
 
 function sgx {
