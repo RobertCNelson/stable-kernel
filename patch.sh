@@ -211,7 +211,7 @@ patch -s -p1 < "${DIR}/patches/dvfs/0018-OMAP4-PM-Program-correct-init-voltages-
 patch -s -p1 < "${DIR}/patches/dvfs/0019-OMAP4-hwmod-Add-inital-data-for-smartreflex-modules.patch"
 patch -s -p1 < "${DIR}/patches/dvfs/0020-OMAP4-Smartreflex-framework-extensions.patch"
 
-#patch -s -p1 < "${DIR}/patches/dspbridge/0001-omap-mailbox-fix-detection-for-previously-supported-.patch"
+patch -s -p1 < "${DIR}/patches/dvfs/0001-omap3-Add-basic-support-for-720MHz-part.patch"
 
 }
 
