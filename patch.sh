@@ -81,6 +81,8 @@ patch -s -p1 < "${DIR}/patches/rcn/beagle-zippy-dont-load-i2c-on-boards-with-noz
 
 #needed for 2.6.36-git7 + local patchset
 patch -s -p1 < "${DIR}/patches/beagle/0001-arm-omap-beagle-use-caps-over-wires.patch"
+
+patch -s -p1 < "${DIR}/patches/beagle/0001-omap3-beaglexm-fix-DVI-initialization.patch"
 }
 
 function beagle {
