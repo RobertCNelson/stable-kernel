@@ -1,21 +1,27 @@
+This just a simple set of scripts to rebuild a known working kernel for omap devices..
+
+Script Bugs: "bugs@rcn-ee.com"
+
 To Build:
 Kernel with Modules, easy to build and test:
 
 "./build_kernel.sh"
 
-SGX Modules:
-
-"./build_sgx_modules.sh"
-
 Debian Package
 
 "./build_deb.sh"
 
-Defconfig Requirement notes:
+Create SGX install Package:
 
-Ubuntu Lucid (10.04)
+"./create_sgx_package.sh"
 
-Enable "IS_LUCID=1" in system.sh
+Create DSP install Package:
+
+"./create_dsp_package.sh"
+
+Some Defconfig Requirement notes:
+
+Ubuntu Lucid (10.04) ++++
 
 CONFIG_ARM_ERRATA_430973=y
 https://bugs.launchpad.net/ubuntu/+source/fakeroot/+bug/495536
@@ -28,14 +34,9 @@ https://lists.ubuntu.com/archives/kernel-team/2010-January/008518.html
 CONFIG_ARM_THUMBEE=y
 https://lists.ubuntu.com/archives/kernel-team/2010-January/008561.html
 
-Breaks Lucid, kernel unbootable...
-5/8/2010 (2.6.33.3-l1)
-CONFIG_TOUCHSCREEN_USB_COMPOSITE=m
-
-#To compare with Ubuntu's
+#rcn-ee's notes for comparing to ubuntu's config..
 #ubuntu git://kernel.ubuntu.com/ubuntu/ubuntu-maverick.git
 
-#Requirements:
 sudo apt-get install fakeroot build-essential
 sudo apt-get install crash kexec-tools makedumpfile kernel-wedge
 sudo apt-get build-dep linux
@@ -45,3 +46,4 @@ sudo apt-get install libelf-dev asciidoc binutils-dev
 fakeroot debian/rules clean
 debian/rules updateconfigs
 debian/rules editconfigsdebian/rules editconfigs
+
