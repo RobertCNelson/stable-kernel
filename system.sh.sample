@@ -14,9 +14,10 @@ ARCH=$(uname -m)
 
 if test "-$ARCH-" = "-armv7l-"
 then
- #using native gcc
+ echo "Using: Native armv7l Compiler"
  CC=
 else
+ echo "Using: Cross Compiler"
  #ubuntu:
  #CC=arm-linux-gnueabi-
 fi
