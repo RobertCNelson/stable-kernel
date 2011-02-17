@@ -121,6 +121,9 @@ patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-2.6.36-rc1-Compi
 
 #4.00.00.01 + 2.6.37-rc1
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.00.00.01-2.6.37-rc1-use-semaphore-ove.patch"
+
+#4.00.00.01 but really 3.01.00.06+ could use it, annoying bug when you 'restart' the core..
+patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.00.00.01-remove-proc-without-debug.patch"
 }
 
 function omap4 {
