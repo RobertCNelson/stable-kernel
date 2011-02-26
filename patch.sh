@@ -9,6 +9,12 @@ echo "bugs and trivial stuff"
 patch -s -p1 < "${DIR}/patches/trivial/0001-staging-add-airlink-awll7025-id-for-rt2860.patch"
 patch -s -p1 < "${DIR}/patches/trivial/0001-OMAP4-enable-smc-instruction-in-new-assembler-versio.patch"
 patch -s -p1 < "${DIR}/patches/trivial/0001-carl9170-add-AirLive-X.USB-vid-pid.patch"
+
+#Bisected from 2.6.35 -> 2.6.36 to find this..
+#This commit breaks some lcd monitors..
+#rcn-ee Feb 26, 2011...
+patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-OMAP-DSS2-OMAPFB-swap-front-and-back-porches-.patch"
+
 }
 
 function sakoman {
