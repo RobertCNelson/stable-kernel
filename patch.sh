@@ -242,5 +242,7 @@ devkit8000
 dspbridge
 dvfs
 
+#patch -s -p1 < "${DIR}/patches/trivial/0001-hsmmc.c-testing-dto-14.patch"
+
 echo "patch.sh ran successful"
 
