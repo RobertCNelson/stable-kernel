@@ -1,7 +1,7 @@
-From 61196fba692ad04f36440be98964119dcfc82689 Mon Sep 17 00:00:00 2001
+From c6968059afe78cd73098b86d927458587605e519 Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Sun, 21 Nov 2010 10:46:29 +0000
-Subject: [PATCH 16/25] staging: tidspbridge: pmgr code cleanup
+Subject: [PATCH 16/37] staging: tidspbridge: pmgr code cleanup
 
 Reorganized some code in the pmgr module to increase
 its readability. No functional changes were done.

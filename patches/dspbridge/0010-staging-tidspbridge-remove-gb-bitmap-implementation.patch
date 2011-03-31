@@ -1,7 +1,7 @@
-From 8b20e71c83bf813b17a62ef4637a7373d15a2dbb Mon Sep 17 00:00:00 2001
+From 3b7e82344cc47fed1b5f1cb168cf5825fe3ef7b1 Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Sun, 21 Nov 2010 10:46:22 +0000
-Subject: [PATCH 10/25] staging: tidspbridge: remove gb bitmap implementation
+Subject: [PATCH 10/37] staging: tidspbridge: remove gb bitmap implementation
 
 Now that all users of gb have been converted to the
 standard linux bitmap API, we can remove it from the

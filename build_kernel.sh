@@ -126,6 +126,7 @@ function make_modules {
 	rm -rfd ${DIR}/deploy/mod &> /dev/null || true
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
+	echo "Building ${KERNEL_UTS}-modules.tar.gz"
 	cd ${DIR}/deploy/mod
 	tar czf ../${KERNEL_UTS}-modules.tar.gz *
 	cd ${DIR}
@@ -165,7 +166,7 @@ if [ "${NO_DEVTMPS}" ] ; then
 	echo ""
 else
 	echo ""
-	echo "Building for Debian Squeeze/Sid & Ubuntu 10.04/10.10/11.04"
+	echo "Building for Debian Squeeze/Wheezy/Sid & Ubuntu 10.04/10.10/11.04"
 	echo ""
 fi
 

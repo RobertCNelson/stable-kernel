@@ -1,7 +1,7 @@
-From f0749e8db311802cd5eb811fb0bae7e64f114fa9 Mon Sep 17 00:00:00 2001
+From 918d1cc5c5cbaeade2740a4182190f080e7e97fd Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Fri, 5 Nov 2010 17:01:50 +0000
-Subject: [PATCH 06/25] staging: tidspbridge: fix kernel oops in bridge_io_get_proc_load
+Subject: [PATCH 06/37] staging: tidspbridge: fix kernel oops in bridge_io_get_proc_load
 
 The DSP shared memory area gets initialized only when
 a COFF file is loaded.
@@ -19,7 +19,7 @@ Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com>
  1 files changed, 30 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/staging/tidspbridge/core/io_sm.c b/drivers/staging/tidspbridge/core/io_sm.c
-index 5718645..9ee02d1 100644
+index 27e0aa8..9cea3ea 100644
 --- a/drivers/staging/tidspbridge/core/io_sm.c
 +++ b/drivers/staging/tidspbridge/core/io_sm.c
 @@ -167,57 +167,41 @@ int bridge_io_create(struct io_mgr **io_man,

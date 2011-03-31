@@ -1,7 +1,7 @@
-From 822ec7bac3c8720ea903ba0c9ff7a90f7c4250c3 Mon Sep 17 00:00:00 2001
+From cb73b9c8511124b47090899726ae337a64dbbfca Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@mindbit.ro>
 Date: Sun, 21 Nov 2010 10:46:26 +0000
-Subject: [PATCH 13/25] staging: tidspbridge: convert rmgr to list_head
+Subject: [PATCH 13/37] staging: tidspbridge: convert rmgr to list_head
 
 Convert the rmgr module of the tidspbridge driver
 to use struct list_head instead of struct lst_list.

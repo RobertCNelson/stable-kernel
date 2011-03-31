@@ -1,7 +1,7 @@
-From 46b167e5cb99f197ced91effa7c5fe4bc5eb15e8 Mon Sep 17 00:00:00 2001
+From e164086f77dae745fd31bec66abedee51ecac078 Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Sun, 21 Nov 2010 10:46:21 +0000
-Subject: [PATCH 09/25] staging: tidspbridge: switch to linux bitmap API
+Subject: [PATCH 09/37] staging: tidspbridge: switch to linux bitmap API
 
 Replace the tidspbridge generic bitmap operations
 with the linux standard bitmap implementation.

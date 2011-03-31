@@ -1,7 +1,7 @@
-From 30388543eb8f0e2f5ed318b008e7ca20e757efbd Mon Sep 17 00:00:00 2001
+From dd15c88d522d7b7c2f593851489aa5f8aec9be41 Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Sun, 21 Nov 2010 10:46:19 +0000
-Subject: [PATCH 07/25] staging: tidspbridge: remove gs memory allocator
+Subject: [PATCH 07/37] staging: tidspbridge: remove gs memory allocator
 
 Remove unnecessary wrappers for linux kernel memory
 allocation primitives.

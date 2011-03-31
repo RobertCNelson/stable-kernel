@@ -1,7 +1,7 @@
-From abfb6546fb6de50d1f7d0d614a09459e7818b2e1 Mon Sep 17 00:00:00 2001
+From 8499a234926d109f4b5841c5a359f6ad902406a9 Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Mon, 1 Nov 2010 17:15:50 -0600
-Subject: [PATCH 03/25] staging: tidspbridge - Eliminate direct manipulation of OMAP_SYSC_BASE
+Subject: [PATCH 03/37] staging: tidspbridge: Eliminate direct manipulation of OMAP_SYSC_BASE
 
 Eliminates Bridge direct manipulation of OMAP_SYSC_BASE registers
 
@@ -95,10 +95,10 @@ index 46d17c7..589a055 100644
  		break;
  #endif
 diff --git a/drivers/staging/tidspbridge/core/tiomap3430.c b/drivers/staging/tidspbridge/core/tiomap3430.c
-index 1be081f..cb45e93 100644
+index a3f69f6..2ae7e44 100644
 --- a/drivers/staging/tidspbridge/core/tiomap3430.c
 +++ b/drivers/staging/tidspbridge/core/tiomap3430.c
-@@ -1037,15 +1037,12 @@ static int bridge_dev_destroy(struct bridge_dev_context *dev_ctxt)
+@@ -1036,15 +1036,12 @@ static int bridge_dev_destroy(struct bridge_dev_context *dev_ctxt)
  			iounmap((void *)host_res->dw_per_pm_base);
  		if (host_res->dw_core_pm_base)
  			iounmap((void *)host_res->dw_core_pm_base);

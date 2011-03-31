@@ -1,7 +1,7 @@
-From af739aebde1578e39329089e1f6e3a9efbff3dfc Mon Sep 17 00:00:00 2001
+From 1415f47c71c6cdf426584aa851fc544feedf022f Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Thu, 9 Dec 2010 21:47:37 +0000
-Subject: [PATCH 18/25] staging: tidspbridge: rmgr/node.c code cleanup
+Subject: [PATCH 18/37] staging: tidspbridge: rmgr/node.c code cleanup
 
 Reorganized some code in rmgr/node.c to increase its
 readability. Most of the changes reduce the code

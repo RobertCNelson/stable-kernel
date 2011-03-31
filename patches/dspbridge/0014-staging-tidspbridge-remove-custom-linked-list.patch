@@ -1,7 +1,7 @@
-From 16e734601f562d65fd5105c19b06369d33aeada9 Mon Sep 17 00:00:00 2001
+From 54612f138dc139531f47b5a9784915b84dd6463e Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Sun, 21 Nov 2010 10:46:27 +0000
-Subject: [PATCH 14/25] staging: tidspbridge: remove custom linked list
+Subject: [PATCH 14/37] staging: tidspbridge: remove custom linked list
 
 Now that all users of lst_list have been converted to the
 standard linux list_head API, we can remove the associated

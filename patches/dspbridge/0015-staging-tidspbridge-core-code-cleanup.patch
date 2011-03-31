@@ -1,7 +1,7 @@
-From 2fa16e235088632cc48f2f69a1c57a7ebaff1ed0 Mon Sep 17 00:00:00 2001
+From 7d6c1bc815646d12ceea9ef421d64fa07e511796 Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Sun, 21 Nov 2010 10:46:28 +0000
-Subject: [PATCH 15/25] staging: tidspbridge: core code cleanup
+Subject: [PATCH 15/37] staging: tidspbridge: core code cleanup
 
 Reorganized some code in the core module to increase its
 readability. Most of the changes reduce the code
@@ -596,7 +596,7 @@ index f955036..2d06bb0 100644
  }
  
 diff --git a/drivers/staging/tidspbridge/core/io_sm.c b/drivers/staging/tidspbridge/core/io_sm.c
-index d30cc7e..9289522 100644
+index 2a48f3d..042a465 100644
 --- a/drivers/staging/tidspbridge/core/io_sm.c
 +++ b/drivers/staging/tidspbridge/core/io_sm.c
 @@ -1195,29 +1195,29 @@ static void input_msg(struct io_mgr *pio_mgr, struct msg_mgr *hmsg_mgr)

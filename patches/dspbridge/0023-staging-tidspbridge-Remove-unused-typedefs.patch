@@ -1,7 +1,7 @@
-From f64e0d037d0a6671debacde9d3bec5fa5ec6ef30 Mon Sep 17 00:00:00 2001
+From 8aa0c084ba5ea98841f0aa2b91c6758518a77433 Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Fri, 17 Dec 2010 01:18:32 -0600
-Subject: [PATCH 23/25] staging: tidspbridge - Remove unused typedefs
+Subject: [PATCH 23/37] staging: tidspbridge: Remove unused typedefs
 
 Unsed typedefs are removed, because of there are not
 used or because previous clean ups.
