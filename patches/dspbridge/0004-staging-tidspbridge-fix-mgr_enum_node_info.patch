@@ -1,7 +1,7 @@
-From 356be372017d3fcbe6fab3078a19b25c971c7a78 Mon Sep 17 00:00:00 2001
+From 474111b6e95274e1139418454ca3961f18b8e1d9 Mon Sep 17 00:00:00 2001
 From: Felipe Contreras <felipe.contreras@gmail.com>
 Date: Fri, 5 Nov 2010 17:01:48 +0000
-Subject: [PATCH 04/25] staging: tidspbridge: fix mgr_enum_node_info
+Subject: [PATCH 04/37] staging: tidspbridge: fix mgr_enum_node_info
 
 The current code was always returning a non-zero status value
 to userspace applications when this ioctl was called.

@@ -1,7 +1,7 @@
-From 1167b7417468a42dd082de49ef48195593a4847d Mon Sep 17 00:00:00 2001
+From d688dfdf4b3e9ba6716ff085d730ad76ab2cc4a3 Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Fri, 17 Dec 2010 01:18:29 -0600
-Subject: [PATCH 20/25] staging: tidspbridge - Remove unused defined constants
+Subject: [PATCH 20/37] staging: tidspbridge: Remove unused defined constants
 
 Remove defined constants not being used.
 
@@ -343,7 +343,7 @@ index 4b109d1..052d27e 100644
  /*****************************************************************************
   * Procedure dynamic_load_module
 diff --git a/drivers/staging/tidspbridge/include/dspbridge/io_sm.h b/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
-index 18aec55..bcde1d9 100644
+index 8242c70..056606a 100644
 --- a/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
 +++ b/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
 @@ -28,7 +28,6 @@

@@ -1,7 +1,7 @@
-From c1a29417a1d1aab88e1249303bba2cbe58ff6d1e Mon Sep 17 00:00:00 2001
+From 30ed645e42bfb03a36ba25c67b9aa8e5f83966fe Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Fri, 5 Nov 2010 17:01:49 +0000
-Subject: [PATCH 05/25] staging: tidspbridge: mgr_enum_node_info cleanup
+Subject: [PATCH 05/37] staging: tidspbridge: mgr_enum_node_info cleanup
 
 Reorganized mgr_enum_node_info code to increase its
 readability.

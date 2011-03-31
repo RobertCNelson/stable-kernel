@@ -1,7 +1,7 @@
-From c6e21b12fab9d5083bc90e7dd3f091d0a15513ff Mon Sep 17 00:00:00 2001
+From 4d515b86ab3c0624fc68b058b163d5e829f00b04 Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Fri, 17 Dec 2010 01:18:31 -0600
-Subject: [PATCH 22/25] staging: tidspbridge - Remove unused structs
+Subject: [PATCH 22/37] staging: tidspbridge: Remove unused structs
 
 Remove unused structs and its dependencies, like references
 in other structs or as arguments of certain functions.

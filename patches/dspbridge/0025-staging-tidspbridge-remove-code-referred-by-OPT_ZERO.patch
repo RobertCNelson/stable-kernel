@@ -1,7 +1,7 @@
-From ed98b576aaebed67265a72057bd949444dab8d80 Mon Sep 17 00:00:00 2001
+From 0c92c7a53e0a7ee293ea5462e6dea820f75afbdb Mon Sep 17 00:00:00 2001
 From: Ramos Falcon, Ernesto <ernesto@ti.com>
 Date: Mon, 20 Dec 2010 21:23:08 +0000
-Subject: [PATCH 25/25] staging: tidspbridge: remove code referred by OPT_ZERO_COPY_LOADER
+Subject: [PATCH 25/37] staging: tidspbridge: remove code referred by OPT_ZERO_COPY_LOADER
 
 Remove code referred by OPT_ZERO_COPY_LOADER since it is
 not used.

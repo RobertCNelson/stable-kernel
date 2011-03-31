@@ -1,7 +1,7 @@
-From 4bd6f769210d915f0298e92a2e661aef231e8f96 Mon Sep 17 00:00:00 2001
+From 7ed5e514af13c7938a6097e3c6d259c95cf6c436 Mon Sep 17 00:00:00 2001
 From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Date: Sun, 12 Dec 2010 13:39:37 +0000
-Subject: [PATCH 19/25] staging: tidspbridge: Fix atoi to support hexadecimal numbers correctly
+Subject: [PATCH 19/37] staging: tidspbridge: Fix atoi to support hexadecimal numbers correctly
 
 For some strange reason, the DSP base image node/object properties
 description string stores hexadecimal numbers with a 'h' or 'H' suffix

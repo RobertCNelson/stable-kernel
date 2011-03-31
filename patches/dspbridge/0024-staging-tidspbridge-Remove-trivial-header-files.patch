@@ -1,7 +1,7 @@
-From 7cffa2c6f40f993bc4405c5b4a29e1a0ee77826c Mon Sep 17 00:00:00 2001
+From 5c317750dfd586abc84cbee176afd7dd9b962cfa Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Fri, 17 Dec 2010 01:18:33 -0600
-Subject: [PATCH 24/25] staging: tidspbridge - Remove trivial header files
+Subject: [PATCH 24/37] staging: tidspbridge: Remove trivial header files
 
 Remove the header files that contains few declarations
 and can be merged onto more generic headers.
@@ -277,7 +277,7 @@ index da4683c..9615980 100644
  /*
   *  ======== io_create ========
 diff --git a/drivers/staging/tidspbridge/include/dspbridge/io_sm.h b/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
-index 8778ab4..6d26472 100644
+index 6a4c441..a054dad 100644
 --- a/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
 +++ b/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
 @@ -23,7 +23,12 @@

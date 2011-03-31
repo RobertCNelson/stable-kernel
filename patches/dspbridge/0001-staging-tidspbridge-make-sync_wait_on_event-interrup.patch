@@ -1,7 +1,7 @@
-From d66f2a4c63c6f5646c30ed22bb1b28a6c07cc7bc Mon Sep 17 00:00:00 2001
+From fe7e48dd109e872d18f8c859dd58b6fc07343aea Mon Sep 17 00:00:00 2001
 From: Guzman Lugo, Fernando <x0095840@ti.com>
 Date: Tue, 26 Oct 2010 00:51:46 +0000
-Subject: [PATCH 01/25] staging: tidspbridge - make sync_wait_on_event interruptible
+Subject: [PATCH 01/37] staging: tidspbridge: make sync_wait_on_event interruptible
 
 So that avoid non-killable process.
 

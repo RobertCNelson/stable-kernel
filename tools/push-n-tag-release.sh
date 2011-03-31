@@ -1,6 +1,7 @@
 #!/bin/bash -e
 #yeah, i'm getting lazy..
 
+unset NO_DEVTMPS
 REPO=2.6-stable
 
 DIR=$PWD

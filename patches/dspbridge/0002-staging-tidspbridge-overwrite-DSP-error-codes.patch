@@ -1,7 +1,7 @@
-From 991f03559122d43fccee62c956ea0faf87ee25d7 Mon Sep 17 00:00:00 2001
+From a2a4e531d38e980b41861108b4fdccaa373c32a4 Mon Sep 17 00:00:00 2001
 From: Sapiens, Rene <rene.sapiens@ti.com>
 Date: Thu, 4 Nov 2010 00:31:24 +0000
-Subject: [PATCH 02/25] staging: tidspbridge: overwrite DSP error codes
+Subject: [PATCH 02/37] staging: tidspbridge: overwrite DSP error codes
 
 When calling the DSP's remote functions, the DSP returns error
 codes different from the ones managed by the kernel, the

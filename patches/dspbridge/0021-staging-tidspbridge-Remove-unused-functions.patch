@@ -1,7 +1,7 @@
-From 86b83173d61872057d4c3757364cc4bbeed24b80 Mon Sep 17 00:00:00 2001
+From dfe9b625ade34cf936db1ecbd61943253a37b3f1 Mon Sep 17 00:00:00 2001
 From: Armando Uribe <x0095078@ti.com>
 Date: Fri, 17 Dec 2010 01:18:30 -0600
-Subject: [PATCH 21/25] staging: tidspbridge - Remove unused functions
+Subject: [PATCH 21/37] staging: tidspbridge: Remove unused functions
 
 Remove functions that are not used at all, also remove the dependencies
 of this functions like struct members, comments and calls.
@@ -28,7 +28,7 @@ Signed-off-by: Omar Ramirez Luna <omar.ramirez@ti.com>
  16 files changed, 0 insertions(+), 390 deletions(-)
 
 diff --git a/drivers/staging/tidspbridge/core/io_sm.c b/drivers/staging/tidspbridge/core/io_sm.c
-index 9289522..90e89ee 100644
+index 042a465..d4b9e14 100644
 --- a/drivers/staging/tidspbridge/core/io_sm.c
 +++ b/drivers/staging/tidspbridge/core/io_sm.c
 @@ -1682,10 +1682,6 @@ int bridge_io_get_proc_load(struct io_mgr *hio_mgr,
@@ -43,10 +43,10 @@ index 9289522..90e89ee 100644
  #if defined(CONFIG_TIDSPBRIDGE_BACKTRACE) || defined(CONFIG_TIDSPBRIDGE_DEBUG)
  void print_dsp_debug_trace(struct io_mgr *hio_mgr)
 diff --git a/drivers/staging/tidspbridge/core/tiomap3430.c b/drivers/staging/tidspbridge/core/tiomap3430.c
-index cb45e93..cacd30e 100644
+index 2ae7e44..ec713ed 100644
 --- a/drivers/staging/tidspbridge/core/tiomap3430.c
 +++ b/drivers/staging/tidspbridge/core/tiomap3430.c
-@@ -255,8 +255,6 @@ void bridge_drv_entry(struct bridge_drv_interface **drv_intf,
+@@ -259,8 +259,6 @@ void bridge_drv_entry(struct bridge_drv_interface **drv_intf,
  
  	DBC_REQUIRE(driver_file_name != NULL);
  
@@ -256,10 +256,10 @@ index bc346f9..da4683c 100644
 -
  #endif /* CHNL_ */
 diff --git a/drivers/staging/tidspbridge/include/dspbridge/io_sm.h b/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
-index bcde1d9..8778ab4 100644
+index 056606a..6a4c441 100644
 --- a/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
 +++ b/drivers/staging/tidspbridge/include/dspbridge/io_sm.h
-@@ -120,122 +120,6 @@ extern void io_request_chnl(struct io_mgr *io_manager,
+@@ -115,122 +115,6 @@ extern void io_request_chnl(struct io_mgr *io_manager,
  extern void iosm_schedule(struct io_mgr *io_manager);
  
  /*
@@ -382,7 +382,7 @@ index bcde1d9..8778ab4 100644
   *  ======== io_sh_msetting ========
   *  Purpose:
   *      Sets the shared memory setting
-@@ -258,25 +142,6 @@ extern int io_sh_msetting(struct io_mgr *hio_mgr, u8 desc, void *pargs);
+@@ -253,25 +137,6 @@ extern int io_sh_msetting(struct io_mgr *hio_mgr, u8 desc, void *pargs);
  /* Maximum channel bufsize that can be used. */
  extern u32 io_buf_size(struct io_mgr *hio_mgr);
  
@@ -634,7 +634,7 @@ index 878aa50..2f46b06 100644
   */
  static void dof_close(struct dbll_library_obj *zl_lib)
 diff --git a/drivers/staging/tidspbridge/rmgr/nldr.c b/drivers/staging/tidspbridge/rmgr/nldr.c
-index a6ae007..26cfb32 100644
+index 28354bb..d19cdb0 100644
 --- a/drivers/staging/tidspbridge/rmgr/nldr.c
 +++ b/drivers/staging/tidspbridge/rmgr/nldr.c
 @@ -260,12 +260,9 @@ static struct dbll_fxns ldr_fxns = {

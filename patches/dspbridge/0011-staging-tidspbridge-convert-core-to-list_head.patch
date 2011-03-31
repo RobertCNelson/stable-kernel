@@ -1,7 +1,7 @@
-From 68fdb3c793591e3fdcf513b32daff725d1306114 Mon Sep 17 00:00:00 2001
+From aa5f8068bb0d10ddd2153d45258e2b10284439b6 Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Sun, 21 Nov 2010 10:46:24 +0000
-Subject: [PATCH 11/25] staging: tidspbridge: convert core to list_head
+Subject: [PATCH 11/37] staging: tidspbridge: convert core to list_head
 
 Convert the core module of the tidspbridge driver
 to use struct list_head instead of struct lst_list.
@@ -466,7 +466,7 @@ index 662a5b5..f955036 100644
  
  /*
 diff --git a/drivers/staging/tidspbridge/core/io_sm.c b/drivers/staging/tidspbridge/core/io_sm.c
-index 9ee02d1..d30cc7e 100644
+index 9cea3ea..2a48f3d 100644
 --- a/drivers/staging/tidspbridge/core/io_sm.c
 +++ b/drivers/staging/tidspbridge/core/io_sm.c
 @@ -24,6 +24,7 @@

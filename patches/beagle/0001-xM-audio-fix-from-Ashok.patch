@@ -9,19 +9,19 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  1 files changed, 3 insertions(+), 0 deletions(-)
 
 diff --git a/sound/soc/omap/omap-mcbsp.c b/sound/soc/omap/omap-mcbsp.c
-index 7e84f24..1038686 100644
+index d203f4d..6311e8a 100644
 --- a/sound/soc/omap/omap-mcbsp.c
 +++ b/sound/soc/omap/omap-mcbsp.c
-@@ -332,6 +332,9 @@ static int omap_mcbsp_dai_hw_params(struct snd_pcm_substream *substream,
+@@ -358,6 +358,9 @@ static int omap_mcbsp_dai_hw_params(struct snd_pcm_substream *substream,
  	} else if (cpu_is_omap343x()) {
  		dma = omap24xx_dma_reqs[bus_id][substream->stream];
  		port = omap34xx_mcbsp_port[bus_id][substream->stream];
 +	} else if (cpu_is_omap3630()) {
 +		dma = omap24xx_dma_reqs[bus_id][substream->stream];
 +		port = omap34xx_mcbsp_port[bus_id][substream->stream];
- 	} else {
- 		return -ENODEV;
- 	}
+ 	 } else if (cpu_is_omap44xx()) {
+ 		dma = omap44xx_dma_reqs[bus_id][substream->stream];
+ 		port = omap44xx_mcbsp_port[bus_id][substream->stream];
 -- 
 1.7.1
 

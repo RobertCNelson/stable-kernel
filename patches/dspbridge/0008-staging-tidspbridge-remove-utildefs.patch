@@ -1,7 +1,7 @@
-From db2b369ad355755c1e3438f0490dd073c5040aca Mon Sep 17 00:00:00 2001
+From 6524e9792af9f06bb63b4f5c292436c9a74fd9d7 Mon Sep 17 00:00:00 2001
 From: Ionut Nicu <ionut.nicu@gmail.com>
 Date: Sun, 21 Nov 2010 10:46:20 +0000
-Subject: [PATCH 08/25] staging: tidspbridge: remove utildefs
+Subject: [PATCH 08/37] staging: tidspbridge: remove utildefs
 
 Remove a header file that was not very useful to
 the dspbridge driver.
