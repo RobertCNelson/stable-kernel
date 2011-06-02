@@ -2,7 +2,6 @@
 #yeah, i'm getting lazy..
 
 unset NO_DEVTMPS
-REPO=2.6-stable
 
 DIR=$PWD
 
@@ -10,13 +9,15 @@ if [ -e ${DIR}/version.sh ]; then
 	. version.sh
 
 	if [ "${KERNEL_PATCH}" ] ; then
-		bzr commit -m "${KERNEL_REL}.${STABLE_PATCH}-${BUILD} release"
-		bzr tag "${KERNEL_REL}.${STABLE_PATCH}-${BUILD}"
-		bzr push lp:~beagleboard-kernel/+junk/${REPO}
+		git commit -a -m "${KERNEL_REL}.${STABLE_PATCH}-${BUILD} release" -s
+		git tag -a "${KERNEL_REL}.${STABLE_PATCH}-${BUILD}" -m "${KERNEL_REL}.${STABLE_PATCH}-${BUILD}"
+		git push origin --tags
+		git push origin
 	else
-		bzr commit -m "${KERNEL_REL}-${BUILD} release"
-		bzr tag "${KERNEL_REL}-${BUILD}"
-		bzr push lp:~beagleboard-kernel/+junk/${REPO}
+		git commit -a -m "${KERNEL_REL}-${BUILD} release" -s
+		git tag -a "${KERNEL_REL}-${BUILD}" -m "${KERNEL_REL}-${BUILD}"
+		git push origin --tags
+		git push origin
 	fi
 fi
 
