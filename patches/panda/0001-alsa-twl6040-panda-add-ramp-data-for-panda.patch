@@ -1,0 +1,32 @@
+From 367b834561194f06b73dfcd298f17936e0d8c597 Mon Sep 17 00:00:00 2001
+From: Andy Green <andy.green@linaro.org>
+Date: Thu, 7 Apr 2011 08:40:07 +0100
+Subject: [PATCH] alsa twl6040 panda add ramp data for panda
+
+The ramp data was defined for the sdp4430 but not the panda
+
+Signed-off-by: Andy Green <andy.green@linaro.org>
+---
+ arch/arm/mach-omap2/board-omap4panda.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 1355d2d..0990040 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -438,7 +438,11 @@ static struct regulator_init_data omap4_panda_clk32kg = {
+ 	},
+ };
+ static struct twl4030_codec_audio_data twl6040_audio = {
+-	/* Add audio only data */
++	/* single-step ramp for headset and handsfree */
++	.left_step_hs   = 0x0f,
++	.right_step_hs  = 0x0f,
++	.left_step_hf   = 0x1d,
++	.right_step_hf  = 0x1d,
+ };
+ 
+ static struct twl4030_codec_data twl6040_codec = {
+-- 
+1.7.4.1
+

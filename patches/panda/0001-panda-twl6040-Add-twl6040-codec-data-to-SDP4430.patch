@@ -1,0 +1,49 @@
+From 577ba65da0ed7d107e43edf94d2eed1d9c805857 Mon Sep 17 00:00:00 2001
+From: Misael Lopez Cruz <misael.lopez@ti.com>
+Date: Thu, 7 Apr 2011 08:39:44 +0100
+Subject: [PATCH] panda: twl6040: Add twl6040 codec data to SDP4430
+
+Add twl6040 codec support for SDP4430.
+
+Change-Id: I95798f6cb064a4c119cc8fb8dd07df8f976b4a4d
+Signed-off-by: David Anders <x0132446@ti.com>
+Signed-off-by: Margarita Olaya Cabrera <magi.olaya@ti.com>
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+---
+ arch/arm/mach-omap2/board-omap4panda.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index c48a4e1..1355d2d 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -437,6 +437,16 @@ static struct regulator_init_data omap4_panda_clk32kg = {
+ 		.valid_ops_mask		= REGULATOR_CHANGE_STATUS,
+ 	},
+ };
++static struct twl4030_codec_audio_data twl6040_audio = {
++	/* Add audio only data */
++};
++
++static struct twl4030_codec_data twl6040_codec = {
++	.audio		= &twl6040_audio,
++	.audpwron_gpio	= 127,
++	.naudint_irq	= OMAP44XX_IRQ_SYS_2N,
++	.irq_base	= TWL6040_CODEC_IRQ_BASE,
++};
+ 
+ static struct twl4030_platform_data omap4_panda_twldata = {
+ 	.irq_base	= TWL6030_IRQ_BASE,
+@@ -453,6 +463,9 @@ static struct twl4030_platform_data omap4_panda_twldata = {
+ 	.vaux3		= &omap4_panda_vaux3,
+ 	.clk32kg	= &omap4_panda_clk32kg,
+ 	.usb		= &omap4_usbphy_data,
++
++	/* children */
++	.codec		= &twl6040_codec,
+ };
+ 
+ static struct i2c_board_info __initdata omap4_panda_i2c_boardinfo[] = {
+-- 
+1.7.4.1
+
