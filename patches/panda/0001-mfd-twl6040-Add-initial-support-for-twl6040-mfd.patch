@@ -1,0 +1,1283 @@
+From 132a3dfa809d5301cb82a7bdcbeb7d1b255cc518 Mon Sep 17 00:00:00 2001
+From: Jorge Eduardo Candelaria <jorge.candelaria@ti.com>
+Date: Thu, 7 Apr 2011 08:39:08 +0100
+Subject: [PATCH] mfd: twl6040: Add initial support for twl6040 mfd
+
+TWL6040 IC provides analog high-end audio codec functions for
+handset applications. It contains several audio analog inputs
+and outputs as well as vibrator support. It's connected to the
+host processor via PDM interface for audio data communication.
+The audio modules are controlled by internal registers that
+can be accessed by I2C and PDM interface.
+
+TWL6040 MFD will be registered as a child of TWL-CORE, and will
+have two children of its own: twl6040-codec and twl6040-vibra
+
+This driver is based on TWL4030 and WM8350 MFD drivers.
+
+Change-Id: I31d848a32c3677bdfde7ee0f4dd234af868fb7d3
+Signed-off-by: Jorge Eduardo Candelaria <jorge.candelaria@ti.com>
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+---
+ arch/arm/plat-omap/include/plat/irqs.h |   12 +-
+ drivers/mfd/Kconfig                    |    6 +
+ drivers/mfd/Makefile                   |    1 +
+ drivers/mfd/twl-core.c                 |    2 +-
+ drivers/mfd/twl6040-codec.c            |  709 ++++++++++++++++++++++++++++++++
+ drivers/mfd/twl6040-irq.c              |  196 +++++++++
+ include/linux/i2c/twl.h                |    1 +
+ include/linux/mfd/twl6040-codec.h      |  243 +++++++++++
+ 8 files changed, 1167 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/mfd/twl6040-codec.c
+ create mode 100644 drivers/mfd/twl6040-irq.c
+ create mode 100644 include/linux/mfd/twl6040-codec.h
+
+diff --git a/arch/arm/plat-omap/include/plat/irqs.h b/arch/arm/plat-omap/include/plat/irqs.h
+index 5a25098..2cfba51 100644
+--- a/arch/arm/plat-omap/include/plat/irqs.h
++++ b/arch/arm/plat-omap/include/plat/irqs.h
+@@ -407,11 +407,19 @@
+ #endif
+ #define TWL6030_IRQ_END		(TWL6030_IRQ_BASE + TWL6030_BASE_NR_IRQS)
+ 
++#define TWL6040_CODEC_IRQ_BASE	TWL6030_IRQ_END
++#ifdef CONFIG_TWL6040_CODEC
++#define TWL6040_CODEC_NR_IRQS	6
++#else
++#define TWL6040_CODEC_NR_IRQS	0
++#endif
++#define TWL6040_CODEC_IRQ_END	(TWL6040_CODEC_IRQ_BASE + TWL6040_CODEC_NR_IRQS)
++
+ /* Total number of interrupts depends on the enabled blocks above */
+-#if (TWL4030_GPIO_IRQ_END > TWL6030_IRQ_END)
++#if (TWL4030_GPIO_IRQ_END > TWL6040_CODEC_IRQ_END)
+ #define TWL_IRQ_END 		TWL4030_GPIO_IRQ_END
+ #else
+-#define TWL_IRQ_END		TWL6030_IRQ_END
++#define TWL_IRQ_END		TWL6040_CODEC_IRQ_END
+ #endif
+ 
+ /* GPMC related */
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 8d7d098..204058e 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -227,6 +227,12 @@ config TWL6030_PWM
+ 	  Say yes here if you want support for TWL6030 PWM.
+ 	  This is used to control charging LED brightness.
+ 
++config TWL6040_CODEC
++	bool
++	depends on TWL4030_CORE
++	select MFD_CORE
++	default n
++
+ config MFD_STMPE
+ 	bool "Support STMicroelectronics STMPE"
+ 	depends on I2C=y && GENERIC_HARDIRQS
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index 47f5709..d646a41 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -43,6 +43,7 @@ obj-$(CONFIG_TWL4030_MADC)      += twl4030-madc.o
+ obj-$(CONFIG_TWL4030_POWER)    += twl4030-power.o
+ obj-$(CONFIG_TWL4030_CODEC)	+= twl4030-codec.o
+ obj-$(CONFIG_TWL6030_PWM)	+= twl6030-pwm.o
++obj-$(CONFIG_TWL6040_CODEC)	+= twl6040-codec.o twl6040-irq.o
+ 
+ obj-$(CONFIG_MFD_MC13XXX)	+= mc13xxx-core.o
+ 
+diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
+index 960b5be..9a1f137 100644
+--- a/drivers/mfd/twl-core.c
++++ b/drivers/mfd/twl-core.c
+@@ -746,7 +746,7 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+ 	/* Phoenix codec driver is probed directly atm */
+ 	if (twl_has_codec() && pdata->codec && twl_class_is_6030()) {
+ 		sub_chip_id = twl_map[TWL_MODULE_AUDIO_VOICE].sid;
+-		child = add_child(sub_chip_id, "twl6040-codec",
++		child = add_child(sub_chip_id, "twl6040-audio",
+ 				pdata->codec, sizeof(*pdata->codec),
+ 				false, 0, 0);
+ 		if (IS_ERR(child))
+diff --git a/drivers/mfd/twl6040-codec.c b/drivers/mfd/twl6040-codec.c
+new file mode 100644
+index 0000000..1f3cd54
+--- /dev/null
++++ b/drivers/mfd/twl6040-codec.c
+@@ -0,0 +1,709 @@
++/*
++ * MFD driver for twl6040 codec submodule
++ *
++ * Authors:     Jorge Eduardo Candelaria <jorge.candelaria@ti.com>
++ *              Misael Lopez Cruz <misael.lopez@ti.com>
++ *
++ * Copyright:   (C) 20010 Texas Instruments, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/slab.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/gpio.h>
++#include <linux/delay.h>
++#include <linux/i2c/twl.h>
++#include <linux/mfd/core.h>
++#include <linux/mfd/twl6040-codec.h>
++
++static struct platform_device *twl6040_dev;
++
++int twl6040_reg_read(struct twl6040 *twl6040, unsigned int reg)
++{
++	int ret;
++	u8 val;
++
++	mutex_lock(&twl6040->io_mutex);
++	ret = twl_i2c_read_u8(TWL_MODULE_AUDIO_VOICE, &val, reg);
++	if (ret < 0) {
++		mutex_unlock(&twl6040->io_mutex);
++		return ret;
++	}
++	mutex_unlock(&twl6040->io_mutex);
++
++	return val;
++}
++EXPORT_SYMBOL(twl6040_reg_read);
++
++int twl6040_reg_write(struct twl6040 *twl6040, unsigned int reg, u8 val)
++{
++	int ret;
++
++	mutex_lock(&twl6040->io_mutex);
++	ret = twl_i2c_write_u8(TWL_MODULE_AUDIO_VOICE, val, reg);
++	mutex_unlock(&twl6040->io_mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL(twl6040_reg_write);
++
++int twl6040_set_bits(struct twl6040 *twl6040, unsigned int reg, u8 mask)
++{
++	int ret;
++	u8 val;
++
++	mutex_lock(&twl6040->io_mutex);
++	ret = twl_i2c_read_u8(TWL_MODULE_AUDIO_VOICE, &val, reg);
++	if (ret)
++		goto out;
++
++	val |= mask;
++	ret = twl_i2c_write_u8(TWL_MODULE_AUDIO_VOICE, val, reg);
++out:
++	mutex_unlock(&twl6040->io_mutex);
++	return ret;
++}
++EXPORT_SYMBOL(twl6040_set_bits);
++
++int twl6040_clear_bits(struct twl6040 *twl6040, unsigned int reg, u8 mask)
++{
++	int ret;
++	u8 val;
++
++	mutex_lock(&twl6040->io_mutex);
++	ret = twl_i2c_read_u8(TWL_MODULE_AUDIO_VOICE, &val, reg);
++	if (ret)
++		goto out;
++
++	val &= ~mask;
++	ret = twl_i2c_write_u8(TWL_MODULE_AUDIO_VOICE, val, reg);
++out:
++	mutex_unlock(&twl6040->io_mutex);
++	return ret;
++}
++EXPORT_SYMBOL(twl6040_clear_bits);
++
++/* twl6040 codec manual power-up sequence */
++static int twl6040_power_up(struct twl6040 *twl6040)
++{
++	u8 ncpctl, ldoctl, lppllctl, accctl;
++	int ret;
++
++	ncpctl = twl6040_reg_read(twl6040, TWL6040_REG_NCPCTL);
++	ldoctl = twl6040_reg_read(twl6040, TWL6040_REG_LDOCTL);
++	lppllctl = twl6040_reg_read(twl6040, TWL6040_REG_LPPLLCTL);
++	accctl = twl6040_reg_read(twl6040, TWL6040_REG_ACCCTL);
++
++	/* enable reference system */
++	ldoctl |= TWL6040_REFENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		return ret;
++	msleep(10);
++
++	/* enable internal oscillator */
++	ldoctl |= TWL6040_OSCENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		goto osc_err;
++	udelay(10);
++
++	/* enable high-side ldo */
++	ldoctl |= TWL6040_HSLDOENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		goto hsldo_err;
++	udelay(244);
++
++	/* enable negative charge pump */
++	ncpctl |= TWL6040_NCPENA | TWL6040_NCPOPEN;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_NCPCTL, ncpctl);
++	if (ret)
++		goto ncp_err;
++	udelay(488);
++
++	/* enable low-side ldo */
++	ldoctl |= TWL6040_LSLDOENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		goto lsldo_err;
++	udelay(244);
++
++	/* enable low-power pll */
++	lppllctl |= TWL6040_LPLLENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL, lppllctl);
++	if (ret)
++		goto lppll_err;
++
++	/* reset state machine */
++	accctl |= TWL6040_RESETSPLIT;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_ACCCTL, accctl);
++	if (ret)
++		goto rst_err;
++	mdelay(5);
++	accctl &= ~TWL6040_RESETSPLIT;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_ACCCTL, accctl);
++	if (ret)
++		goto rst_err;
++
++	/* disable internal oscillator */
++	ldoctl &= ~TWL6040_OSCENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		goto rst_err;
++
++	return 0;
++
++rst_err:
++	lppllctl &= ~TWL6040_LPLLENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL, lppllctl);
++lppll_err:
++	ldoctl &= ~TWL6040_LSLDOENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	udelay(244);
++lsldo_err:
++	ncpctl &= ~(TWL6040_NCPENA | TWL6040_NCPOPEN);
++	twl6040_reg_write(twl6040, TWL6040_REG_NCPCTL, ncpctl);
++	udelay(488);
++ncp_err:
++	ldoctl &= ~TWL6040_HSLDOENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	udelay(244);
++hsldo_err:
++	ldoctl &= ~TWL6040_OSCENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++osc_err:
++	ldoctl &= ~TWL6040_REFENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	msleep(10);
++
++	return ret;
++}
++
++/* twl6040 codec manual power-down sequence */
++static int twl6040_power_down(struct twl6040 *twl6040)
++{
++	u8 ncpctl, ldoctl, lppllctl, accctl;
++	int ret;
++
++	ncpctl = twl6040_reg_read(twl6040, TWL6040_REG_NCPCTL);
++	ldoctl = twl6040_reg_read(twl6040, TWL6040_REG_LDOCTL);
++	lppllctl = twl6040_reg_read(twl6040, TWL6040_REG_LPPLLCTL);
++	accctl = twl6040_reg_read(twl6040, TWL6040_REG_ACCCTL);
++
++	/* enable internal oscillator */
++	ldoctl |= TWL6040_OSCENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		return ret;
++	udelay(10);
++
++	/* disable low-power pll */
++	lppllctl &= ~TWL6040_LPLLENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL, lppllctl);
++	if (ret)
++		goto lppll_err;
++
++	/* disable low-side ldo */
++	ldoctl &= ~TWL6040_LSLDOENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		goto lsldo_err;
++	udelay(244);
++
++	/* disable negative charge pump */
++	ncpctl &= ~(TWL6040_NCPENA | TWL6040_NCPOPEN);
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_NCPCTL, ncpctl);
++	if (ret)
++		goto ncp_err;
++	udelay(488);
++
++	/* disable high-side ldo */
++	ldoctl &= ~TWL6040_HSLDOENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		goto hsldo_err;
++	udelay(244);
++
++	/* disable internal oscillator */
++	ldoctl &= ~TWL6040_OSCENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		goto osc_err;
++
++	/* disable reference system */
++	ldoctl &= ~TWL6040_REFENA;
++	ret = twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	if (ret)
++		goto ref_err;
++	msleep(10);
++
++	return 0;
++
++ref_err:
++	ldoctl |= TWL6040_OSCENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	udelay(10);
++osc_err:
++	ldoctl |= TWL6040_HSLDOENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	udelay(244);
++hsldo_err:
++	ncpctl |= TWL6040_NCPENA | TWL6040_NCPOPEN;
++	twl6040_reg_write(twl6040, TWL6040_REG_NCPCTL, ncpctl);
++	udelay(488);
++ncp_err:
++	ldoctl |= TWL6040_LSLDOENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	udelay(244);
++lsldo_err:
++	lppllctl |= TWL6040_LPLLENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL, lppllctl);
++lppll_err:
++	lppllctl |= TWL6040_LPLLENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL, lppllctl);
++	accctl |= TWL6040_RESETSPLIT;
++	twl6040_reg_write(twl6040, TWL6040_REG_ACCCTL, accctl);
++	mdelay(5);
++	accctl &= ~TWL6040_RESETSPLIT;
++	twl6040_reg_write(twl6040, TWL6040_REG_ACCCTL, accctl);
++	ldoctl &= ~TWL6040_OSCENA;
++	twl6040_reg_write(twl6040, TWL6040_REG_LDOCTL, ldoctl);
++	msleep(10);
++
++	return ret;
++}
++
++static irqreturn_t twl6040_naudint_handler(int irq, void *data)
++{
++	struct twl6040 *twl6040 = data;
++	u8 intid;
++
++	intid = twl6040_reg_read(twl6040, TWL6040_REG_INTID);
++
++	if (intid & TWL6040_READYINT)
++		complete(&twl6040->ready);
++
++	return IRQ_HANDLED;
++}
++
++static int twl6040_power_up_completion(struct twl6040 *twl6040,
++				       int naudint)
++{
++	int time_left;
++	u8 intid;
++
++	time_left = wait_for_completion_timeout(&twl6040->ready,
++						msecs_to_jiffies(144));
++	if (!time_left) {
++		intid = twl6040_reg_read(twl6040, TWL6040_REG_INTID);
++		if (!(intid & TWL6040_READYINT)) {
++			dev_err(&twl6040_dev->dev,
++				"timeout waiting for READYINT\n");
++			return -ETIMEDOUT;
++		}
++	}
++
++	return 0;
++}
++
++static int twl6040_power(struct twl6040 *twl6040, int enable)
++{
++	int audpwron = twl6040->audpwron;
++	int naudint = twl6040->irq;
++	int ret = 0;
++
++	if (enable) {
++		if (gpio_is_valid(audpwron)) {
++			/* use AUDPWRON line */
++			gpio_set_value(audpwron, 1);
++			/* wait for power-up completion */
++			ret = twl6040_power_up_completion(twl6040, naudint);
++			if (ret) {
++				dev_err(&twl6040_dev->dev,
++					"automatic power-down failed\n");
++				return ret;
++			}
++		} else {
++			/* use manual power-up sequence */
++			ret = twl6040_power_up(twl6040);
++			if (ret) {
++				dev_err(&twl6040_dev->dev,
++					"manual power-up failed\n");
++				return ret;
++			}
++		}
++		twl6040->pll = TWL6040_LPPLL_ID;
++		twl6040->sysclk = 19200000;
++	} else {
++		if (gpio_is_valid(audpwron)) {
++			/* use AUDPWRON line */
++			gpio_set_value(audpwron, 0);
++
++			/* power-down sequence latency */
++			udelay(500);
++		} else {
++			/* use manual power-down sequence */
++			ret = twl6040_power_down(twl6040);
++			if (ret) {
++				dev_err(&twl6040_dev->dev,
++					"manual power-down failed\n");
++				return ret;
++			}
++		}
++		twl6040->pll = TWL6040_NOPLL_ID;
++		twl6040->sysclk = 0;
++	}
++
++	twl6040->powered = enable;
++
++	return ret;
++}
++
++int twl6040_enable(struct twl6040 *twl6040)
++{
++	int ret = 0;
++
++	mutex_lock(&twl6040->mutex);
++	if (!twl6040->power_count++)
++		ret = twl6040_power(twl6040, 1);
++	mutex_unlock(&twl6040->mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL(twl6040_enable);
++
++int twl6040_disable(struct twl6040 *twl6040)
++{
++	int ret = 0;
++
++	mutex_lock(&twl6040->mutex);
++	if (!--twl6040->power_count)
++		ret = twl6040_power(twl6040, 0);
++	mutex_unlock(&twl6040->mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL(twl6040_disable);
++
++int twl6040_is_enabled(struct twl6040 *twl6040)
++{
++	return twl6040->power_count;
++}
++EXPORT_SYMBOL(twl6040_is_enabled);
++
++int twl6040_set_pll(struct twl6040 *twl6040, enum twl6040_pll_id id,
++		    unsigned int freq_in, unsigned int freq_out)
++{
++	u8 hppllctl, lppllctl;
++	int ret = 0;
++
++	mutex_lock(&twl6040->mutex);
++
++	hppllctl = twl6040_reg_read(twl6040, TWL6040_REG_HPPLLCTL);
++	lppllctl = twl6040_reg_read(twl6040, TWL6040_REG_LPPLLCTL);
++
++	switch (id) {
++	case TWL6040_LPPLL_ID:
++		/* lppll divider */
++		switch (freq_out) {
++		case 17640000:
++			lppllctl |= TWL6040_LPLLFIN;
++			break;
++		case 19200000:
++			lppllctl &= ~TWL6040_LPLLFIN;
++			break;
++		default:
++			dev_err(&twl6040_dev->dev,
++				"freq_out %d not supported\n", freq_out);
++			ret = -EINVAL;
++			goto pll_out;
++		}
++		twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL, lppllctl);
++
++		switch (freq_in) {
++		case 32768:
++			lppllctl |= TWL6040_LPLLENA;
++			twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL,
++					  lppllctl);
++			mdelay(5);
++			lppllctl &= ~TWL6040_HPLLSEL;
++			twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL,
++					  lppllctl);
++			hppllctl &= ~TWL6040_HPLLENA;
++			twl6040_reg_write(twl6040, TWL6040_REG_HPPLLCTL,
++					  hppllctl);
++			break;
++		default:
++			dev_err(&twl6040_dev->dev,
++				"freq_in %d not supported\n", freq_in);
++			ret = -EINVAL;
++			goto pll_out;
++		}
++
++		twl6040->pll = TWL6040_LPPLL_ID;
++		break;
++	case TWL6040_HPPLL_ID:
++		/* high-performance pll can provide only 19.2 MHz */
++		if (freq_out != 19200000) {
++			dev_err(&twl6040_dev->dev,
++				"freq_out %d not supported\n", freq_out);
++			ret = -EINVAL;
++			goto pll_out;
++		}
++
++		hppllctl &= ~TWL6040_MCLK_MSK;
++
++		switch (freq_in) {
++		case 12000000:
++			/* mclk input, pll enabled */
++			hppllctl |= TWL6040_MCLK_12000KHZ |
++				    TWL6040_HPLLSQRBP |
++				    TWL6040_HPLLENA;
++			break;
++		case 19200000:
++			/* mclk input, pll disabled */
++			hppllctl |= TWL6040_MCLK_19200KHZ |
++				    TWL6040_HPLLSQRENA |
++				    TWL6040_HPLLBP;
++			break;
++		case 26000000:
++			/* mclk input, pll enabled */
++			hppllctl |= TWL6040_MCLK_26000KHZ |
++				    TWL6040_HPLLSQRBP |
++				    TWL6040_HPLLENA;
++			break;
++		case 38400000:
++			/* clk slicer, pll disabled */
++			hppllctl |= TWL6040_MCLK_38400KHZ |
++				    TWL6040_HPLLSQRENA |
++				    TWL6040_HPLLBP;
++			break;
++		default:
++			dev_err(&twl6040_dev->dev,
++				"freq_in %d not supported\n", freq_in);
++			ret = -EINVAL;
++			goto pll_out;
++		}
++
++		twl6040_reg_write(twl6040, TWL6040_REG_HPPLLCTL, hppllctl);
++		udelay(500);
++		lppllctl |= TWL6040_HPLLSEL;
++		twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL, lppllctl);
++		lppllctl &= ~TWL6040_LPLLENA;
++		twl6040_reg_write(twl6040, TWL6040_REG_LPPLLCTL, lppllctl);
++
++		twl6040->pll = TWL6040_HPPLL_ID;
++		break;
++	default:
++		dev_err(&twl6040_dev->dev, "unknown pll id %d\n", id);
++		ret = -EINVAL;
++		goto pll_out;
++	}
++
++	twl6040->sysclk = freq_out;
++
++pll_out:
++	mutex_unlock(&twl6040->mutex);
++	return ret;
++}
++EXPORT_SYMBOL(twl6040_set_pll);
++
++enum twl6040_pll_id twl6040_get_pll(struct twl6040 *twl6040)
++{
++	return twl6040->pll;
++}
++EXPORT_SYMBOL(twl6040_get_pll);
++
++unsigned int twl6040_get_sysclk(struct twl6040 *twl6040)
++{
++	return twl6040->sysclk;
++}
++EXPORT_SYMBOL(twl6040_get_sysclk);
++
++static int __devinit twl6040_probe(struct platform_device *pdev)
++{
++	struct twl4030_codec_data *pdata = pdev->dev.platform_data;
++	struct twl6040 *twl6040;
++	struct mfd_cell *cell = NULL;
++	unsigned int naudint;
++	int audpwron;
++	int ret, children = 0;
++	u8 icrev = 0, accctl;
++
++	if(!pdata) {
++		dev_err(&pdev->dev, "Platform data is missing\n");
++		return -EINVAL;
++	}
++
++	twl6040 = kzalloc(sizeof(struct twl6040), GFP_KERNEL);
++	if (!twl6040)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, twl6040);
++
++	twl6040_dev = pdev;
++	twl6040->dev = &pdev->dev;
++	mutex_init(&twl6040->mutex);
++	mutex_init(&twl6040->io_mutex);
++
++	icrev = twl6040_reg_read(twl6040, TWL6040_REG_ASICREV);
++
++	if (pdata && (icrev > 0))
++		audpwron = pdata->audpwron_gpio;
++	else
++		audpwron = -EINVAL;
++
++	if (pdata)
++		naudint = pdata->naudint_irq;
++	else
++		naudint = 0;
++
++	twl6040->audpwron = audpwron;
++	twl6040->powered = 0;
++	twl6040->irq = naudint;
++	twl6040->irq_base = pdata->irq_base;
++	init_completion(&twl6040->ready);
++
++	if (gpio_is_valid(audpwron)) {
++		ret = gpio_request(audpwron, "audpwron");
++		if (ret)
++			goto gpio1_err;
++
++		ret = gpio_direction_output(audpwron, 0);
++		if (ret)
++			goto gpio2_err;
++	}
++
++	if (naudint) {
++		/* codec interrupt */
++		ret = twl6040_irq_init(twl6040);
++		if (ret)
++			goto gpio2_err;
++
++		ret = twl6040_request_irq(twl6040, TWL6040_IRQ_READY,
++				  twl6040_naudint_handler, "twl6040_irq_ready",
++				  twl6040);
++		if (ret) {
++			dev_err(twl6040->dev, "READY IRQ request failed: %d\n",
++				ret);
++			goto irq_err;
++		}
++	}
++
++	/* dual-access registers controlled by I2C only */
++	accctl = twl6040_reg_read(twl6040, TWL6040_REG_ACCCTL);
++	twl6040_reg_write(twl6040, TWL6040_REG_ACCCTL, accctl | TWL6040_I2CSEL);
++
++	if (pdata->audio) {
++		cell = &twl6040->cells[children];
++		cell->name = "twl6040-codec";
++		cell->platform_data = pdata->audio;
++		cell->data_size = sizeof(*pdata->audio);
++		children++;
++	}
++
++	if (pdata->vibra) {
++		cell = &twl6040->cells[children];
++		cell->name = "twl6040-vibra";
++		cell->platform_data = pdata->vibra;
++		cell->data_size = sizeof(*pdata->vibra);
++		children++;
++	}
++
++	if (children) {
++		ret = mfd_add_devices(&pdev->dev, pdev->id, twl6040->cells,
++				      children, NULL, 0);
++		if (ret)
++			goto mfd_err;
++	} else {
++		dev_err(&pdev->dev, "No platform data found for children\n");
++		ret = -ENODEV;
++		goto mfd_err;
++	}
++
++	return 0;
++
++mfd_err:
++	if (naudint)
++		twl6040_free_irq(twl6040, TWL6040_IRQ_READY, twl6040);
++irq_err:
++	if (naudint)
++		twl6040_irq_exit(twl6040);
++gpio2_err:
++	if (gpio_is_valid(audpwron))
++		gpio_free(audpwron);
++gpio1_err:
++	platform_set_drvdata(pdev, NULL);
++	kfree(twl6040);
++	twl6040_dev = NULL;
++	return ret;
++}
++
++static int __devexit twl6040_remove(struct platform_device *pdev)
++{
++	struct twl6040 *twl6040 = platform_get_drvdata(pdev);
++	int audpwron = twl6040->audpwron;
++	int naudint = twl6040->irq;
++
++	twl6040_disable(twl6040);
++
++	twl6040_free_irq(twl6040, TWL6040_IRQ_READY, twl6040);
++
++	if (gpio_is_valid(audpwron))
++		gpio_free(audpwron);
++
++	if (naudint)
++		twl6040_irq_exit(twl6040);
++
++	mfd_remove_devices(&pdev->dev);
++	platform_set_drvdata(pdev, NULL);
++	kfree(twl6040);
++	twl6040_dev = NULL;
++
++	return 0;
++}
++
++static struct platform_driver twl6040_driver = {
++	.probe		= twl6040_probe,
++	.remove		= __devexit_p(twl6040_remove),
++	.driver		= {
++		.owner	= THIS_MODULE,
++		.name	= "twl6040-audio",
++	},
++};
++
++static int __devinit twl6040_init(void)
++{
++	return platform_driver_register(&twl6040_driver);
++}
++module_init(twl6040_init);
++
++static void __devexit twl6040_exit(void)
++{
++	platform_driver_unregister(&twl6040_driver);
++}
++
++module_exit(twl6040_exit);
++
++MODULE_DESCRIPTION("TWL6040 MFD");
++MODULE_AUTHOR("Jorge Eduardo Candelaria <jorge.candelaria@ti.com>");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:twl6040-audio");
+diff --git a/drivers/mfd/twl6040-irq.c b/drivers/mfd/twl6040-irq.c
+new file mode 100644
+index 0000000..c607ed6
+--- /dev/null
++++ b/drivers/mfd/twl6040-irq.c
+@@ -0,0 +1,196 @@
++/*
++ * twl6040-irq.c  --  Interrupt controller support for TWL6040
++ *
++ * Copyright 2010 Texas Instruments Inc.
++ *
++ * Author: Misael Lopez Cruz <misael.lopez@ti.com>
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/mfd/core.h>
++#include <linux/mfd/twl6040-codec.h>
++
++struct twl6040_irq_data {
++	int mask;
++	int status;
++};
++
++static struct twl6040_irq_data twl6040_irqs[] = {
++	{
++		.mask = TWL6040_THMSK,
++		.status = TWL6040_THINT,
++	},
++	{
++		.mask = TWL6040_PLUGMSK,
++		.status = TWL6040_PLUGINT | TWL6040_UNPLUGINT,
++	},
++	{
++		.mask = TWL6040_HOOKMSK,
++		.status = TWL6040_HOOKINT,
++	},
++	{
++		.mask = TWL6040_HFMSK,
++		.status = TWL6040_HFINT,
++	},
++	{
++		.mask = TWL6040_VIBMSK,
++		.status = TWL6040_VIBINT,
++	},
++	{
++		.mask = TWL6040_READYMSK,
++		.status = TWL6040_READYINT,
++	},
++};
++
++static inline struct twl6040_irq_data *irq_to_twl6040_irq(struct twl6040 *twl6040,
++							  int irq)
++{
++	return &twl6040_irqs[irq - twl6040->irq_base];
++}
++
++static void twl6040_irq_lock(unsigned int irq)
++{
++	struct twl6040 *twl6040 = get_irq_chip_data(irq);
++
++	mutex_lock(&twl6040->irq_mutex);
++}
++
++static void twl6040_irq_sync_unlock(unsigned int irq)
++{
++	struct twl6040 *twl6040 = get_irq_chip_data(irq);
++
++	/* write back to hardware any change in irq mask */
++	if (twl6040->irq_masks_cur != twl6040->irq_masks_cache) {
++		twl6040->irq_masks_cache = twl6040->irq_masks_cur;
++		twl6040_reg_write(twl6040, TWL6040_REG_INTMR,
++				  twl6040->irq_masks_cur);
++	}
++
++	mutex_unlock(&twl6040->irq_mutex);
++}
++
++static void twl6040_irq_unmask(unsigned int irq)
++{
++	struct twl6040 *twl6040 = get_irq_chip_data(irq);
++	struct twl6040_irq_data *irq_data = irq_to_twl6040_irq(twl6040, irq);
++
++	twl6040->irq_masks_cur &= ~irq_data->mask;
++}
++
++static void twl6040_irq_mask(unsigned int irq)
++{
++	struct twl6040 *twl6040 = get_irq_chip_data(irq);
++	struct twl6040_irq_data *irq_data = irq_to_twl6040_irq(twl6040, irq);
++
++	twl6040->irq_masks_cur |= irq_data->mask;
++}
++
++static struct irq_chip twl6040_irq_chip = {
++	.name = "twl6040",
++	.bus_lock = twl6040_irq_lock,
++	.bus_sync_unlock = twl6040_irq_sync_unlock,
++	.mask = twl6040_irq_mask,
++	.unmask = twl6040_irq_unmask,
++};
++
++static irqreturn_t twl6040_irq_thread(int irq, void *data)
++{
++	struct twl6040 *twl6040 = data;
++	u8 intid;
++	int i;
++
++	intid = twl6040_reg_read(twl6040, TWL6040_REG_INTID);
++
++	/* apply masking and report (backwards to handle READYINT first) */
++	for (i = ARRAY_SIZE(twl6040_irqs) - 1; i >= 0; i--) {
++		if (twl6040->irq_masks_cur & twl6040_irqs[i].mask)
++			intid &= ~twl6040_irqs[i].status;
++		if (intid & twl6040_irqs[i].status)
++			handle_nested_irq(twl6040->irq_base + i);
++	}
++
++	/* ack unmasked irqs */
++	twl6040_reg_write(twl6040, TWL6040_REG_INTID, intid);
++
++	return IRQ_HANDLED;
++}
++
++int twl6040_irq_init(struct twl6040 *twl6040)
++{
++	int cur_irq, ret;
++	u8 val;
++
++	mutex_init(&twl6040->irq_mutex);
++
++	/* mask the individual interrupt sources */
++	twl6040->irq_masks_cur = TWL6040_ALLINT_MSK;
++	twl6040->irq_masks_cache = TWL6040_ALLINT_MSK;
++	twl6040_reg_write(twl6040, TWL6040_REG_INTMR, TWL6040_ALLINT_MSK);
++
++	if (!twl6040->irq) {
++		dev_warn(twl6040->dev,
++			 "no interrupt specified, no interrupts\n");
++		twl6040->irq_base = 0;
++		return 0;
++	}
++
++	if (!twl6040->irq_base) {
++		dev_err(twl6040->dev,
++			"no interrupt base specified, no interrupts\n");
++		return 0;
++	}
++
++	/* Register them with genirq */
++	for (cur_irq = twl6040->irq_base;
++	     cur_irq < twl6040->irq_base + ARRAY_SIZE(twl6040_irqs);
++	     cur_irq++) {
++		set_irq_chip_data(cur_irq, twl6040);
++		set_irq_chip_and_handler(cur_irq, &twl6040_irq_chip,
++					 handle_level_irq);
++		set_irq_nested_thread(cur_irq, 1);
++
++		/* ARM needs us to explicitly flag the IRQ as valid
++		 * and will set them noprobe when we do so. */
++#ifdef CONFIG_ARM
++		set_irq_flags(cur_irq, IRQF_VALID);
++#else
++		set_irq_noprobe(cur_irq);
++#endif
++	}
++
++	ret = request_threaded_irq(twl6040->irq, NULL, twl6040_irq_thread,
++				   IRQF_TRIGGER_LOW | IRQF_ONESHOT,
++				   "twl6040", twl6040);
++	if (ret) {
++		dev_err(twl6040->dev, "failed to request IRQ %d: %d\n",
++			twl6040->irq, ret);
++		return ret;
++	}
++
++	/* reset interrupts */
++	val = twl6040_reg_read(twl6040, TWL6040_REG_INTID);
++
++	/* interrupts cleared on write */
++	val = twl6040_reg_read(twl6040, TWL6040_REG_ACCCTL)
++		& ~TWL6040_INTCLRMODE;
++	twl6040_reg_write(twl6040, TWL6040_REG_ACCCTL, val);
++
++	return 0;
++}
++EXPORT_SYMBOL(twl6040_irq_init);
++
++void twl6040_irq_exit(struct twl6040 *twl6040)
++{
++	if (twl6040->irq)
++		free_irq(twl6040->irq, twl6040);
++}
++EXPORT_SYMBOL(twl6040_irq_exit);
+diff --git a/include/linux/i2c/twl.h b/include/linux/i2c/twl.h
+index 0c0d1ae..028aaaf 100644
+--- a/include/linux/i2c/twl.h
++++ b/include/linux/i2c/twl.h
+@@ -660,6 +660,7 @@ struct twl4030_codec_data {
+ 	/* twl6040 */
+ 	int audpwron_gpio;	/* audio power-on gpio */
+ 	int naudint_irq;	/* audio interrupt */
++	unsigned int irq_base;
+ };
+ 
+ struct twl4030_platform_data {
+diff --git a/include/linux/mfd/twl6040-codec.h b/include/linux/mfd/twl6040-codec.h
+new file mode 100644
+index 0000000..5d0fb10
+--- /dev/null
++++ b/include/linux/mfd/twl6040-codec.h
+@@ -0,0 +1,243 @@
++/*
++ * MFD driver for twl6040 codec submodule
++ *
++ * Authors:     Jorge Eduardo Candelaria <jorge.candelaria@ti.com>
++ *              Misael Lopez Cruz <misael.lopez@ti.com>
++ *
++ * Copyright:   (C) 2011 Texas Instruments, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA
++ *
++ */
++
++#ifndef __TWL6040_CODEC_H__
++#define __TWL6040_CODEC_H__
++
++#include <linux/interrupt.h>
++#include <linux/mfd/core.h>
++
++#define TWL6040_REG_ASICID		0x01
++#define TWL6040_REG_ASICREV		0x02
++#define TWL6040_REG_INTID		0x03
++#define TWL6040_REG_INTMR		0x04
++#define TWL6040_REG_NCPCTL		0x05
++#define TWL6040_REG_LDOCTL		0x06
++#define TWL6040_REG_HPPLLCTL		0x07
++#define TWL6040_REG_LPPLLCTL		0x08
++#define TWL6040_REG_LPPLLDIV		0x09
++#define TWL6040_REG_AMICBCTL		0x0A
++#define TWL6040_REG_DMICBCTL		0x0B
++#define TWL6040_REG_MICLCTL		0x0C
++#define TWL6040_REG_MICRCTL		0x0D
++#define TWL6040_REG_MICGAIN		0x0E
++#define TWL6040_REG_LINEGAIN		0x0F
++#define TWL6040_REG_HSLCTL		0x10
++#define TWL6040_REG_HSRCTL		0x11
++#define TWL6040_REG_HSGAIN		0x12
++#define TWL6040_REG_EARCTL		0x13
++#define TWL6040_REG_HFLCTL		0x14
++#define TWL6040_REG_HFLGAIN		0x15
++#define TWL6040_REG_HFRCTL		0x16
++#define TWL6040_REG_HFRGAIN		0x17
++#define TWL6040_REG_VIBCTLL		0x18
++#define TWL6040_REG_VIBDATL		0x19
++#define TWL6040_REG_VIBCTLR		0x1A
++#define TWL6040_REG_VIBDATR		0x1B
++#define TWL6040_REG_HKCTL1		0x1C
++#define TWL6040_REG_HKCTL2		0x1D
++#define TWL6040_REG_GPOCTL		0x1E
++#define TWL6040_REG_ALB			0x1F
++#define TWL6040_REG_DLB			0x20
++#define TWL6040_REG_TRIM1		0x28
++#define TWL6040_REG_TRIM2		0x29
++#define TWL6040_REG_TRIM3		0x2A
++#define TWL6040_REG_HSOTRIM		0x2B
++#define TWL6040_REG_HFOTRIM		0x2C
++#define TWL6040_REG_ACCCTL		0x2D
++#define TWL6040_REG_STATUS		0x2E
++
++#define TWL6040_CACHEREGNUM		(TWL6040_REG_STATUS + 1)
++
++#define TWL6040_VIOREGNUM		18
++#define TWL6040_VDDREGNUM		21
++
++/* INTID (0x03) fields */
++
++#define TWL6040_THINT			0x01
++#define TWL6040_PLUGINT			0x02
++#define TWL6040_UNPLUGINT		0x04
++#define TWL6040_HOOKINT			0x08
++#define TWL6040_HFINT			0x10
++#define TWL6040_VIBINT			0x20
++#define TWL6040_READYINT		0x40
++
++/* INTMR (0x04) fields */
++
++#define TWL6040_THMSK			0x01
++#define TWL6040_PLUGMSK			0x02
++#define TWL6040_HOOKMSK			0x08
++#define TWL6040_HFMSK			0x10
++#define TWL6040_VIBMSK			0x20
++#define TWL6040_READYMSK		0x40
++#define TWL6040_ALLINT_MSK		0x7B
++
++/* NCPCTL (0x05) fields */
++
++#define TWL6040_NCPENA			0x01
++#define TWL6040_NCPOPEN			0x40
++
++/* LDOCTL (0x06) fields */
++
++#define TWL6040_LSLDOENA		0x01
++#define TWL6040_HSLDOENA		0x04
++#define TWL6040_REFENA			0x40
++#define TWL6040_OSCENA			0x80
++
++/* HPPLLCTL (0x07) fields */
++
++#define TWL6040_HPLLENA			0x01
++#define TWL6040_HPLLRST			0x02
++#define TWL6040_HPLLBP			0x04
++#define TWL6040_HPLLSQRENA		0x08
++#define TWL6040_HPLLSQRBP		0x10
++#define TWL6040_MCLK_12000KHZ		(0 << 5)
++#define TWL6040_MCLK_19200KHZ		(1 << 5)
++#define TWL6040_MCLK_26000KHZ		(2 << 5)
++#define TWL6040_MCLK_38400KHZ		(3 << 5)
++#define TWL6040_MCLK_MSK		0x60
++
++/* LPPLLCTL (0x08) fields */
++
++#define TWL6040_LPLLENA			0x01
++#define TWL6040_LPLLRST			0x02
++#define TWL6040_LPLLSEL			0x04
++#define TWL6040_LPLLFIN			0x08
++#define TWL6040_HPLLSEL			0x10
++
++/* HSLCTL (0x10) fields */
++
++#define TWL6040_HSDACMODEL		0x02
++#define TWL6040_HSDRVMODEL		0x08
++
++/* HSRCTL (0x11) fields */
++
++#define TWL6040_HSDACMODER		0x02
++#define TWL6040_HSDRVMODER		0x08
++
++/* VIBCTLL (0x18) fields */
++
++#define TWL6040_VIBCTRLLN		0x10
++#define TWL6040_VIBCTRLLP		0x04
++#define TWL6040_VIBENAL			0x01
++
++/* VIBCTLL (0x19) fields */
++
++#define TWL6040_VIBCTRLRN		0x10
++#define TWL6040_VIBCTRLRP		0x04
++#define TWL6040_VIBENAR			0x01
++
++/* GPOCTL (0x1E) fields */
++
++#define TWL6040_GPO1			0x01
++#define TWL6040_GPO2			0x02
++#define TWL6040_GPO3			0x03
++
++/* ACCCTL (0x2D) fields */
++
++#define TWL6040_I2CSEL			0x01
++#define TWL6040_RESETSPLIT		0x04
++#define TWL6040_INTCLRMODE		0x08
++
++#define TWL6040_SYSCLK_SEL_LPPLL	1
++#define TWL6040_SYSCLK_SEL_HPPLL	2
++
++/* STATUS (0x2E) fields */
++
++#define TWL6040_PLUGCOMP		0x02
++
++#define TWL6040_CELLS			2
++
++#define TWL6040_IRQ_TH			0
++#define TWL6040_IRQ_PLUG		1
++#define TWL6040_IRQ_HOOK		2
++#define TWL6040_IRQ_HF			3
++#define TWL6040_IRQ_VIB			4
++#define TWL6040_IRQ_READY		5
++
++enum twl6040_pll_id {
++	TWL6040_NOPLL_ID,
++	TWL6040_LPPLL_ID,
++	TWL6040_HPPLL_ID,
++};
++
++struct twl6040 {
++	struct device *dev;
++	struct mutex mutex;
++	struct mutex io_mutex;
++	struct mutex irq_mutex;
++	struct mfd_cell cells[TWL6040_CELLS];
++	struct completion ready;
++
++	int audpwron;
++	int powered;
++	int power_count;
++
++	enum twl6040_pll_id pll;
++	unsigned int sysclk;
++
++	unsigned int irq;
++	unsigned int irq_base;
++	u8 irq_masks_cur;
++	u8 irq_masks_cache;
++};
++
++static inline int twl6040_request_irq(struct twl6040 *twl6040, int irq,
++				      irq_handler_t handler, const char *name,
++				      void *data)
++{
++	if (!twl6040->irq_base)
++		return -EINVAL;
++
++	return request_threaded_irq(twl6040->irq_base + irq, NULL, handler,
++				    0, name, data);
++}
++
++static inline void twl6040_free_irq(struct twl6040 *twl6040, int irq,
++				    void *data)
++{
++	if (!twl6040->irq_base)
++		return;
++
++	free_irq(twl6040->irq_base + irq, data);
++}
++
++int twl6040_reg_read(struct twl6040 *twl6040, unsigned int reg);
++int twl6040_reg_write(struct twl6040 *twl6040, unsigned int reg,
++		      u8 val);
++int twl6040_set_bits(struct twl6040 *twl6040, unsigned int reg,
++		     u8 mask);
++int twl6040_clear_bits(struct twl6040 *twl6040, unsigned int reg,
++		       u8 mask);
++int twl6040_enable(struct twl6040 *twl6040);
++int twl6040_disable(struct twl6040 *twl6040);
++int twl6040_is_enabled(struct twl6040 *twl6040);
++int twl6040_set_pll(struct twl6040 *twl6040, enum twl6040_pll_id id,
++		    unsigned int freq_in, unsigned int freq_out);
++enum twl6040_pll_id twl6040_get_pll(struct twl6040 *twl6040);
++unsigned int twl6040_get_sysclk(struct twl6040 *twl6040);
++int twl6040_irq_init(struct twl6040 *twl6040);
++void twl6040_irq_exit(struct twl6040 *twl6040);
++
++#endif  /* End of __TWL6040_CODEC_H__ */
+-- 
+1.7.4.1
+

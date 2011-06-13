@@ -207,8 +207,9 @@ patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readon
 function omap4 {
 echo "omap4 related patches"
 patch -s -p1 < "${DIR}/patches/panda/0001-OMAP4-DSS2-add-dss_dss_clk.patch"
-patch -s -p1 < "${DIR}/patches/panda/0001-panda-twl6040-Add-twl6040-codec-data-to-SDP4430.patch"
-patch -s -p1 < "${DIR}/patches/panda/0001-alsa-twl6040-panda-add-ramp-data-for-panda.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0001-panda-twl6040-Add-twl6040-codec-data-to-SDP4430.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0001-alsa-twl6040-panda-add-ramp-data-for-panda.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0001-mfd-twl6040-Add-initial-support-for-twl6040-mfd.patch"
 }
 
 function sgx {
