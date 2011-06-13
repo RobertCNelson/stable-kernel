@@ -1,0 +1,50 @@
+From 03d17be4f42eb413e47ffd9c0ae5a0a791a4a9d1 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Thu, 12 May 2011 16:14:04 +0100
+Subject: [PATCH 01/54] ASoC: core - allow ASoC more flexible machine name
+
+Allow ASoC machine drivers to register a driver name
+and a longname. This allows user space to determine
+the flavour of machine driver.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ include/sound/soc.h  |    2 ++
+ sound/soc/soc-core.c |    6 ++++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/include/sound/soc.h b/include/sound/soc.h
+index bfa4836..faa2af0 100644
+--- a/include/sound/soc.h
++++ b/include/sound/soc.h
+@@ -690,6 +690,8 @@ struct snd_soc_aux_dev {
+ /* SoC card */
+ struct snd_soc_card {
+ 	const char *name;
++	const char *long_name;
++	const char *driver_name;
+ 	struct device *dev;
+ 	struct snd_card *snd_card;
+ 	struct module *owner;
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index dd55d10..2adfc08 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -1908,9 +1908,11 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
+ #endif
+ 
+ 	snprintf(card->snd_card->shortname, sizeof(card->snd_card->shortname),
+-		 "%s",  card->name);
+-	snprintf(card->snd_card->longname, sizeof(card->snd_card->longname),
+ 		 "%s", card->name);
++	snprintf(card->snd_card->longname, sizeof(card->snd_card->longname),
++		 "%s", card->long_name ? card->long_name : card->name);
++	snprintf(card->snd_card->driver, sizeof(card->snd_card->driver),
++		 "%s", card->driver_name);
+ 
+ 	if (card->late_probe) {
+ 		ret = card->late_probe(card);
+-- 
+1.7.4.1
+

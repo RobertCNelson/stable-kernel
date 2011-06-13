@@ -1,0 +1,27 @@
+From 51235121a3f8057698dae5c016aa31836d33cab5 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Wed, 30 Mar 2011 23:25:37 +0100
+Subject: [PATCH 12/54] ASoC: core - set platform dapm context device
+
+In preparation for ASoC DSP support, set the platform DAPM device context.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ sound/soc/soc-core.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index 963269e..7d119f5 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -3584,6 +3584,7 @@ int snd_soc_register_platform(struct device *dev,
+ 
+ 	platform->dev = dev;
+ 	platform->driver = platform_drv;
++	platform->dapm.dev = dev;
+ 
+ 	mutex_lock(&client_mutex);
+ 	list_add(&platform->list, &platform_list);
+-- 
+1.7.4.1
+

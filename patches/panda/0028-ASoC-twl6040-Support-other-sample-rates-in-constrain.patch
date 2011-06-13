@@ -1,0 +1,44 @@
+From 8cfc81367d2fb7cb0a48b272228f6fdbed7c6fc7 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Fri, 18 Mar 2011 19:00:50 +0000
+Subject: [PATCH 28/54] ASoC: twl6040 - Support other sample rates in constraints
+
+Add other supported sample rates to LP and HP modes.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ sound/soc/codecs/twl6040.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/sound/soc/codecs/twl6040.c b/sound/soc/codecs/twl6040.c
+index f0c79de..a2568b1 100644
+--- a/sound/soc/codecs/twl6040.c
++++ b/sound/soc/codecs/twl6040.c
+@@ -1336,6 +1336,13 @@ static int twl6040_set_bias_level(struct snd_soc_codec *codec,
+ /* set of rates for each pll: low-power and high-performance */
+ 
+ static unsigned int lp_rates[] = {
++	8000,
++	11250,
++	16000,
++	22500,
++	32000,
++	44100,
++	48000,
+ 	88200,
+ 	96000,
+ };
+@@ -1346,6 +1353,10 @@ static struct snd_pcm_hw_constraint_list lp_constraints = {
+ };
+ 
+ static unsigned int hp_rates[] = {
++	8000,
++	16000,
++	32000,
++	48000,
+ 	96000,
+ };
+ 
+-- 
+1.7.4.1
+

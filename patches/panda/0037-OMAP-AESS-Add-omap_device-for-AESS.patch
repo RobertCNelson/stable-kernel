@@ -1,0 +1,120 @@
+From 29f4e011f8fee5e451952648280ac4407e3196af Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Sat, 12 Feb 2011 22:19:09 -0600
+Subject: [PATCH 37/54] OMAP: AESS: Add omap_device for AESS
+
+Register Audio Engine Subsystem (AESS) device through omap
+device framework.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+Signed-off-by: Jorge Eduardo Candelaria <jorge.candelaria@ti.com>
+Signed-off-by: Margarita Olaya Cabrera <magi.olaya@ti.com>
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+---
+ arch/arm/plat-omap/devices.c |   57 ++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 55 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/plat-omap/devices.c b/arch/arm/plat-omap/devices.c
+index 63f8554..e81f9a7 100644
+--- a/arch/arm/plat-omap/devices.c
++++ b/arch/arm/plat-omap/devices.c
+@@ -16,11 +16,14 @@
+ #include <linux/io.h>
+ #include <linux/slab.h>
+ #include <linux/memblock.h>
++#include <linux/err.h>
+ 
+ #include <mach/hardware.h>
+ #include <asm/mach-types.h>
+ #include <asm/mach/map.h>
+ 
++#include <plat/omap_hwmod.h>
++#include <plat/omap_device.h>
+ #include <plat/tc.h>
+ #include <plat/board.h>
+ #include <plat/mmc.h>
+@@ -30,6 +33,8 @@
+ #include <plat/mcpdm.h>
+ #include <plat/omap44xx.h>
+ 
++#include <sound/omap-abe-dsp.h>
++
+ /*-------------------------------------------------------------------------*/
+ 
+ #if defined(CONFIG_OMAP_MCBSP) || defined(CONFIG_OMAP_MCBSP_MODULE)
+@@ -167,6 +172,55 @@ fail:
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++#if defined(CONFIG_SND_OMAP_SOC_ABE_DSP) || \
++	defined(CONFIG_SND_OMAP_SOC_ABE_DSP_MODULE)
++
++static struct omap_device_pm_latency omap_aess_latency[] = {
++	{
++		.deactivate_func = omap_device_idle_hwmods,
++		.activate_func = omap_device_enable_hwmods,
++		.flags = OMAP_DEVICE_LATENCY_AUTO_ADJUST,
++	},
++};
++
++static void omap_init_aess(void)
++{
++	struct omap_hwmod *oh;
++	struct omap_device *od;
++	struct omap4_abe_dsp_pdata *pdata;
++
++	oh = omap_hwmod_lookup("aess");
++	if (!oh) {
++		printk (KERN_ERR "Could not look up aess hw_mod\n");
++		return;
++	}
++
++	pdata = kzalloc(sizeof(struct omap4_abe_dsp_pdata), GFP_KERNEL);
++	if (!pdata) {
++		printk(KERN_ERR "Could not allocate platform data\n");
++		return;
++	}
++
++	/* FIXME: Add correct context loss counter */
++	//pdata->get_context_loss_count = omap_pm_get_dev_context_loss_count;
++
++	od = omap_device_build("aess", -1, oh, pdata,
++				sizeof(struct omap4_abe_dsp_pdata),
++				omap_aess_latency,
++				ARRAY_SIZE(omap_aess_latency), 0);
++
++	kfree(pdata);
++
++	if (IS_ERR(od))
++		printk(KERN_ERR "Could not build omap_device for omap-aess-audio\n");
++}
++#else
++static inline void omap_init_aess(void) {}
++#endif
++
++
++/*-------------------------------------------------------------------------*/
++
+ #if defined(CONFIG_HW_RANDOM_OMAP) || defined(CONFIG_HW_RANDOM_OMAP_MODULE)
+ 
+ #ifdef CONFIG_ARCH_OMAP2
+@@ -198,8 +252,6 @@ static void omap_init_rng(void)
+ static inline void omap_init_rng(void) {}
+ #endif
+ 
+-/*-------------------------------------------------------------------------*/
+-
+ /* Numbering for the SPI-capable controllers when used for SPI:
+  * spi		= 1
+  * uwire	= 2
+@@ -310,6 +362,7 @@ static int __init omap_init_devices(void)
+ 	 */
+ 	omap_init_rng();
+ 	omap_init_mcpdm();
++	omap_init_aess();
+ 	omap_init_uwire();
+ 	return 0;
+ }
+-- 
+1.7.4.1
+

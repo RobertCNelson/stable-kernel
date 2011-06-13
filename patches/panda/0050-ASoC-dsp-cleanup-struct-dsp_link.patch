@@ -1,0 +1,167 @@
+From 15adb4fc06a460b634ffef3cdfddad679ba984dd Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Fri, 3 Jun 2011 14:26:07 +0100
+Subject: [PATCH 50/54] ASoC: dsp - cleanup struct dsp_link
+
+Refactor out some member resulting in code reduction.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ include/sound/soc-dsp.h  |    9 +----
+ sound/soc/omap/sdp4430.c |   76 +++++-----------------------------------------
+ sound/soc/soc-core.c     |    6 +--
+ 3 files changed, 12 insertions(+), 79 deletions(-)
+
+diff --git a/include/sound/soc-dsp.h b/include/sound/soc-dsp.h
+index b10360e..fd655f9 100644
+--- a/include/sound/soc-dsp.h
++++ b/include/sound/soc-dsp.h
+@@ -53,13 +53,8 @@ struct snd_soc_dsp_params {
+ };
+ 
+ struct snd_soc_dsp_link {
+-	/* supported BE */
+-	const char **supported_be;
+-	int num_be;
+-	/* supported channels */
+-	int fe_playback_channels;
+-	int fe_capture_channels;
+-
++	bool capture;
++	bool playback;
+ 	enum snd_soc_dsp_trigger trigger[2];
+ };
+ 
+diff --git a/sound/soc/omap/sdp4430.c b/sound/soc/omap/sdp4430.c
+index 4626684..69427c8 100644
+--- a/sound/soc/omap/sdp4430.c
++++ b/sound/soc/omap/sdp4430.c
+@@ -367,100 +367,40 @@ static struct snd_soc_dai_driver dai[] = {
+ },
+ };
+ 
+-static const char *mm1_be[] = {
+-		OMAP_ABE_BE_PDM_DL1,
+-		OMAP_ABE_BE_PDM_UL1,
+-		OMAP_ABE_BE_PDM_DL2,
+-		OMAP_ABE_BE_BT_VX,
+-		OMAP_ABE_BE_MM_EXT0,
+-		OMAP_ABE_BE_DMIC0,
+-		OMAP_ABE_BE_DMIC1,
+-		OMAP_ABE_BE_DMIC2,
+-};
+-
+ struct snd_soc_dsp_link fe_media = {
+-	.supported_be	= mm1_be,
+-	.num_be			= ARRAY_SIZE(mm1_be),
+-	.fe_playback_channels	= 2,
+-	.fe_capture_channels	= 8,
++	.playback	= true,
++	.capture	= true,
+ 	.trigger =
+ 		{SND_SOC_DSP_TRIGGER_BESPOKE, SND_SOC_DSP_TRIGGER_BESPOKE},
+ };
+ 
+-static const char *mm2_be[] = {
+-		OMAP_ABE_BE_PDM_UL1,
+-		OMAP_ABE_BE_BT_VX,
+-		OMAP_ABE_BE_MM_EXT0,
+-		OMAP_ABE_BE_DMIC0,
+-		OMAP_ABE_BE_DMIC1,
+-		OMAP_ABE_BE_DMIC2,
+-};
+-
+ struct snd_soc_dsp_link fe_media_capture = {
+-	.supported_be	= mm2_be,
+-	.num_be			= ARRAY_SIZE(mm2_be),
+-	.fe_capture_channels	= 8,
++	.capture	= true,
+ 	.trigger =
+ 		{SND_SOC_DSP_TRIGGER_BESPOKE, SND_SOC_DSP_TRIGGER_BESPOKE},
+ };
+ 
+-static const char *tones_be[] = {
+-		OMAP_ABE_BE_PDM_DL1,
+-		OMAP_ABE_BE_PDM_DL2,
+-		OMAP_ABE_BE_BT_VX,
+-		OMAP_ABE_BE_MM_EXT0,
+-};
+-
+ struct snd_soc_dsp_link fe_tones = {
+-	.supported_be	= tones_be,
+-	.num_be			= ARRAY_SIZE(tones_be),
+-	.fe_playback_channels	= 2,
++	.playback	= true,
+ 	.trigger =
+ 		{SND_SOC_DSP_TRIGGER_BESPOKE, SND_SOC_DSP_TRIGGER_BESPOKE},
+ };
+ 
+-static const char *vib_be[] = {
+-		OMAP_ABE_BE_PDM_VIB,
+-};
+-
+ struct snd_soc_dsp_link fe_vib = {
+-	.supported_be	= vib_be,
+-	.num_be			= ARRAY_SIZE(vib_be),
+-	.fe_playback_channels	= 2,
++	.playback	= true,
+ 	.trigger =
+ 		{SND_SOC_DSP_TRIGGER_BESPOKE, SND_SOC_DSP_TRIGGER_BESPOKE},
+ };
+ 
+-static const char *modem_be[] = {
+-		OMAP_ABE_BE_PDM_DL1,
+-		OMAP_ABE_BE_PDM_UL1,
+-		OMAP_ABE_BE_PDM_DL2,
+-		OMAP_ABE_BE_BT_VX,
+-		OMAP_ABE_BE_DMIC0,
+-		OMAP_ABE_BE_DMIC1,
+-		OMAP_ABE_BE_DMIC2,
+-};
+-
+ struct snd_soc_dsp_link fe_modem = {
+-	.supported_be	= modem_be,
+-	.num_be			= ARRAY_SIZE(modem_be),
+-	.fe_playback_channels	= 2,
+-	.fe_capture_channels	= 2,
++	.playback	= true,
++	.capture	= true,
+ 	.trigger =
+ 		{SND_SOC_DSP_TRIGGER_BESPOKE, SND_SOC_DSP_TRIGGER_BESPOKE},
+ };
+ 
+-static const char *mm_lp_be[] = {
+-		OMAP_ABE_BE_PDM_DL1,
+-		OMAP_ABE_BE_PDM_DL2,
+-		OMAP_ABE_BE_BT_VX,
+-		OMAP_ABE_BE_MM_EXT0,
+-};
+-
+ struct snd_soc_dsp_link fe_lp_media = {
+-	.supported_be	= mm_lp_be,
+-	.num_be			= ARRAY_SIZE(mm_lp_be),
+-	.fe_playback_channels	= 2,
++	.playback	= true,
+ 	.trigger =
+ 		{SND_SOC_DSP_TRIGGER_BESPOKE, SND_SOC_DSP_TRIGGER_BESPOKE},
+ };
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index 4e94347..d206d47 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -2301,10 +2301,8 @@ static int soc_new_pcm(struct snd_soc_pcm_runtime *rtd, int num)
+ 			rtd->dai_link->stream_name, codec_dai->name, num);
+ 
+ 	if (rtd->dai_link->dynamic) {
+-		if (rtd->dai_link->dsp_link->fe_playback_channels)
+-			playback = 1;
+-		if (rtd->dai_link->dsp_link->fe_capture_channels)
+-			capture = 1;
++		playback = rtd->dai_link->dsp_link->playback;
++		capture = rtd->dai_link->dsp_link->capture;
+ 	} else {
+ 		if (codec_dai->driver->playback.channels_min)
+ 			playback = 1;
+-- 
+1.7.4.1
+

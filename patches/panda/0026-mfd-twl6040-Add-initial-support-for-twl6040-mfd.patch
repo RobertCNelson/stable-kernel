@@ -1,7 +1,7 @@
-From 132a3dfa809d5301cb82a7bdcbeb7d1b255cc518 Mon Sep 17 00:00:00 2001
+From 66d82cc63ced09d244186d4e63e87217ac0d2935 Mon Sep 17 00:00:00 2001
 From: Jorge Eduardo Candelaria <jorge.candelaria@ti.com>
-Date: Thu, 7 Apr 2011 08:39:08 +0100
-Subject: [PATCH] mfd: twl6040: Add initial support for twl6040 mfd
+Date: Fri, 11 Feb 2011 19:37:26 -0600
+Subject: [PATCH 26/54] mfd: twl6040: Add initial support for twl6040 mfd
 
 TWL6040 IC provides analog high-end audio codec functions for
 handset applications. It contains several audio analog inputs
@@ -15,7 +15,6 @@ have two children of its own: twl6040-codec and twl6040-vibra
 
 This driver is based on TWL4030 and WM8350 MFD drivers.
 
-Change-Id: I31d848a32c3677bdfde7ee0f4dd234af868fb7d3
 Signed-off-by: Jorge Eduardo Candelaria <jorge.candelaria@ti.com>
 Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
 ---
@@ -23,11 +22,11 @@ Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
  drivers/mfd/Kconfig                    |    6 +
  drivers/mfd/Makefile                   |    1 +
  drivers/mfd/twl-core.c                 |    2 +-
- drivers/mfd/twl6040-codec.c            |  709 ++++++++++++++++++++++++++++++++
+ drivers/mfd/twl6040-codec.c            |  707 ++++++++++++++++++++++++++++++++
  drivers/mfd/twl6040-irq.c              |  196 +++++++++
  include/linux/i2c/twl.h                |    1 +
  include/linux/mfd/twl6040-codec.h      |  243 +++++++++++
- 8 files changed, 1167 insertions(+), 3 deletions(-)
+ 8 files changed, 1165 insertions(+), 3 deletions(-)
  create mode 100644 drivers/mfd/twl6040-codec.c
  create mode 100644 drivers/mfd/twl6040-irq.c
  create mode 100644 include/linux/mfd/twl6040-codec.h
@@ -59,10 +58,10 @@ index 5a25098..2cfba51 100644
  
  /* GPMC related */
 diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 8d7d098..204058e 100644
+index 3ed3ff0..e2a92c9 100644
 --- a/drivers/mfd/Kconfig
 +++ b/drivers/mfd/Kconfig
-@@ -227,6 +227,12 @@ config TWL6030_PWM
+@@ -219,6 +219,12 @@ config TWL6030_PWM
  	  Say yes here if you want support for TWL6030 PWM.
  	  This is used to control charging LED brightness.
  
@@ -76,10 +75,10 @@ index 8d7d098..204058e 100644
  	bool "Support STMicroelectronics STMPE"
  	depends on I2C=y && GENERIC_HARDIRQS
 diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 47f5709..d646a41 100644
+index 419caa9..391dad5 100644
 --- a/drivers/mfd/Makefile
 +++ b/drivers/mfd/Makefile
-@@ -43,6 +43,7 @@ obj-$(CONFIG_TWL4030_MADC)      += twl4030-madc.o
+@@ -42,6 +42,7 @@ obj-$(CONFIG_TWL4030_MADC)      += twl4030-madc.o
  obj-$(CONFIG_TWL4030_POWER)    += twl4030-power.o
  obj-$(CONFIG_TWL4030_CODEC)	+= twl4030-codec.o
  obj-$(CONFIG_TWL6030_PWM)	+= twl6030-pwm.o
@@ -102,10 +101,10 @@ index 960b5be..9a1f137 100644
  		if (IS_ERR(child))
 diff --git a/drivers/mfd/twl6040-codec.c b/drivers/mfd/twl6040-codec.c
 new file mode 100644
-index 0000000..1f3cd54
+index 0000000..0a26224
 --- /dev/null
 +++ b/drivers/mfd/twl6040-codec.c
-@@ -0,0 +1,709 @@
+@@ -0,0 +1,707 @@
 +/*
 + * MFD driver for twl6040 codec submodule
 + *
@@ -723,16 +722,14 @@ index 0000000..1f3cd54
 +	if (pdata->audio) {
 +		cell = &twl6040->cells[children];
 +		cell->name = "twl6040-codec";
-+		cell->platform_data = pdata->audio;
-+		cell->data_size = sizeof(*pdata->audio);
++		cell->mfd_data = pdata->audio;
 +		children++;
 +	}
 +
 +	if (pdata->vibra) {
 +		cell = &twl6040->cells[children];
 +		cell->name = "twl6040-vibra";
-+		cell->platform_data = pdata->vibra;
-+		cell->data_size = sizeof(*pdata->vibra);
++		cell->mfd_data = pdata->vibra;
 +		children++;
 +	}
 +
@@ -817,7 +814,7 @@ index 0000000..1f3cd54
 +MODULE_ALIAS("platform:twl6040-audio");
 diff --git a/drivers/mfd/twl6040-irq.c b/drivers/mfd/twl6040-irq.c
 new file mode 100644
-index 0000000..c607ed6
+index 0000000..6beac7a
 --- /dev/null
 +++ b/drivers/mfd/twl6040-irq.c
 @@ -0,0 +1,196 @@
@@ -880,16 +877,16 @@ index 0000000..c607ed6
 +	return &twl6040_irqs[irq - twl6040->irq_base];
 +}
 +
-+static void twl6040_irq_lock(unsigned int irq)
++static void twl6040_irq_lock(struct irq_data *data)
 +{
-+	struct twl6040 *twl6040 = get_irq_chip_data(irq);
++	struct twl6040 *twl6040 = irq_data_get_irq_chip_data(data);
 +
 +	mutex_lock(&twl6040->irq_mutex);
 +}
 +
-+static void twl6040_irq_sync_unlock(unsigned int irq)
++static void twl6040_irq_sync_unlock(struct irq_data *data)
 +{
-+	struct twl6040 *twl6040 = get_irq_chip_data(irq);
++	struct twl6040 *twl6040 = irq_data_get_irq_chip_data(data);
 +
 +	/* write back to hardware any change in irq mask */
 +	if (twl6040->irq_masks_cur != twl6040->irq_masks_cache) {
@@ -901,28 +898,28 @@ index 0000000..c607ed6
 +	mutex_unlock(&twl6040->irq_mutex);
 +}
 +
-+static void twl6040_irq_unmask(unsigned int irq)
++static void twl6040_irq_unmask(struct irq_data *data)
 +{
-+	struct twl6040 *twl6040 = get_irq_chip_data(irq);
-+	struct twl6040_irq_data *irq_data = irq_to_twl6040_irq(twl6040, irq);
++	struct twl6040 *twl6040 = irq_data_get_irq_chip_data(data);
++	struct twl6040_irq_data *irq_data = irq_to_twl6040_irq(twl6040, data->irq);
 +
 +	twl6040->irq_masks_cur &= ~irq_data->mask;
 +}
 +
-+static void twl6040_irq_mask(unsigned int irq)
++static void twl6040_irq_mask(struct irq_data *data)
 +{
-+	struct twl6040 *twl6040 = get_irq_chip_data(irq);
-+	struct twl6040_irq_data *irq_data = irq_to_twl6040_irq(twl6040, irq);
++	struct twl6040 *twl6040 = irq_data_get_irq_chip_data(data);
++	struct twl6040_irq_data *irq_data = irq_to_twl6040_irq(twl6040, data->irq);
 +
 +	twl6040->irq_masks_cur |= irq_data->mask;
 +}
 +
 +static struct irq_chip twl6040_irq_chip = {
 +	.name = "twl6040",
-+	.bus_lock = twl6040_irq_lock,
-+	.bus_sync_unlock = twl6040_irq_sync_unlock,
-+	.mask = twl6040_irq_mask,
-+	.unmask = twl6040_irq_unmask,
++	.irq_bus_lock = twl6040_irq_lock,
++	.irq_bus_sync_unlock = twl6040_irq_sync_unlock,
++	.irq_mask = twl6040_irq_mask,
++	.irq_unmask = twl6040_irq_unmask,
 +};
 +
 +static irqreturn_t twl6040_irq_thread(int irq, void *data)
@@ -976,10 +973,10 @@ index 0000000..c607ed6
 +	for (cur_irq = twl6040->irq_base;
 +	     cur_irq < twl6040->irq_base + ARRAY_SIZE(twl6040_irqs);
 +	     cur_irq++) {
-+		set_irq_chip_data(cur_irq, twl6040);
-+		set_irq_chip_and_handler(cur_irq, &twl6040_irq_chip,
++		irq_set_chip_data(cur_irq, twl6040);
++		irq_set_chip_and_handler(cur_irq, &twl6040_irq_chip,
 +					 handle_level_irq);
-+		set_irq_nested_thread(cur_irq, 1);
++		irq_set_nested_thread(cur_irq, 1);
 +
 +		/* ARM needs us to explicitly flag the IRQ as valid
 +		 * and will set them noprobe when we do so. */
@@ -991,7 +988,7 @@ index 0000000..c607ed6
 +	}
 +
 +	ret = request_threaded_irq(twl6040->irq, NULL, twl6040_irq_thread,
-+				   IRQF_TRIGGER_LOW | IRQF_ONESHOT,
++				   IRQF_ONESHOT,
 +				   "twl6040", twl6040);
 +	if (ret) {
 +		dev_err(twl6040->dev, "failed to request IRQ %d: %d\n",

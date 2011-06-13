@@ -1,0 +1,81 @@
+From 7b9b8c7832cdb297a19aab67c36f904c686d2fa9 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Thu, 2 Jun 2011 20:37:46 -0500
+Subject: [PATCH 09/54] ASoC: core - Fixes for module reference counting
+
+Currently CODEC and platform drivers have their module reference count
+incremented soc_probe_dai_link() whilst CPU DAI drivers have their reference
+count incremented in soc_bind_dai_link().
+
+CPU DAIs should have their reference count incremented in soc_probe_dai_link()
+just like the CODEC and platform drivers.
+
+DAI refcounting logic is simplified by by ref counting all (CODEC and platform)
+DAIs in each sound card, this is required in preparation for ASoC DSP as
+DSP components can have DAIs that can exist in either the CODEC driver or
+platform DAI driver.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ sound/soc/soc-core.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index 4c610b2..963269e 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -1311,10 +1311,6 @@ static int soc_bind_dai_link(struct snd_soc_card *card, int num)
+ 	/* no, then find CPU DAI from registered DAIs*/
+ 	list_for_each_entry(cpu_dai, &dai_list, list) {
+ 		if (!strcmp(cpu_dai->name, dai_link->cpu_dai_name)) {
+-
+-			if (!try_module_get(cpu_dai->dev->driver->owner))
+-				return -ENODEV;
+-
+ 			rtd->cpu_dai = cpu_dai;
+ 			goto find_codec;
+ 		}
+@@ -1422,6 +1418,7 @@ static void soc_remove_dai_link(struct snd_soc_card *card, int num)
+ 		}
+ 		codec_dai->probed = 0;
+ 		list_del(&codec_dai->card_list);
++		module_put(codec_dai->dev->driver->owner);
+ 	}
+ 
+ 	/* remove the platform */
+@@ -1616,12 +1613,17 @@ static int soc_probe_dai_link(struct snd_soc_card *card, int num)
+ 	rtd->pmdown_time = pmdown_time;
+ 
+ 	/* probe the cpu_dai */
++
+ 	if (!cpu_dai->probed) {
++		if (!try_module_get(cpu_dai->dev->driver->owner))
++			return -ENODEV;
++
+ 		if (cpu_dai->driver->probe) {
+ 			ret = cpu_dai->driver->probe(cpu_dai);
+ 			if (ret < 0) {
+ 				printk(KERN_ERR "asoc: failed to probe CPU DAI %s\n",
+ 						cpu_dai->name);
++				module_put(cpu_dai->dev->driver->owner);
+ 				return ret;
+ 			}
+ 		}
+@@ -1658,11 +1660,14 @@ static int soc_probe_dai_link(struct snd_soc_card *card, int num)
+ 
+ 	/* probe the CODEC DAI */
+ 	if (!codec_dai->probed) {
++		if (!try_module_get(codec_dai->dev->driver->owner))
++			return -ENODEV;
+ 		if (codec_dai->driver->probe) {
+ 			ret = codec_dai->driver->probe(codec_dai);
+ 			if (ret < 0) {
+ 				printk(KERN_ERR "asoc: failed to probe CODEC DAI %s\n",
+ 						codec_dai->name);
++				module_put(codec_dai->dev->driver->owner);
+ 				return ret;
+ 			}
+ 		}
+-- 
+1.7.4.1
+

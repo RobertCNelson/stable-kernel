@@ -1,0 +1,489 @@
+From 775c12492f73641eb54ecc52e47c00652591e3ac Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Fri, 4 Feb 2011 22:12:30 +0000
+Subject: [PATCH 14/54] ASoC: core - refactor pcm_new() to pass only rtd
+
+In preparation for ASoC DSP support.
+
+Currently pcm_new() passes in card, pcm and DAI. Refactor this to only pass
+in rtd since rtd contains card, pcm and DAI. Struct rtd also contain other
+members too that are useful to DSPs.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ include/sound/soc.h                 |    3 +--
+ sound/soc/atmel/atmel-pcm.c         |    6 ++++--
+ sound/soc/au1x/dbdma2.c             |    7 ++++---
+ sound/soc/blackfin/bf5xx-ac97-pcm.c |    6 ++++--
+ sound/soc/blackfin/bf5xx-i2s-pcm.c  |    6 ++++--
+ sound/soc/blackfin/bf5xx-tdm-pcm.c  |    6 ++++--
+ sound/soc/davinci/davinci-pcm.c     |    6 ++++--
+ sound/soc/ep93xx/ep93xx-pcm.c       |    6 ++++--
+ sound/soc/fsl/fsl_dma.c             |    6 ++++--
+ sound/soc/fsl/mpc5200_dma.c         |    7 ++++---
+ sound/soc/imx/imx-pcm-fiq.c         |    8 +++++---
+ sound/soc/imx/imx-ssi.c             |    7 ++++---
+ sound/soc/imx/imx-ssi.h             |    3 +--
+ sound/soc/jz4740/jz4740-pcm.c       |    6 ++++--
+ sound/soc/kirkwood/kirkwood-dma.c   |    6 ++++--
+ sound/soc/nuc900/nuc900-pcm.c       |    7 +++++--
+ sound/soc/omap/omap-pcm.c           |    6 ++++--
+ sound/soc/pxa/pxa2xx-pcm.c          |    6 ++++--
+ sound/soc/s6000/s6000-pcm.c         |    7 ++++---
+ sound/soc/samsung/dma.c             |    6 ++++--
+ sound/soc/sh/dma-sh7760.c           |    6 +++---
+ sound/soc/sh/fsi.c                  |    6 +++---
+ sound/soc/sh/siu_pcm.c              |    5 +++--
+ sound/soc/soc-core.c                |    3 +--
+ sound/soc/txx9/txx9aclc.c           |    5 +++--
+ 25 files changed, 89 insertions(+), 57 deletions(-)
+
+diff --git a/include/sound/soc.h b/include/sound/soc.h
+index 2bd511b..58a856d 100644
+--- a/include/sound/soc.h
++++ b/include/sound/soc.h
+@@ -616,8 +616,7 @@ struct snd_soc_platform_driver {
+ 	int (*resume)(struct snd_soc_dai *dai);
+ 
+ 	/* pcm creation and destruction */
+-	int (*pcm_new)(struct snd_card *, struct snd_soc_dai *,
+-		struct snd_pcm *);
++	int (*pcm_new)(struct snd_soc_pcm_runtime *);
+ 	void (*pcm_free)(struct snd_pcm *);
+ 
+ 	/*
+diff --git a/sound/soc/atmel/atmel-pcm.c b/sound/soc/atmel/atmel-pcm.c
+index d0e7532..42f699c 100644
+--- a/sound/soc/atmel/atmel-pcm.c
++++ b/sound/soc/atmel/atmel-pcm.c
+@@ -364,9 +364,11 @@ static struct snd_pcm_ops atmel_pcm_ops = {
+ \*--------------------------------------------------------------------------*/
+ static u64 atmel_pcm_dmamask = 0xffffffff;
+ 
+-static int atmel_pcm_new(struct snd_card *card,
+-	struct snd_soc_dai *dai, struct snd_pcm *pcm)
++static int atmel_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/au1x/dbdma2.c b/sound/soc/au1x/dbdma2.c
+index 10fdd28..20bb53a 100644
+--- a/sound/soc/au1x/dbdma2.c
++++ b/sound/soc/au1x/dbdma2.c
+@@ -319,10 +319,11 @@ static void au1xpsc_pcm_free_dma_buffers(struct snd_pcm *pcm)
+ 	snd_pcm_lib_preallocate_free_for_all(pcm);
+ }
+ 
+-static int au1xpsc_pcm_new(struct snd_card *card,
+-			   struct snd_soc_dai *dai,
+-			   struct snd_pcm *pcm)
++static int au1xpsc_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_pcm *pcm = rtd->pcm;
++
+ 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
+ 		card->dev, AU1XPSC_BUFFER_MIN_BYTES, (4096 * 1024) - 1);
+ 
+diff --git a/sound/soc/blackfin/bf5xx-ac97-pcm.c b/sound/soc/blackfin/bf5xx-ac97-pcm.c
+index 5a2fd8a..49eeed8 100644
+--- a/sound/soc/blackfin/bf5xx-ac97-pcm.c
++++ b/sound/soc/blackfin/bf5xx-ac97-pcm.c
+@@ -411,9 +411,11 @@ static void bf5xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
+ 
+ static u64 bf5xx_pcm_dmamask = DMA_BIT_MASK(32);
+ 
+-int bf5xx_pcm_ac97_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm)
++int bf5xx_pcm_ac97_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	pr_debug("%s enter\n", __func__);
+diff --git a/sound/soc/blackfin/bf5xx-i2s-pcm.c b/sound/soc/blackfin/bf5xx-i2s-pcm.c
+index 890a0dc..fbd22e5 100644
+--- a/sound/soc/blackfin/bf5xx-i2s-pcm.c
++++ b/sound/soc/blackfin/bf5xx-i2s-pcm.c
+@@ -245,9 +245,11 @@ static void bf5xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
+ 
+ static u64 bf5xx_pcm_dmamask = DMA_BIT_MASK(32);
+ 
+-int bf5xx_pcm_i2s_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm)
++int bf5xx_pcm_i2s_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	pr_debug("%s enter\n", __func__);
+diff --git a/sound/soc/blackfin/bf5xx-tdm-pcm.c b/sound/soc/blackfin/bf5xx-tdm-pcm.c
+index 74cf759..c8df18f 100644
+--- a/sound/soc/blackfin/bf5xx-tdm-pcm.c
++++ b/sound/soc/blackfin/bf5xx-tdm-pcm.c
+@@ -280,9 +280,11 @@ static void bf5xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
+ 
+ static u64 bf5xx_pcm_dmamask = DMA_BIT_MASK(32);
+ 
+-static int bf5xx_pcm_tdm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm)
++static int bf5xx_pcm_tdm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/davinci/davinci-pcm.c b/sound/soc/davinci/davinci-pcm.c
+index 9d35b8c..29759e1 100644
+--- a/sound/soc/davinci/davinci-pcm.c
++++ b/sound/soc/davinci/davinci-pcm.c
+@@ -811,9 +811,11 @@ static void davinci_pcm_free(struct snd_pcm *pcm)
+ 
+ static u64 davinci_pcm_dmamask = 0xffffffff;
+ 
+-static int davinci_pcm_new(struct snd_card *card,
+-			   struct snd_soc_dai *dai, struct snd_pcm *pcm)
++static int davinci_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/ep93xx/ep93xx-pcm.c b/sound/soc/ep93xx/ep93xx-pcm.c
+index a456e49..e27c417 100644
+--- a/sound/soc/ep93xx/ep93xx-pcm.c
++++ b/sound/soc/ep93xx/ep93xx-pcm.c
+@@ -266,9 +266,11 @@ static void ep93xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
+ 
+ static u64 ep93xx_pcm_dmamask = 0xffffffff;
+ 
+-static int ep93xx_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-			  struct snd_pcm *pcm)
++static int ep93xx_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+index 15dac0f..50b5df8 100644
+--- a/sound/soc/fsl/fsl_dma.c
++++ b/sound/soc/fsl/fsl_dma.c
+@@ -294,9 +294,11 @@ static irqreturn_t fsl_dma_isr(int irq, void *dev_id)
+  * Regardless of where the memory is actually allocated, since the device can
+  * technically DMA to any 36-bit address, we do need to set the DMA mask to 36.
+  */
+-static int fsl_dma_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm)
++static int fsl_dma_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	static u64 fsl_dma_dmamask = DMA_BIT_MASK(36);
+ 	int ret;
+ 
+diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
+index fff695c..19ad0c1 100644
+--- a/sound/soc/fsl/mpc5200_dma.c
++++ b/sound/soc/fsl/mpc5200_dma.c
+@@ -299,10 +299,11 @@ static struct snd_pcm_ops psc_dma_ops = {
+ };
+ 
+ static u64 psc_dma_dmamask = 0xffffffff;
+-static int psc_dma_new(struct snd_card *card, struct snd_soc_dai *dai,
+-			   struct snd_pcm *pcm)
++static int psc_dma_new(struct snd_soc_pcm_runtime *rtd)
+ {
+-	struct snd_soc_pcm_runtime *rtd = pcm->private_data;
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	struct psc_dma *psc_dma = snd_soc_dai_get_drvdata(rtd->cpu_dai);
+ 	size_t size = psc_dma_hardware.buffer_bytes_max;
+ 	int rc = 0;
+diff --git a/sound/soc/imx/imx-pcm-fiq.c b/sound/soc/imx/imx-pcm-fiq.c
+index 413b78d..309c59e 100644
+--- a/sound/soc/imx/imx-pcm-fiq.c
++++ b/sound/soc/imx/imx-pcm-fiq.c
+@@ -238,12 +238,14 @@ static struct snd_pcm_ops imx_pcm_ops = {
+ 
+ static int ssi_irq = 0;
+ 
+-static int imx_pcm_fiq_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm)
++static int imx_pcm_fiq_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret;
+ 
+-	ret = imx_pcm_new(card, dai, pcm);
++	ret = imx_pcm_new(rtd);
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/sound/soc/imx/imx-ssi.c b/sound/soc/imx/imx-ssi.c
+index ac2ded9..c5a2f2d 100644
+--- a/sound/soc/imx/imx-ssi.c
++++ b/sound/soc/imx/imx-ssi.c
+@@ -388,10 +388,11 @@ static int imx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
+ 
+ static u64 imx_pcm_dmamask = DMA_BIT_MASK(32);
+ 
+-int imx_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm)
++int imx_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
+-
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/imx/imx-ssi.h b/sound/soc/imx/imx-ssi.h
+index dc8a875..0a84cec 100644
+--- a/sound/soc/imx/imx-ssi.h
++++ b/sound/soc/imx/imx-ssi.h
+@@ -225,8 +225,7 @@ struct snd_soc_platform *imx_ssi_dma_mx2_init(struct platform_device *pdev,
+ 		struct imx_ssi *ssi);
+ 
+ int snd_imx_pcm_mmap(struct snd_pcm_substream *substream, struct vm_area_struct *vma);
+-int imx_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm);
++int imx_pcm_new(struct snd_soc_pcm_runtime *rtd);
+ void imx_pcm_free(struct snd_pcm *pcm);
+ 
+ /*
+diff --git a/sound/soc/jz4740/jz4740-pcm.c b/sound/soc/jz4740/jz4740-pcm.c
+index fb1483f..a7c9578 100644
+--- a/sound/soc/jz4740/jz4740-pcm.c
++++ b/sound/soc/jz4740/jz4740-pcm.c
+@@ -299,9 +299,11 @@ static void jz4740_pcm_free(struct snd_pcm *pcm)
+ 
+ static u64 jz4740_pcm_dmamask = DMA_BIT_MASK(32);
+ 
+-int jz4740_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm)
++int jz4740_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/kirkwood/kirkwood-dma.c b/sound/soc/kirkwood/kirkwood-dma.c
+index e13c6ce..cd33de1 100644
+--- a/sound/soc/kirkwood/kirkwood-dma.c
++++ b/sound/soc/kirkwood/kirkwood-dma.c
+@@ -312,9 +312,11 @@ static int kirkwood_dma_preallocate_dma_buffer(struct snd_pcm *pcm,
+ 	return 0;
+ }
+ 
+-static int kirkwood_dma_new(struct snd_card *card,
+-		struct snd_soc_dai *dai, struct snd_pcm *pcm)
++static int kirkwood_dma_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/nuc900/nuc900-pcm.c b/sound/soc/nuc900/nuc900-pcm.c
+index 8263f56..d589ef1 100644
+--- a/sound/soc/nuc900/nuc900-pcm.c
++++ b/sound/soc/nuc900/nuc900-pcm.c
+@@ -315,9 +315,12 @@ static void nuc900_dma_free_dma_buffers(struct snd_pcm *pcm)
+ }
+ 
+ static u64 nuc900_pcm_dmamask = DMA_BIT_MASK(32);
+-static int nuc900_dma_new(struct snd_card *card,
+-	struct snd_soc_dai *dai, struct snd_pcm *pcm)
++static int nuc900_dma_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
++
+ 	if (!card->dev->dma_mask)
+ 		card->dev->dma_mask = &nuc900_pcm_dmamask;
+ 	if (!card->dev->coherent_dma_mask)
+diff --git a/sound/soc/omap/omap-pcm.c b/sound/soc/omap/omap-pcm.c
+index 8caeb8d..b095727 100644
+--- a/sound/soc/omap/omap-pcm.c
++++ b/sound/soc/omap/omap-pcm.c
+@@ -365,9 +365,11 @@ static void omap_pcm_free_dma_buffers(struct snd_pcm *pcm)
+ 	}
+ }
+ 
+-static int omap_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-		 struct snd_pcm *pcm)
++static int omap_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/pxa/pxa2xx-pcm.c b/sound/soc/pxa/pxa2xx-pcm.c
+index 2ce0b2d..d73d6f6 100644
+--- a/sound/soc/pxa/pxa2xx-pcm.c
++++ b/sound/soc/pxa/pxa2xx-pcm.c
+@@ -85,9 +85,11 @@ static struct snd_pcm_ops pxa2xx_pcm_ops = {
+ 
+ static u64 pxa2xx_pcm_dmamask = DMA_BIT_MASK(32);
+ 
+-static int pxa2xx_soc_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-	struct snd_pcm *pcm)
++static int pxa2xx_soc_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	if (!card->dev->dma_mask)
+diff --git a/sound/soc/s6000/s6000-pcm.c b/sound/soc/s6000/s6000-pcm.c
+index ab3ccae..80c85fd 100644
+--- a/sound/soc/s6000/s6000-pcm.c
++++ b/sound/soc/s6000/s6000-pcm.c
+@@ -443,10 +443,11 @@ static void s6000_pcm_free(struct snd_pcm *pcm)
+ 
+ static u64 s6000_pcm_dmamask = DMA_BIT_MASK(32);
+ 
+-static int s6000_pcm_new(struct snd_card *card,
+-			 struct snd_soc_dai *dai, struct snd_pcm *pcm)
++static int s6000_pcm_new(struct snd_soc_pcm_runtime *runtime)
+ {
+-	struct snd_soc_pcm_runtime *runtime = pcm->private_data;
++	struct snd_card *card = runtime->card->snd_card;
++	struct snd_soc_dai *dai = runtime->cpu_dai;
++	struct snd_pcm *pcm = runtime->pcm;
+ 	struct s6000_pcm_dma_params *params;
+ 	int res;
+ 
+diff --git a/sound/soc/samsung/dma.c b/sound/soc/samsung/dma.c
+index 5cb3b88..9465588 100644
+--- a/sound/soc/samsung/dma.c
++++ b/sound/soc/samsung/dma.c
+@@ -425,9 +425,11 @@ static void dma_free_dma_buffers(struct snd_pcm *pcm)
+ 
+ static u64 dma_mask = DMA_BIT_MASK(32);
+ 
+-static int dma_new(struct snd_card *card,
+-	struct snd_soc_dai *dai, struct snd_pcm *pcm)
++static int dma_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	int ret = 0;
+ 
+ 	pr_debug("Entered %s\n", __func__);
+diff --git a/sound/soc/sh/dma-sh7760.c b/sound/soc/sh/dma-sh7760.c
+index c326d29..db74005 100644
+--- a/sound/soc/sh/dma-sh7760.c
++++ b/sound/soc/sh/dma-sh7760.c
+@@ -327,10 +327,10 @@ static void camelot_pcm_free(struct snd_pcm *pcm)
+ 	snd_pcm_lib_preallocate_free_for_all(pcm);
+ }
+ 
+-static int camelot_pcm_new(struct snd_card *card,
+-			   struct snd_soc_dai *dai,
+-			   struct snd_pcm *pcm)
++static int camelot_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_pcm *pcm = rtd->pcm;
++
+ 	/* dont use SNDRV_DMA_TYPE_DEV, since it will oops the SH kernel
+ 	 * in MMAP mode (i.e. aplay -M)
+ 	 */
+diff --git a/sound/soc/sh/fsi.c b/sound/soc/sh/fsi.c
+index 23c0e83..82c70fc 100644
+--- a/sound/soc/sh/fsi.c
++++ b/sound/soc/sh/fsi.c
+@@ -1085,10 +1085,10 @@ static void fsi_pcm_free(struct snd_pcm *pcm)
+ 	snd_pcm_lib_preallocate_free_for_all(pcm);
+ }
+ 
+-static int fsi_pcm_new(struct snd_card *card,
+-		       struct snd_soc_dai *dai,
+-		       struct snd_pcm *pcm)
++static int fsi_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_pcm *pcm = rtd->pcm;
++
+ 	/*
+ 	 * dont use SNDRV_DMA_TYPE_DEV, since it will oops the SH kernel
+ 	 * in MMAP mode (i.e. aplay -M)
+diff --git a/sound/soc/sh/siu_pcm.c b/sound/soc/sh/siu_pcm.c
+index a423bab..f8f6816 100644
+--- a/sound/soc/sh/siu_pcm.c
++++ b/sound/soc/sh/siu_pcm.c
+@@ -527,10 +527,11 @@ static snd_pcm_uframes_t siu_pcm_pointer_dma(struct snd_pcm_substream *ss)
+ 	return bytes_to_frames(ss->runtime, ptr);
+ }
+ 
+-static int siu_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-		       struct snd_pcm *pcm)
++static int siu_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
+ 	/* card->dev == socdev->dev, see snd_soc_new_pcms() */
++	struct snd_card *card = rtd->card->snd_card;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	struct siu_info *info = siu_i2s_data;
+ 	struct platform_device *pdev = to_platform_device(card->dev);
+ 	int ret;
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index 833c373..92b7d95 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -2159,8 +2159,7 @@ static int soc_new_pcm(struct snd_soc_pcm_runtime *rtd, int num)
+ 		snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_CAPTURE, &soc_pcm_ops);
+ 
+ 	if (platform->driver->pcm_new) {
+-		ret = platform->driver->pcm_new(rtd->card->snd_card,
+-						codec_dai, pcm);
++		ret = platform->driver->pcm_new(rtd);
+ 		if (ret < 0) {
+ 			pr_err("asoc: platform pcm constructor failed\n");
+ 			return ret;
+diff --git a/sound/soc/txx9/txx9aclc.c b/sound/soc/txx9/txx9aclc.c
+index f4aa4e0..34aa972 100644
+--- a/sound/soc/txx9/txx9aclc.c
++++ b/sound/soc/txx9/txx9aclc.c
+@@ -288,9 +288,10 @@ static void txx9aclc_pcm_free_dma_buffers(struct snd_pcm *pcm)
+ 	snd_pcm_lib_preallocate_free_for_all(pcm);
+ }
+ 
+-static int txx9aclc_pcm_new(struct snd_card *card, struct snd_soc_dai *dai,
+-			    struct snd_pcm *pcm)
++static int txx9aclc_pcm_new(struct snd_soc_pcm_runtime *rtd)
+ {
++	struct snd_soc_dai *dai = rtd->cpu_dai;
++	struct snd_pcm *pcm = rtd->pcm;
+ 	struct platform_device *pdev = to_platform_device(dai->platform->dev);
+ 	struct txx9aclc_soc_device *dev;
+ 	struct resource *r;
+-- 
+1.7.4.1
+

@@ -1,0 +1,270 @@
+From 272796d4a8bdf1296fd42bd3a40067b457d83027 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Thu, 27 Jan 2011 19:35:01 +0000
+Subject: [PATCH 16/54] ASoC: core - pcm mutex per rtd
+
+In preparation for ASoC DSP support.
+
+The new DSP core allows DSP DAIs to be dynamically re-routed at runtime
+between the PCM device end (or Frontend - FE) and the physical DAI
+(Backend - BE) using regular kcontrols (just like a hardware CODEC).
+The DSP core therefore must be able to call PCM operations for both the
+Frontend and Backend(s) DAIs at the same time.
+
+Currently we have a global pcm_mutex that is used to serialise
+the ASoC PCM operations. This patch removes the global mutex
+and adds a mutex per RTD allowing the PCM operations to be reentrant and
+allow control of more than one DAI at at time. e.g. a frontend DSP hw_params()
+could configure multiple backend hw_params() with similar or different
+hw parameters at the same time.
+
+Also fix the naming of soc_pcm_close.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ include/sound/soc.h  |    8 ++++++++
+ sound/soc/soc-core.c |   46 +++++++++++++++++++++++-----------------------
+ 2 files changed, 31 insertions(+), 23 deletions(-)
+
+diff --git a/include/sound/soc.h b/include/sound/soc.h
+index e4d27bf..35d2805 100644
+--- a/include/sound/soc.h
++++ b/include/sound/soc.h
+@@ -259,6 +259,11 @@ enum snd_soc_compress_type {
+ 	SND_SOC_RBTREE_COMPRESSION
+ };
+ 
++enum snd_soc_pcm_subclass {
++	SND_SOC_MUTEX_FE	= 0,
++	SND_SOC_MUTEX_BE	= 1,
++};
++
+ int snd_soc_codec_set_sysclk(struct snd_soc_codec *codec, int clk_id,
+ 			     unsigned int freq, int dir);
+ int snd_soc_codec_set_pll(struct snd_soc_codec *codec, int pll_id, int source,
+@@ -787,6 +792,9 @@ struct snd_soc_pcm_runtime  {
+ 	struct device dev;
+ 	struct snd_soc_card *card;
+ 	struct snd_soc_dai_link *dai_link;
++	struct mutex pcm_mutex;
++	enum snd_soc_pcm_subclass pcm_subclass;
++	struct snd_pcm_ops ops;
+ 
+ 	unsigned int complete:1;
+ 	unsigned int dev_registered:1;
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index 2d4568e..ea72d8c 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -44,7 +44,6 @@
+ 
+ #define NAME_SIZE	32
+ 
+-static DEFINE_MUTEX(pcm_mutex);
+ static DECLARE_WAIT_QUEUE_HEAD(soc_pm_waitq);
+ 
+ #ifdef CONFIG_DEBUG_FS
+@@ -532,7 +531,7 @@ static int soc_pcm_apply_symmetry(struct snd_pcm_substream *substream)
+  * then initialized and any private data can be allocated. This also calls
+  * startup for the cpu DAI, platform, machine and codec DAI.
+  */
+-static int soc_pcm_open(struct snd_pcm_substream *substream)
++int soc_pcm_open(struct snd_pcm_substream *substream)
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct snd_pcm_runtime *runtime = substream->runtime;
+@@ -543,7 +542,7 @@ static int soc_pcm_open(struct snd_pcm_substream *substream)
+ 	struct snd_soc_dai_driver *codec_dai_drv = codec_dai->driver;
+ 	int ret = 0;
+ 
+-	mutex_lock(&pcm_mutex);
++	mutex_lock_nested(&rtd->pcm_mutex, rtd->pcm_subclass);
+ 
+ 	/* startup the audio subsystem */
+ 	if (cpu_dai->driver->ops->startup) {
+@@ -673,7 +672,7 @@ static int soc_pcm_open(struct snd_pcm_substream *substream)
+ 	cpu_dai->active++;
+ 	codec_dai->active++;
+ 	rtd->codec->active++;
+-	mutex_unlock(&pcm_mutex);
++	mutex_unlock(&rtd->pcm_mutex);
+ 	return 0;
+ 
+ config_err:
+@@ -692,7 +691,7 @@ platform_err:
+ 	if (cpu_dai->driver->ops->shutdown)
+ 		cpu_dai->driver->ops->shutdown(substream, cpu_dai);
+ out:
+-	mutex_unlock(&pcm_mutex);
++	mutex_unlock(&rtd->pcm_mutex);
+ 	return ret;
+ }
+ 
+@@ -707,7 +706,7 @@ static void close_delayed_work(struct work_struct *work)
+ 			container_of(work, struct snd_soc_pcm_runtime, delayed_work.work);
+ 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+ 
+-	mutex_lock(&pcm_mutex);
++	mutex_lock_nested(&rtd->pcm_mutex, rtd->pcm_subclass);
+ 
+ 	pr_debug("pop wq checking: %s status: %s waiting: %s\n",
+ 		 codec_dai->driver->playback.stream_name,
+@@ -722,7 +721,7 @@ static void close_delayed_work(struct work_struct *work)
+ 			SND_SOC_DAPM_STREAM_STOP);
+ 	}
+ 
+-	mutex_unlock(&pcm_mutex);
++	mutex_unlock(&rtd->pcm_mutex);
+ }
+ 
+ /*
+@@ -730,7 +729,7 @@ static void close_delayed_work(struct work_struct *work)
+  * freed here. The cpu DAI, codec DAI, machine and platform are also
+  * shutdown.
+  */
+-static int soc_codec_close(struct snd_pcm_substream *substream)
++int soc_pcm_close(struct snd_pcm_substream *substream)
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct snd_soc_platform *platform = rtd->platform;
+@@ -738,7 +737,7 @@ static int soc_codec_close(struct snd_pcm_substream *substream)
+ 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+ 	struct snd_soc_codec *codec = rtd->codec;
+ 
+-	mutex_lock(&pcm_mutex);
++	mutex_lock_nested(&rtd->pcm_mutex, rtd->pcm_subclass);
+ 
+ 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+ 		cpu_dai->playback_active--;
+@@ -783,7 +782,7 @@ static int soc_codec_close(struct snd_pcm_substream *substream)
+ 			SND_SOC_DAPM_STREAM_STOP);
+ 	}
+ 
+-	mutex_unlock(&pcm_mutex);
++	mutex_unlock(&rtd->pcm_mutex);
+ 	return 0;
+ }
+ 
+@@ -792,7 +791,7 @@ static int soc_codec_close(struct snd_pcm_substream *substream)
+  * rate, etc.  This function is non atomic and can be called multiple times,
+  * it can refer to the runtime info.
+  */
+-static int soc_pcm_prepare(struct snd_pcm_substream *substream)
++int soc_pcm_prepare(struct snd_pcm_substream *substream)
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct snd_soc_platform *platform = rtd->platform;
+@@ -800,7 +799,7 @@ static int soc_pcm_prepare(struct snd_pcm_substream *substream)
+ 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+ 	int ret = 0;
+ 
+-	mutex_lock(&pcm_mutex);
++	mutex_lock_nested(&rtd->pcm_mutex, rtd->pcm_subclass);
+ 
+ 	if (rtd->dai_link->ops && rtd->dai_link->ops->prepare) {
+ 		ret = rtd->dai_link->ops->prepare(substream);
+@@ -853,7 +852,7 @@ static int soc_pcm_prepare(struct snd_pcm_substream *substream)
+ 	snd_soc_dai_digital_mute(codec_dai, 0);
+ 
+ out:
+-	mutex_unlock(&pcm_mutex);
++	mutex_unlock(&rtd->pcm_mutex);
+ 	return ret;
+ }
+ 
+@@ -862,7 +861,7 @@ out:
+  * function can also be called multiple times and can allocate buffers
+  * (using snd_pcm_lib_* ). It's non-atomic.
+  */
+-static int soc_pcm_hw_params(struct snd_pcm_substream *substream,
++int soc_pcm_hw_params(struct snd_pcm_substream *substream,
+ 				struct snd_pcm_hw_params *params)
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+@@ -871,7 +870,7 @@ static int soc_pcm_hw_params(struct snd_pcm_substream *substream,
+ 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+ 	int ret = 0;
+ 
+-	mutex_lock(&pcm_mutex);
++	mutex_lock_nested(&rtd->pcm_mutex, rtd->pcm_subclass);
+ 
+ 	if (rtd->dai_link->ops && rtd->dai_link->ops->hw_params) {
+ 		ret = rtd->dai_link->ops->hw_params(substream, params);
+@@ -911,7 +910,7 @@ static int soc_pcm_hw_params(struct snd_pcm_substream *substream,
+ 	rtd->rate = params_rate(params);
+ 
+ out:
+-	mutex_unlock(&pcm_mutex);
++	mutex_unlock(&rtd->pcm_mutex);
+ 	return ret;
+ 
+ platform_err:
+@@ -926,14 +925,14 @@ codec_err:
+ 	if (rtd->dai_link->ops && rtd->dai_link->ops->hw_free)
+ 		rtd->dai_link->ops->hw_free(substream);
+ 
+-	mutex_unlock(&pcm_mutex);
++	mutex_unlock(&rtd->pcm_mutex);
+ 	return ret;
+ }
+ 
+ /*
+  * Frees resources allocated by hw_params, can be called multiple times
+  */
+-static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
++int soc_pcm_hw_free(struct snd_pcm_substream *substream)
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct snd_soc_platform *platform = rtd->platform;
+@@ -941,7 +940,7 @@ static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
+ 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+ 	struct snd_soc_codec *codec = rtd->codec;
+ 
+-	mutex_lock(&pcm_mutex);
++	mutex_lock_nested(&rtd->pcm_mutex, rtd->pcm_subclass);
+ 
+ 	/* apply codec digital mute */
+ 	if (!codec->active)
+@@ -962,11 +961,11 @@ static int soc_pcm_hw_free(struct snd_pcm_substream *substream)
+ 	if (cpu_dai->driver->ops->hw_free)
+ 		cpu_dai->driver->ops->hw_free(substream, cpu_dai);
+ 
+-	mutex_unlock(&pcm_mutex);
++	mutex_unlock(&rtd->pcm_mutex);
+ 	return 0;
+ }
+ 
+-static int soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
++int soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct snd_soc_platform *platform = rtd->platform;
+@@ -999,7 +998,7 @@ static int soc_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
+  * If cpu_dai, codec_dai, platform driver has the delay callback, than
+  * the runtime->delay will be updated accordingly.
+  */
+-static snd_pcm_uframes_t soc_pcm_pointer(struct snd_pcm_substream *substream)
++snd_pcm_uframes_t soc_pcm_pointer(struct snd_pcm_substream *substream)
+ {
+ 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
+ 	struct snd_soc_platform *platform = rtd->platform;
+@@ -1029,7 +1028,7 @@ static snd_pcm_uframes_t soc_pcm_pointer(struct snd_pcm_substream *substream)
+ /* ASoC PCM operations */
+ static struct snd_pcm_ops soc_pcm_ops = {
+ 	.open		= soc_pcm_open,
+-	.close		= soc_codec_close,
++	.close		= soc_pcm_close,
+ 	.hw_params	= soc_pcm_hw_params,
+ 	.hw_free	= soc_pcm_hw_free,
+ 	.prepare	= soc_pcm_prepare,
+@@ -1574,6 +1573,7 @@ static int soc_post_component_init(struct snd_soc_card *card,
+ 	rtd->dev.parent = card->dev;
+ 	rtd->dev.release = rtd_release;
+ 	rtd->dev.init_name = name;
++	mutex_init(&rtd->pcm_mutex);
+ 	ret = device_register(&rtd->dev);
+ 	if (ret < 0) {
+ 		dev_err(card->dev,
+-- 
+1.7.4.1
+

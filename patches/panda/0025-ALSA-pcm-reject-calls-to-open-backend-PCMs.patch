@@ -1,0 +1,32 @@
+From 4176c1cb7ca84b6578597337339c16da8438bf0e Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Wed, 16 Feb 2011 16:50:12 +0000
+Subject: [PATCH 25/54] ALSA: pcm - reject calls to open backend PCMs
+
+This stops userspace opening backlemd PCMs.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ sound/core/pcm_native.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index be7c6de..f19a37b 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -2029,6 +2029,12 @@ int snd_pcm_open_substream(struct snd_pcm *pcm, int stream,
+ 		goto error;
+ 	}
+ 
++	if (substream->ops == NULL) {
++		snd_printd("cannot open back end PCMs directly\n");
++		err = -ENODEV;
++		goto error;
++	}
++
+ 	if ((err = substream->ops->open(substream)) < 0)
+ 		goto error;
+ 
+-- 
+1.7.4.1
+

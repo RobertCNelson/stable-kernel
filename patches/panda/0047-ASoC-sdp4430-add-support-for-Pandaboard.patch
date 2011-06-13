@@ -1,0 +1,69 @@
+From 684232441de588b217aac0c218214561c0de4415 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Mon, 7 Feb 2011 21:09:59 +0000
+Subject: [PATCH 47/54] ASoC: sdp4430 - add support for Pandaboard
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ sound/soc/omap/Kconfig   |    6 +++---
+ sound/soc/omap/sdp4430.c |   11 +++++++++--
+ 2 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/sound/soc/omap/Kconfig b/sound/soc/omap/Kconfig
+index 62c10d4..77cd6ca 100644
+--- a/sound/soc/omap/Kconfig
++++ b/sound/soc/omap/Kconfig
+@@ -107,8 +107,8 @@ config SND_OMAP_SOC_SDP3430
+ 	  SDP3430.
+ 
+ config SND_OMAP_SOC_SDP4430
+-	tristate "SoC Audio support for Texas Instruments SDP4430"
+-	depends on TWL4030_CORE && SND_OMAP_SOC && MACH_OMAP_4430SDP
++	tristate "SoC Audio support for Texas Instruments SDP4430 or PandaBoard"
++	depends on TWL4030_CORE && (MACH_OMAP_4430SDP || MACH_OMAP4_PANDA)
+ 	select SND_OMAP_SOC_MCPDM
+ 	select SND_SOC_TWL6040
+ 	select SND_OMAP_SOC_ABE
+@@ -118,7 +118,7 @@ config SND_OMAP_SOC_SDP4430
+ 	select SND_OMAP_SOC_ABE_DSP
+ 	help
+ 	  Say Y if you want to add support for SoC audio on Texas Instruments
+-	  SDP4430.
++	  SDP4430 or PandaBoard.
+ 
+ config SND_OMAP_SOC_OMAP3_PANDORA
+ 	tristate "SoC Audio support for OMAP3 Pandora"
+diff --git a/sound/soc/omap/sdp4430.c b/sound/soc/omap/sdp4430.c
+index c0ca929..4626684 100644
+--- a/sound/soc/omap/sdp4430.c
++++ b/sound/soc/omap/sdp4430.c
+@@ -707,7 +707,8 @@ static struct snd_soc_dai_link sdp4430_dai[] = {
+ 
+ /* Audio machine driver */
+ static struct snd_soc_card snd_soc_sdp4430 = {
+-	.name = "SDP4430",
++	.driver_name = "OMAP4",
++	.long_name = "TI OMAP4 Board",
+ 	.dai_link = sdp4430_dai,
+ 	.num_links = ARRAY_SIZE(sdp4430_dai),
+ };
+@@ -719,9 +720,15 @@ static int __init sdp4430_soc_init(void)
+ {
+ 	int ret;
+ 
+-	if (!machine_is_omap_4430sdp())
++	if (!machine_is_omap_4430sdp() && !machine_is_omap4_panda()) {
++		pr_debug("Not SDP4430 or PandaBoard!\n");
+ 		return -ENODEV;
++	}
+ 	printk(KERN_INFO "SDP4430 SoC init\n");
++	if (machine_is_omap_4430sdp())
++		snd_soc_sdp4430.name = "SDP4430";
++	else if (machine_is_omap4_panda())
++		snd_soc_sdp4430.name = "Panda";
+ 
+ 	sdp4430_snd_device = platform_device_alloc("soc-audio", -1);
+ 	if (!sdp4430_snd_device) {
+-- 
+1.7.4.1
+

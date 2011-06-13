@@ -1,0 +1,109 @@
+From c0bc8e710fd238dd60db8027eb746b19c7120495 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Wed, 30 Mar 2011 23:27:27 +0100
+Subject: [PATCH 15/54] ASoC: dapm - Add DAPM stream completion event
+
+In preparation for ASoC DSP support.
+
+This adds a callback function to be called at the completion of a DAPM stream
+event.
+
+This can be used by DSP components to perform calculations based on DAPM graphs.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ include/sound/soc-dapm.h |    2 ++
+ include/sound/soc.h      |    5 +++++
+ sound/soc/soc-core.c     |    2 ++
+ sound/soc/soc-dapm.c     |   12 +++++++++---
+ 4 files changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/include/sound/soc-dapm.h b/include/sound/soc-dapm.h
+index 78fd8e8..cedcf9d 100644
+--- a/include/sound/soc-dapm.h
++++ b/include/sound/soc-dapm.h
+@@ -514,6 +514,8 @@ struct snd_soc_dapm_context {
+ 	int dev_power;
+ 	struct list_head list;
+ 
++	int (*stream_event)(struct snd_soc_dapm_context *dapm);
++
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *debugfs_dapm;
+ #endif
+diff --git a/include/sound/soc.h b/include/sound/soc.h
+index 58a856d..e4d27bf 100644
+--- a/include/sound/soc.h
++++ b/include/sound/soc.h
+@@ -605,6 +605,9 @@ struct snd_soc_codec_driver {
+ 	/* probe ordering - for components with runtime dependencies */
+ 	bool late_probe;
+ 	bool early_remove;
++
++	/* codec stream completion event */
++	int (*stream_event)(struct snd_soc_dapm_context *dapm);
+ };
+ 
+ /* SoC platform interface */
+@@ -632,6 +635,8 @@ struct snd_soc_platform_driver {
+ 	/* probe ordering - for components with runtime dependencies */
+ 	bool late_probe;
+ 	bool early_remove;
++
++	int (*stream_event)(struct snd_soc_dapm_context *dapm);
+ };
+ 
+ struct snd_soc_platform {
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index 92b7d95..2d4568e 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -3606,6 +3606,7 @@ int snd_soc_register_platform(struct device *dev,
+ 	platform->dev = dev;
+ 	platform->driver = platform_drv;
+ 	platform->dapm.dev = dev;
++	platform->dapm.stream_event = platform_drv->stream_event;
+ 
+ 	mutex_lock(&client_mutex);
+ 	list_add(&platform->list, &platform_list);
+@@ -3717,6 +3718,7 @@ int snd_soc_register_codec(struct device *dev,
+ 	codec->dapm.dev = dev;
+ 	codec->dapm.codec = codec;
+ 	codec->dapm.seq_notifier = codec_drv->seq_notifier;
++	codec->dapm.stream_event = codec_drv->stream_event;
+ 	codec->dev = dev;
+ 	codec->driver = codec_drv;
+ 	codec->num_dai = num_dai;
+diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
+index 44da0c9..8ab9030 100644
+--- a/sound/soc/soc-dapm.c
++++ b/sound/soc/soc-dapm.c
+@@ -2438,6 +2438,9 @@ static void soc_dapm_stream_event(struct snd_soc_dapm_context *dapm,
+ 	}
+ 
+ 	dapm_power_widgets(dapm, event);
++	/* do we need to notify any clients that DAPM stream is complete */
++	if (dapm->stream_event)
++		dapm->stream_event(dapm);
+ }
+ 
+ /**
+@@ -2459,9 +2462,12 @@ int snd_soc_dapm_stream_event(struct snd_soc_pcm_runtime *rtd,
+ 	if (stream == NULL)
+ 		return 0;
+ 
+-	mutex_lock(&codec->mutex);
+-	soc_dapm_stream_event(&codec->dapm, stream, event);
+-	mutex_unlock(&codec->mutex);
++	mutex_lock(&rtd->card->dapm_mutex);
++
++	soc_dapm_stream_event(&rtd->platform->dapm, stream, event);
++	soc_dapm_stream_event(&rtd->codec->dapm, stream, event);
++
++	mutex_unlock(&rtd->card->dapm_mutex);
+ 	return 0;
+ }
+ 
+-- 
+1.7.4.1
+

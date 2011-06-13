@@ -1,0 +1,32 @@
+From 6417c21935641d8c99bc8a4beedc2eb21735fa0f Mon Sep 17 00:00:00 2001
+From: Ricardo Neri <ricardo.neri@ti.com>
+Date: Sun, 1 May 2011 15:35:55 +0100
+Subject: [PATCH 32/54] ASoC: twl6040: Fix volume range for MICGAINL/MICGAINR
+
+According to TWL6040 specification, gain start at 6dB and not -6dB.
+
+Change-Id: I62cd12372e249a7bb1a7887d75429a349a5b2c00
+Signed-off-by: Ricardo Neri <ricardo.neri@ti.com>
+---
+ sound/soc/codecs/twl6040.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sound/soc/codecs/twl6040.c b/sound/soc/codecs/twl6040.c
+index 33f670e..442eb26 100644
+--- a/sound/soc/codecs/twl6040.c
++++ b/sound/soc/codecs/twl6040.c
+@@ -892,9 +892,9 @@ static DECLARE_TLV_DB_SCALE(mic_preamp_tlv, -600, 600, 0);
+ 
+ /*
+  * MICGAIN volume control:
+- * from -6 to 30 dB in 6 dB steps
++ * from 6 to 30 dB in 6 dB steps
+  */
+-static DECLARE_TLV_DB_SCALE(mic_amp_tlv, -600, 600, 0);
++static DECLARE_TLV_DB_SCALE(mic_amp_tlv, 600, 600, 0);
+ 
+ /*
+  * AFMGAIN volume control:
+-- 
+1.7.4.1
+

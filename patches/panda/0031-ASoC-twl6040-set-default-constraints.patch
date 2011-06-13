@@ -1,0 +1,27 @@
+From 97432585aae4589cb159cfaf37c92f43664fb4f2 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Mon, 7 Mar 2011 15:25:23 +0000
+Subject: [PATCH 31/54] ASoC: twl6040 - set default constraints.
+
+Set default sysclk constraints to high performance mode.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ sound/soc/codecs/twl6040.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/sound/soc/codecs/twl6040.c b/sound/soc/codecs/twl6040.c
+index cc4626a..33f670e 100644
+--- a/sound/soc/codecs/twl6040.c
++++ b/sound/soc/codecs/twl6040.c
+@@ -1502,6 +1502,7 @@ static int twl6040_probe(struct snd_soc_codec *codec)
+ 
+ 	/* default is high-performance mode */
+ 	priv->headset_mode = 1;
++	priv->sysclk_constraints = &hp_constraints;
+ 	priv->workqueue = create_singlethread_workqueue("twl6040-codec");
+ 
+ 	if (!priv->workqueue) {
+-- 
+1.7.4.1
+

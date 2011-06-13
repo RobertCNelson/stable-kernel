@@ -1,0 +1,64 @@
+From cac6ec1d158a7d055ffd93e849e18a937491d30a Mon Sep 17 00:00:00 2001
+From: David Anders <x0132446@ti.com>
+Date: Tue, 22 Feb 2011 13:41:03 -0600
+Subject: [PATCH 48/54] OMAP: panda - Add twl6040 codec data to Panda
+
+Add twl6040 codec support for Panda.
+
+Signed-off-by: David Anders <x0132446@ti.com>
+Signed-off-by: Margarita Olaya Cabrera <magi.olaya@ti.com>
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+---
+ arch/arm/mach-omap2/board-omap4panda.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-omap4panda.c b/arch/arm/mach-omap2/board-omap4panda.c
+index 340ed48..2b96c13 100644
+--- a/arch/arm/mach-omap2/board-omap4panda.c
++++ b/arch/arm/mach-omap2/board-omap4panda.c
+@@ -391,6 +391,24 @@ static struct regulator_init_data omap4_panda_clk32kg = {
+ 	},
+ };
+ 
++static void omap4_audio_conf(void)
++{
++	/* twl6040 naudint */
++	omap_mux_init_signal("sys_nirq2.sys_nirq2", \
++		OMAP_PIN_INPUT_PULLUP);
++}
++
++static struct twl4030_codec_audio_data twl6040_audio = {
++	/* Add audio only data */
++};
++
++static struct twl4030_codec_data twl6040_codec = {
++	.audio		= &twl6040_audio,
++	.audpwron_gpio	= 127,
++	.naudint_irq	= OMAP44XX_IRQ_SYS_2N,
++	.irq_base	= TWL6040_CODEC_IRQ_BASE,
++};
++
+ static struct twl4030_platform_data omap4_panda_twldata = {
+ 	.irq_base	= TWL6030_IRQ_BASE,
+ 	.irq_end	= TWL6030_IRQ_END,
+@@ -406,6 +424,9 @@ static struct twl4030_platform_data omap4_panda_twldata = {
+ 	.vaux3		= &omap4_panda_vaux3,
+ 	.clk32kg	= &omap4_panda_clk32kg,
+ 	.usb		= &omap4_usbphy_data,
++
++	/* children */
++	.codec		= &twl6040_codec,
+ };
+ 
+ static struct i2c_board_info __initdata omap4_panda_i2c_boardinfo[] = {
+@@ -726,6 +747,7 @@ static void __init omap4_panda_init(void)
+ 		pr_err("error setting wl12xx data\n");
+ 
+ 	omap4_panda_i2c_init();
++	omap4_audio_conf();
+ 	platform_add_devices(panda_devices, ARRAY_SIZE(panda_devices));
+ /*
+  * 	This is temporaray. With WLAN regsitering, we see that UART2 is not
+-- 
+1.7.4.1
+

@@ -1,0 +1,28 @@
+From 848720baedea48d6d8ecc96f0ae56fa03b27d3b3 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Sun, 1 May 2011 19:33:15 +0100
+Subject: [PATCH 36/54] OMAP: hwmod - Enable McPDM hwmod device
+
+Enable McPDM hwmod device.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_44xx_data.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
+index ef6b057..0893a04 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_44xx_data.c
+@@ -5306,7 +5306,7 @@ static __initdata struct omap_hwmod *omap44xx_hwmods[] = {
+ 	&omap44xx_mcbsp4_hwmod,
+ 
+ 	/* mcpdm class */
+-/*	&omap44xx_mcpdm_hwmod, */
++	&omap44xx_mcpdm_hwmod,
+ 
+ 	/* mcspi class */
+ 	&omap44xx_mcspi1_hwmod,
+-- 
+1.7.4.1
+

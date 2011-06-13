@@ -1,0 +1,81 @@
+From d2486b745e8a92decfc9bfeefc10a519928aca40 Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Wed, 16 Feb 2011 16:24:17 +0000
+Subject: [PATCH 20/54] ASoC: dapm - Add locking to the DAPM power_widgets()
+
+Add locking to the DAPM power_widgets function.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+---
+ include/sound/soc.h  |    1 +
+ sound/soc/soc-core.c |    1 +
+ sound/soc/soc-dapm.c |   10 ++++++----
+ 3 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/include/sound/soc.h b/include/sound/soc.h
+index a2b7e51..b4ada53 100644
+--- a/include/sound/soc.h
++++ b/include/sound/soc.h
+@@ -725,6 +725,7 @@ struct snd_soc_card {
+ 
+ 	struct list_head list;
+ 	struct mutex mutex;
++	struct mutex dapm_mutex;
+ 
+ 	bool instantiated;
+ 
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index 8b693e3..0addfae 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -3405,6 +3405,7 @@ int snd_soc_register_card(struct snd_soc_card *card)
+ 	INIT_LIST_HEAD(&card->list);
+ 	card->instantiated = 0;
+ 	mutex_init(&card->mutex);
++	mutex_init(&card->dapm_mutex);
+ 
+ 	mutex_lock(&client_mutex);
+ 	list_add(&card->list, &card_list);
+diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
+index c19535f..f124030 100644
+--- a/sound/soc/soc-dapm.c
++++ b/sound/soc/soc-dapm.c
+@@ -1318,14 +1318,15 @@ static void dapm_seq_run_coalesced(struct snd_soc_dapm_context *dapm,
+ 				   struct list_head *pending)
+ {
+ 	struct snd_soc_card *card = dapm->card;
+-	struct snd_soc_dapm_widget *w;
++	struct snd_soc_dapm_widget *w, *_w;
+ 	int reg, power;
+ 	unsigned int value = 0;
+ 	unsigned int mask = 0;
+ 	unsigned int cur_mask;
+ 
+-	reg = list_first_entry(pending, struct snd_soc_dapm_widget,
+-			       power_list)->reg;
++	_w = list_first_entry(pending, struct snd_soc_dapm_widget,
++				power_list);
++	reg = _w->reg;
+ 
+ 	list_for_each_entry(w, pending, power_list) {
+ 		cur_mask = 1 << w->shift;
+@@ -1354,7 +1355,7 @@ static void dapm_seq_run_coalesced(struct snd_soc_dapm_context *dapm,
+ 			"pop test : Applying 0x%x/0x%x to %x in %dms\n",
+ 			value, mask, reg, card->pop_time);
+ 		pop_wait(card->pop_time);
+-		soc_widget_update_bits(w, reg, mask, value);
++		soc_widget_update_bits(_w, reg, mask, value);
+ 	}
+ 
+ 	list_for_each_entry(w, pending, power_list) {
+@@ -2853,6 +2854,7 @@ int snd_soc_dapm_stream_event(struct snd_soc_pcm_runtime *rtd,
+ {
+ 	if (stream == NULL)
+ 		return 0;
++
+ 	mutex_lock(&rtd->card->dapm_mutex);
+ 
+ 	soc_dapm_stream_event(&rtd->platform->dapm, stream, event);
+-- 
+1.7.4.1
+

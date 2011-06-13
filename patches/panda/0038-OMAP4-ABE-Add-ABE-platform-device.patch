@@ -1,0 +1,50 @@
+From f08c2c048819cc478a6bfcda76b877c696c938cb Mon Sep 17 00:00:00 2001
+From: Liam Girdwood <lrg@ti.com>
+Date: Sun, 13 Feb 2011 22:38:22 -0600
+Subject: [PATCH 38/54] OMAP4: ABE: Add ABE platform device
+
+Add platform device for Audio Backend.
+
+Signed-off-by: Liam Girdwood <lrg@ti.com>
+Signed-off-by: Misael Lopez Cruz <misael.lopez@ti.com>
+---
+ arch/arm/mach-omap2/devices.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 6fbf854..db20fb1 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -293,6 +293,21 @@ static inline void omap_init_mbox(void) { }
+ 
+ static inline void omap_init_sti(void) {}
+ 
++#if defined CONFIG_ARCH_OMAP4
++
++static struct platform_device omap_abe_dai = {
++	.name	= "omap-abe-dai",
++	.id	= -1,
++};
++
++static inline void omap_init_abe(void)
++{
++	platform_device_register(&omap_abe_dai);
++}
++#else
++static inline void omap_init_abe(void) {}
++#endif
++
+ #if defined(CONFIG_SND_SOC) || defined(CONFIG_SND_SOC_MODULE)
+ 
+ static struct platform_device omap_pcm = {
+@@ -739,6 +754,7 @@ static int __init omap2_init_devices(void)
+ 	 * please keep these calls, and their implementations above,
+ 	 * in alphabetical order so they're easier to sort through.
+ 	 */
++	omap_init_abe();
+ 	omap_init_audio();
+ 	omap_init_camera();
+ 	omap_init_mbox();
+-- 
+1.7.4.1
+
