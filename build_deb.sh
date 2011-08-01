@@ -8,8 +8,19 @@ unset BUILD
 unset CC
 unset GIT_MODE
 unset NO_DEVTMPS
+unset FTP_KERNEL
+
+ARCH=$(uname -m)
+CCACHE=ccache
 
 DIR=$PWD
+
+CORES=1
+if test "-$ARCH-" = "-x86_64-" || test "-$ARCH-" = "-i686-"
+then
+ CORES=$(cat /proc/cpuinfo | grep processor | wc -l)
+ let CORES=$CORES+1
+fi
 
 mkdir -p ${DIR}/deploy/
 
@@ -18,13 +29,13 @@ DL_DIR=${DIR}/dl
 mkdir -p ${DL_DIR}
 
 function dl_kernel {
-	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/linux-${KERNEL_REL}.tar.bz2
+	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/linux-${KERNEL_REL}.tar.bz2
 
 if [ "${KERNEL_PATCH}" ] ; then
     if [ "${RC_PATCH}" ] ; then
-		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/testing/${DL_PATCH}.bz2
+		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/testing/${DL_PATCH}.bz2
 	else
-		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v2.6/${DL_PATCH}.bz2
+		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/${DL_PATCH}.bz2
     fi
 fi
 }
@@ -75,8 +86,8 @@ fi
 
 function make_deb {
 	cd ${DIR}/KERNEL/
-	echo "make ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg"
-	fakeroot make ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
+	echo "make -j${CORES} ARCH=arm KBUILD_DEBARCH=armel LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg"
+	time fakeroot make -j${CORES} ARCH=arm KBUILD_DEBARCH=armel LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
 	mv ${DIR}/*.deb ${DIR}/deploy/
 	cd ${DIR}
 }
@@ -98,7 +109,7 @@ if [ "${NO_DEVTMPS}" ] ; then
 	echo ""
 else
 	echo ""
-	echo "Building for Debian Squeeze/Wheezy/Sid & Ubuntu 10.04/10.10/11.04"
+	echo "Building for Debian Squeeze/Wheezy/Sid & Ubuntu 10.04/10.10/11.04/11.10"
 	echo ""
 fi
 
