@@ -42,7 +42,7 @@ fi
 
 function extract_kernel {
 	echo "Cleaning Up"
-	rm -rfd ${DIR}/KERNEL || true
+	rm -rf ${DIR}/KERNEL || true
 	echo "Extracting: ${KERNEL_REL} Kernel"
 	tar xjf ${DL_DIR}/linux-${KERNEL_REL}.tar.bz2
 	mv linux-${KERNEL_REL} KERNEL

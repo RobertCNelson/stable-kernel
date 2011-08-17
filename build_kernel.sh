@@ -42,7 +42,7 @@ fi
 
 function extract_kernel {
 	echo "Cleaning Up"
-	rm -rfd ${DIR}/KERNEL || true
+	rm -rf ${DIR}/KERNEL || true
 	echo "Extracting: ${KERNEL_REL} Kernel"
 	tar xjf ${DL_DIR}/linux-${KERNEL_REL}.tar.bz2
 	mv linux-${KERNEL_REL} KERNEL
@@ -125,7 +125,7 @@ function make_modules {
 	echo "Building Module Archive"
 	echo ""
 
-	rm -rfd ${DIR}/deploy/mod &> /dev/null || true
+	rm -rf ${DIR}/deploy/mod &> /dev/null || true
 	mkdir -p ${DIR}/deploy/mod
 	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
 	echo "Building ${KERNEL_UTS}-modules.tar.gz"
@@ -141,7 +141,7 @@ function make_headers {
 	echo "Building Header Archive"
 	echo ""
 
-	rm -rfd ${DIR}/deploy/headers &> /dev/null || true
+	rm -rf ${DIR}/deploy/headers &> /dev/null || true
 	mkdir -p ${DIR}/deploy/headers/usr
 	make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
 	cd ${DIR}/deploy/headers
