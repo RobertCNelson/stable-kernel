@@ -18,7 +18,7 @@ DL_PATCH=patch-${KERNEL_PATCH}
 #KERNEL_PATCH=${RC_KERNEL}${RC_PATCH}
 #DL_PATCH=patch-${KERNEL_PATCH}
 
-ABI=2
+ABI=2.1
 
 if [ "${NO_DEVTMPS}" ] ; then
 BUILD+=old${ABI}
