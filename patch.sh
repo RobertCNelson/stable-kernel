@@ -15,6 +15,8 @@ patch -s -p1 < "${DIR}/patches/stable/patch-3.0.5-6"
 function bugs_trivial {
 echo "bugs and trivial stuff"
 
+patch -p1 -R < "${DIR}/patches/trivial/0001-staging-rt2860sta-and-rt2870sta-Remove-drivers-repla.patch"
+
 #Bisected from 2.6.35 -> 2.6.36 to find this..
 #This commit breaks some lcd monitors..
 #rcn-ee Feb 26, 2011...
