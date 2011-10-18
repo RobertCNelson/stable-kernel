@@ -9,6 +9,8 @@ echo "Applying: 3.0.5 Patch"
 patch -s -p1 < "${DIR}/patches/stable/patch-3.0.4-5"
 echo "Applying: 3.0.6 Patch"
 patch -s -p1 < "${DIR}/patches/stable/patch-3.0.5-6"
+echo "Applying: 3.0.7 Patch"
+patch -s -p1 < "${DIR}/patches/stable/patch-3.0.6-7"
 
 }
 
