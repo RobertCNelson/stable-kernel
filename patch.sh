@@ -3,17 +3,6 @@
 
 echo "Starting patch.sh"
 
-function kernel_org_down {
-
-echo "Applying: 3.0.5 Patch"
-patch -s -p1 < "${DIR}/patches/stable/patch-3.0.4-5"
-echo "Applying: 3.0.6 Patch"
-patch -s -p1 < "${DIR}/patches/stable/patch-3.0.5-6"
-echo "Applying: 3.0.7 Patch"
-patch -s -p1 < "${DIR}/patches/stable/patch-3.0.6-7"
-
-}
-
 function bugs_trivial {
 echo "bugs and trivial stuff"
 
@@ -213,8 +202,6 @@ patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.39-rc-SPIN_L
 #4.03.00.02 + 2.6.40 (2.6.39-git11)
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.40-display.h-to-omapdss..patch"
 }
-
-kernel_org_down
 
 bugs_trivial
 
