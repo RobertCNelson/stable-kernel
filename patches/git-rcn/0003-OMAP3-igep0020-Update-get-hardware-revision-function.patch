@@ -1,0 +1,101 @@
+From 066437aa0b07a5db47d59e91cd8a8ba4611033a4 Mon Sep 17 00:00:00 2001
+From: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+Date: Fri, 2 Sep 2011 10:44:39 +0200
+Subject: [PATCH 03/44] OMAP3: igep0020: Update get hardware revision function
+
+The purpose of this patch is simplify the get hardware revision
+function.
+
+Signed-off-by: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+---
+ arch/arm/mach-omap2/board-igep0020.c |   47 +++++++++++++++++----------------
+ 1 files changed, 24 insertions(+), 23 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-igep0020.c b/arch/arm/mach-omap2/board-igep0020.c
+index 82d2001..dec3955 100644
+--- a/arch/arm/mach-omap2/board-igep0020.c
++++ b/arch/arm/mach-omap2/board-igep0020.c
+@@ -46,6 +46,7 @@
+ #define IGEP2_GPIO_LED0_GREEN   26
+ #define IGEP2_GPIO_LED0_RED     27
+ #define IGEP2_GPIO_LED1_RED     28
++#define GPIO_LED_D240_RED		28
+ #define IGEP2_GPIO_DVI_PUP      170
+ 
+ #define IGEP2_RB_GPIO_WIFI_NPD     94
+@@ -66,8 +67,7 @@
+  *  --------------------------------------------------------------------------
+  * | Id. | Hw Rev.            | HW0 (28) | WIFI_NPD | WIFI_NRESET | BT_NRESET |
+  *  --------------------------------------------------------------------------
+- * |  0  | B                  |   high   |  gpio94  |   gpio95    |     -     |
+- * |  0  | B/C (B-compatible) |   high   |  gpio94  |   gpio95    |  gpio137  |
++ * |  0  | B                  |   high   |  gpio94  |   gpio95    |  gpio137  |
+  * |  1  | C                  |   low    |  gpio138 |   gpio139   |  gpio137  |
+  *  --------------------------------------------------------------------------
+  */
+@@ -77,31 +77,31 @@
+ 
+ static u8 hwrev;
+ 
+-static void __init igep2_get_revision(void)
++static void __init igep0020_get_revision(void)
+ {
+ 	u8 ret;
+ 
+-	omap_mux_init_gpio(IGEP2_GPIO_LED1_RED, OMAP_PIN_INPUT);
+-
+-	if (gpio_request_one(IGEP2_GPIO_LED1_RED, GPIOF_IN, "GPIO_HW0_REV")) {
+-		pr_warning("IGEP2: Could not obtain gpio GPIO_HW0_REV\n");
+-		pr_err("IGEP2: Unknown Hardware Revision\n");
+-		return;
+-	}
+-
+-	ret = gpio_get_value(IGEP2_GPIO_LED1_RED);
+-	if (ret == 0) {
+-		pr_info("IGEP2: Hardware Revision C (B-NON compatible)\n");
+-		hwrev = IGEP2_BOARD_HWREV_C;
+-	} else if (ret ==  1) {
+-		pr_info("IGEP2: Hardware Revision B/C (B compatible)\n");
+-		hwrev = IGEP2_BOARD_HWREV_B;
++	omap_mux_init_gpio(GPIO_LED_D240_RED, OMAP_PIN_INPUT);
++
++	if ((gpio_request(GPIO_LED_D240_RED, "GPIO HW0 REV") == 0) &&
++	    (gpio_direction_input(GPIO_LED_D240_RED) == 0)) {
++		ret = gpio_get_value(GPIO_LED_D240_RED);
++		if (ret == 0) {
++			pr_info("IGEP: Hardware Rev. C\n");
++			hwrev = IGEP2_BOARD_HWREV_C;
++		} else if (ret ==  1) {
++			pr_info("IGEP: Hardware Rev. B\n");
++			hwrev = IGEP2_BOARD_HWREV_B;
++		} else {
++			pr_err("IGEP: Unknow Hardware Revision\n");
++			hwrev = -1;
++		}
+ 	} else {
+-		pr_err("IGEP2: Unknown Hardware Revision\n");
+-		hwrev = -1;
++		pr_warning("IGEP: Could not obtain gpio HW0 REV\n");
++		pr_err("IGEP: Unknow Hardware Revision\n");
+ 	}
+ 
+-	gpio_free(IGEP2_GPIO_LED1_RED);
++	gpio_free(GPIO_LED_D240_RED);
+ }
+ 
+ #if defined(CONFIG_MTD_ONENAND_OMAP2) || \
+@@ -624,8 +624,9 @@ static void __init igep_init(void)
+ {
+ 	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
+ 
+-	/* Get IGEP2 hardware revision */
+-	igep2_get_revision();
++	/* Get IGEP0020 Hardware Revision */
++	igep0020_get_revision();
++
+ 	/* Register I2C busses and drivers */
+ 	igep_i2c_init();
+ 	platform_add_devices(igep_devices, ARRAY_SIZE(igep_devices));
+-- 
+1.7.4.1
+

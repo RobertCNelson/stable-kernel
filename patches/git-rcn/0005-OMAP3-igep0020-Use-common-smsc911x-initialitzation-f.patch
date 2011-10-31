@@ -1,0 +1,79 @@
+From 0aebb188b7374a3bcd9998216e7920270ef10953 Mon Sep 17 00:00:00 2001
+From: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+Date: Fri, 2 Sep 2011 10:58:37 +0200
+Subject: [PATCH 05/44] OMAP3: igep0020: Use common smsc911x initialitzation function
+
+The smsc911x initialitzation function is common for all IGEP boards, so
+remove current initialitzation and use the init function provided for
+the board-igep00x0.c file.
+
+Signed-off-by: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+---
+ arch/arm/mach-omap2/board-igep0020.c |   30 ++++++------------------------
+ 1 files changed, 6 insertions(+), 24 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-igep0020.c b/arch/arm/mach-omap2/board-igep0020.c
+index 5931ace..1f87326 100644
+--- a/arch/arm/mach-omap2/board-igep0020.c
++++ b/arch/arm/mach-omap2/board-igep0020.c
+@@ -41,8 +41,9 @@
+ #include "sdram-numonyx-m65kxxxxam.h"
+ #include "common-board-devices.h"
+ 
+-#define IGEP2_SMSC911X_CS       5
+-#define IGEP2_SMSC911X_GPIO     176
++#define SMSC911X_CS			5
++#define SMSC911X_IRQ			176
++#define SMSC911X_NRESET			64
+ #define IGEP2_GPIO_USBH_NRESET  24
+ #define IGEP2_GPIO_LED0_GREEN   26
+ #define IGEP2_GPIO_LED0_RED     27
+@@ -105,27 +106,6 @@ static void __init igep0020_get_revision(void)
+ 	gpio_free(GPIO_LED_D240_RED);
+ }
+ 
+-#if defined(CONFIG_SMSC911X) || defined(CONFIG_SMSC911X_MODULE)
+-
+-#include <linux/smsc911x.h>
+-#include <plat/gpmc-smsc911x.h>
+-
+-static struct omap_smsc911x_platform_data smsc911x_cfg = {
+-	.cs             = IGEP2_SMSC911X_CS,
+-	.gpio_irq       = IGEP2_SMSC911X_GPIO,
+-	.gpio_reset     = -EINVAL,
+-	.flags		= SMSC911X_USE_32BIT | SMSC911X_SAVE_MAC_ADDRESS,
+-};
+-
+-static inline void __init igep2_init_smsc911x(void)
+-{
+-	gpmc_smsc911x_init(&smsc911x_cfg);
+-}
+-
+-#else
+-static inline void __init igep2_init_smsc911x(void) { }
+-#endif
+-
+ static struct regulator_consumer_supply igep_vmmc1_supply[] = {
+ 	REGULATOR_SUPPLY("vmmc", "omap_hsmmc.0"),
+ };
+@@ -546,6 +526,9 @@ static void __init igep_init(void)
+ 	/* Common initialitzations */
+ 	/* - Register flash devices */
+ 	igep00x0_flash_init();
++	/* - Ethernet with SMSC9221 LAN Controller */
++	igep00x0_smsc911x_init(SMSC911X_CS, SMSC911X_IRQ, SMSC911X_NRESET);
++
+ 	igep_leds_init();
+ 
+ 	/*
+@@ -556,7 +539,6 @@ static void __init igep_init(void)
+ 
+ 	omap_display_init(&igep2_dss_data);
+ 	igep2_display_init();
+-	igep2_init_smsc911x();
+ 	usbhs_init(&igep2_usbhs_bdata);
+ }
+ 
+-- 
+1.7.4.1
+

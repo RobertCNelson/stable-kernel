@@ -2,15 +2,15 @@
 
 unset BUILD
 
-KERNEL_REL=3.0
+KERNEL_REL=3.1
 
 #not sure if this will increment..
 FTP_KERNEL=3.0
 
 #for x.x.X
-STABLE_PATCH=8
-KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
-DL_PATCH=patch-${KERNEL_PATCH}
+#STABLE_PATCH=8
+#KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
+#DL_PATCH=patch-${KERNEL_PATCH}
 
 #for x.x-rc
 #RC_KERNEL=2.6.37
@@ -18,7 +18,7 @@ DL_PATCH=patch-${KERNEL_PATCH}
 #KERNEL_PATCH=${RC_KERNEL}${RC_PATCH}
 #DL_PATCH=patch-${KERNEL_PATCH}
 
-ABI=3
+ABI=0
 
 if [ "${NO_DEVTMPS}" ] ; then
 BUILD+=old${ABI}

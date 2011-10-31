@@ -97,6 +97,8 @@ fi
 function copy_defconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} distclean
+	make ARCH=arm CROSS_COMPILE=${CC} omap2plus_defconfig
+	cp .config ${DIR}/patches/ref_omap2plus_defconfig
 if [ "${NO_DEVTMPS}" ] ; then
 	cp ${DIR}/patches/no_devtmps-defconfig .config
 else
@@ -116,12 +118,12 @@ fi
 	cd ${DIR}/
 }
 
-function make_uImage {
+function make_zImage {
 	cd ${DIR}/KERNEL/
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" CONFIG_DEBUG_SECTION_MISMATCH=y uImage"
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" CONFIG_DEBUG_SECTION_MISMATCH=y zImage"
+	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y zImage
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
-	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
+	cp arch/arm/boot/zImage ${DIR}/deploy/${KERNEL_UTS}.zImage
 	cd ${DIR}
 }
 
@@ -158,8 +160,8 @@ function make_headers {
 	cd ${DIR}
 }
 
-
 	/bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
+
 if [ -e ${DIR}/system.sh ]; then
 	. system.sh
 	. version.sh
@@ -185,7 +187,7 @@ fi
 	patch_kernel
 	copy_defconfig
 	make_menuconfig
-	make_uImage
+	make_zImage
 	make_modules
 	make_headers
 else

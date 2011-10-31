@@ -1,0 +1,99 @@
+From bb33d0cdf1cd6618a48efd122127eaab8ef24363 Mon Sep 17 00:00:00 2001
+From: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+Date: Fri, 2 Sep 2011 11:12:38 +0200
+Subject: [PATCH 07/44] OMAP3: igep0020: Use common wifi_bt initialitzation function
+
+The wifi_bt initialitzation function is common for all IGEP boards, so
+remove current initialitzation and use the init function provided for
+the board-igep00x0.c file.
+
+Signed-off-by: Enric Balletbo i Serra <eballetbo@iseebcn.com>
+---
+ arch/arm/mach-omap2/board-igep0020.c |   61 ++++++++-------------------------
+ 1 files changed, 15 insertions(+), 46 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-igep0020.c b/arch/arm/mach-omap2/board-igep0020.c
+index 22ed09f..bc971ca 100644
+--- a/arch/arm/mach-omap2/board-igep0020.c
++++ b/arch/arm/mach-omap2/board-igep0020.c
+@@ -416,51 +416,10 @@ static struct omap_board_mux board_mux[] __initdata = {
+ };
+ #endif
+ 
+-#if defined(CONFIG_LIBERTAS_SDIO) || defined(CONFIG_LIBERTAS_SDIO_MODULE)
+-static struct gpio igep_wlan_bt_gpios[] __initdata = {
+-	{ -EINVAL, GPIOF_OUT_INIT_HIGH, "GPIO_WIFI_NPD"	   },
+-	{ -EINVAL, GPIOF_OUT_INIT_HIGH, "GPIO_WIFI_NRESET" },
+-	{ -EINVAL, GPIOF_OUT_INIT_HIGH, "GPIO_BT_NRESET"   },
+-};
+-
+-static void __init igep_wlan_bt_init(void)
+-{
+-	int err;
+-
+-	/* GPIO's for WLAN-BT combo depends on hardware revision */
+-	if (hwrev == IGEP2_BOARD_HWREV_B) {
+-		igep_wlan_bt_gpios[0].gpio = IGEP2_RB_GPIO_WIFI_NPD;
+-		igep_wlan_bt_gpios[1].gpio = IGEP2_RB_GPIO_WIFI_NRESET;
+-		igep_wlan_bt_gpios[2].gpio = IGEP2_RB_GPIO_BT_NRESET;
+-	} else if (hwrev == IGEP2_BOARD_HWREV_C) {
+-		igep_wlan_bt_gpios[0].gpio = IGEP2_RC_GPIO_WIFI_NPD;
+-		igep_wlan_bt_gpios[1].gpio = IGEP2_RC_GPIO_WIFI_NRESET;
+-		igep_wlan_bt_gpios[2].gpio = IGEP2_RC_GPIO_BT_NRESET;
+-	} else
+-		return;
+-
+-	err = gpio_request_array(igep_wlan_bt_gpios,
+-				 ARRAY_SIZE(igep_wlan_bt_gpios));
+-	if (err) {
+-		pr_warning("IGEP2: Could not obtain WIFI/BT gpios\n");
+-		return;
+-	}
+-
+-	gpio_export(igep_wlan_bt_gpios[0].gpio, 0);
+-	gpio_export(igep_wlan_bt_gpios[1].gpio, 0);
+-	gpio_export(igep_wlan_bt_gpios[2].gpio, 0);
+-
+-	gpio_set_value(igep_wlan_bt_gpios[1].gpio, 0);
+-	udelay(10);
+-	gpio_set_value(igep_wlan_bt_gpios[1].gpio, 1);
+-
+-}
+-#else
+-static inline void __init igep_wlan_bt_init(void) { }
+-#endif
+-
+ static void __init igep_init(void)
+ {
++	int opt;
++
+ 	omap3_mux_init(board_mux, OMAP_PACKAGE_CBB);
+ 
+ 	/* Get IGEP0020 Hardware Revision */
+@@ -481,10 +440,20 @@ static void __init igep_init(void)
+ 	igep0020_leds_init();
+ 
+ 	/*
+-	 * WLAN-BT combo module from MuRata which has a Marvell WLAN
+-	 * (88W8686) + CSR Bluetooth chipset. Uses SDIO interface.
++	 * WLAN-BT combo module from MuRata with SDIO interface.
++	 *
++	 * NOTE: If we have an expansion board with modem enabled we need to
++	 * disable the bluetooth interface as is INCOMPATIBLE
+ 	 */
+-	igep_wlan_bt_init();
++	opt = igep00x0_buddy_pdata.options & IGEP00X0_BUDDY_OPT_MODEM;
++	if (hwrev == IGEP2_BOARD_HWREV_B)
++		igep00x0_wifi_bt_init(IGEP2_RB_GPIO_WIFI_NPD,
++			IGEP2_RB_GPIO_WIFI_NRESET, IGEP2_RB_GPIO_BT_NRESET,
++			!opt);
++	else if (hwrev == IGEP2_BOARD_HWREV_C)
++		igep00x0_wifi_bt_init(IGEP2_RC_GPIO_WIFI_NPD,
++			IGEP2_RC_GPIO_WIFI_NRESET, IGEP2_RC_GPIO_BT_NRESET,
++			!opt);
+ 
+ 	omap_display_init(&igep2_dss_data);
+ 	igep2_display_init();
+-- 
+1.7.4.1
+
