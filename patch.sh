@@ -136,6 +136,15 @@ patch -s -p1 < "${DIR}/patches/git-rcn/0013-OMAP3-igep0020-Fix-double-registrati
 patch -s -p1 < "${DIR}/patches/git-rcn/0014-OMAP3-igep0020-Fix-mux-when-using-board.ei485-kernel.patch"
 patch -s -p1 < "${DIR}/patches/git-rcn/0015-board-igeo00x0-fix-igep00x0_tsc2046_init.patch"
 
+#Misha Manulis reply+i-2124203-89b49457cbc2980b8763661d...@reply.github.com
+#
+#When I'm compiling, I get the following error:
+#  arch/arm/mach-omap2/board-igep00x0.c:488:13: error: conflicting types for ‘igep00x0_wifi_bt_init’
+#The fix is to patch __KERNEL/arch/arm/mach-omap2/board-igep00x0.c:488__ to replace that line with the following:
+#   void igep00x0_wifi_bt_init(int npd, int wifi_nreset, int bt_nreset, int bt_enable) { }
+
+patch -s -p1 < "${DIR}/patches/trivial/0001-ARM-OMAP-igep00x0-fix-build-of-igep00x0_wifi_bt_init.patch"
+
 }
 
 function devkit8000 {
