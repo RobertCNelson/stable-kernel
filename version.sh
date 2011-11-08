@@ -18,7 +18,7 @@ FTP_KERNEL=3.0
 #KERNEL_PATCH=${RC_KERNEL}${RC_PATCH}
 #DL_PATCH=patch-${KERNEL_PATCH}
 
-ABI=2.1
+ABI=3
 
 if [ "${NO_DEVTMPS}" ] ; then
 BUILD+=old${ABI}
