@@ -108,6 +108,8 @@ patch -s -p1 < "${DIR}/patches/git-rcn/0032-expansion-add-zippy.patch"
 patch -s -p1 < "${DIR}/patches/git-rcn/0033-expansion-add-zippy2.patch"
 patch -s -p1 < "${DIR}/patches/git-rcn/0034-expansion-add-trainer.patch"
 
+patch -s -p1 < "${DIR}/patches/beagle/ulcd/0001-WIP-ARM-OMAP-Beagle-ulcd.patch"
+
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 patch -s -p1 < "${DIR}/patches/display/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
 
