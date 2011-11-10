@@ -23,6 +23,16 @@ fi
 
 mkdir -p ${DIR}/deploy/
 
+function git_kernel_torvalds {
+  echo "pulling from torvalds kernel.org tree"
+  git pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master --tags || true
+}
+
+function git_kernel_stable {
+  echo "fetching from stable kernel.org tree"
+  git pull git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git master --tags || true
+}
+
 DL_DIR=${DIR}/dl
 
 mkdir -p ${DL_DIR}
