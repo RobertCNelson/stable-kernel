@@ -2,10 +2,12 @@
 
 unset KERNEL_REL
 unset KERNEL_PATCH
+unset STABLE_PATCH
 unset RC_KERNEL
 unset RC_PATCH
 unset BUILD
 unset CC
+unset LINUX_GIT
 unset GIT_MODE
 unset FTP_KERNEL
 
@@ -31,6 +33,68 @@ function git_kernel_torvalds {
 function git_kernel_stable {
   echo "fetching from stable kernel.org tree"
   git pull git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git master --tags || true
+}
+
+function git_kernel {
+if [ "-${LINUX_GIT}-" != "--" ]; then
+
+  if [[ ! -a ${LINUX_GIT}/.git/config ]]; then
+    echo "Double check: LINUX_GIT variable in system.sh, i'm not finding a git tree"
+    exit
+  fi
+
+  cd ${LINUX_GIT}/
+    echo "Updating LINUX_GIT tree via: git fetch"
+    git fetch
+  cd -
+
+  if [[ ! -a ${DIR}/KERNEL/.git/config ]]; then
+	rm -rf ${DIR}/KERNEL/ || true
+    git clone --shared ${LINUX_GIT} ${DIR}/KERNEL
+  fi
+
+  cd ${DIR}/KERNEL/
+
+  git reset --hard
+  git checkout master -f
+  git pull
+
+  if [ "${RC_PATCH}" ]; then
+    git tag | grep v${RC_KERNEL}${RC_PATCH} || git_kernel_torvalds
+    git branch -D v${RC_KERNEL}${RC_PATCH}-${BUILD} || true
+    if [ ! "${LATEST_GIT}" ] ; then
+      git checkout v${RC_KERNEL}${RC_PATCH} -b v${RC_KERNEL}${RC_PATCH}-${BUILD}
+    else
+      git checkout origin/master -b v${RC_KERNEL}${RC_PATCH}-${BUILD}
+    fi
+  elif [ "${STABLE_PATCH}" ] ; then
+    git tag | grep v${KERNEL_REL}.${STABLE_PATCH} || git_kernel_stable
+    git branch -D v${KERNEL_REL}.${STABLE_PATCH}-${BUILD} || true
+    if [ ! "${LATEST_GIT}" ] ; then
+      git checkout v${KERNEL_REL}.${STABLE_PATCH} -b v${KERNEL_REL}.${STABLE_PATCH}-${BUILD}
+    else
+      git checkout origin/master -b v${KERNEL_REL}.${STABLE_PATCH}-${BUILD}
+    fi
+  else
+    git tag | grep v${KERNEL_REL} || git_kernel_torvalds
+    git branch -D v${KERNEL_REL}-${BUILD} || true
+    if [ ! "${LATEST_GIT}" ] ; then
+      git checkout v${KERNEL_REL} -b v${KERNEL_REL}-${BUILD}
+    else
+      git checkout origin/master -b v${KERNEL_REL}-${BUILD}
+    fi
+  fi
+
+  git describe
+
+  cd ${DIR}/
+
+else
+  echo "UPDATED: this script now uses a git repo vs raw *.tar.bz2"
+  echo "Update your system.sh file via: meld system.sh system.sh.sample"
+  echo "and make sure to clone a git tree and edit the location of LINUX_GIT variable"
+  exit
+fi
 }
 
 DL_DIR=${DIR}/dl
