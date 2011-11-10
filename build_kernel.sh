@@ -119,20 +119,20 @@ function make_zImage {
 }
 
 function make_modules {
-	cd ${DIR}/KERNEL/
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y modules
+  cd ${DIR}/KERNEL/
+  time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y modules
 
-	echo ""
-	echo "Building Module Archive"
-	echo ""
+  echo ""
+  echo "Building Module Archive"
+  echo ""
 
-	rm -rf ${DIR}/deploy/mod &> /dev/null || true
-	mkdir -p ${DIR}/deploy/mod
-	make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
-	echo "Building ${KERNEL_UTS}-modules.tar.gz"
-	cd ${DIR}/deploy/mod
-	tar czf ../${KERNEL_UTS}-modules.tar.gz *
-	cd ${DIR}
+  rm -rf ${DIR}/deploy/mod &> /dev/null || true
+  mkdir -p ${DIR}/deploy/mod
+  make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
+  echo "Building ${KERNEL_UTS}-modules.tar.gz"
+  cd ${DIR}/deploy/mod
+  tar czf ../${KERNEL_UTS}-modules.tar.gz *
+  cd ${DIR}/
 }
 
 function make_headers {
