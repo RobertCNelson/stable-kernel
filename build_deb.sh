@@ -10,6 +10,8 @@ unset LINUX_GIT
 unset LATEST_GIT
 unset DEBARCH
 
+unset LOCAL_PATCH_DIR
+
 ARCH=$(uname -m)
 CCACHE=ccache
 
@@ -112,6 +114,11 @@ function patch_kernel {
 
 #Test Patches:
 #exit
+
+  if [ "${LOCAL_PATCH_DIR}" ]; then
+    for i in ${LOCAL_PATCH_DIR}/*.patch ; do patch  -s -p1 < $i ; done
+    BUILD+='+'
+  fi
 
   cd ${DIR}/
 }
