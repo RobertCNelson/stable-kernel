@@ -147,24 +147,23 @@ fi
 }
 
 function patch_kernel {
-	cd ${DIR}/KERNEL
-	export DIR GIT_MODE
-	/bin/bash -e ${DIR}/patch.sh
+  cd ${DIR}/KERNEL
+  export DIR BISECT
+  /bin/bash -e ${DIR}/patch.sh || { git add . ; exit 1 ; }
 
-if [ "${GIT_MODE}" ] ; then
-if [ "${KERNEL_PATCH}" ] ; then
-        git add .
-        git commit -a -m ''$KERNEL_PATCH'-'$BUILD' patchset'
-        git tag -a $KERNEL_PATCH-$BUILD -m $KERNEL_PATCH-$BUILD
-else
-        git add .
-        git commit -a -m ''$KERNEL_REL'-'$BUILD' patchset'
-        git tag -a $KERNEL_REL-$BUILD -m $KERNEL_REL-$BUILD
-fi
-fi
+  git add .
+  if [ "${RC_PATCH}" ]; then
+    git commit -a -m ''$RC_KERNEL''$RC_PATCH'-'$BUILD' patchset'
+  elif [ "${STABLE_PATCH}" ] ; then
+    git commit -a -m ''$KERNEL_REL'.'$STABLE_PATCH'-'$BUILD' patchset'
+  else
+    git commit -a -m ''$KERNEL_REL'-'$BUILD' patchset'
+  fi
+
 #Test Patches:
 #exit
-	cd ${DIR}/
+
+  cd ${DIR}/
 }
 
 function copy_defconfig {
@@ -231,8 +230,7 @@ if [ -e ${DIR}/system.sh ]; then
   . system.sh
   . version.sh
 
-	dl_kernel
-	extract_kernel
+  git_kernel
   patch_kernel
   copy_defconfig
   make_menuconfig
