@@ -93,21 +93,21 @@ function make_deb {
 	cd ${DIR}
 }
 
-	/bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
+  /bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
 
 if [ -e ${DIR}/system.sh ]; then
-	. system.sh
-	. version.sh
+  . system.sh
+  . version.sh
 
 	dl_kernel
 	extract_kernel
-	patch_kernel
-	copy_defconfig
-	#make_menuconfig
-	make_deb
+  patch_kernel
+  copy_defconfig
+  #make_menuconfig
+  make_deb
 else
-	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
-	echo "cp system.sh.sample system.sh"
-	echo "gedit system.sh"
+  echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
+  echo "cp system.sh.sample system.sh"
+  echo "gedit system.sh"
 fi
 

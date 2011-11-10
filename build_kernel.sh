@@ -151,23 +151,23 @@ function make_headers {
   cd ${DIR}/
 }
 
-	/bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
+  /bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
 
 if [ -e ${DIR}/system.sh ]; then
-	. system.sh
-	. version.sh
+  . system.sh
+  . version.sh
 
 	dl_kernel
 	extract_kernel
-	patch_kernel
-	copy_defconfig
-	make_menuconfig
-	make_zImage
-	make_modules
-	make_headers
+  patch_kernel
+  copy_defconfig
+  make_menuconfig
+  make_zImage
+  make_modules
+  make_headers
 else
-	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
-	echo "cp system.sh.sample system.sh"
-	echo "gedit system.sh"
+  echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
+  echo "cp system.sh.sample system.sh"
+  echo "gedit system.sh"
 fi
 
