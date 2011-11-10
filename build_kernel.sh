@@ -136,19 +136,19 @@ function make_modules {
 }
 
 function make_headers {
-	cd ${DIR}/KERNEL/
+  cd ${DIR}/KERNEL/
 
-	echo ""
-	echo "Building Header Archive"
-	echo ""
+  echo ""
+  echo "Building Header Archive"
+  echo ""
 
-	rm -rf ${DIR}/deploy/headers &> /dev/null || true
-	mkdir -p ${DIR}/deploy/headers/usr
-	make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
-	cd ${DIR}/deploy/headers
-	echo "Building ${KERNEL_UTS}-headers.tar.gz"
-	tar czf ../${KERNEL_UTS}-headers.tar.gz *
-	cd ${DIR}
+  rm -rf ${DIR}/deploy/headers &> /dev/null || true
+  mkdir -p ${DIR}/deploy/headers/usr
+  make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
+  cd ${DIR}/deploy/headers
+  echo "Building ${KERNEL_UTS}-headers.tar.gz"
+  tar czf ../${KERNEL_UTS}-headers.tar.gz *
+  cd ${DIR}/
 }
 
 	/bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
