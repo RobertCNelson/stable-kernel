@@ -8,6 +8,7 @@ unset RC_PATCH
 unset BUILD
 unset CC
 unset LINUX_GIT
+unset LATEST_GIT
 unset GIT_MODE
 unset FTP_KERNEL
 unset DEBARCH
