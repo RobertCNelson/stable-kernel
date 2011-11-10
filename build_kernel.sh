@@ -7,7 +7,6 @@ unset RC_PATCH
 unset BUILD
 unset CC
 unset GIT_MODE
-unset NO_DEVTMPS
 unset FTP_KERNEL
 
 ARCH=$(uname -m)
@@ -95,27 +94,19 @@ fi
 }
 
 function copy_defconfig {
-	cd ${DIR}/KERNEL/
-	make ARCH=arm CROSS_COMPILE=${CC} distclean
-	make ARCH=arm CROSS_COMPILE=${CC} omap2plus_defconfig
-	cp .config ${DIR}/patches/ref_omap2plus_defconfig
-if [ "${NO_DEVTMPS}" ] ; then
-	cp ${DIR}/patches/no_devtmps-defconfig .config
-else
-	cp ${DIR}/patches/defconfig .config
-fi
-	cd ${DIR}/
+  cd ${DIR}/KERNEL/
+  make ARCH=arm CROSS_COMPILE=${CC} distclean
+  make ARCH=arm CROSS_COMPILE=${CC} omap2plus_defconfig
+  cp .config -v ${DIR}/patches/ref_omap2plus_defconfig
+  cp ${DIR}/patches/defconfig -v .config
+  cd ${DIR}/
 }
 
 function make_menuconfig {
-	cd ${DIR}/KERNEL/
-	make ARCH=arm CROSS_COMPILE=${CC} menuconfig
-if [ "${NO_DEVTMPS}" ] ; then
-	cp .config ${DIR}/patches/no_devtmps-defconfig
-else
-	cp .config ${DIR}/patches/defconfig
-fi
-	cd ${DIR}/
+  cd ${DIR}/KERNEL/
+  make ARCH=arm CROSS_COMPILE=${CC} menuconfig
+  cp .config -v ${DIR}/patches/defconfig
+  cd ${DIR}/
 }
 
 function make_zImage {
@@ -165,16 +156,6 @@ function make_headers {
 if [ -e ${DIR}/system.sh ]; then
 	. system.sh
 	. version.sh
-
-if [ "${NO_DEVTMPS}" ] ; then
-	echo ""
-	echo "Building for Debian Lenny & Ubuntu 9.04/9.10"
-	echo ""
-else
-	echo ""
-	echo "Building for Debian Squeeze/Wheezy/Sid & Ubuntu 10.04/10.10/11.04/11.10"
-	echo ""
-fi
 
 	dl_kernel
 	extract_kernel

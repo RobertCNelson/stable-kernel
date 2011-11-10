@@ -41,9 +41,6 @@ fi
 #Use with Caution, mount locations can change... This define's SD/MMC card mount location for load_uImage.sh script.
 #MMC=/dev/sde
 
-#Old Stuff, Such as: Debian Lenny, Ubuntu Jaunty, Ubuntu Karmic need this:
-#NO_DEVTMPS=1
-
 #zImage to uImage
 #OMAP3-4
 #ZRELADDR=0x80008000
