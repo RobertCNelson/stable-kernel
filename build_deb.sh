@@ -86,11 +86,11 @@ function make_menuconfig {
 }
 
 function make_deb {
-	cd ${DIR}/KERNEL/
-	echo "make -j${CORES} ARCH=arm KBUILD_DEBARCH=armel LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg"
-	time fakeroot make -j${CORES} ARCH=arm KBUILD_DEBARCH=armel LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
-	mv ${DIR}/*.deb ${DIR}/deploy/
-	cd ${DIR}
+  cd ${DIR}/KERNEL/
+  echo "make -j${CORES} ARCH=arm KBUILD_DEBARCH=armel LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg"
+  time fakeroot make -j${CORES} ARCH=arm KBUILD_DEBARCH=armel LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
+  mv ${DIR}/*.deb ${DIR}/deploy/
+  cd ${DIR}
 }
 
   /bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
