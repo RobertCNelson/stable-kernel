@@ -114,6 +114,7 @@ function patch_kernel {
 #exit
 
   cd ${DIR}/
+}
 
 function copy_defconfig {
   cd ${DIR}/KERNEL/
