@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 unset KERNEL_REL
-unset KERNEL_PATCH
 unset STABLE_PATCH
 unset RC_KERNEL
 unset RC_PATCH
@@ -9,8 +8,6 @@ unset BUILD
 unset CC
 unset LINUX_GIT
 unset LATEST_GIT
-unset GIT_MODE
-unset FTP_KERNEL
 unset DEBARCH
 
 ARCH=$(uname -m)
@@ -97,44 +94,6 @@ else
   echo "and make sure to clone a git tree and edit the location of LINUX_GIT variable"
   exit
 fi
-}
-
-DL_DIR=${DIR}/dl
-
-mkdir -p ${DL_DIR}
-
-function rcn-ee_rel_mirror {
- wget -c --directory-prefix=${DL_DIR} http://www.rcn-ee.net/mirror/linux/kernel/v${FTP_KERNEL}/linux-${KERNEL_REL}.tar.bz2
-}
-
-function rcn-ee_patch_mirror {
- wget -c --directory-prefix=${DL_DIR} http://www.rcn-ee.net/mirror/linux/kernel/v${FTP_KERNEL}/${DL_PATCH}.bz2
-}
-
-function dl_kernel {
-	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/linux-${KERNEL_REL}.tar.bz2 || rcn-ee_rel_mirror
-
-if [ "${KERNEL_PATCH}" ] ; then
-    if [ "${RC_PATCH}" ] ; then
-		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/testing/${DL_PATCH}.bz2
-	else
-		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/${DL_PATCH}.bz2 || rcn-ee_patch_mirror
-    fi
-fi
-}
-
-function extract_kernel {
-	echo "Cleaning Up"
-	rm -rf ${DIR}/KERNEL || true
-	echo "Extracting: ${KERNEL_REL} Kernel"
-	tar xjf ${DL_DIR}/linux-${KERNEL_REL}.tar.bz2
-	mv linux-${KERNEL_REL} KERNEL
-	cd ${DIR}/KERNEL
-if [ "${KERNEL_PATCH}" ] ; then
-	echo "Applying: ${KERNEL_PATCH} Patch"
-	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}.bz2 | patch -s -p1
-fi
-	cd ${DIR}/
 }
 
 function patch_kernel {
