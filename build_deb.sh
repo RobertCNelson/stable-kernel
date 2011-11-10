@@ -106,12 +106,6 @@ if [ -e ${DIR}/system.sh ]; then
 	. system.sh
 	. version.sh
 
-if [ "${IS_LUCID}" ] ; then
-	echo ""
-	echo "IS_LUCID setting in system.sh is Depreciated"
-	echo ""
-fi
-
 if [ "${NO_DEVTMPS}" ] ; then
 	echo ""
 	echo "Building for Debian Lenny & Ubuntu 9.04/9.10"
