@@ -8,7 +8,7 @@ DIR=$PWD
 if [ -e ${DIR}/version.sh ]; then
 	. version.sh
 
-	if [ "${KERNEL_PATCH}" ] ; then
+	if [ "${STABLE_PATCH}" ] ; then
 		git commit -a -m "${KERNEL_REL}.${STABLE_PATCH}-${BUILD} release" -s
 		git tag -a "${KERNEL_REL}.${STABLE_PATCH}-${BUILD}" -m "${KERNEL_REL}.${STABLE_PATCH}-${BUILD}"
 		git push origin --tags
