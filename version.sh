@@ -11,13 +11,9 @@ STABLE_PATCH=1
 #RC_KERNEL=2.6.37
 #RC_PATCH=-rc8
 
-ABI=3
+ABI=3.1
 
-if [ "${NO_DEVTMPS}" ] ; then
-BUILD+=old${ABI}
-else
 BUILD+=x${ABI}
-fi
 
 BUILDREV=1.0
 DISTRO=cross
