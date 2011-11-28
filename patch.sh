@@ -18,6 +18,8 @@ patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-afte
 #should fix gcc-4.6 ehci problems..
 patch -s -p1 < "${DIR}/patches/trivial/0001-USB-ehci-use-packed-aligned-4-instead-of-removing-th.patch"
 
+patch -s -p1 < "${DIR}/patches/trivial/0001-USB-DUALSPEED-Gadget-KConfig.patch"
+
 }
 
 function cpufreq {
