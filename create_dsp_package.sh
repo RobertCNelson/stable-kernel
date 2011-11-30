@@ -150,6 +150,7 @@ fi
 cd \${DIR}/git/gst-dsp
 make clean
 git pull
+./configure
 make CROSS_COMPILE= 
 sudo make install
 cd \${DIR}/
