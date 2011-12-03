@@ -6,6 +6,14 @@ echo "Starting patch.sh"
 function bugs_trivial {
 echo "bugs and trivial stuff"
 
+#December 1st 2011: rcn-ee
+#reboot is failing on all panda/beagle 3.1.4-x5
+#bisect shows, v3.1.2-x4 good, 3.1.4-x5 bad
+#this commit is the first one to break reboot:
+#http://git.kernel.org/?p=linux/kernel/git/stable/linux-stable.git;a=commit;h=a896cd19d7569c9754a75fea01f4c68e355697af
+#note: his also affects mainline
+git revert --no-edit a896cd19d7569c9754a75fea01f4c68e355697af
+
 #Bisected from 2.6.35 -> 2.6.36 to find this..
 #This commit breaks some lcd monitors..
 #rcn-ee Feb 26, 2011...
