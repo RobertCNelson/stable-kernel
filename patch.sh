@@ -39,7 +39,7 @@ git revert --no-edit a896cd19d7569c9754a75fea01f4c68e355697af
 #rcn-ee Feb 26, 2011...
 #Still needs more work for 2.6.38, causes:
 #[   14.962829] omapdss DISPC error: GFX_FIFO_UNDERFLOW, disabling GFX
-patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-OMAP-DSS2-OMAPFB-swap-front-and-back-porches-.patch"
+#patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-OMAP-DSS2-OMAPFB-swap-front-and-back-porches-.patch"
 
 patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 
@@ -62,7 +62,10 @@ echo "dss2 from for-next"
 
 function dspbridge_next {
 echo "dspbridge from for-next"
-
+patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-tidspbridge-dont-cast-void-from-kmalloc.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-tidspbridge-MMU2-registers-are-limited-to-32.patch"
+patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-tidspbridge-include-module.h-by-default.patch"
+#patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-tidspbridge-request-dmtimer-clocks-on-init.patch"
 }
 
 function omap_fixes {
@@ -142,11 +145,6 @@ patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readon
 #patch -s -p1 < "${DIR}/patches/touchbook/0002-touchbook-add-twl4030-bci-battery.patch"
 }
 
-function dspbridge {
-echo "dspbridge fixes"
-
-}
-
 function omap4 {
 echo "omap4 related patches"
 #drop with 3.0-git16
@@ -221,7 +219,7 @@ beagle
 #for_next tree's
 dss2_next
 omap_fixes
-#dspbridge_next
+dspbridge_next
 for_next
 
 #work in progress

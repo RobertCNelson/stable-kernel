@@ -1,0 +1,36 @@
+From 8c670f4d157bcaba0001455ace554572b9b417ef Mon Sep 17 00:00:00 2001
+From: Thomas Meyer <thomas@m3y3r.de>
+Date: Sat, 13 Aug 2011 11:39:08 +0200
+Subject: [PATCH] staging: tidspbridge: dont cast void* from kmalloc()
+
+ Casting (void *) value returned by kmalloc is useless
+ as mentioned in Documentation/CodingStyle, Chap 14.
+
+ The semantic patch that makes this output is available
+ in scripts/coccinelle/api/alloc/drop_kmalloc_cast.cocci.
+
+ More information about semantic patching is available at
+ http://coccinelle.lip6.fr/
+
+Signed-off-by: Thomas Meyer <thomas@m3y3r.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/gen/gh.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/gen/gh.c b/drivers/staging/tidspbridge/gen/gh.c
+index cd72503..60aa7b0 100644
+--- a/drivers/staging/tidspbridge/gen/gh.c
++++ b/drivers/staging/tidspbridge/gen/gh.c
+@@ -55,7 +55,7 @@ struct gh_t_hash_tab *gh_create(u16 max_bucket, u16 val_size,
+ 	hash_tab->match = match;
+ 	hash_tab->delete = delete == NULL ? noop : delete;
+ 
+-	hash_tab->buckets = (struct element **)
++	hash_tab->buckets =
+ 	    kzalloc(sizeof(struct element *) * max_bucket, GFP_KERNEL);
+ 	if (hash_tab->buckets == NULL) {
+ 		gh_delete(hash_tab);
+-- 
+1.7.4.1
+

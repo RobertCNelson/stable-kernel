@@ -1,0 +1,29 @@
+From fcde2bf0b9a0581db9fe5382e0c90f526c011114 Mon Sep 17 00:00:00 2001
+From: Vladimir Zapolskiy <vz@mleia.com>
+Date: Wed, 19 Oct 2011 22:39:12 +0300
+Subject: [PATCH] staging: tidspbridge: MMU2 registers are limited to 32-bit data access
+
+According to OMAP3 TRM access to MMU registers shall be strictly 32-bit
+aligned.
+
+Signed-off-by: Vladimir Zapolskiy <vz@mleia.com>
+Acked-by: Omar Ramirez Luna <omar.ramirez@ti.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/tidspbridge/hw/hw_mmu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/tidspbridge/hw/hw_mmu.c b/drivers/staging/tidspbridge/hw/hw_mmu.c
+index c214df9..8a93d55 100644
+--- a/drivers/staging/tidspbridge/hw/hw_mmu.c
++++ b/drivers/staging/tidspbridge/hw/hw_mmu.c
+@@ -558,5 +558,5 @@ static hw_status mmu_set_ram_entry(const void __iomem *base_address,
+ 
+ void hw_mmu_tlb_flush_all(const void __iomem *base)
+ {
+-	__raw_writeb(1, base + MMU_GFLUSH);
++	__raw_writel(1, base + MMU_GFLUSH);
+ }
+-- 
+1.7.4.1
+
