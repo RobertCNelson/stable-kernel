@@ -32,12 +32,8 @@ fi
 # Check if the host is X86_64
 PLATFORM=$(uname -m 2>/dev/null)
 if [ "$PLATFORM" == "x86_64" ]; then
-  IA32=$(file /usr/share/lintian/overrides/ia32-libs | grep -v ERROR 2> /dev/null)
-  if test "-$IA32-" = "--"
-  then
-    echo "Missing ia32-libs"
-    sudo apt-get -y install ia32-libs
-  fi
+ echo "Note: on the x86_64 platform, this script needs (ia32-libs)..."
+ echo "--------------------------------------------------------------"
 fi
 
 #SGX_VERSION=3_01_00_06
@@ -48,7 +44,6 @@ SGX_VERSION=4_00_00_01
 SGX_BIN_NAME="Graphics_SDK_setuplinux"
 
 SGX_BIN=${SGX_BIN_NAME}_${SGX_VERSION}.bin
-
 
 sudo rm -rf ${DIR}/SDK/ || true
 mkdir -p ${DIR}/SDK/
