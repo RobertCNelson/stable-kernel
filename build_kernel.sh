@@ -56,13 +56,7 @@ function git_kernel_stable {
 }
 
 function git_kernel {
-if [ "-${LINUX_GIT}-" != "--" ]; then
-
-  if [[ ! -a ${LINUX_GIT}/.git/config ]]; then
-    echo "Double check: LINUX_GIT variable in system.sh, i'm not finding a git tree"
-    exit
-  fi
-
+if [[ -a ${LINUX_GIT}/.git/config ]]; then
   cd ${LINUX_GIT}/
     echo "Updating LINUX_GIT tree via: git fetch"
     git fetch
@@ -108,11 +102,15 @@ if [ "-${LINUX_GIT}-" != "--" ]; then
   git describe
 
   cd ${DIR}/
-
 else
-  echo "UPDATED: this script now uses a git repo vs raw *.tar.bz2"
-  echo "Update your system.sh file via: meld system.sh system.sh.sample"
-  echo "and make sure to clone a git tree and edit the location of LINUX_GIT variable"
+  echo ""
+  echo "ERROR: LINUX_GIT variable in system.sh seems invalid, i'm not finding a valid git tree..."
+  echo ""
+  echo "Quick Fix:"
+  echo "example: cd ~/"
+  echo "example: git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
+  echo "example: Set: LINUX_GIT=~/linux-stable/ in system.sh"
+  echo ""
   exit
 fi
 }

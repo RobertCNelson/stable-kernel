@@ -37,11 +37,19 @@ else
  fi
 fi
 
-#Use git for kernel source
-#To setup:
-#git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-#Then uncomment and modify LINUX_GIT to point to location of git tree:
-#LINUX_GIT=/path/to/linux-stable
+###REQUIRED:
+
+##Linux Kernel Source location:
+##
+##To Setup: using git, you need to clone the linux-stable git tree from kernel.org
+##to anywhere in your system, just adjust LINUX_GIT variable..
+##
+###Note: (In Most systems ~/ is /home/username/)
+##cd ~/
+##git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+##
+
+LINUX_GIT=~/linux-stable/
 
 #Use with Caution, mount locations can change... This define's SD/MMC card mount location for load_uImage.sh script.
 #MMC=/dev/sde
