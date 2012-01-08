@@ -51,12 +51,12 @@ fi
 
 LINUX_GIT=~/linux-stable/
 
-###OPTIONAL: (REQUIRED FOR RUNNING: ./tools/load_uimage.sh & ./tools/load_uimage.sh)
+###OPTIONAL: (REQUIRED FOR RUNNING: ./tools/load_uImage.sh & ./tools/load_uImage.sh)
 
 ##Since 2.6.39?, it's now possible to build a Linux Kernel for devices that have
 ##different physical address of the kernel entry point or "ZRELADDR".  This also means
 ##these scripts only create zImage's, if you'd like uImage, run mkimage yourself, or use
-##the ./tools/load_uimage.sh to load the uImage on a MMC card.
+##the ./tools/load_uImage.sh to load the uImage on a MMC card.
 
 ##For TI: OMAP3/4/AM35xx
 #ZRELADDR=0x80008000
@@ -68,7 +68,13 @@ LINUX_GIT=~/linux-stable/
 ##MX53
 #ZRELADDR=0x70008000
 
-#Use with Caution, mount locations can change... This define's SD/MMC card mount location for load_uImage.sh script.
+###OPTIONAL: (REQUIRED FOR RUNNING: ./tools/load_uImage.sh & ./tools/load_uImage.sh)
+
+##USE WITH CAUTION: mount locations can change, this script has ZERO error detection.(FIXME)
+##
+##Operaties on raw disks, NOT PARTITIONS
+##BAD: MMC=/dev/sde1
+##GOOD: MMC=/dev/sde
 #MMC=/dev/sde
 
 #Local patches
