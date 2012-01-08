@@ -214,8 +214,11 @@ if [ -e ${DIR}/system.sh ]; then
   make_modules
   make_headers
 else
-  echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
-  echo "cp system.sh.sample system.sh"
-  echo "gedit system.sh"
+  echo ""
+  echo "ERROR: Missing (your system) specific system.sh, please copy system.sh.sample to system.sh and edit as needed."
+  echo ""
+  echo "example: cp system.sh.sample system.sh"
+  echo "example: gedit system.sh"
+  echo ""
 fi
 
