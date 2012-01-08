@@ -92,7 +92,7 @@ if [[ -a ${LINUX_GIT}/.git/config ]]; then
       git checkout origin/master -b v${KERNEL_REL}.${STABLE_PATCH}-${BUILD}
     fi
   else
-    git tag | grep v${KERNEL_REL} || git_kernel_torvalds
+    git tag | grep v${KERNEL_REL} | grep -v rc || git_kernel_torvalds
     git branch -D v${KERNEL_REL}-${BUILD} || true
     if [ ! "${LATEST_GIT}" ] ; then
       git checkout v${KERNEL_REL} -b v${KERNEL_REL}-${BUILD}
