@@ -41,9 +41,6 @@ fi
 #Then uncomment and modify LINUX_GIT to point to location of git tree:
 #LINUX_GIT=/path/to/linux-stable
 
-#Allow the usage of git to help create kernel patches
-#GIT_MODE=1
-
 #Use with Caution, mount locations can change... This define's SD/MMC card mount location for load_uImage.sh script.
 #MMC=/dev/sde
 
@@ -59,3 +56,4 @@ fi
 
 #mx53
 #ZRELADDR=0x70008000
+
