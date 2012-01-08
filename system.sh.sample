@@ -47,7 +47,6 @@ fi
 ###Note: (In Most systems ~/ is /home/username/)
 ##cd ~/
 ##git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-##
 
 LINUX_GIT=~/linux-stable/
 
@@ -75,8 +74,14 @@ LINUX_GIT=~/linux-stable/
 ##Operaties on raw disks, NOT PARTITIONS
 ##BAD: MMC=/dev/sde1
 ##GOOD: MMC=/dev/sde
+
 #MMC=/dev/sde
 
-#Local patches
+###ADVANCED: Secret Sauce Patches:
+
+##Have some secret sauce, you dont want to share with the community??
+##
+##It'll look specifically for *.patch files... Doesn't care about order/etc.. And I don't care about enhancing it.. ;)
+
 #LOCAL_PATCH_DIR=/full/path/to/dir/
 
