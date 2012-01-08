@@ -28,7 +28,8 @@ else
  if [ "-${GCC_TEST}-" == "--" ] ; then
   echo ""
   echo "Error: The GCC ARM Cross Compiler you setup in system.sh (CC variable)."
-  echo "Doesnt seem to be valid for ARM, double check it's location"
+  echo "Doesn't seem to be valid for ARM, double check it's location, or that"
+  echo "you chose the correct GCC Cross Compiler."
   echo ""
   echo "Output of: ${CC}gcc -v"
   echo "${GCC_REPORT}"
