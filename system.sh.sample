@@ -22,6 +22,19 @@ else
   echo ""
   exit
  fi
+
+ GCC_TEST=$(LC_ALL=C ${CC}gcc -v 2>&1 | grep "Target:" | grep arm || true)
+ GCC_REPORT=$(LC_ALL=C ${CC}gcc -v 2>&1 || true)
+ if [ "-${GCC_TEST}-" == "--" ] ; then
+  echo ""
+  echo "Error: The GCC ARM Cross Compiler you setup in system.sh (CC variable)."
+  echo "Doesnt seem to be valid for ARM, double check it's location"
+  echo ""
+  echo "Output of: ${CC}gcc -v"
+  echo "${GCC_REPORT}"
+  echo ""
+  exit
+ fi
 fi
 
 #Use git for kernel source
