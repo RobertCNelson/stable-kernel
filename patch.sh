@@ -53,6 +53,7 @@ git pull git://github.com/RobertCNelson/linux.git micrel_ks8851_v3.2-rc3
 function beagle {
 echo "[git] Board Patches for: BeagleBoard"
 git pull git://github.com/RobertCNelson/linux.git omap_beagle_expansion_v3.2-rc3
+patch -s -p1 < "${DIR}/patches/beagle/ulcd/0001-beagle-ulcd-fix-tsc2007-touchreen.patch"
 
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 patch -s -p1 < "${DIR}/patches/display/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"

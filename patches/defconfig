@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 3.2.0 Kernel Configuration
+# Linux/arm 3.2.1 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -3548,7 +3548,19 @@ CONFIG_CLKSRC_MMIO=y
 CONFIG_IOMMU_SUPPORT=y
 # CONFIG_OMAP_IOMMU is not set
 # CONFIG_VIRT_DRIVERS is not set
-# CONFIG_PM_DEVFREQ is not set
+CONFIG_PM_DEVFREQ=y
+
+#
+# DEVFREQ Governors
+#
+CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND=y
+CONFIG_DEVFREQ_GOV_PERFORMANCE=y
+CONFIG_DEVFREQ_GOV_POWERSAVE=y
+CONFIG_DEVFREQ_GOV_USERSPACE=y
+
+#
+# DEVFREQ Drivers
+#
 
 #
 # File systems
