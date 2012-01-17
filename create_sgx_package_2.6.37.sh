@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (c) 2009-2011 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -157,15 +157,19 @@ if [ \$(uname -m) == "armv7l" ] ; then
   echo "Extracting target files to rootfs"
   sudo tar xf target_libs.tar.gz -C /
 
+ if [ -f /etc/powervr-esrev ] ; then
+  sudo rm -f /etc/powervr-esrev || true
+ fi
+
   if which lsb_release >/dev/null 2>&1 && [ "\$(lsb_release -is)" = Ubuntu ]; then
 
     if [ ! \$(which devmem2) ];then
-        if ls /devmem2*_armel.deb >/dev/null 2>&1;then
+        if [ -f /devmem2*_armel.deb ] ; then
           sudo dpkg -i /devmem2*_armel.deb
         fi
     fi
 
-    if ls /devmem2*_armel.deb >/dev/null 2>&1;then
+    if [ -f /devmem2*_armel.deb ] ; then
         sudo rm -f /devmem2*_armel.deb
     fi
 
@@ -174,6 +178,10 @@ if [ \$(uname -m) == "armv7l" ] ; then
       sudo chmod +x /etc/rcS.d/S60pvr.sh
     else
       #karmic/lucid/maverick/natty etc
+      sudo update-rc.d -f pvr remove
+      if [ -f /etc/init.d/pvr ] ; then
+        rm -f /etc/init.d/pvr || true
+      fi
       sudo cp /opt/pvr /etc/init.d/pvr
       sudo chmod +x /etc/init.d/pvr
       sudo update-rc.d pvr defaults
@@ -210,7 +218,9 @@ DIR=\$PWD
 
 if [ \$(uname -m) == "armv7l" ] ; then
 
- sudo rm /etc/powervr-esrev
+ if [ -f /etc/powervr-esrev ] ; then
+  sudo rm /etc/powervr-esrev || true
+ fi
  sudo depmod -a omaplfb
 
  if which lsb_release >/dev/null 2>&1 && [ "\$(lsb_release -is)" = Ubuntu ]; then
@@ -236,8 +246,10 @@ function copy_sgx_system_files {
 	sudo rm -rf ${DIR}/SDK/
 	mkdir -p ${DIR}/SDK/libs/usr/lib/ES2.0
 	mkdir -p ${DIR}/SDK/libs/usr/bin/ES2.0
+
 	mkdir -p ${DIR}/SDK/libs/usr/lib/ES3.0
 	mkdir -p ${DIR}/SDK/libs/usr/bin/ES3.0
+
 	mkdir -p ${DIR}/SDK/libs/usr/lib/ES5.0
 	mkdir -p ${DIR}/SDK/libs/usr/bin/ES5.0
 
