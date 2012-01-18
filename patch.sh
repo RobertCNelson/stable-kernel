@@ -35,7 +35,17 @@ echo "bugs and trivial stuff"
 patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 
 #should fix gcc-4.6 ehci problems..
-patch -s -p1 < "${DIR}/patches/trivial/0001-USB-ehci-use-packed-aligned-4-instead-of-removing-th.patch"
+#Safe to remove?
+#Maverick: gcc-4.4: ehci=okay
+#Natty: gcc-4.5: ehci=okay
+#Oneiric: gcc-4.6: ehci=okay
+#Precise armel: gcc-4.6: ehci=okay
+#Precise armhf: gcc-4.6: ehci=?
+#Squeeze: gcc-4.4: ehci=okay
+#Wheezy: gcc-4.6: ehci=okay
+#Sid armel: gcc-4.6: ehci=?
+#Sid armhf: gcc-4.6: ehci=?
+#patch -s -p1 < "${DIR}/patches/trivial/0001-USB-ehci-use-packed-aligned-4-instead-of-removing-th.patch"
 }
 
 function cpufreq {
