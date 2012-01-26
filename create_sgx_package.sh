@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2012.01"
+VERSION="v2012.01-1"
 
 unset DIR
 
@@ -164,6 +164,9 @@ if [ \$(uname -m) == "armv7l" ] ; then
  if [ -f /etc/powervr-esrev ] ; then
   sudo rm -f /etc/powervr-esrev || true
  fi
+
+ echo "[default]" | sudo tee /etc/powervr.ini
+ echo "WindowSystem=libpvrPVR2D_FRONTWSEGL.so" | sudo tee -a /etc/powervr.ini
 
   if which lsb_release >/dev/null 2>&1 && [ "\$(lsb_release -is)" = Ubuntu ]; then
 
