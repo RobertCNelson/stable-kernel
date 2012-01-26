@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+VERSION="v2012.01"
+
 unset DIR
 
 DIR=$PWD
@@ -345,4 +347,10 @@ function tar_up_examples {
  sgx_setup
  copy_sgx_system_files
  tar_up_examples
+
+ echo ""
+ echo "Script Version ${VERSION}"
+ echo "Email Bugs: bugs@rcn-ee.com"
+ echo "-----------------------------"
+ echo ""
 
