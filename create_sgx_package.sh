@@ -187,7 +187,7 @@ if [ \$(uname -m) == "armv7l" ] ; then
       #karmic/lucid/maverick/natty etc
       sudo update-rc.d -f pvr remove
       if [ -f /etc/init.d/pvr ] ; then
-        rm -f /etc/init.d/pvr || true
+        sudo rm -f /etc/init.d/pvr || true
       fi
       sudo cp /opt/pvr /etc/init.d/pvr
       sudo chmod +x /etc/init.d/pvr
