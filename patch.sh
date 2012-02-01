@@ -71,6 +71,8 @@ patch -s -p1 < "${DIR}/patches/display/0001-meego-modedb-add-Toshiba-LTA070B220F
 patch -s -p1 < "${DIR}/patches/beagle/0001-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
+
+patch -s -p1 < "${DIR}/patches/beagle/ulcd/0001-ulcd-add-tlc59108-i2c-device.patch"
 }
 
 function dspbridge {
