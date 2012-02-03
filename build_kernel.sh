@@ -127,6 +127,7 @@ function patch_kernel {
 
 #Test Patches:
 #exit
+#patch -p1 < ${DIR}/patches/beagle/0001-spi-testing.patch
 
   if [ "${LOCAL_PATCH_DIR}" ]; then
     for i in ${LOCAL_PATCH_DIR}/*.patch ; do patch  -s -p1 < $i ; done

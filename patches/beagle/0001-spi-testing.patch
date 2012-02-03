@@ -1,0 +1,119 @@
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index 0f217c8..c362b9c 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -2,6 +2,8 @@
+ # Makefile for the linux kernel.
+ #
+ 
++CFLAGS_mux.o += -DDEBUG
++
+ # Common support
+ obj-y := id.o io.o control.o mux.o devices.o serial.o gpmc.o timer.o pm.o \
+ 	 common.o gpio.o dma.o wd_timer.o
+diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
+index 821e6f2..7b4624b 100644
+--- a/arch/arm/mach-omap2/board-omap3beagle.c
++++ b/arch/arm/mach-omap2/board-omap3beagle.c
+@@ -31,6 +31,7 @@
+ #include <linux/mtd/nand.h>
+ #include <linux/mmc/host.h>
+ 
++#include <linux/spi/spi.h>
+ #include <linux/regulator/machine.h>
+ #include <linux/i2c/twl.h>
+ #include <linux/i2c/tsc2007.h>
+@@ -55,6 +56,8 @@
+ #include "pm.h"
+ #include "common-board-devices.h"
+ 
++#define DAMIANS_WATTEROTT_BOARD
++
+ /*
+  * OMAP3 Beagle revision
+  * Run time detection of Beagle revision is done by reading GPIO.
+@@ -396,12 +399,14 @@ static struct omap2_hsmmc_info mmc[] = {
+ 		.caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA,
+ 		.gpio_wp	= -EINVAL,
+ 	},
++#ifndef DAMIANS_WATTEROTT_BOARD
+ 	{
+ 		.mmc		= 2,
+ 		.caps       = MMC_CAP_4_BIT_DATA,
+ 		.transceiver	= true,
+ 		.ocr_mask	= 0x00100000,	/* 3.3V */
+ 	},
++#endif
+ 	{}	/* Terminator */
+ };
+ 
+@@ -598,7 +603,9 @@ static int __init omap3_beagle_i2c_init(void)
+ 	}
+ 	else
+ 	{
++#ifndef DAMIANS_WATTEROTT_BOARD
+ 	omap_register_i2c_bus(2, 400, beagle_i2c2_boardinfo, ARRAY_SIZE(beagle_i2c2_boardinfo));
++#endif
+ 	}
+ 
+ 	/* Bus 3 is attached to the DVI port where devices like the pico DLP
+@@ -661,6 +668,48 @@ static struct platform_device keys_gpio = {
+ 	},
+ };
+ 
++#ifdef DAMIANS_WATTEROTT_BOARD
++
++static void __init omap3_beagle_config_mcspi3_mux(void)
++{
++        // NOTE: Clock pins need to be in input mode
++	omap_mux_init_signal("sdmmc2_clk.mcspi3_clk", OMAP_PIN_INPUT);
++	omap_mux_init_signal("sdmmc2_dat3.mcspi3_cs0", OMAP_PIN_OUTPUT);
++	omap_mux_init_signal("sdmmc2_dat2.mcspi3_cs1", OMAP_PIN_OUTPUT);
++	omap_mux_init_signal("sdmmc2_cmd.mcspi3_simo", OMAP_PIN_OUTPUT);
++	omap_mux_init_signal("sdmmc2_dat0.mcspi3_somi", OMAP_PIN_INPUT_PULLUP);
++}
++
++static void __init omap3_beagle_config_damians_watterott_mux(void)
++{
++	omap3_beagle_config_mcspi3_mux();
++
++	omap_mux_init_signal("uart2_cts.gpio_144", OMAP_PIN_OUTPUT );
++	omap_mux_init_signal("i2c2_sda.gpio_183", OMAP_PIN_OUTPUT );
++}
++
++static struct spi_board_info beagle_mcspi_board_info[] = {
++	// spi 3.0
++	{
++		.modalias	= "spidev",
++		.max_speed_hz	= 48000000, //48 Mbps
++		.bus_num	= 3,
++		.chip_select	= 0,
++		.mode = SPI_MODE_1,
++	},
++
++	// spi 3.1
++	{
++		.modalias	= "spidev",
++		.max_speed_hz	= 48000000, //48 Mbps
++		.bus_num	= 3,
++		.chip_select	= 1,
++		.mode = SPI_MODE_1,
++	},
++
++};
++#endif
++
+ static void __init omap3_beagle_init_early(void)
+ {
+ 	omap2_init_common_infrastructure();
+@@ -774,6 +823,10 @@ static void __init omap3_beagle_init(void)
+ 	omap_display_init(&beagle_dss_data);
+ 	omap_serial_init();
+ 
++	omap3_beagle_config_damians_watterott_mux();
++	spi_register_board_info(beagle_mcspi_board_info,
++			ARRAY_SIZE(beagle_mcspi_board_info));
++
+ 	omap_mux_init_gpio(170, OMAP_PIN_INPUT);
+ 	/* REVISIT leave DVI powered down until it's needed ... */
+ 	gpio_request_one(170, GPIOF_OUT_INIT_HIGH, "DVI_nPD");
