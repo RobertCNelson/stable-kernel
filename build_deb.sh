@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (c) 2009-2011 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@ unset DEBARCH
 
 unset LOCAL_PATCH_DIR
 
+config="omap2plus_defconfig"
+
 ARCH=$(uname -m)
 CCACHE=ccache
 
@@ -57,13 +59,7 @@ function git_kernel_stable {
 }
 
 function git_kernel {
-if [ "-${LINUX_GIT}-" != "--" ]; then
-
-  if [[ ! -a ${LINUX_GIT}/.git/config ]]; then
-    echo "Double check: LINUX_GIT variable in system.sh, i'm not finding a git tree"
-    exit
-  fi
-
+if [[ -a ${LINUX_GIT}/.git/config ]]; then
   cd ${LINUX_GIT}/
     echo "Updating LINUX_GIT tree via: git fetch"
     git fetch
@@ -80,40 +76,38 @@ if [ "-${LINUX_GIT}-" != "--" ]; then
   git checkout master -f
   git pull
 
-  if [ "${RC_PATCH}" ]; then
-    git tag | grep v${RC_KERNEL}${RC_PATCH} || git_kernel_torvalds
-    git branch -D v${RC_KERNEL}${RC_PATCH}-${BUILD} || true
-    if [ ! "${LATEST_GIT}" ] ; then
+  if [ ! "${LATEST_GIT}" ] ; then
+    if [ "${RC_PATCH}" ]; then
+      git tag | grep v${RC_KERNEL}${RC_PATCH} || git_kernel_torvalds
+      git branch -D v${RC_KERNEL}${RC_PATCH}-${BUILD} || true
       git checkout v${RC_KERNEL}${RC_PATCH} -b v${RC_KERNEL}${RC_PATCH}-${BUILD}
-    else
-      git checkout origin/master -b v${RC_KERNEL}${RC_PATCH}-${BUILD}
-    fi
-  elif [ "${STABLE_PATCH}" ] ; then
-    git tag | grep v${KERNEL_REL}.${STABLE_PATCH} || git_kernel_stable
-    git branch -D v${KERNEL_REL}.${STABLE_PATCH}-${BUILD} || true
-    if [ ! "${LATEST_GIT}" ] ; then
+    elif [ "${STABLE_PATCH}" ] ; then
+      git tag | grep v${KERNEL_REL}.${STABLE_PATCH} || git_kernel_stable
+      git branch -D v${KERNEL_REL}.${STABLE_PATCH}-${BUILD} || true
       git checkout v${KERNEL_REL}.${STABLE_PATCH} -b v${KERNEL_REL}.${STABLE_PATCH}-${BUILD}
     else
-      git checkout origin/master -b v${KERNEL_REL}.${STABLE_PATCH}-${BUILD}
+      git tag | grep v${KERNEL_REL} | grep -v rc || git_kernel_torvalds
+      git branch -D v${KERNEL_REL}-${BUILD} || true
+      git checkout v${KERNEL_REL} -b v${KERNEL_REL}-${BUILD}
     fi
   else
-    git tag | grep v${KERNEL_REL} || git_kernel_torvalds
-    git branch -D v${KERNEL_REL}-${BUILD} || true
-    if [ ! "${LATEST_GIT}" ] ; then
-      git checkout v${KERNEL_REL} -b v${KERNEL_REL}-${BUILD}
-    else
-      git checkout origin/master -b v${KERNEL_REL}-${BUILD}
-    fi
+    git branch -D top-of-tree || true
+    git checkout origin/master -b top-of-tree
+    git_kernel_torvalds
   fi
 
   git describe
 
   cd ${DIR}/
-
 else
-  echo "UPDATED: this script now uses a git repo vs raw *.tar.bz2"
-  echo "Update your system.sh file via: meld system.sh system.sh.sample"
-  echo "and make sure to clone a git tree and edit the location of LINUX_GIT variable"
+  echo ""
+  echo "ERROR: LINUX_GIT variable in system.sh seems invalid, i'm not finding a valid git tree..."
+  echo ""
+  echo "Quick Fix:"
+  echo "example: cd ~/"
+  echo "example: git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
+  echo "example: Set: LINUX_GIT=~/linux-stable/ in system.sh"
+  echo ""
   exit
 fi
 }
@@ -146,8 +140,8 @@ function patch_kernel {
 function copy_defconfig {
   cd ${DIR}/KERNEL/
   make ARCH=arm CROSS_COMPILE=${CC} distclean
-  make ARCH=arm CROSS_COMPILE=${CC} omap2plus_defconfig
-  cp -v .config ${DIR}/patches/ref_omap2plus_defconfig
+  make ARCH=arm CROSS_COMPILE=${CC} ${config}
+  cp -v .config ${DIR}/patches/ref_${config}
   cp -v ${DIR}/patches/defconfig .config
   cd ${DIR}/
 }
@@ -173,14 +167,23 @@ if [ -e ${DIR}/system.sh ]; then
   . system.sh
   . version.sh
 
+if [ "${LATEST_GIT}" ] ; then
+	echo ""
+	echo "Warning LATEST_GIT is enabled from system.sh I hope you know what your doing.."
+	echo ""
+fi
+
   git_kernel
   patch_kernel
   copy_defconfig
   #make_menuconfig
   make_deb
 else
-  echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
-  echo "cp system.sh.sample system.sh"
-  echo "gedit system.sh"
+  echo ""
+  echo "ERROR: Missing (your system) specific system.sh, please copy system.sh.sample to system.sh and edit as needed."
+  echo ""
+  echo "example: cp system.sh.sample system.sh"
+  echo "example: gedit system.sh"
+  echo ""
 fi
 

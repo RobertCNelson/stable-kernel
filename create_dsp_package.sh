@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (c) 2009-2011 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
+VERSION="v2012.01"
 
 unset BUILD
 unset CC
@@ -40,8 +42,10 @@ function libstd_dependicy {
 DIST=$(lsb_release -sc)
 
 if [ $(uname -m) == "x86_64" ] ; then
+ echo ""
  echo "Note: on the x86_64 platform, this script needs (ia32-libs)..."
  echo "--------------------------------------------------------------"
+ echo ""
 fi
 
 cd ${DIR}
@@ -107,6 +111,10 @@ if [ \$(uname -m) == "armv7l" ] ; then
       sudo chmod +x /etc/rcS.d/S61dsp.sh
     else
       #karmic/lucid/maverick/etc
+      sudo update-rc.d -f dsp remove
+      if [ -f /etc/init.d/dsp ] ; then
+        rm -f /etc/init.d/dsp || true
+      fi
       sudo cp /opt/dsp /etc/init.d/dsp
       sudo chmod +x /etc/init.d/dsp
       sudo update-rc.d dsp defaults
@@ -215,7 +223,15 @@ function create_DSP_package {
 	mkdir -p ${DIR}/DSP/lib/dsp
 	mkdir -p ${DIR}/DSP/opt/
 
-	sudo cp -v ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/binaries/* ${DIR}/DSP/lib/dsp
+ if [ -f ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/binaries/baseimage.dof ] ; then
+  sudo cp -v ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/binaries/* ${DIR}/DSP/lib/dsp
+ else
+  echo "--------------------------------------------------------------"
+  echo "Script, failure, DSP bin was not extracted, do you have i32-libs installed?"
+  echo "--------------------------------------------------------------"
+  echo ""
+  exit
+ fi
 
 file-DSP-startup
 
@@ -247,4 +263,12 @@ libstd_dependicy
 ti_DSP_binaries
 
 create_DSP_package
+
+echo ""
+echo "Script Version ${VERSION}"
+echo "Email Bugs: bugs@rcn-ee.com"
+echo "-----------------------------"
+echo ""
+
+
 
