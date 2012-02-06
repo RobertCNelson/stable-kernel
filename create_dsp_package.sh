@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2012.01"
+VERSION="v2012.02"
 
 unset BUILD
 unset CC
@@ -172,7 +172,9 @@ fi
 cd \${DIR}/git/gst-dsp
 make clean
 git pull
-./configure
+echo ""
+echo "Using DSP_API=1"
+DSP_API=1 ./configure
 make CROSS_COMPILE= 
 sudo make install
 cd \${DIR}/
