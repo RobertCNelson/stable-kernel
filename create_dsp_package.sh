@@ -51,7 +51,7 @@ fi
 cd ${DIR}
 }
 
-function ti_DSP_binaries {
+ti_DSP_binaries () {
 
 if [ -e ${DIR}/dl/${TI_DSP_BIN}-Linux-x86-Install ]; then
   echo "DSPbinaries-${TI_DSP_BIN}-Linux-x86-Install found..."
@@ -74,7 +74,7 @@ fi
 
 }
 
-function file-DSP-startup {
+file_DSP_startup () {
 
 cat > ${DIR}/DSP/opt/dsp <<dspscript
 #!/bin/sh
@@ -90,7 +90,7 @@ dspscript
 
 }
 
-function file-install-DSP {
+file_install_DSP () {
 
 cat > ${DIR}/DSP/install-DSP.sh <<installDSP
 #!/bin/bash
@@ -142,7 +142,7 @@ installDSP
 
 }
 
-function file-install-gst-dsp {
+file_install_gst_dsp () {
 
 cat > ${DIR}/DSP/install-gst-dsp.sh <<installgst
 #!/bin/bash
@@ -218,7 +218,7 @@ installgst
 
 }
 
-function create_DSP_package {
+create_DSP_package () {
 	cd ${DIR}
 	sudo rm -rf ${DIR}/DSP/
 	mkdir -p ${DIR}/DSP/
@@ -235,7 +235,7 @@ function create_DSP_package {
   exit
  fi
 
-file-DSP-startup
+file_DSP_startup
 
 	cd ${DIR}/DSP/
 	tar czf ${DIR}/dsp_libs.tar.gz *
@@ -246,10 +246,10 @@ file-DSP-startup
 
 	mv ${DIR}/dsp_libs.tar.gz ${DIR}/DSP/
 
-file-install-DSP
+file_install_DSP
 	chmod +x ./DSP/install-DSP.sh
 
-file-install-gst-dsp
+file_install_gst_dsp
 	chmod +x ./DSP/install-gst-dsp.sh
 
 	cd ${DIR}/DSP
@@ -273,3 +273,4 @@ echo "-----------------------------"
 echo ""
 echo "Script Complete: Copy DSP_Install_libs.tar.gz to target device."
 echo ""
+
