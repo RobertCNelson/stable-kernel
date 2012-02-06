@@ -113,7 +113,7 @@ if [ \$(uname -m) == "armv7l" ] ; then
       #karmic/lucid/maverick/etc
       sudo update-rc.d -f dsp remove
       if [ -f /etc/init.d/dsp ] ; then
-        rm -f /etc/init.d/dsp || true
+        sudo rm -f /etc/init.d/dsp || true
       fi
       sudo cp /opt/dsp /etc/init.d/dsp
       sudo chmod +x /etc/init.d/dsp
