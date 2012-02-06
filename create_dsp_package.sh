@@ -99,7 +99,7 @@ DIR=\$PWD
 
 if [ \$(uname -m) == "armv7l" ] ; then
 
- if [ -e  \${DIR}/dsp_libs.tar.gz ]; then
+ if [ -e \${DIR}/dsp_libs.tar.gz ]; then
 
   echo "Extracting target files to rootfs"
   sudo tar xf dsp_libs.tar.gz -C /
@@ -164,49 +164,64 @@ sudo apt-get -y install git-core pkg-config build-essential gstreamer-tools libg
 
 mkdir -p \${DIR}/git/
 
-if ! ls \${DIR}/git/gst-dsp >/dev/null 2>&1;then
-cd \${DIR}/git/
-git clone git://github.com/felipec/gst-dsp.git
+if [ ! -f \${DIR}/git/gst-dsp/.git/config ] ; then
+ cd \${DIR}/git/
+ git clone git://github.com/felipec/gst-dsp.git
 fi
 
 cd \${DIR}/git/gst-dsp
 make clean
 git pull
+
 echo ""
 echo "Using DSP_API=1"
 DSP_API=1 ./configure
+
+echo ""
+echo "Building gst-dsp"
 make CROSS_COMPILE= 
 sudo make install
+
 cd \${DIR}/
 
-if ! ls \${DIR}/git/gst-omapfb >/dev/null 2>&1;then
-cd \${DIR}/git/
-git clone git://github.com/felipec/gst-omapfb.git
+if [ ! -f \${DIR}/git/gst-omapfb/.git/config ] ; then
+ cd \${DIR}/git/
+ git clone git://github.com/felipec/gst-omapfb.git
 fi
 
 cd \${DIR}/git/gst-omapfb
 make clean
 git pull
+
+echo ""
+echo "Building gst-omapfb"
 make CROSS_COMPILE= 
 sudo make install
+
 cd \${DIR}/
 
-if ! ls \${DIR}/git/dsp-tools >/dev/null 2>&1;then
-cd \${DIR}/git/
-git clone git://github.com/felipec/dsp-tools.git
+if [ ! -f \${DIR}/git/dsp-tools/.git/config ] ; then
+ cd \${DIR}/git/
+ git clone git://github.com/felipec/dsp-tools.git
 fi
 
 cd \${DIR}/git/dsp-tools
 make clean
 git checkout master -f
 git pull
+
+echo "fetching test.dll64P firmware"
 git branch -D firmware-tmp || true
 git checkout origin/firmware -b firmware-tmp
 sudo cp -v firmware/test.dll64P /lib/dsp/
 git checkout master -f
 git branch -D firmware-tmp || true
+
+echo ""
+echo "Building dsp-tools"
 make CROSS_COMPILE= 
 sudo make install
+
 cd \${DIR}/
 
 else
