@@ -251,7 +251,7 @@ file-install-gst-dsp
 	chmod +x ./DSP/install-gst-dsp.sh
 
 	cd ${DIR}/DSP
-	tar czf ${DIR}/DSP_Install_libs.tar.gz *
+	tar cvzf ${DIR}/DSP_Install_libs.tar.gz *
 	cd ${DIR}
 
 	sudo rm -rf ${DIR}/DSP/
@@ -269,6 +269,5 @@ echo "Script Version ${VERSION}"
 echo "Email Bugs: bugs@rcn-ee.com"
 echo "-----------------------------"
 echo ""
-
-
-
+echo "Script Complete: Copy DSP_Install_libs.tar.gz to target device."
+echo ""
