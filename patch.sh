@@ -33,19 +33,7 @@ function bugs_trivial {
 echo "bugs and trivial stuff"
 
 patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
-
-#should fix gcc-4.6 ehci problems..
-#Safe to remove?
-#Maverick: gcc-4.4: ehci=okay
-#Natty: gcc-4.5: ehci=okay
-#Oneiric: gcc-4.6: ehci=okay
-#Precise armel: gcc-4.6: ehci=okay
-#Precise armhf: gcc-4.6: ehci=?
-#Squeeze: gcc-4.4: ehci=okay
-#Wheezy: gcc-4.6: ehci=okay
-#Sid armel: gcc-4.6: ehci=?
-#Sid armhf: gcc-4.6: ehci=?
-#patch -s -p1 < "${DIR}/patches/trivial/0001-USB-ehci-use-packed-aligned-4-instead-of-removing-th.patch"
+patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-Fix-link-to-headers-in-make-deb-pkg.patch"
 }
 
 function cpufreq {
@@ -73,6 +61,7 @@ patch -s -p1 < "${DIR}/patches/beagle/0001-ASoC-omap-convert-per-board-modules-t
 patch -s -p1 < "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 
 patch -s -p1 < "${DIR}/patches/beagle/ulcd/0001-ulcd-add-tlc59108-i2c-device.patch"
+patch -s -p1 < "${DIR}/patches/beagle/0001-beagle-tsc2007-might-not-be-in-customer-config.patch"
 }
 
 function dspbridge {
