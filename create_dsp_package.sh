@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2012.02"
+VERSION="v2012.02-1"
 
 unset BUILD
 unset CC
@@ -174,8 +174,7 @@ make clean
 git pull
 
 echo ""
-echo "Using DSP_API=1"
-DSP_API=1 ./configure
+./configure
 
 echo ""
 echo "Building gst-dsp"
