@@ -62,6 +62,7 @@ patch -s -p1 < "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-spe
 
 patch -s -p1 < "${DIR}/patches/beagle/ulcd/0001-ulcd-add-tlc59108-i2c-device.patch"
 patch -s -p1 < "${DIR}/patches/beagle/0001-beagle-tsc2007-might-not-be-in-customer-config.patch"
+patch -s -p1 < "${DIR}/patches/beagle/0001-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly-wh.patch"
 }
 
 function dspbridge {
@@ -105,6 +106,15 @@ patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readon
 function omap4 {
 echo "omap4 related patches"
 patch -s -p1 < "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
+patch -s -p1 < "${DIR}/patches/panda/0001-ARM-OMAP-enable-Bluetooth-on-the-PandaBoard.patch"
+
+patch -s -p1 < "${DIR}/patches/panda/0001-OMAP-4430SDP-Panda-use-gpio_free_array-to-free-HDMI-.patch"
+patch -s -p1 < "${DIR}/patches/panda/0002-OMAP-4430SDP-Panda-rename-HPD-GPIO-to-CT_CP_HPD.patch"
+patch -s -p1 < "${DIR}/patches/panda/0003-OMAPDSS-remove-wrong-HDMI-HPD-muxing.patch"
+patch -s -p1 < "${DIR}/patches/panda/0004-OMAP-4430SDP-Panda-setup-HDMI-GPIO-muxes.patch"
+patch -s -p1 < "${DIR}/patches/panda/0005-OMAP-4430SDP-Panda-add-HDMI-HPD-gpio.patch"
+patch -s -p1 < "${DIR}/patches/panda/0006-OMAPDSS-HDMI-PHY-burnout-fix.patch"
+patch -s -p1 < "${DIR}/patches/panda/0007-OMAPDSS-HDMI-hot-plug-detect-fix.patch"
 }
 
 function fixes {
