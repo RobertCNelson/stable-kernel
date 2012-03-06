@@ -115,6 +115,8 @@ patch -s -p1 < "${DIR}/patches/panda/0004-OMAP-4430SDP-Panda-setup-HDMI-GPIO-mux
 patch -s -p1 < "${DIR}/patches/panda/0005-OMAP-4430SDP-Panda-add-HDMI-HPD-gpio.patch"
 patch -s -p1 < "${DIR}/patches/panda/0006-OMAPDSS-HDMI-PHY-burnout-fix.patch"
 patch -s -p1 < "${DIR}/patches/panda/0007-OMAPDSS-HDMI-hot-plug-detect-fix.patch"
+
+patch -s -p1 < "${DIR}/patches/panda/0001-ARM-OMAP-WiLink-platform-data-for-the-PandaBoard.patch"
 }
 
 function fixes {
