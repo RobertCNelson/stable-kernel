@@ -32,6 +32,9 @@ git commit -a -m 'testing patchset'
 function bugs_trivial {
 echo "bugs and trivial stuff"
 
+#3.2.9 patch that breaks serial (getty login) on beaglexm's
+patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-genirq-Unmask-oneshot-irqs-when-thread-was-no.patch"
+
 patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 #patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-Fix-link-to-headers-in-make-deb-pkg.patch"
 }
