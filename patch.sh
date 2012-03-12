@@ -33,7 +33,7 @@ function bugs_trivial {
 echo "bugs and trivial stuff"
 
 #3.2.9 patch that breaks serial (getty login) on beaglexm's
-patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-genirq-Unmask-oneshot-irqs-when-thread-was-no.patch"
+#patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-genirq-Unmask-oneshot-irqs-when-thread-was-no.patch"
 
 patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 #patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-Fix-link-to-headers-in-make-deb-pkg.patch"
@@ -111,13 +111,14 @@ echo "omap4 related patches"
 patch -s -p1 < "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 patch -s -p1 < "${DIR}/patches/panda/0001-ARM-OMAP-enable-Bluetooth-on-the-PandaBoard.patch"
 
-patch -s -p1 < "${DIR}/patches/panda/0001-OMAP-4430SDP-Panda-use-gpio_free_array-to-free-HDMI-.patch"
-patch -s -p1 < "${DIR}/patches/panda/0002-OMAP-4430SDP-Panda-rename-HPD-GPIO-to-CT_CP_HPD.patch"
-patch -s -p1 < "${DIR}/patches/panda/0003-OMAPDSS-remove-wrong-HDMI-HPD-muxing.patch"
-patch -s -p1 < "${DIR}/patches/panda/0004-OMAP-4430SDP-Panda-setup-HDMI-GPIO-muxes.patch"
-patch -s -p1 < "${DIR}/patches/panda/0005-OMAP-4430SDP-Panda-add-HDMI-HPD-gpio.patch"
-patch -s -p1 < "${DIR}/patches/panda/0006-OMAPDSS-HDMI-PHY-burnout-fix.patch"
-patch -s -p1 < "${DIR}/patches/panda/0007-OMAPDSS-HDMI-hot-plug-detect-fix.patch"
+#in 3.2.10
+#patch -s -p1 < "${DIR}/patches/panda/0001-OMAP-4430SDP-Panda-use-gpio_free_array-to-free-HDMI-.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0002-OMAP-4430SDP-Panda-rename-HPD-GPIO-to-CT_CP_HPD.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0003-OMAPDSS-remove-wrong-HDMI-HPD-muxing.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0004-OMAP-4430SDP-Panda-setup-HDMI-GPIO-muxes.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0005-OMAP-4430SDP-Panda-add-HDMI-HPD-gpio.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0006-OMAPDSS-HDMI-PHY-burnout-fix.patch"
+#patch -s -p1 < "${DIR}/patches/panda/0007-OMAPDSS-HDMI-hot-plug-detect-fix.patch"
 
 patch -s -p1 < "${DIR}/patches/panda/0001-ARM-OMAP-WiLink-platform-data-for-the-PandaBoard.patch"
 }
