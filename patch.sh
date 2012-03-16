@@ -22,6 +22,8 @@
 
 # Split out, so build_kernel.sh and build_deb.sh can share..
 
+# DIR=`pwd`
+
 echo "Starting patch.sh"
 
 function git_add {
@@ -30,106 +32,98 @@ git commit -a -m 'testing patchset'
 }
 
 function bugs_trivial {
-echo "bugs and trivial stuff"
-
-#3.2.9 patch that breaks serial (getty login) on beaglexm's
-#patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-genirq-Unmask-oneshot-irqs-when-thread-was-no.patch"
-
-patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
-#patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-Fix-link-to-headers-in-make-deb-pkg.patch"
+	echo "bugs and trivial stuff"
+	#3.2.9 patch that breaks serial (getty login) on beaglexm's
+	#patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-genirq-Unmask-oneshot-irqs-when-thread-was-no.patch"
+	git am "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 }
 
 function cpufreq {
-echo "[git] omap-cpufreq"
-git pull git://github.com/RobertCNelson/linux.git omap_cpufreq_v3.2-rc4
+	echo "omap-cpufreq"
+	git am "${DIR}/patches/cpufreq/0001-cpufreq-OMAP-cleanup-for-multi-SoC-support-move-into.patch"
+	git am "${DIR}/patches/cpufreq/0002-cpufreq-OMAP-Add-SMP-support-for-OMAP4.patch"
+	git am "${DIR}/patches/cpufreq/0003-cpufreq-OMAP-Enable-all-CPUs-in-shared-policy-mask.patch"
+	git am "${DIR}/patches/cpufreq/0004-cpufreq-OMAP-notify-even-with-bad-boot-frequency.patch"
+	git am "${DIR}/patches/cpufreq/0005-cpufreq-OMAP-move-clk-name-decision-to-init.patch"
+	git am "${DIR}/patches/cpufreq/0006-cpufreq-OMAP-deny-initialization-if-no-mpudev.patch"
+	git am "${DIR}/patches/cpufreq/0007-cpufreq-OMAP-dont-support-freq_table.patch"
+	git am "${DIR}/patches/cpufreq/0008-cpufreq-OMAP-only-supports-OPP-library.patch"
+	git am "${DIR}/patches/cpufreq/0009-cpufreq-OMAP-put-clk-if-cpu_init-failed.patch"
+	git am "${DIR}/patches/cpufreq/0010-cpufreq-OMAP-fix-freq_table-leak.patch"
+	git am "${DIR}/patches/cpufreq/0011-cpufreq-OMAP-fixup-for-omap_device-changes-include-l.patch"
 }
 
 function micrel {
-echo "[git] Micrel KZ8851 patches for: zippy2"
-#original from:
-#ftp://www.micrel.com/ethernet/8851/beagle_zippy_patches.tar.gz 137 KB 04/10/2010 12:26:00 AM
-git pull git://github.com/RobertCNelson/linux.git micrel_ks8851_v3.2-rc3
+	echo "Micrel KZ8851 patches for: zippy2"
+	#originaly from:
+	#ftp://www.micrel.com/ethernet/8851/beagle_zippy_patches.tar.gz 137 KB 04/10/2010 12:26:00 AM
+
+	git am "${DIR}/patches/micrel/0001-ksz8851-eeprom-93cx6-add-drive_data.patch"
+	git am "${DIR}/patches/micrel/0002-ksz8851-eeprom-93cx6-add-eeprom_93cx6_write.patch"
+	git am "${DIR}/patches/micrel/0003-ksz8851-read_mac_addr.patch"
+	git am "${DIR}/patches/micrel/0004-ksz8851-93cx6-eeprom-access.patch"
+	git am "${DIR}/patches/micrel/0005-ks8851.h-it-helps-to-include-the-include-file.patch"
+	git am "${DIR}/patches/micrel/0006-ksz8851-move-to-header.patch"
+	git am "${DIR}/patches/micrel/0007-ksz8851-move-more-to-header.patch"
+	git am "${DIR}/patches/micrel/0008-ksz8851-share-ks8851_tx_hdr-union.patch"
+	git am "${DIR}/patches/micrel/0009-ksz8851-add-is_level_irq.patch"
+	git am "${DIR}/patches/micrel/0010-ksz8851-turn-off-hardware-interrupt-druing-receive-p.patch"
+	git am "${DIR}/patches/micrel/0011-ksz8851-make-sure-is-awake-before-writing-mac.patch"
+	git am "${DIR}/patches/micrel/0012-ksz8851-add-mutex-lock-unlock-to-ks.patch"
+	git am "${DIR}/patches/micrel/0013-ksz8851-add-ks8851_tx_check.patch"
+	git am "${DIR}/patches/micrel/0014-ksz8851-move-ks8851_set_powermode.patch"
 }
 
 function beagle {
-echo "[git] Board Patches for: BeagleBoard"
-git pull git://github.com/RobertCNelson/linux.git omap_beagle_expansion_v3.2-rc3
-patch -s -p1 < "${DIR}/patches/beagle/ulcd/0001-beagle-ulcd-fix-tsc2007-touchreen.patch"
+	echo "Board Patches for: BeagleBoard"
 
-patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
-patch -s -p1 < "${DIR}/patches/display/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
+	git am "${DIR}/patches/beagle/expansion/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
+	git am "${DIR}/patches/beagle/expansion/0002-expansion-add-mmc-regulator-and-ds1307-rtc.patch"
+	git am "${DIR}/patches/beagle/expansion/0003-expansion-add-zippy.patch"
+	git am "${DIR}/patches/beagle/expansion/0004-expansion-add-zippy2.patch"
+	git am "${DIR}/patches/beagle/expansion/0005-expansion-add-trainer.patch"
+	git am "${DIR}/patches/beagle/expansion/0006-expansion-add-ulcd.patch"
 
-patch -s -p1 < "${DIR}/patches/beagle/0001-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
-patch -s -p1 < "${DIR}/patches/beagle/0001-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
-patch -s -p1 < "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
+	git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
+	git am "${DIR}/patches/beagle/0001-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly-wh.patch"
 
-patch -s -p1 < "${DIR}/patches/beagle/ulcd/0001-ulcd-add-tlc59108-i2c-device.patch"
-patch -s -p1 < "${DIR}/patches/beagle/0001-beagle-tsc2007-might-not-be-in-customer-config.patch"
-patch -s -p1 < "${DIR}/patches/beagle/0001-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly-wh.patch"
-}
+	git am "${DIR}/patches/beagle/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
+	git am "${DIR}/patches/beagle/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 
-function dspbridge {
-echo "[git] dspbridge"
-git pull git://github.com/RobertCNelson/linux.git dspbridge_v3.2-rc3
-}
+	git am "${DIR}/patches/omap/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 
-function omapdrm {
-echo "[git] testing omapdrm"
-echo "[git] pulling cma_v17"
-git pull git://github.com/RobertCNelson/linux.git cma_v17_v3.2-rc2
-echo "[git] pulling drm driver"
-git pull git://github.com/RobertCNelson/linux.git omapdrm_v3.2-rc3
-}
+	git am "${DIR}/patches/beagle/0001-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
+	git am "${DIR}/patches/beagle/0001-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
 
-function sakoman {
-echo "sakoman's patches"
-patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0006-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
-patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0007-video-add-timings-for-hd720.patch"
-
-patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0025-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
-patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0026-OMAP-Overo-Add-support-for-spidev.patch"
-}
-
-function musb {
-echo "musb patches"
-patch -s -p1 < "${DIR}/patches/musb/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
+	git am "${DIR}/patches/sakoman/2.6.39/0006-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
+	git am "${DIR}/patches/sakoman/2.6.39/0007-video-add-timings-for-hd720.patch"
+	git am "${DIR}/patches/sakoman/2.6.39/0025-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
 }
 
 function devkit8000 {
-echo "devkit8000"
-patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
+	echo "Board Patches for: devkit8000"
+	git am "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
 }
 
 function touchbook {
-echo "touchbook patches"
-patch -s -p1 < "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
-patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readonly.patch"
+	echo "Board Patches for: Touchbook"
+	git am "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
+	git am "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readonly.patch"
 }
 
-function omap4 {
-echo "omap4 related patches"
-patch -s -p1 < "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
-patch -s -p1 < "${DIR}/patches/panda/0001-ARM-OMAP-enable-Bluetooth-on-the-PandaBoard.patch"
-
-#in 3.2.10
-#patch -s -p1 < "${DIR}/patches/panda/0001-OMAP-4430SDP-Panda-use-gpio_free_array-to-free-HDMI-.patch"
-#patch -s -p1 < "${DIR}/patches/panda/0002-OMAP-4430SDP-Panda-rename-HPD-GPIO-to-CT_CP_HPD.patch"
-#patch -s -p1 < "${DIR}/patches/panda/0003-OMAPDSS-remove-wrong-HDMI-HPD-muxing.patch"
-#patch -s -p1 < "${DIR}/patches/panda/0004-OMAP-4430SDP-Panda-setup-HDMI-GPIO-muxes.patch"
-#patch -s -p1 < "${DIR}/patches/panda/0005-OMAP-4430SDP-Panda-add-HDMI-HPD-gpio.patch"
-#patch -s -p1 < "${DIR}/patches/panda/0006-OMAPDSS-HDMI-PHY-burnout-fix.patch"
-#patch -s -p1 < "${DIR}/patches/panda/0007-OMAPDSS-HDMI-hot-plug-detect-fix.patch"
-
-patch -s -p1 < "${DIR}/patches/panda/0001-ARM-OMAP-WiLink-platform-data-for-the-PandaBoard.patch"
+function pandaboard {
+	echo "Board Patches for: PandaBoard"
+	git am "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
+	git am "${DIR}/patches/panda/0001-panda-enable-bluetooth.patch"
 }
 
 function fixes {
-echo "cherry pick fixes"
-git am "${DIR}/patches/fixes/0001-ARM-OMAP-AM3517-3505-fix-crash-on-boot-due-to-incorr.patch"
-git am "${DIR}/patches/fixes/0001-ARM-OMAP4-hwmod-Don-t-wait-for-the-idle-status-if-mo.patch"
-git am "${DIR}/patches/fixes/0001-ARM-OMAP4-clock-Add-CPU-local-timer-clock-node.patch"
-git am "${DIR}/patches/fixes/0001-ARM-OMAP3-hwmod-data-disable-multiblock-reads-on-MMC.patch"
-git am "${DIR}/patches/fixes/0001-OMAP-HWMOD-add-es3plus-to-am36xx-am35xx.patch"
+	echo "omap cherry pick fixes"
+	git am "${DIR}/patches/fixes/0001-ARM-OMAP-AM3517-3505-fix-crash-on-boot-due-to-incorr.patch"
+	git am "${DIR}/patches/fixes/0001-ARM-OMAP4-hwmod-Don-t-wait-for-the-idle-status-if-mo.patch"
+	git am "${DIR}/patches/fixes/0001-ARM-OMAP4-clock-Add-CPU-local-timer-clock-node.patch"
+	git am "${DIR}/patches/fixes/0001-ARM-OMAP3-hwmod-data-disable-multiblock-reads-on-MMC.patch"
+	git am "${DIR}/patches/fixes/0001-OMAP-HWMOD-add-es3plus-to-am36xx-am35xx.patch"
 }
 
 function sgx {
@@ -193,26 +187,12 @@ patch -s -p1 < "${DIR}/patches/sgx/0001-Revert-OMAP-DSS2-remove-update_mode-from
 
 bugs_trivial
 
-#patches in git
 cpufreq
 micrel
 beagle
-dspbridge
-#omapdrm
-
-#work in progress
-
-#external tree's
-sakoman
-musb
-
-#random board patches
 devkit8000
 touchbook
-
-#omap4/dvfs still needs more testing..
-omap4
-
+pandaboard
 fixes
 
 #no chance of being pushed ever tree's
