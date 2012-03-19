@@ -1,0 +1,10 @@
+Upgrading Notes
+
+omapdrm/KMS:
+	Remove "omapfb.." from bootargs, to override and force a resolution the syntax is: video=DVI-D-1:1024x786
+
+v3.3.*-x*
+	panda/panda_es: u-boot v2012.03 mininum (v2011.12 gets a little warm) (as a workaround, i'm pushing a later v2011.12 + git head with my sd card scripts.)
+	panda/panda_es: omapdrm/KMS by default, use the "hdmi" labeled hdmi connector vs the DVI labeled hdmi connector
+	beagle/beagle_xm: omapdrm/KMS by default
+

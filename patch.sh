@@ -33,24 +33,7 @@ git commit -a -m 'testing patchset'
 
 function bugs_trivial {
 	echo "bugs and trivial stuff"
-	#3.2.9 patch that breaks serial (getty login) on beaglexm's
-	#patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-genirq-Unmask-oneshot-irqs-when-thread-was-no.patch"
 	git am "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
-}
-
-function cpufreq {
-	echo "omap-cpufreq"
-	git am "${DIR}/patches/cpufreq/0001-cpufreq-OMAP-cleanup-for-multi-SoC-support-move-into.patch"
-	git am "${DIR}/patches/cpufreq/0002-cpufreq-OMAP-Add-SMP-support-for-OMAP4.patch"
-	git am "${DIR}/patches/cpufreq/0003-cpufreq-OMAP-Enable-all-CPUs-in-shared-policy-mask.patch"
-	git am "${DIR}/patches/cpufreq/0004-cpufreq-OMAP-notify-even-with-bad-boot-frequency.patch"
-	git am "${DIR}/patches/cpufreq/0005-cpufreq-OMAP-move-clk-name-decision-to-init.patch"
-	git am "${DIR}/patches/cpufreq/0006-cpufreq-OMAP-deny-initialization-if-no-mpudev.patch"
-	git am "${DIR}/patches/cpufreq/0007-cpufreq-OMAP-dont-support-freq_table.patch"
-	git am "${DIR}/patches/cpufreq/0008-cpufreq-OMAP-only-supports-OPP-library.patch"
-	git am "${DIR}/patches/cpufreq/0009-cpufreq-OMAP-put-clk-if-cpu_init-failed.patch"
-	git am "${DIR}/patches/cpufreq/0010-cpufreq-OMAP-fix-freq_table-leak.patch"
-	git am "${DIR}/patches/cpufreq/0011-cpufreq-OMAP-fixup-for-omap_device-changes-include-l.patch"
 }
 
 function micrel {
@@ -58,20 +41,13 @@ function micrel {
 	#originaly from:
 	#ftp://www.micrel.com/ethernet/8851/beagle_zippy_patches.tar.gz 137 KB 04/10/2010 12:26:00 AM
 
-	git am "${DIR}/patches/micrel/0001-ksz8851-eeprom-93cx6-add-drive_data.patch"
-	git am "${DIR}/patches/micrel/0002-ksz8851-eeprom-93cx6-add-eeprom_93cx6_write.patch"
-	git am "${DIR}/patches/micrel/0003-ksz8851-read_mac_addr.patch"
-	git am "${DIR}/patches/micrel/0004-ksz8851-93cx6-eeprom-access.patch"
-	git am "${DIR}/patches/micrel/0005-ks8851.h-it-helps-to-include-the-include-file.patch"
-	git am "${DIR}/patches/micrel/0006-ksz8851-move-to-header.patch"
-	git am "${DIR}/patches/micrel/0007-ksz8851-move-more-to-header.patch"
-	git am "${DIR}/patches/micrel/0008-ksz8851-share-ks8851_tx_hdr-union.patch"
-	git am "${DIR}/patches/micrel/0009-ksz8851-add-is_level_irq.patch"
-	git am "${DIR}/patches/micrel/0010-ksz8851-turn-off-hardware-interrupt-druing-receive-p.patch"
-	git am "${DIR}/patches/micrel/0011-ksz8851-make-sure-is-awake-before-writing-mac.patch"
-	git am "${DIR}/patches/micrel/0012-ksz8851-add-mutex-lock-unlock-to-ks.patch"
-	git am "${DIR}/patches/micrel/0013-ksz8851-add-ks8851_tx_check.patch"
-	git am "${DIR}/patches/micrel/0014-ksz8851-move-ks8851_set_powermode.patch"
+	git am "${DIR}/patches/micrel/0001-ks8851.h-it-helps-to-include-the-include-file.patch"
+	git am "${DIR}/patches/micrel/0002-ksz8851-move-to-header.patch"
+	git am "${DIR}/patches/micrel/0003-ksz8851-move-more-to-header.patch"
+	git am "${DIR}/patches/micrel/0004-ksz8851-share-ks8851_tx_hdr-union.patch"
+	git am "${DIR}/patches/micrel/0005-ksz8851-add-is_level_irq.patch"
+	git am "${DIR}/patches/micrel/0006-ksz8851-turn-off-hardware-interrupt-druing-receive-p.patch"
+	git am "${DIR}/patches/micrel/0007-ksz8851-add-ks8851_tx_check.patch"
 }
 
 function beagle {
@@ -86,6 +62,9 @@ function beagle {
 
 	git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 	git am "${DIR}/patches/beagle/0001-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly-wh.patch"
+	git am "${DIR}/patches/beagle/0001-ARM-OMAP3-clock-data-fill-in-some-missing-clockdomai.patch"
+	git am "${DIR}/patches/beagle/0001-ARM-OMAP3-USB-Fix-the-EHCI-ULPI-PHY-reset-issue.patch"
+	git am "${DIR}/patches/beagle/0001-omap3_beagle-init-uart2-for-beagle-rev-AX-BX-only.patch"
 
 	git am "${DIR}/patches/beagle/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
 	git am "${DIR}/patches/beagle/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
@@ -117,13 +96,59 @@ function pandaboard {
 	git am "${DIR}/patches/panda/0001-panda-enable-bluetooth.patch"
 }
 
+function omapdrm {
+	echo "omap testing omapdrm/kms"
+
+	echo "Patches for cma-v22"
+	git am "${DIR}/patches/drm/cma/0001-mm-page_alloc-remove-trailing-whitespace.patch"
+	git am "${DIR}/patches/drm/cma/0002-mm-compaction-introduce-isolate_migratepages_range.patch"
+	git am "${DIR}/patches/drm/cma/0003-mm-compaction-introduce-map_pages.patch"
+	git am "${DIR}/patches/drm/cma/0004-mm-compaction-introduce-isolate_freepages_range.patch"
+	git am "${DIR}/patches/drm/cma/0005-mm-compaction-export-some-of-the-functions.patch"
+	git am "${DIR}/patches/drm/cma/0006-mm-page_alloc-introduce-alloc_contig_range.patch"
+	git am "${DIR}/patches/drm/cma/0007-mm-page_alloc-change-fallbacks-array-handling.patch"
+	git am "${DIR}/patches/drm/cma/0008-mm-mmzone-MIGRATE_CMA-migration-type-added.patch"
+	git am "${DIR}/patches/drm/cma/0009-mm-page_isolation-MIGRATE_CMA-isolation-functions-ad.patch"
+	git am "${DIR}/patches/drm/cma/0010-mm-Serialize-access-to-min_free_kbytes.patch"
+	git am "${DIR}/patches/drm/cma/0011-mm-extract-reclaim-code-from-__alloc_pages_direct_re.patch"
+	git am "${DIR}/patches/drm/cma/0012-mm-trigger-page-reclaim-in-alloc_contig_range-to-sta.patch"
+	git am "${DIR}/patches/drm/cma/0013-drivers-add-Contiguous-Memory-Allocator.patch"
+	git am "${DIR}/patches/drm/cma/0014-X86-integrate-CMA-with-DMA-mapping-subsystem.patch"
+	git am "${DIR}/patches/drm/cma/0015-ARM-integrate-CMA-with-DMA-mapping-subsystem.patch"
+
+	echo "Patches for cma-v23"
+	git am "${DIR}/patches/drm/cma/0001-cma-23-mm-compaction-export-some-of-the-functions.patch"
+	git am "${DIR}/patches/drm/cma/0002-cma-23-drivers-add-Contiguous-Memory-Allocator.patch"
+
+	echo "omapdrm driver patches for 3.4"
+	git am "${DIR}/patches/drm/0001-staging-drm-omap-get-supported-color-formats-from-ov.patch"
+	git am "${DIR}/patches/drm/0002-staging-drm-omap-add-a-workqueue.patch"
+	git am "${DIR}/patches/drm/0003-staging-drm-omap-call-omap_gem_roll-in-non-atomic-ct.patch"
+	git am "${DIR}/patches/drm/0004-staging-drm-omap-some-minor-fb-cleanups.patch"
+	git am "${DIR}/patches/drm/0005-staging-drm-omap-defer-unpin-until-scanout-completes.patch"
+	git am "${DIR}/patches/drm/0006-staging-drm-omap-debugfs-for-object-and-fb-tracking.patch"
+	git am "${DIR}/patches/drm/0007-staging-drm-omap-Disable-DMM-debugfs-for-OMAP3.patch"
+	git am "${DIR}/patches/drm/0008-staging-drm-omap-Validate-debugfs-device.patch"
+	git am "${DIR}/patches/drm/0009-staging-drm-omap-Get-DMM-resources-from-hwmod.patch"
+	git am "${DIR}/patches/drm/0010-staging-drm-omap-mmap-of-tiled-buffers-with-stride-4.patch"
+
+	#posted: 11 Mar 2012 19:12:01 for 3.4
+	git am "${DIR}/patches/drm/0001-staging-drm-omap-avoid-multiple-planes-having-same-z.patch"
+	git am "${DIR}/patches/drm/0002-staging-drm-omap-send-page-flip-event-after-endwin.patch"
+	git am "${DIR}/patches/drm/0003-staging-drm-omap-use-current-time-for-page-flip-even.patch"
+
+	#posted: 13 Mar 2012 for 3.4
+	git am "${DIR}/patches/drm/0001-omap2-add-drm-device.patch"
+
+	#might be merged in 3.4
+	git am "${DIR}/patches/drm/0001-ARM-OMAP2-3-HWMOD-Add-missing-flags-for-dispc-class.patch"
+	git am "${DIR}/patches/drm/0002-ARM-OMAP2-3-HWMOD-Add-missing-flag-for-rfbi-class.patch"
+	git am "${DIR}/patches/drm/0003-ARM-OMAP3-HWMOD-Add-omap_hwmod_class_sysconfig-for-d.patch"
+}
+
 function fixes {
 	echo "omap cherry pick fixes"
-	git am "${DIR}/patches/fixes/0001-ARM-OMAP-AM3517-3505-fix-crash-on-boot-due-to-incorr.patch"
-	git am "${DIR}/patches/fixes/0001-ARM-OMAP4-hwmod-Don-t-wait-for-the-idle-status-if-mo.patch"
-	git am "${DIR}/patches/fixes/0001-ARM-OMAP4-clock-Add-CPU-local-timer-clock-node.patch"
-	git am "${DIR}/patches/fixes/0001-ARM-OMAP3-hwmod-data-disable-multiblock-reads-on-MMC.patch"
-	git am "${DIR}/patches/fixes/0001-OMAP-HWMOD-add-es3plus-to-am36xx-am35xx.patch"
+	git am "${DIR}/patches/fixes/0001-OMAP-UART-Enable-tx-wakeup-bit-in-wer.patch"
 }
 
 function sgx {
@@ -187,16 +212,17 @@ patch -s -p1 < "${DIR}/patches/sgx/0001-Revert-OMAP-DSS2-remove-update_mode-from
 
 bugs_trivial
 
-cpufreq
 micrel
 beagle
 devkit8000
 touchbook
 pandaboard
+
+omapdrm
 fixes
 
 #no chance of being pushed ever tree's
-sgx
+#sgx
 
 echo "patch.sh ran successful"
 

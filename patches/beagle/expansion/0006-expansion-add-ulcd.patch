@@ -1,4 +1,4 @@
-From d776974666627b3e0678c83a7d4b98ffbd4eed9a Mon Sep 17 00:00:00 2001
+From fa500a397f95849c92181646739010ecf4f1d373 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Fri, 16 Mar 2012 09:47:57 -0500
 Subject: [PATCH 6/6] expansion: add ulcd
@@ -10,7 +10,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  2 files changed, 147 insertions(+), 0 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index b0b16b4..a546c2b 100644
+index adafa7c..dc2d59c 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
 @@ -33,6 +33,7 @@
@@ -222,12 +222,12 @@ index b0b16b4..a546c2b 100644
  MACHINE_START(OMAP3_BEAGLE, "OMAP3 Beagle Board")
  	/* Maintainer: Syed Mohammed Khasim - http://beagleboard.org */
 diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index 519c47d..495d693 100644
+index 28b9a6d..7cd9599 100644
 --- a/drivers/video/omap2/displays/panel-generic-dpi.c
 +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
-@@ -297,6 +297,31 @@ static struct panel_config generic_dpi_panels[] = {
+@@ -363,6 +363,31 @@ static struct panel_config generic_dpi_panels[] = {
  
- 		.name			= "apollon",
+ 		.name			= "ortustech_com43h4m10xtc",
  	},
 +
 +	/* ThreeFiveCorp S9700RTWV35TR-01B */
