@@ -175,7 +175,7 @@ function make_uImage {
 	if [ -f ./arch/arm/boot/uImage ] ; then
 		cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
 	else
-		echo "Error: make zImage modules failed"
+		echo "Error: make uImage failed"
 		exit
 	fi
 	cd ${DIR}/
