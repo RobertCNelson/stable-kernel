@@ -148,7 +148,11 @@ function omapdrm {
 
 function fixes {
 	echo "omap cherry pick fixes"
-	git am "${DIR}/patches/fixes/0001-OMAP-UART-Enable-tx-wakeup-bit-in-wer.patch"
+	#3/22/2012: replaces: 0001-OMAP-UART-Enable-tx-wakeup-bit-in-wer.patch
+	git am "${DIR}/patches/omap/0001-OMAP2-UART-Remove-cpu-checks-for-populating-errata-f.patch"
+	git am "${DIR}/patches/omap/0002-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
+	git am "${DIR}/patches/omap/0003-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
+
 }
 
 function sgx {
