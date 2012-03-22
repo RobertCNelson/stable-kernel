@@ -153,6 +153,9 @@ function fixes {
 	git am "${DIR}/patches/omap/0002-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
 	git am "${DIR}/patches/omap/0003-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
 
+	#3/22/2012: suspend testing:
+	#http://www.spinics.net/lists/linux-omap/msg67070.html
+	git am "${DIR}/patches/omap/0001-mmc-omap_hsmmc-Pass-on-the-suspend-failure-to-the-PM.patch"
 }
 
 function sgx {

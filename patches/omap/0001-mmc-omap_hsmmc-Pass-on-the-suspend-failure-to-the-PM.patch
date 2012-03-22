@@ -1,0 +1,44 @@
+From 61dbb078ff1d77d6541527fcc9b81aaf900a86dd Mon Sep 17 00:00:00 2001
+From: Vaibhav Bedia <vaibhav.bedia@ti.com>
+Date: Thu, 22 Mar 2012 17:14:49 +0530
+Subject: [PATCH] mmc: omap_hsmmc: Pass on the suspend failure to the PM core
+
+In some cases mmc_host_suspend() is not able to claim the
+host and proceed with the suspend process. The core returns
+-EBUSY to the host controller driver. Unfortunately, the
+host controller driver does not pass on this information
+to the PM core and hence the system suspend process continues.
+
+In these cases the MMC core gets to an unexpected state
+during resume and multiple issues related to MMC crop up.
+1. Host controller driver starts accessing the device registers
+before the clocks are enabled which leads to a prefetch abort.
+2. A file copy thread which was launched before suspend gets
+stuck due to the host not being reclaimed during resume.
+
+To avoid such problems pass on the -EBUSY status to the PM core
+from the host controller driver. With this change, MMC core
+suspend might still fail but it does not end up making the
+system unusable. Suspend gets aborted and the user can try
+suspending the system again.
+
+Signed-off-by: Vaibhav Bedia <vaibhav.bedia@ti.com>
+---
+ drivers/mmc/host/omap_hsmmc.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 6e0de7e..14833d3 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -2172,6 +2172,7 @@ static int omap_hsmmc_suspend(struct device *dev)
+ 					dev_dbg(mmc_dev(host->mmc),
+ 						"Unmask interrupt failed\n");
+ 			}
++			ret = -EBUSY;
+ 			goto err;
+ 		}
+ 
+-- 
+1.7.9.1
+
