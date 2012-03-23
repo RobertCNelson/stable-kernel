@@ -97,25 +97,37 @@ unset APT
 
 if [ ! $(which mkimage) ];then
  echo "Missing uboot-mkimage"
- PACKAGE="uboot-mkimage "
+ UPACKAGE="u-boot-tools "
+ DPACKAGE="uboot-mkimage "
  APT=1
 fi
 
 if [ ! $(which ccache) ];then
  echo "Missing ccache"
- PACKAGE+="ccache "
+ UPACKAGE+="ccache "
+ DPACKAGE+="ccache "
  APT=1
 fi
 
-if [ ! $(file /usr/lib/libncurses.so | grep -v ERROR | awk '{print $1}') ];then
- echo "Missing ncurses"
- PACKAGE+="libncurses5-dev "
- APT=1
+if [ ! -f /usr/lib/libncurses.so ] ; then
+	ARCH=$(uname -m)
+	if [ "-${ARCH}-" == "-i686-" ] ; then
+ 		ARCH="i386"
+	fi
+	if [ ! -f /usr/lib/${ARCH}-linux-gnu/libncurses.so ] ; then
+		echo "Missing ncurses"
+		UPACKAGE+="libncurses5-dev "
+		DPACKAGE+="libncurses5-dev "
+		APT=1
+	fi
 fi
 
 if [ "${APT}" ];then
- echo "Installing Dependicies"
- sudo aptitude install $PACKAGE
+ echo "Missing Dependicies"
+ echo "Ubuntu: please install: sudo aptitude install ${UPACKAGE}"
+ echo "Debian: please install: sudo aptitude install ${DPACKAGE}"
+ echo "---------------------------------------------------------"
+ return 1
 fi
 }
 
@@ -127,7 +139,7 @@ case "$BUILD_HOST" in
 	    redhat_reqs
         ;;
     debian*)
-	    debian_regs
+	    debian_regs || error "Failed dependency check"
         ;;
     suse*)
 	    suse_regs "$BUILD_HOST" || error "Failed dependency check"

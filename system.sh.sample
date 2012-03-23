@@ -3,43 +3,97 @@
 
 ARCH=$(uname -m)
 
-#Ubuntu Natty
-#sudo apt-get install gcc-arm-linux-gnueabi
-
-#Ubuntu Maverick:
-#gcc-4.4
-#sudo apt-get install gcc-4.4-arm-linux-gnueabi
-#or gcc-4.5
-#sudo apt-get install gcc-4.5-arm-linux-gnueabi
-
-#Use CodeSourcery: http://www.codesourcery.com/sgpp/lite/arm/portal/subscription?@template=lite (GNU/Linux)
-#Just download and extract...
-
 if test "-$ARCH-" = "-armv7l-"
 then
  echo "Using: Native armv7l Compiler"
  CC=
 else
  echo "Using: Cross Compiler"
- #For ubuntu, if you apt-get the gcc-"version"-arm-linux-gnueabi from above..:
  #CC=arm-linux-gnueabi-
 
  #Test that user actually modified the above CC line:
- if test "-$CC-" = "--"
- then
+ if [ "-${CC}-" == "--" ] ; then
   echo ""
   echo "Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
   echo ""
-  echo "with a (sane editor) open system.sh and modify the commented Line 25: #CC=arm-linux-gnueabi-"
+  echo "with a (sane editor) open system.sh and modify the commented Line 12: #CC=arm-linux-gnueabi-"
+  echo ""
+  echo "If you need hints on installing an ARM GCC Cross ToolChain, view README file"
+  echo ""
+  exit
+ fi
+
+ GCC_TEST=$(LC_ALL=C ${CC}gcc -v 2>&1 | grep "Target:" | grep arm || true)
+ GCC_REPORT=$(LC_ALL=C ${CC}gcc -v 2>&1 || true)
+ if [ "-${GCC_TEST}-" == "--" ] ; then
+  echo ""
+  echo "Error: The GCC ARM Cross Compiler you setup in system.sh (CC variable)."
+  echo "Doesn't seem to be valid for ARM, double check it's location, or that"
+  echo "you chose the correct GCC Cross Compiler."
+  echo ""
+  echo "Output of: ${CC}gcc -v"
+  echo "${GCC_REPORT}"
+  echo ""
   exit
  fi
 fi
 
-#Allow the usage of git to help create kernel patches
-#GIT_MODE=1
+###REQUIRED:
 
-#Use with Caution, mount locations can change... This define's SD/MMC card mount location for load_uImage.sh script.
+##Linux Kernel Source location:
+##
+##To Setup: using git, you need to clone the linux-stable git tree from kernel.org
+##to anywhere in your system, just adjust LINUX_GIT variable..
+##
+###Note: (In Most systems ~/ is /home/username/)
+##cd ~/
+##git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+
+LINUX_GIT=~/linux-stable/
+
+###OPTIONAL: (REQUIRED FOR RUNNING: ./tools/load_uImage.sh & ./tools/load_uImage.sh)
+
+##Since 2.6.39?, it's now possible to build a Linux Kernel for devices that have
+##different physical address of the kernel entry point or "ZRELADDR".  This also means
+##these scripts only create zImage's, if you'd like uImage, run mkimage yourself, or use
+##the ./tools/load_uImage.sh to load the uImage on a MMC card.
+
+##For TI: OMAP3/4/AM35xx
+#ZRELADDR=0x80008000
+
+##For Freescale:
+##MX51 Family
+#ZRELADDR=0x90008000
+
+##MX53
+#ZRELADDR=0x70008000
+
+###ADVANCED: Allow the script to build uImage's directly, so-far safe for TI OMAP, but not Freescale..
+#BUILD_UIMAGE=1
+
+###OPTIONAL: (REQUIRED FOR RUNNING: ./tools/load_uImage.sh & ./tools/load_uImage-net.sh)
+##Note: This operates on raw disks, NOT PARTITIONS
+##WRONG: MMC=/dev/mmcblk0p1
+##CORRECT: MMC=/dev/mmcblk0
+##WRONG: MMC=/dev/sde1
+##CORRECT: MMC=/dev/sde
+
 #MMC=/dev/sde
 
-#Old Stuff, Such as: Debian Lenny, Ubuntu Jaunty, Ubuntu Karmic need this:
-#NO_DEVTMPS=1
+###ADVANCED: Secret Sauce Patches:
+
+##Have some secret sauce, you dont want to share with the community??
+##
+##It'll look specifically for *.patch files... Doesn't care about order/etc.. And I don't care about enhancing it.. ;)
+
+#LOCAL_PATCH_DIR=/full/path/to/dir/
+
+###ADVANCED: Pull in Torvalds current master tree before applying local patchset
+#This is very useful during an intial 'rc0' merge.
+#It is never supported... Enable at your own risk
+#LATEST_GIT=1
+
+###ADVANCED: enable DEBUG_SECTION_MISMATCH
+#http://cateee.net/lkddb/web-lkddb/DEBUG_SECTION_MISMATCH.html
+#DEBUG_SECTION=1
+
