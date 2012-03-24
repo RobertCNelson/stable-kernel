@@ -25,41 +25,18 @@
 echo "Starting patch.sh"
 
 function bugs_trivial {
-echo "bugs and trivial stuff"
-
-#Bisected from 2.6.35 -> 2.6.36 to find this..
-#This commit breaks some lcd monitors..
-#rcn-ee Feb 26, 2011...
-#Still needs more work for 2.6.38, causes:
-#[   14.962829] omapdss DISPC error: GFX_FIFO_UNDERFLOW, disabling GFX
-patch -s -p1 < "${DIR}/patches/trivial/0001-Revert-OMAP-DSS2-OMAPFB-swap-front-and-back-porches-.patch"
-
-patch -s -p1 < "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
-
-#should fix gcc-4.6 ehci problems..
-patch -s -p1 < "${DIR}/patches/trivial/0001-USB-ehci-use-packed-aligned-4-instead-of-removing-th.patch"
-
+	echo "bugs and trivial stuff"
+	git am "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
+	git am "${DIR}/patches/trivial/0001-USB-ehci-use-packed-aligned-4-instead-of-removing-th.patch"
 }
 
-function dss2_next {
-echo "dss2 from for-next"
-
-}
-
-function dspbridge_next {
-echo "dspbridge from for-next"
-
-}
-
-function omap_fixes {
-echo "omap fixes"
-
-}
-
-function for_next {
-echo "for_next from tmlind's tree.."
-
-patch -s -p1 < "${DIR}/patches/beagle/0001-OMAP3-beagle-add-support-for-beagleboard-xM-revision.patch"
+function beagle {
+	echo "Board Patchset: Beagle"
+	git am "${DIR}/patches/beagle/0001-OMAP3-beagle-add-support-for-beagleboard-xM-revision.patch"
+	git am "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
+	git am "${DIR}/patches/display/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
+	git am "${DIR}/patches/musb/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
+	git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 }
 
 function sakoman {
@@ -127,59 +104,6 @@ patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0072-omap3-Add-basic-support-for-7
 
 }
 
-function musb {
-echo "musb patches"
-patch -s -p1 < "${DIR}/patches/musb/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
-}
-
-function micrel {
-echo "micrel patches"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/01_eeprom_93cx6_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/02_eeprom_93cx6_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/03_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.38/04_ksz8851_2.6.38.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/06_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/07_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/08_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/09_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/10_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/11_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/12_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/15_ksz8851_2.6.35.patch"
-patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/18_ksz8851_2.6.35.patch"
-
-}
-
-function beagle {
-echo "beagle patches"
-patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
-patch -s -p1 < "${DIR}/patches/display/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
-
-}
-
-function igepv2 {
-echo "igepv2 board related patches"
-}
-
-function devkit8000 {
-echo "devkit8000"
-patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
-}
-
-function touchbook {
-echo "touchbook patches"
-patch -s -p1 < "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
-patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readonly.patch"
-patch -s -p1 < "${DIR}/patches/touchbook/0001-touchbook-add-madc.patch"
-#patch -s -p1 < "${DIR}/patches/touchbook/0002-touchbook-add-twl4030-bci-battery.patch"
-}
-
-function omap4 {
-echo "omap4 related patches"
-patch -s -p1 < "${DIR}/patches/panda/0001-OMAP4-DSS2-add-dss_dss_clk.patch"
-patch -s -p1 < "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
-}
-
 function sgx {
 echo "merge in ti sgx modules"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
@@ -225,29 +149,9 @@ patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.40-display.h
 }
 
 bugs_trivial
-
-#for_next tree's
-dss2_next
-omap_fixes
-#dspbridge_next
-for_next
-
-#work in progress
-#
-
-#external tree's
-sakoman
-musb
-micrel
-
-#random board patches
 beagle
-igepv2
-devkit8000
-touchbook
 
-#omap4/dvfs still needs more testing..
-omap4
+sakoman
 
 #no chance of being pushed ever tree's
 sgx

@@ -1,4 +1,4 @@
-From f868bbff9c5695657df0ef0b5f40d9dc2ff70835 Mon Sep 17 00:00:00 2001
+From fea11bcaa370fd8a8c1795cc0276ade1909dd63d Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Sat, 8 Jan 2011 14:31:37 -0600
 Subject: [PATCH] default to fifo mode 5, for old musb beagles
@@ -12,10 +12,10 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
-index 07cf394..a0f489e 100644
+index dce7182..c615bcd 100644
 --- a/drivers/usb/musb/musb_core.c
 +++ b/drivers/usb/musb/musb_core.c
-@@ -1063,7 +1063,7 @@ static void musb_shutdown(struct platform_device *pdev)
+@@ -1040,7 +1040,7 @@ static void musb_shutdown(struct platform_device *pdev)
   */
  #if defined(CONFIG_USB_MUSB_TUSB6010) || defined(CONFIG_USB_MUSB_OMAP2PLUS) \
  	|| defined(CONFIG_USB_MUSB_AM35X)
@@ -25,5 +25,5 @@ index 07cf394..a0f489e 100644
  static ushort __initdata fifo_mode = 5;
  #else
 -- 
-1.7.1
+1.7.5.4
 

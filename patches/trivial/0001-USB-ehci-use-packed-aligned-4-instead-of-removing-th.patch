@@ -1,4 +1,4 @@
-From aea383b539bb50756e3211124d6c2fa5da420df1 Mon Sep 17 00:00:00 2001
+From da2f8e1800a6988c6792e33a990fd2feed4794fa Mon Sep 17 00:00:00 2001
 From: Alexander Holler <holler@ahsoftware.de>
 Date: Thu, 16 Jun 2011 18:17:10 +0200
 Subject: [PATCH] USB: ehci: use packed, aligned(4) instead of removing the packed attribute
@@ -48,5 +48,5 @@ index 7cc95ee..15c87a9 100644
  #ifdef CONFIG_EARLY_PRINTK_DBGP
  #include <linux/init.h>
 -- 
-1.7.4.1
+1.7.5.4
 
