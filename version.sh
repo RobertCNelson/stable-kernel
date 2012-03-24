@@ -5,7 +5,7 @@ unset BUILD
 KERNEL_REL=3.0
 
 #for x.x.X
-STABLE_PATCH=8
+STABLE_PATCH=26
 
 #for x.x-rc
 #RC_KERNEL=2.6.37
