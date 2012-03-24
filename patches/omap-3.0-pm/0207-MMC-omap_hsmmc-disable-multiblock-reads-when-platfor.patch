@@ -1,0 +1,68 @@
+From d12e31dbbd5da85c2a343434d9dddd4a4e7dbc92 Mon Sep 17 00:00:00 2001
+From: "Paul Walmsley via booyaka.com" <paul@pwsan.com>
+Date: Thu, 6 Oct 2011 16:32:39 -0700
+Subject: [PATCH 207/214] MMC: omap_hsmmc: disable multiblock reads when
+ platform_data indicates that they are broken
+
+When device data indicates that multiple block reads are not supported on
+a given HSMMC controller instance, log a message to the console, and
+pass the appropriate MMC capability flag to the MMC core.
+
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Cc: Dave Hylands <dhylands@gmail.com>
+Cc: Steve Sakoman <sakoman@gmail.com>
+Cc: Chris Ball <cjb@laptop.org>
+---
+ arch/arm/plat-omap/include/plat/mmc.h |   19 ++++++++++++++++++-
+ drivers/mmc/host/omap_hsmmc.c         |    5 +++++
+ 2 files changed, 23 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/plat-omap/include/plat/mmc.h b/arch/arm/plat-omap/include/plat/mmc.h
+index c7b8741..94cf70a 100644
+--- a/arch/arm/plat-omap/include/plat/mmc.h
++++ b/arch/arm/plat-omap/include/plat/mmc.h
+@@ -31,7 +31,24 @@
+ 
+ #define OMAP_MMC_MAX_SLOTS	2
+ 
+-#define OMAP_HSMMC_SUPPORTS_DUAL_VOLT	BIT(1)
++/*
++ * struct omap_mmc_dev_attr.flags possibilities
++ *
++ * OMAP_HSMMC_SUPPORTS_DUAL_VOLT: Some HSMMC controller instances can
++ *    operate with either 1.8Vdc or 3.0Vdc card voltages; this flag
++ *    should be set if this is the case.  See for example Section 22.5.3
++ *    "MMC/SD/SDIO1 Bus Voltage Selection" of the OMAP34xx Multimedia
++ *    Device Silicon Revision 3.1.x Revision ZR (July 2011) (SWPU223R).
++ *
++ * OMAP_HSMMC_BROKEN_MULTIBLOCK_READ: Multiple-block read transfers
++ *    don't work correctly on some MMC controller instances on some
++ *    OMAP3 SoCs; this flag should be set if this is the case.  See
++ *    for example Advisory 2.1.1.128 "MMC: Multiple Block Read
++ *    Operation Issue" in _OMAP3530/3525/3515/3503 Silicon Errata_
++ *    Revision F (October 2010) (SPRZ278F).
++ */
++#define OMAP_HSMMC_SUPPORTS_DUAL_VOLT		BIT(0)
++#define OMAP_HSMMC_BROKEN_MULTIBLOCK_READ	BIT(1)
+ 
+ struct omap_mmc_dev_attr {
+ 	u8 flags;
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index a8c3a4c..5dfb0f1 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -2116,6 +2116,11 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
+ 	omap_hsmmc_context_save(host);
+ 
+ 	mmc->caps |= MMC_CAP_DISABLE;
++	if (host->pdata->controller_flags & OMAP_HSMMC_BROKEN_MULTIBLOCK_READ) {
++		dev_info(&pdev->dev, "multiblock reads disabled due to 35xx erratum 2.1.1.128; MMC read performance may suffer\n");
++		mmc->caps |= MMC_CAP_NO_MULTI_READ;
++	}
++
+ 	mmc_set_disable_delay(mmc, OMAP_MMC_DISABLED_TIMEOUT);
+ 	/* we start off in DISABLED state */
+ 	host->dpm_state = DISABLED;
+-- 
+1.7.5.4
+

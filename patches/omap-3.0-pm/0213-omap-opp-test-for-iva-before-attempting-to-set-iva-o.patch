@@ -1,0 +1,29 @@
+From 783cd5d7b5307f5a1d7d478194f5f62ed3238db1 Mon Sep 17 00:00:00 2001
+From: Steve Sakoman <steve@sakoman.com>
+Date: Wed, 18 Jan 2012 15:51:28 -0800
+Subject: [PATCH 213/214] omap: opp: test for iva before attempting to set iva
+ opp
+
+Signed-off-by: Steve Sakoman <steve@sakoman.com>
+---
+ arch/arm/mach-omap2/opp.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/opp.c b/arch/arm/mach-omap2/opp.c
+index ab8b35b..f18fcb4 100644
+--- a/arch/arm/mach-omap2/opp.c
++++ b/arch/arm/mach-omap2/opp.c
+@@ -62,6 +62,10 @@ int __init omap_init_opp_table(struct omap_opp_def *opp_def,
+ 				__func__, i);
+ 			return -EINVAL;
+ 		}
++
++		if ((strcmp(opp_def->hwmod_name, "iva") == 0) && !omap3_has_iva())
++			continue;
++
+ 		oh = omap_hwmod_lookup(opp_def->hwmod_name);
+ 		if (!oh || !oh->od) {
+ 			pr_warn("%s: no hwmod or odev for %s, [%d] "
+-- 
+1.7.5.4
+

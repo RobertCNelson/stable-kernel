@@ -1,0 +1,29 @@
+From eb7134dd8674dfdaca77869898b13b94e8e55c66 Mon Sep 17 00:00:00 2001
+From: Steve Sakoman <steve@sakoman.com>
+Date: Wed, 28 Sep 2011 21:01:57 -0700
+Subject: [PATCH 203/214] plat-omap/Kconfig: Change OMAP_IOMMU from tristate
+ to bool
+
+Otherwise the iommu2 module won't be automatically pulled in when
+the omap3isp module is loaded. The omap3isp driver will then fail
+to probe subdevices.
+---
+ arch/arm/plat-omap/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/plat-omap/Kconfig b/arch/arm/plat-omap/Kconfig
+index 6e6735f..342ac8e 100644
+--- a/arch/arm/plat-omap/Kconfig
++++ b/arch/arm/plat-omap/Kconfig
+@@ -132,7 +132,7 @@ config OMAP_MBOX_KFIFO_SIZE
+ 	  module parameter).
+ 
+ config OMAP_IOMMU
+-	tristate
++	bool
+ 
+ config OMAP_IOMMU_DEBUG
+        tristate "Export OMAP IOMMU internals in DebugFS"
+-- 
+1.7.5.4
+

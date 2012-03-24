@@ -1,0 +1,152 @@
+From 5d0148ebcc758e6caa2d0b0ce00556598a981649 Mon Sep 17 00:00:00 2001
+From: "Paul Walmsley via booyaka.com" <paul@pwsan.com>
+Date: Thu, 6 Oct 2011 17:16:03 -0700
+Subject: [PATCH 208/214] ARM: OMAP3: hwmod data: disable multiblock reads on
+ MMC1/2 on OMAP34xx/35xx <= ES2.1
+
+The HSMMC1/HSMMC2 host controllers on OMAP34xx and
+OMAP3503/3515/3525/3530 chips at ES levels prior to 3.0 can't do multiple
+block reads[1].  Mark the hwmod data appropriately.
+
+Reported by Dave Hylands <dhylands@gmail.com> and Steve Sakoman
+<sakoman@gmail.com>.
+
+1. See for example Advisory 2.1.1.128 "MMC: Multiple Block Read
+   Operation Issue" in _OMAP3530/3525/3515/3503 Silicon Errata_
+   Revision F (October 2010) (SPRZ278F), available from
+   http://focus.ti.com/lit/er/sprz278f/sprz278f.pdf
+
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Cc: Dave Hylands <dhylands@gmail.com>
+Cc: Steve Sakoman <sakoman@gmail.com>
+---
+ arch/arm/mach-omap2/omap_hwmod_3xxx_data.c |   92 ++++++++++++++++++++++++++--
+ 1 files changed, 87 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+index 59fdb9f..1d08638 100644
+--- a/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
++++ b/arch/arm/mach-omap2/omap_hwmod_3xxx_data.c
+@@ -3088,7 +3088,36 @@ static struct omap_mmc_dev_attr mmc1_dev_attr = {
+ 	.flags = OMAP_HSMMC_SUPPORTS_DUAL_VOLT,
+ };
+ 
+-static struct omap_hwmod omap3xxx_mmc1_hwmod = {
++/* See 35xx errata 2.1.1.128 in SPRZ278F */
++static struct omap_mmc_dev_attr mmc1_pre_es3_dev_attr = {
++	.flags = (OMAP_HSMMC_SUPPORTS_DUAL_VOLT |
++		  OMAP_HSMMC_BROKEN_MULTIBLOCK_READ),
++};
++
++static struct omap_hwmod omap3xxx_pre_es3_mmc1_hwmod = {
++	.name		= "mmc1",
++	.mpu_irqs	= omap34xx_mmc1_mpu_irqs,
++	.sdma_reqs	= omap34xx_mmc1_sdma_reqs,
++	.opt_clks	= omap34xx_mmc1_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(omap34xx_mmc1_opt_clks),
++	.main_clk	= "mmchs1_fck",
++	.prcm		= {
++		.omap2 = {
++			.module_offs = CORE_MOD,
++			.prcm_reg_id = 1,
++			.module_bit = OMAP3430_EN_MMC1_SHIFT,
++			.idlest_reg_id = 1,
++			.idlest_idle_bit = OMAP3430_ST_MMC1_SHIFT,
++		},
++	},
++	.dev_attr	= &mmc1_pre_es3_dev_attr,
++	.slaves		= omap3xxx_mmc1_slaves,
++	.slaves_cnt	= ARRAY_SIZE(omap3xxx_mmc1_slaves),
++	.class		= &omap34xx_mmc_class,
++	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430),
++};
++
++static struct omap_hwmod omap3xxx_es3plus_mmc1_hwmod = {
+ 	.name		= "mmc1",
+ 	.mpu_irqs	= omap34xx_mmc1_mpu_irqs,
+ 	.sdma_reqs	= omap34xx_mmc1_sdma_reqs,
+@@ -3132,7 +3161,35 @@ static struct omap_hwmod_ocp_if *omap3xxx_mmc2_slaves[] = {
+ 	&omap3xxx_l4_core__mmc2,
+ };
+ 
+-static struct omap_hwmod omap3xxx_mmc2_hwmod = {
++/* See 35xx errata 2.1.1.128 in SPRZ278F */
++static struct omap_mmc_dev_attr mmc2_pre_es3_dev_attr = {
++	.flags = OMAP_HSMMC_BROKEN_MULTIBLOCK_READ,
++};
++
++static struct omap_hwmod omap3xxx_pre_es3_mmc2_hwmod = {
++	.name		= "mmc2",
++	.mpu_irqs	= omap34xx_mmc2_mpu_irqs,
++	.sdma_reqs	= omap34xx_mmc2_sdma_reqs,
++	.opt_clks	= omap34xx_mmc2_opt_clks,
++	.opt_clks_cnt	= ARRAY_SIZE(omap34xx_mmc2_opt_clks),
++	.main_clk	= "mmchs2_fck",
++	.prcm		= {
++		.omap2 = {
++			.module_offs = CORE_MOD,
++			.prcm_reg_id = 1,
++			.module_bit = OMAP3430_EN_MMC2_SHIFT,
++			.idlest_reg_id = 1,
++			.idlest_idle_bit = OMAP3430_ST_MMC2_SHIFT,
++		},
++	},
++	.dev_attr	= &mmc2_pre_es3_dev_attr,
++	.slaves		= omap3xxx_mmc2_slaves,
++	.slaves_cnt	= ARRAY_SIZE(omap3xxx_mmc2_slaves),
++	.class		= &omap34xx_mmc_class,
++	.omap_chip	= OMAP_CHIP_INIT(CHIP_IS_OMAP3430),
++};
++
++static struct omap_hwmod omap3xxx_es3plus_mmc2_hwmod = {
+ 	.name		= "mmc2",
+ 	.mpu_irqs	= omap34xx_mmc2_mpu_irqs,
+ 	.sdma_reqs	= omap34xx_mmc2_sdma_reqs,
+@@ -3201,8 +3258,6 @@ static __initdata struct omap_hwmod *omap3xxx_hwmods[] = {
+ 	&omap3xxx_l4_core_hwmod,
+ 	&omap3xxx_l4_per_hwmod,
+ 	&omap3xxx_l4_wkup_hwmod,
+-	&omap3xxx_mmc1_hwmod,
+-	&omap3xxx_mmc2_hwmod,
+ 	&omap3xxx_mmc3_hwmod,
+ 	&omap3xxx_mpu_hwmod,
+ 	&omap3xxx_iva_hwmod,
+@@ -3281,7 +3336,34 @@ static __initdata struct omap_hwmod *omap3xxx_hwmods[] = {
+ 	NULL,
+ };
+ 
++/* <= 3430ES3-only hwmods */
++static __initdata struct omap_hwmod *omap3430_pre_es3_hwmods[] = {
++	&omap3xxx_pre_es3_mmc1_hwmod,
++	&omap3xxx_pre_es3_mmc2_hwmod,
++	NULL
++};
++
++/* 3430ES3+-only hwmods */
++static __initdata struct omap_hwmod *omap3430_es3plus_hwmods[] = {
++	&omap3xxx_es3plus_mmc1_hwmod,
++	&omap3xxx_es3plus_mmc2_hwmod,
++	NULL
++};
++
+ int __init omap3xxx_hwmod_init(void)
+ {
+-	return omap_hwmod_register(omap3xxx_hwmods);
++	int r = 0;
++	unsigned int rev = omap_rev();
++
++	r = omap_hwmod_register(omap3xxx_hwmods);
++
++	if (rev == OMAP3430_REV_ES1_0 || rev == OMAP3430_REV_ES2_0 ||
++	    rev == OMAP3430_REV_ES2_1 || rev == OMAP3503_REV(OMAP_REVBITS_00) ||
++	    rev == OMAP3503_REV(OMAP_REVBITS_01) || rev == OMAP3503_REV(OMAP_REVBITS_02)) {
++		r = omap_hwmod_register(omap3430_pre_es3_hwmods);
++	} else {
++		r = omap_hwmod_register(omap3430_es3plus_hwmods);
++	};
++
++	return r;
+ }
+-- 
+1.7.5.4
+
