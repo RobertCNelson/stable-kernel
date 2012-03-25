@@ -1,4 +1,4 @@
-From 8c887e95608a42f310e7c7bfb0e0732152b14cc0 Mon Sep 17 00:00:00 2001
+From 8f991d28a59e487785ffffe470e10823748acb0d Mon Sep 17 00:00:00 2001
 From: Sanjeev Premi <premi@ti.com>
 Date: Thu, 29 Apr 2010 14:09:42 +0530
 Subject: [PATCH] omap3: Increase limit on bootarg 'mpurate'
@@ -14,10 +14,10 @@ for quite some time.
  1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
-index 5261a09..4fd1e15 100644
+index c9122dd..c483cf0 100644
 --- a/arch/arm/plat-omap/clock.c
 +++ b/arch/arm/plat-omap/clock.c
-@@ -186,7 +186,7 @@ static int __init omap_clk_setup(char *str)
+@@ -185,7 +185,7 @@ static int __init omap_clk_setup(char *str)
  	if (!mpurate)
  		return 1;
  
@@ -27,5 +27,5 @@ index 5261a09..4fd1e15 100644
  
  	return 1;
 -- 
-1.7.0.4
+1.7.5.4
 

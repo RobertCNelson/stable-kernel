@@ -5,13 +5,13 @@ unset BUILD
 KERNEL_REL=2.6.39
 
 #for x.x.X
-STABLE_PATCH=3
+STABLE_PATCH=4
 
 #for x.x-rcX
 #RC_KERNEL=2.6.37
 #RC_PATCH=-rc8
 
-ABI=3
+ABI=3.1
 
 BUILD=x${ABI}
 

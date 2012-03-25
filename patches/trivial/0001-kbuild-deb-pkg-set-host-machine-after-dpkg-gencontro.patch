@@ -1,4 +1,4 @@
-From 02bdac7dc9dc21eccacb9a6e3064d2c7888b3ac0 Mon Sep 17 00:00:00 2001
+From 0c5abc3aa078892d823b1fee7ddb37450199da7a Mon Sep 17 00:00:00 2001
 From: Robert Gordon <robert@greenroomsoftware.com>
 Date: Wed, 13 Apr 2011 11:32:29 -0500
 Subject: [PATCH] kbuild, deb-pkg: set host machine after dpkg-gencontrol
@@ -109,5 +109,5 @@ index f6cbc3d..2a15fda 100644
   This is useful for people who need to build external modules
  EOF
 -- 
-1.7.1
+1.7.5.4
 
