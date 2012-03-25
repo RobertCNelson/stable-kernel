@@ -1,5 +1,27 @@
 #!/bin/bash -e
-#Based on: http://omappedia.org/wiki/DSPBridge_Project#Build_Userspace_Files
+#
+# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+VERSION="v2012.01"
+
 unset BUILD
 unset CC
 DIR=$PWD
@@ -20,16 +42,12 @@ function libstd_dependicy {
 DIST=$(lsb_release -sc)
 
 if [ $(uname -m) == "x86_64" ] ; then
-	LIBSTD=$(file /usr/lib32/libstdc++.so.5 | grep -v ERROR | awk '{print $1}')
-	if [ "-$LIBSTD-" = "--" ] ; then
-		sudo apt-get install -y ia32-libs
-	fi
-else
-	LIBSTD=$(file /usr/lib/libstdc++.so.5 | grep -v ERROR | awk '{print $1}')
-	if [ "-$LIBSTD-" = "--" ] ; then
-		sudo apt-get install libstdc++5
-	fi
+ echo ""
+ echo "Note: on the x86_64 platform, this script needs (ia32-libs)..."
+ echo "--------------------------------------------------------------"
+ echo ""
 fi
+
 cd ${DIR}
 }
 
@@ -93,6 +111,10 @@ if [ \$(uname -m) == "armv7l" ] ; then
       sudo chmod +x /etc/rcS.d/S61dsp.sh
     else
       #karmic/lucid/maverick/etc
+      sudo update-rc.d -f dsp remove
+      if [ -f /etc/init.d/dsp ] ; then
+        rm -f /etc/init.d/dsp || true
+      fi
       sudo cp /opt/dsp /etc/init.d/dsp
       sudo chmod +x /etc/init.d/dsp
       sudo update-rc.d dsp defaults
@@ -150,6 +172,7 @@ fi
 cd \${DIR}/git/gst-dsp
 make clean
 git pull
+./configure
 make CROSS_COMPILE= 
 sudo make install
 cd \${DIR}/
@@ -195,12 +218,20 @@ installgst
 
 function create_DSP_package {
 	cd ${DIR}
-	sudo rm -rfd ${DIR}/DSP/
+	sudo rm -rf ${DIR}/DSP/
 	mkdir -p ${DIR}/DSP/
 	mkdir -p ${DIR}/DSP/lib/dsp
 	mkdir -p ${DIR}/DSP/opt/
 
-	sudo cp -v ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/binaries/* ${DIR}/DSP/lib/dsp
+ if [ -f ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/binaries/baseimage.dof ] ; then
+  sudo cp -v ${DIR}/dl/TI_DSP_${TI_DSP_BIN}/binaries/* ${DIR}/DSP/lib/dsp
+ else
+  echo "--------------------------------------------------------------"
+  echo "Script, failure, DSP bin was not extracted, do you have i32-libs installed?"
+  echo "--------------------------------------------------------------"
+  echo ""
+  exit
+ fi
 
 file-DSP-startup
 
@@ -208,7 +239,7 @@ file-DSP-startup
 	tar czf ${DIR}/dsp_libs.tar.gz *
 	cd ${DIR}
 
-	sudo rm -rfd ${DIR}/DSP/
+	sudo rm -rf ${DIR}/DSP/
 	mkdir -p ${DIR}/DSP/
 
 	mv ${DIR}/dsp_libs.tar.gz ${DIR}/DSP/
@@ -223,7 +254,7 @@ file-install-gst-dsp
 	tar czf ${DIR}/DSP_Install_libs.tar.gz *
 	cd ${DIR}
 
-	sudo rm -rfd ${DIR}/DSP/
+	sudo rm -rf ${DIR}/DSP/
 	cd ${DIR}
 }
 
@@ -232,4 +263,12 @@ libstd_dependicy
 ti_DSP_binaries
 
 create_DSP_package
+
+echo ""
+echo "Script Version ${VERSION}"
+echo "Email Bugs: bugs@rcn-ee.com"
+echo "-----------------------------"
+echo ""
+
+
 

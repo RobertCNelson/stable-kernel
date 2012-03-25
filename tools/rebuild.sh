@@ -28,7 +28,7 @@ unset BUILD
 unset CC
 unset LINUX_GIT
 unset LATEST_GIT
-unset DEBARCH
+unset DEBUG_SECTION
 
 unset LOCAL_PATCH_DIR
 
@@ -154,11 +154,63 @@ function make_menuconfig {
   cd ${DIR}/
 }
 
-function make_deb {
+function make_zImage_modules {
+	cd ${DIR}/KERNEL/
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} zImage modules"
+	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} zImage modules
+	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+	if [ -f ./arch/arm/boot/zImage ] ; then
+		cp arch/arm/boot/zImage ${DIR}/deploy/${KERNEL_UTS}.zImage
+	else
+		echo "Error: make zImage modules failed"
+		exit
+	fi
+	cd ${DIR}/
+}
+
+function make_uImage {
+	cd ${DIR}/KERNEL/
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} uImage"
+	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} uImage
+	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+	if [ -f ./arch/arm/boot/uImage ] ; then
+		cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
+	else
+		echo "Error: make uImage failed"
+		exit
+	fi
+	cd ${DIR}/
+}
+
+function make_modules_pkg {
   cd ${DIR}/KERNEL/
-  echo "make -j${CORES} ARCH=arm KBUILD_DEBARCH=${DEBARCH} LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg"
-  time fakeroot make -j${CORES} ARCH=arm KBUILD_DEBARCH=${DEBARCH} LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} deb-pkg
-  mv ${DIR}/*.deb ${DIR}/deploy/
+
+  echo ""
+  echo "Building Module Archive"
+  echo ""
+
+  rm -rf ${DIR}/deploy/mod &> /dev/null || true
+  mkdir -p ${DIR}/deploy/mod
+  make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
+  echo "Building ${KERNEL_UTS}-modules.tar.gz"
+  cd ${DIR}/deploy/mod
+  tar czf ../${KERNEL_UTS}-modules.tar.gz *
+  cd ${DIR}/
+}
+
+function make_headers_pkg {
+  cd ${DIR}/KERNEL/
+
+  echo ""
+  echo "Building Header Archive"
+  echo ""
+
+  rm -rf ${DIR}/deploy/headers &> /dev/null || true
+  mkdir -p ${DIR}/deploy/headers/usr
+  make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
+  cd ${DIR}/deploy/headers
+  echo "Building ${KERNEL_UTS}-headers.tar.gz"
+  tar czf ../${KERNEL_UTS}-headers.tar.gz *
   cd ${DIR}/
 }
 
@@ -181,14 +233,29 @@ if [ "${LATEST_GIT}" ] ; then
 	echo ""
 fi
 
-  git_kernel
-  patch_kernel
-  copy_defconfig
+unset CONFIG_DEBUG_SECTION
+if [ "${DEBUG_SECTION}" ] ; then
+	CONFIG_DEBUG_SECTION="CONFIG_DEBUG_SECTION_MISMATCH=y"
+fi
+
+#  git_kernel
+#  patch_kernel
+#  copy_defconfig
   make_menuconfig
 	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
 		sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
 	fi
-  make_deb
+	make_zImage_modules
+if [ "${BUILD_UIMAGE}" ] ; then
+	make_uImage
+else
+  echo ""
+  echo "NOTE: If you'd like to build a uImage, make sure to enable BUILD_UIMAGE variables in system.sh"
+  echo "Currently Safe for current TI devices."
+  echo ""
+fi
+	make_modules_pkg
+#	make_headers_pkg
 	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
 		sed -i -e 's:CROSS_COMPILE)'$GCC_OVERRIDE':CROSS_COMPILE)gcc:g' ${DIR}/KERNEL/Makefile
 	fi

@@ -181,9 +181,9 @@ if [ "${LATEST_GIT}" ] ; then
 	echo ""
 fi
 
-  git_kernel
-  patch_kernel
-  copy_defconfig
+#  git_kernel
+#  patch_kernel
+#  copy_defconfig
   make_menuconfig
 	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
 		sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
