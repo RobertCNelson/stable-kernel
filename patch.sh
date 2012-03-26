@@ -156,6 +156,20 @@ function fixes {
 	#3/22/2012: suspend testing:
 	#http://www.spinics.net/lists/linux-omap/msg67070.html
 	git am "${DIR}/patches/omap/0001-mmc-omap_hsmmc-Pass-on-the-suspend-failure-to-the-PM.patch"
+
+	#merged in 3.4-rc0
+	#http://git.kernel.org/?p=linux/kernel/git/khilman/linux-omap-pm.git;a=shortlog;h=refs/heads/for_3.4/cpufreq
+	git am "${DIR}/patches/omap-3.4/0001-cpufreq-OMAP-driver-depends-CPUfreq-tables.patch"
+	git am "${DIR}/patches/omap-3.4/0002-cpufreq-OMAP-scale-voltage-along-with-frequency.patch"
+	git am "${DIR}/patches/omap-3.4/0003-cpufreq-OMAP-specify-range-for-voltage-scaling.patch"
+
+	#http://git.kernel.org/?p=linux/kernel/git/khilman/linux-omap-pm.git;a=shortlog;h=refs/heads/for_3.4/fixes/pm
+	git am "${DIR}/patches/omap-3.4/0001-ARM-OMAP4-Workaround-the-OCP-synchronisation-issue-w.patch"
+	git am "${DIR}/patches/omap-3.4/0002-arm-omap3-pm34xx.c-Fix-omap3_pm_init-error-out-paths.patch"
+	git am "${DIR}/patches/omap-3.4/0003-arm-omap3-pm34xx.c-Replace-printk-with-appropriate-p.patch"
+	git am "${DIR}/patches/omap-3.4/0004-ARM-OMAP2-OPP-allow-OPP-enumeration-to-continue-if-d.patch"
+	git am "${DIR}/patches/omap-3.4/0005-ARM-OMAP3-fix-oops-triggered-in-omap_prcm_register_c.patch"
+
 }
 
 function sgx {
