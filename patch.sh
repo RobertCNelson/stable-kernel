@@ -115,6 +115,7 @@ function pandaboard {
 	echo "Board Patches for: PandaBoard"
 	git am "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 	git am "${DIR}/patches/panda/0001-panda-enable-bluetooth.patch"
+	git am "${DIR}/patches/panda/0001-ti-st-st-kim-fixing-firmware-path.patch"
 }
 
 function fixes {
