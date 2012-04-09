@@ -82,6 +82,7 @@ mmc_write_boot () {
 
 		if [ -f "${DIR}/deploy/disk/uImage" ] ; then
 			sudo mv "${DIR}/deploy/disk/uImage" "${DIR}/deploy/disk/uImage_bak"
+			sudo mkimage -A arm -O linux -T kernel -C none -a ${ZRELADDR} -e ${ZRELADDR} -n ${KERNEL_UTS} -d "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/uImage"
 		fi
 
 		if [ -f "${DIR}/deploy/disk/zImage_bak" ] ; then
@@ -90,11 +91,8 @@ mmc_write_boot () {
 
 		if [ -f "${DIR}/deploy/disk/zImage" ] ; then
 			sudo mv "${DIR}/deploy/disk/zImage" "${DIR}/deploy/disk/zImage_bak"
+			sudo cp -v "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/zImage"
 		fi
-
-		sudo mkimage -A arm -O linux -T kernel -C none -a ${ZRELADDR} -e ${ZRELADDR} -n ${KERNEL_UTS} -d "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/uImage"
-
-		sudo cp "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/zImage"
 
 		cd "${DIR}/deploy/disk"
 		sync
