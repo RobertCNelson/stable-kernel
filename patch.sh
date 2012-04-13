@@ -77,6 +77,8 @@ function beagle {
 	git am "${DIR}/patches/sakoman/2.6.39/0006-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
 	git am "${DIR}/patches/sakoman/2.6.39/0007-video-add-timings-for-hd720.patch"
 	git am "${DIR}/patches/sakoman/2.6.39/0025-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
+
+	git am "${DIR}/patches/omap/0001-Fix-sprz319-erratum-2.1.patch"
 }
 
 function devkit8000 {
@@ -94,6 +96,7 @@ function pandaboard {
 	echo "Board Patches for: PandaBoard"
 	git am "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 	git am "${DIR}/patches/panda/0001-panda-enable-bluetooth.patch"
+	git am "${DIR}/patches/panda/0001-ti-st-st-kim-fixing-firmware-path.patch"
 }
 
 function omapdrm {
