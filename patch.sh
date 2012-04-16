@@ -83,6 +83,8 @@ function beagle {
 	git am "${DIR}/patches/beagle/expansion/0004-expansion-add-zippy2.patch"
 	git am "${DIR}/patches/beagle/expansion/0005-expansion-add-trainer.patch"
 	git am "${DIR}/patches/beagle/expansion/0006-expansion-add-ulcd.patch"
+#still needs some tweaks..
+#	git am "${DIR}/patches/beagle/expansion/0001-expansion-add-wifi-WIP.patch"
 
 	git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 	git am "${DIR}/patches/beagle/0001-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly-wh.patch"
