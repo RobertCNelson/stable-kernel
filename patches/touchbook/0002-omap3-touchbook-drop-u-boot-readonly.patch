@@ -1,12 +1,12 @@
-From cc7ae582fb0bf7f56c37a00edc92cf6abea66893 Mon Sep 17 00:00:00 2001
+From 79acc5e964fd47d624fd51db38eb8a143730418e Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Fri, 25 Feb 2011 11:32:37 -0600
-Subject: [PATCH 2/4] omap3: touchbook: drop u-boot readonly
+Subject: [PATCH 2/2] omap3: touchbook: drop u-boot readonly
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/mach-omap2/board-omap3touchbook.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ 1 file changed, 1 deletion(-)
 
 diff --git a/arch/arm/mach-omap2/board-omap3touchbook.c b/arch/arm/mach-omap2/board-omap3touchbook.c
 index 6b4cd92..5d209c1 100644
@@ -21,5 +21,5 @@ index 6b4cd92..5d209c1 100644
  	{
  		.name		= "U-Boot Env",
 -- 
-1.7.9.1
+1.7.9.5
 
