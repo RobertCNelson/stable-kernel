@@ -96,7 +96,7 @@ beagle () {
 	git am "${DIR}/patches/beagle/0006-expansion-add-ulcd.patch"
 
 	#dont push... still needs some tweaks..
-	git am "${DIR}/patches/beagle/0007-expansion-add-wifi-WIP.patch"
+	#git am "${DIR}/patches/beagle/0007-expansion-add-wifi-WIP.patch"
 
 	git am "${DIR}/patches/beagle/0008-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 	git am "${DIR}/patches/beagle/0009-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly.patch"
