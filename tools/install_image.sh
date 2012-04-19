@@ -105,8 +105,9 @@ mmc_write_boot () {
 
 		if [ -f "${DIR}/deploy/disk/zImage" ] ; then
 			sudo mv "${DIR}/deploy/disk/zImage" "${DIR}/deploy/disk/zImage_bak"
-			sudo cp -v "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/zImage"
 		fi
+
+		sudo cp -v "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/zImage"
 
 		cd "${DIR}/deploy/disk"
 		sync
