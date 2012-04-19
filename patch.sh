@@ -129,7 +129,7 @@ panda () {
 omap_fixes () {
 	echo "omap cherry pick fixes"
 	git am "${DIR}/patches/omap_fixes/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
-	git am "${DIR}/patches/omap_fixes/0002-Fix-sprz319-erratum-2.1.patch"
+#	git am "${DIR}/patches/omap_fixes/0002-Fix-sprz319-erratum-2.1.patch"
 	git am "${DIR}/patches/omap_fixes/0003-ARM-OMAP-AM3517-3505-fix-crash-on-boot-due-to-incorr.patch"
 	git am "${DIR}/patches/omap_fixes/0004-ARM-OMAP4-hwmod-Don-t-wait-for-the-idle-status-if-mo.patch"
 	git am "${DIR}/patches/omap_fixes/0005-ARM-OMAP4-clock-Add-CPU-local-timer-clock-node.patch"
