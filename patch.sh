@@ -124,6 +124,7 @@ panda () {
 	git am "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 	git am "${DIR}/patches/panda/0002-panda-enable-bluetooth.patch"
 	git am "${DIR}/patches/panda/0003-ti-st-st-kim-fixing-firmware-path.patch"
+	git am "${DIR}/patches/panda/0001-panda-enable-asoc.patch"
 }
 
 omap_fixes () {
