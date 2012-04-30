@@ -1,23 +1,24 @@
-From 4d8519de03f9bec2bc6c1148ce18c309b01407a4 Mon Sep 17 00:00:00 2001
+From 31285130fedbd6e72a72b2f41f1b325c54f84982 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Mon, 16 Apr 2012 10:56:17 -0500
 Subject: [PATCH 07/13] expansion: add wifi
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
- arch/arm/mach-omap2/board-omap3beagle.c |   87 +++++++++++++++++++++++++++++++
- 1 file changed, 87 insertions(+)
+ arch/arm/mach-omap2/board-omap3beagle.c |  103 +++++++++++++++++++++++++++++++
+ 1 file changed, 103 insertions(+)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 0299d47..57602a5 100644
+index 0299d47..a7d81fc 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -166,6 +166,75 @@ static void __init omap3_beagle_init_rev(void)
+@@ -166,6 +166,90 @@ static void __init omap3_beagle_init_rev(void)
  char expansionboard_name[16];
  char expansionboard2_name[16];
  
 +#if defined(CONFIG_WL12XX) || defined(CONFIG_WL12XX_MODULE)
 +#include <linux/regulator/fixed.h>
++#include <linux/ti_wilink_st.h>
 +#include <linux/wl12xx.h>
 +
 +#define OMAP_BEAGLE_WLAN_EN_GPIO    (139)
@@ -30,11 +31,25 @@ index 0299d47..57602a5 100644
 +	.board_ref_clock = 2, /* 38.4 MHz */
 +};
 +
-+static int gpios[] = {OMAP_BEAGLE_BT_EN_GPIO, OMAP_BEAGLE_FM_EN_BT_WU, -1};
++static struct ti_st_plat_data wilink_platform_data = {
++	.nshutdown_gpio	= OMAP_BEAGLE_BT_EN_GPIO,
++	.dev_name		= "/dev/ttyO1",
++	.flow_cntrl		= 1,
++	.baud_rate		= 3000000,
++	.chip_enable		= NULL,
++	.suspend		= NULL,
++	.resume		= NULL,
++};
++
 +static struct platform_device wl12xx_device = {
 +		.name		= "kim",
 +		.id			= -1,
-+		.dev.platform_data = &gpios,
++		.dev.platform_data = &wilink_platform_data,
++};
++
++static struct platform_device btwilink_device = {
++	.name	= "btwilink",
++	.id	= -1,
 +};
 +
 +static struct omap2_hsmmc_info mmcbbt[] = {
@@ -88,7 +103,7 @@ index 0299d47..57602a5 100644
  #if defined(CONFIG_ENC28J60) || defined(CONFIG_ENC28J60_MODULE)
  
  #include <plat/mcspi.h>
-@@ -449,7 +518,15 @@ static int beagle_twl_gpio_setup(struct device *dev,
+@@ -449,7 +533,15 @@ static int beagle_twl_gpio_setup(struct device *dev,
  	mmc[0].gpio_wp = beagle_config.mmc1_gpio_wp;
  	/* gpio + 0 is "mmc0_cd" (input/IRQ) */
  	mmc[0].gpio_cd = gpio + 0;
@@ -104,7 +119,7 @@ index 0299d47..57602a5 100644
  
  	/*
  	 * TWL4030_GPIO_MAX + 0 == ledA, EHCI nEN_USB_PWR (out, XM active
-@@ -849,6 +926,16 @@ static void __init omap3_beagle_init(void)
+@@ -849,6 +941,17 @@ static void __init omap3_beagle_init(void)
  		gpio_export(162, 1);
  	}
  
@@ -114,6 +129,7 @@ index 0299d47..57602a5 100644
 +			pr_err("error setting wl12xx data\n");
 +		printk(KERN_INFO "Beagle expansionboard: registering wl12xx bt platform device\n");
 +		platform_device_register(&wl12xx_device);
++		platform_device_register(&btwilink_device);
 +		printk(KERN_INFO "Beagle expansionboard: registering wl12xx wifi platform device\n");
 +		platform_device_register(&omap_vwlan_device);
 +	}
