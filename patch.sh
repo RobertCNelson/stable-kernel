@@ -115,6 +115,12 @@ devkit8000 () {
 	git am "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
 }
 
+igep0020 () {
+	echo "Board Patches for: igep0020"
+	git am "${DIR}/patches/igep0020/0001-ARM-OMAP2-nand-Make-board_onenand_init-visible-to-bo.patch"
+	git am "${DIR}/patches/igep0020/0002-OMAP3-igep0020-Add-support-for-Micron-NAND-Flash-sto.patch"
+}
+
 touchbook () {
 	echo "Board Patches for: Touchbook"
 	git am "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
@@ -205,6 +211,7 @@ micrel_zippy2
 sakoman
 beagle
 devkit8000
+igep0020
 touchbook
 panda
 omap_fixes
