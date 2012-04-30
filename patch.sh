@@ -103,6 +103,10 @@ beagle () {
 	git am "${DIR}/patches/beagle/0010-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
 	git am "${DIR}/patches/beagle/0011-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 
+	git am "${DIR}/patches/beagle/0010-beagleboard-fix-uLCD7-support.patch"
+	git am "${DIR}/patches/beagle/0012-backlight-Add-TLC59108-backlight-control-driver.patch"
+	git am "${DIR}/patches/beagle/0013-tlc59108-adjust-for-beagleboard-uLCD7.patch"
+
 	#dont push, upstream went a different way..
 	git am "${DIR}/patches/beagle/0012-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
 	git am "${DIR}/patches/beagle/0013-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
