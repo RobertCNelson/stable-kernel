@@ -1,7 +1,7 @@
-From 99d4f521a6b43598f039577bc382a649a7ae73a4 Mon Sep 17 00:00:00 2001
+From 4d8519de03f9bec2bc6c1148ce18c309b01407a4 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Mon, 16 Apr 2012 10:56:17 -0500
-Subject: [PATCH 07/13] expansion: add wifi WIP
+Subject: [PATCH 07/13] expansion: add wifi
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  1 file changed, 87 insertions(+)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index a546c2b..8c37e99 100644
+index 0299d47..57602a5 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -165,6 +165,75 @@ static void __init omap3_beagle_init_rev(void)
+@@ -166,6 +166,75 @@ static void __init omap3_beagle_init_rev(void)
  char expansionboard_name[16];
  char expansionboard2_name[16];
  
@@ -41,7 +41,7 @@ index a546c2b..8c37e99 100644
 +	{
 +		.mmc		= 1,
 +		.caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA,
-+		.gpio_wp	= 29,
++		.gpio_wp	= -EINVAL,
 +	},
 +	{
 +		.name		= "wl1271",
@@ -88,7 +88,7 @@ index a546c2b..8c37e99 100644
  #if defined(CONFIG_ENC28J60) || defined(CONFIG_ENC28J60_MODULE)
  
  #include <plat/mcspi.h>
-@@ -418,7 +487,15 @@ static int beagle_twl_gpio_setup(struct device *dev,
+@@ -449,7 +518,15 @@ static int beagle_twl_gpio_setup(struct device *dev,
  	mmc[0].gpio_wp = beagle_config.mmc1_gpio_wp;
  	/* gpio + 0 is "mmc0_cd" (input/IRQ) */
  	mmc[0].gpio_cd = gpio + 0;
@@ -104,7 +104,7 @@ index a546c2b..8c37e99 100644
  
  	/*
  	 * TWL4030_GPIO_MAX + 0 == ledA, EHCI nEN_USB_PWR (out, XM active
-@@ -815,6 +892,16 @@ static void __init omap3_beagle_init(void)
+@@ -849,6 +926,16 @@ static void __init omap3_beagle_init(void)
  		gpio_export(162, 1);
  	}
  
@@ -122,5 +122,5 @@ index a546c2b..8c37e99 100644
  	{
  		printk(KERN_INFO "Beagle second expansionboard: initializing touchscreen: tsc2007\n");
 -- 
-1.7.9.5
+1.7.10
 
