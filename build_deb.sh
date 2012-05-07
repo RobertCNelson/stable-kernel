@@ -60,8 +60,6 @@ function git_kernel_stable {
 
 function git_kernel {
 	if [ -f ${LINUX_GIT}/.git/config ] ; then
-		cd ${LINUX_GIT}/
-
 		if [ -f ${LINUX_GIT}/version.sh ] ; then
 			echo ""
 			echo "Error, LINUX_GIT in system.sh is improperly set, do not clone a git tree on top of another.."
@@ -74,6 +72,7 @@ function git_kernel {
 			exit
 		fi
 
+		cd ${LINUX_GIT}/
 		echo "Updating LINUX_GIT tree via: git fetch"
 		git fetch
 		cd -
