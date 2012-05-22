@@ -52,15 +52,13 @@ sakoman () {
 beagle () {
 	echo "Board Patches for: BeagleBoard"
 
-	git am "${DIR}/patches/beagle/expansion/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
-	git am "${DIR}/patches/beagle/expansion/0002-expansion-add-mmc-regulator-and-ds1307-rtc.patch"
-	git am "${DIR}/patches/beagle/expansion/0003-expansion-add-zippy.patch"
-	git am "${DIR}/patches/beagle/expansion/0004-expansion-add-zippy2.patch"
-	git am "${DIR}/patches/beagle/expansion/0005-expansion-add-trainer.patch"
-	git am "${DIR}/patches/beagle/expansion/0006-expansion-add-CircuitCo-ulcd-Support.patch"
-
-#changes need to be ported to the 3.4-rc..
-#	git am "${DIR}/patches/beagle/expansion/0007-expansion-add-wifi.patch"
+	git am "${DIR}/patches/beagle/expansion/0001-Beagle-expansion-add-buddy-param-for-expansionboard-.patch"
+	git am "${DIR}/patches/beagle/expansion/0002-Beagle-expansion-add-zippy.patch"
+	git am "${DIR}/patches/beagle/expansion/0003-Beagle-expansion-add-zippy2.patch"
+	git am "${DIR}/patches/beagle/expansion/0004-Beagle-expansion-add-trainer.patch"
+	git am "${DIR}/patches/beagle/expansion/0005-Beagle-expansion-add-CircuitCo-ulcd-Support.patch"
+	git am "${DIR}/patches/beagle/expansion/0006-Beagle-expansion-add-wifi.patch"
+	git am "${DIR}/patches/beagle/expansion/0007-Beagle-expansion-add-beaglefpga.patch"
 
 	git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 	git am "${DIR}/patches/beagle/0002-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly.patch"
