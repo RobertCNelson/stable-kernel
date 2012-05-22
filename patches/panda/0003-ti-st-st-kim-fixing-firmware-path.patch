@@ -1,15 +1,16 @@
-From 03df53ece9910da6d2cdcf9f9f931d2ac0a86f4e Mon Sep 17 00:00:00 2001
+From e6606f579765adbbb5f5776b4a53875ecad340b5 Mon Sep 17 00:00:00 2001
 From: Ricardo Salveti de Araujo <ricardo.salveti@linaro.org>
 Date: Tue, 25 Oct 2011 10:06:39 +0200
 Subject: [PATCH 3/3] ti-st/st-kim: fixing firmware path
 
 Signed-off-by: Ricardo Salveti de Araujo <ricardo.salveti@linaro.org>
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  drivers/misc/ti-st/st_kim.c |    4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/misc/ti-st/st_kim.c b/drivers/misc/ti-st/st_kim.c
-index 43ef8d1..00c2ecd 100644
+index 7c14f8f..bbbc058 100644
 --- a/drivers/misc/ti-st/st_kim.c
 +++ b/drivers/misc/ti-st/st_kim.c
 @@ -224,7 +224,7 @@ static long read_local_version(struct kim_data_s *kim_gdata, char *bts_scr_name)
@@ -31,5 +32,5 @@ index 43ef8d1..00c2ecd 100644
  	int cmd_size;
  	unsigned long timeout;
 -- 
-1.7.9.5
+1.7.10
 

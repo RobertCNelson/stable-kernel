@@ -1,4 +1,4 @@
-From 09c0419996f2ba6d89a23f3da2847e47275028fb Mon Sep 17 00:00:00 2001
+From 0c5dc54d1c9808b1d4792845a94ee937b1055f13 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 2 Nov 2010 09:59:09 -0500
 Subject: [PATCH] arm: omap: devkit8000: for lcd use samsung_lte_panel
@@ -8,7 +8,7 @@ This was noticed by Robert Skretkowicz
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
  arch/arm/mach-omap2/board-devkit8000.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-devkit8000.c b/arch/arm/mach-omap2/board-devkit8000.c
 index 90154e4..55760a0 100644
@@ -24,5 +24,5 @@ index 90154e4..55760a0 100644
  	.phy.dpi.data_lines     = 24,
  };
 -- 
-1.7.9.5
+1.7.9.1
 

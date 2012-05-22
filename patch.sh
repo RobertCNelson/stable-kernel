@@ -41,42 +41,6 @@ distro () {
 	git am "${DIR}/patches/distro/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 }
 
-omap_cpufreq () {
-	echo "omap-cpufreq"
-	git am "${DIR}/patches/omap_cpufreq/0001-cpufreq-OMAP-cleanup-for-multi-SoC-support-move-into.patch"
-	git am "${DIR}/patches/omap_cpufreq/0002-cpufreq-OMAP-Add-SMP-support-for-OMAP4.patch"
-	git am "${DIR}/patches/omap_cpufreq/0003-cpufreq-OMAP-Enable-all-CPUs-in-shared-policy-mask.patch"
-	git am "${DIR}/patches/omap_cpufreq/0004-cpufreq-OMAP-notify-even-with-bad-boot-frequency.patch"
-	git am "${DIR}/patches/omap_cpufreq/0005-cpufreq-OMAP-move-clk-name-decision-to-init.patch"
-	git am "${DIR}/patches/omap_cpufreq/0006-cpufreq-OMAP-deny-initialization-if-no-mpudev.patch"
-	git am "${DIR}/patches/omap_cpufreq/0007-cpufreq-OMAP-dont-support-freq_table.patch"
-	git am "${DIR}/patches/omap_cpufreq/0008-cpufreq-OMAP-only-supports-OPP-library.patch"
-	git am "${DIR}/patches/omap_cpufreq/0009-cpufreq-OMAP-put-clk-if-cpu_init-failed.patch"
-	git am "${DIR}/patches/omap_cpufreq/0010-cpufreq-OMAP-fix-freq_table-leak.patch"
-	git am "${DIR}/patches/omap_cpufreq/0011-cpufreq-OMAP-fixup-for-omap_device-changes-include-l.patch"
-}
-
-micrel_zippy2 () {
-	echo "Micrel KZ8851 patches for: zippy2"
-	#originaly from:
-	#ftp://www.micrel.com/ethernet/8851/beagle_zippy_patches.tar.gz 137 KB 04/10/2010 12:26:00 AM
-
-	git am "${DIR}/patches/micrel_zippy2/0001-ksz8851-eeprom-93cx6-add-drive_data.patch"
-	git am "${DIR}/patches/micrel_zippy2/0002-ksz8851-eeprom-93cx6-add-eeprom_93cx6_write.patch"
-	git am "${DIR}/patches/micrel_zippy2/0003-ksz8851-read_mac_addr.patch"
-	git am "${DIR}/patches/micrel_zippy2/0004-ksz8851-93cx6-eeprom-access.patch"
-	git am "${DIR}/patches/micrel_zippy2/0005-ks8851.h-it-helps-to-include-the-include-file.patch"
-	git am "${DIR}/patches/micrel_zippy2/0006-ksz8851-move-to-header.patch"
-	git am "${DIR}/patches/micrel_zippy2/0007-ksz8851-move-more-to-header.patch"
-	git am "${DIR}/patches/micrel_zippy2/0008-ksz8851-share-ks8851_tx_hdr-union.patch"
-	git am "${DIR}/patches/micrel_zippy2/0009-ksz8851-add-is_level_irq.patch"
-	git am "${DIR}/patches/micrel_zippy2/0010-ksz8851-turn-off-hardware-interrupt-druing-receive-p.patch"
-	git am "${DIR}/patches/micrel_zippy2/0011-ksz8851-make-sure-is-awake-before-writing-mac.patch"
-	git am "${DIR}/patches/micrel_zippy2/0012-ksz8851-add-mutex-lock-unlock-to-ks.patch"
-	git am "${DIR}/patches/micrel_zippy2/0013-ksz8851-add-ks8851_tx_check.patch"
-	git am "${DIR}/patches/micrel_zippy2/0014-ksz8851-move-ks8851_set_powermode.patch"
-}
-
 sakoman () {
 	echo "Patches from: Sakoman git tree"
 	git am "${DIR}/patches/sakoman/0001-OMAP-DSS2-add-bootarg-for-selecting-svideo.patch"
@@ -88,26 +52,24 @@ sakoman () {
 beagle () {
 	echo "Board Patches for: BeagleBoard"
 
-	git am "${DIR}/patches/beagle/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
-	git am "${DIR}/patches/beagle/0002-expansion-add-mmc-regulator-and-ds1307-rtc.patch"
-	git am "${DIR}/patches/beagle/0003-expansion-add-zippy.patch"
-	git am "${DIR}/patches/beagle/0004-expansion-add-zippy2.patch"
-	git am "${DIR}/patches/beagle/0005-expansion-add-trainer.patch"
-	git am "${DIR}/patches/beagle/0006-expansion-add-ulcd.patch"
-	git am "${DIR}/patches/beagle/0007-expansion-add-wifi.patch"
+	git am "${DIR}/patches/beagle/expansion/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
+	git am "${DIR}/patches/beagle/expansion/0002-expansion-add-mmc-regulator-and-ds1307-rtc.patch"
+	git am "${DIR}/patches/beagle/expansion/0003-expansion-add-zippy.patch"
+	git am "${DIR}/patches/beagle/expansion/0004-expansion-add-zippy2.patch"
+	git am "${DIR}/patches/beagle/expansion/0005-expansion-add-trainer.patch"
+	git am "${DIR}/patches/beagle/expansion/0006-expansion-add-CircuitCo-ulcd-Support.patch"
 
-	git am "${DIR}/patches/beagle/0008-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
-	git am "${DIR}/patches/beagle/0009-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly.patch"
-	git am "${DIR}/patches/beagle/0010-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
-	git am "${DIR}/patches/beagle/0011-default-to-fifo-mode-5-for-old-musb-beagles.patch"
+#changes need to be ported to the 3.4-rc..
+#	git am "${DIR}/patches/beagle/expansion/0007-expansion-add-wifi.patch"
 
-	git am "${DIR}/patches/beagle/0010-beagleboard-fix-uLCD7-support.patch"
-	git am "${DIR}/patches/beagle/0012-backlight-Add-TLC59108-backlight-control-driver.patch"
-	git am "${DIR}/patches/beagle/0013-tlc59108-adjust-for-beagleboard-uLCD7.patch"
+	git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
+	git am "${DIR}/patches/beagle/0002-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly.patch"
+	git am "${DIR}/patches/beagle/0003-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
+	git am "${DIR}/patches/beagle/0004-default-to-fifo-mode-5-for-old-musb-beagles.patch"
+	git am "${DIR}/patches/beagle/0005-omap3_beagle-init-uart2-for-beagle-rev-AX-BX-only.patch"
 
-	#dont push, upstream went a different way..
-	git am "${DIR}/patches/beagle/0012-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
-	git am "${DIR}/patches/beagle/0013-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
+	git am "${DIR}/patches/beagle/0006-backlight-Add-TLC59108-backlight-control-driver.patch"
+	git am "${DIR}/patches/beagle/0007-tlc59108-adjust-for-beagleboard-uLCD7.patch"
 }
 
 devkit8000 () {
@@ -115,35 +77,65 @@ devkit8000 () {
 	git am "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
 }
 
-igep0020 () {
-	echo "Board Patches for: igep0020"
-	git am "${DIR}/patches/igep0020/0001-ARM-OMAP2-nand-Make-board_onenand_init-visible-to-bo.patch"
-	git am "${DIR}/patches/igep0020/0002-OMAP3-igep0020-Add-support-for-Micron-NAND-Flash-sto.patch"
-}
-
-touchbook () {
-	echo "Board Patches for: Touchbook"
-	git am "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
-	git am "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readonly.patch"
-}
-
 panda () {
 	echo "Board Patches for: PandaBoard"
 	git am "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 	git am "${DIR}/patches/panda/0002-panda-enable-bluetooth.patch"
 	git am "${DIR}/patches/panda/0003-ti-st-st-kim-fixing-firmware-path.patch"
-	git am "${DIR}/patches/panda/0001-panda-enable-asoc.patch"
 }
 
 omap_fixes () {
 	echo "omap cherry pick fixes"
 	git am "${DIR}/patches/omap_fixes/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
-#	git am "${DIR}/patches/omap_fixes/0002-Fix-sprz319-erratum-2.1.patch"
-	git am "${DIR}/patches/omap_fixes/0003-ARM-OMAP-AM3517-3505-fix-crash-on-boot-due-to-incorr.patch"
-	git am "${DIR}/patches/omap_fixes/0004-ARM-OMAP4-hwmod-Don-t-wait-for-the-idle-status-if-mo.patch"
-	git am "${DIR}/patches/omap_fixes/0005-ARM-OMAP4-clock-Add-CPU-local-timer-clock-node.patch"
-	git am "${DIR}/patches/omap_fixes/0006-ARM-OMAP3-hwmod-data-disable-multiblock-reads-on-MMC.patch"
-	git am "${DIR}/patches/omap_fixes/0007-OMAP-HWMOD-add-es3plus-to-am36xx-am35xx.patch"
+	git am "${DIR}/patches/omap_fixes/0002-OMAP2-UART-Remove-cpu-checks-for-populating-errata-f.patch"
+	git am "${DIR}/patches/omap_fixes/0003-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
+	git am "${DIR}/patches/omap_fixes/0004-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
+#	git am "${DIR}/patches/omap_fixes/0005-mfd-cpu_is_omap3430-wasnt-defined.patch"
+
+#breaks beagle c4, needs fix..
+#	git am "${DIR}/patches/omap_fixes/0001-Fix-sprz319-erratum-2.1.patch"
+}
+
+omapdrm () {
+	echo "omap testing omapdrm/kms"
+
+	echo "Patches for 3.4-rc1-cma-v24"
+	#git://git.linaro.org/people/mszyprowski/linux-dma-mapping.git 3.4-rc1-cma-v24
+	git am "${DIR}/patches/drm/cma/0001-mm-page_alloc-remove-trailing-whitespace.patch"
+	git am "${DIR}/patches/drm/cma/0002-mm-compaction-introduce-isolate_migratepages_range.patch"
+	git am "${DIR}/patches/drm/cma/0003-mm-compaction-introduce-map_pages.patch"
+	git am "${DIR}/patches/drm/cma/0004-mm-compaction-introduce-isolate_freepages_range.patch"
+	git am "${DIR}/patches/drm/cma/0005-mm-compaction-export-some-of-the-functions.patch"
+	git am "${DIR}/patches/drm/cma/0006-mm-page_alloc-introduce-alloc_contig_range.patch"
+	git am "${DIR}/patches/drm/cma/0007-mm-page_alloc-change-fallbacks-array-handling.patch"
+	git am "${DIR}/patches/drm/cma/0008-mm-mmzone-MIGRATE_CMA-migration-type-added.patch"
+	git am "${DIR}/patches/drm/cma/0009-mm-page_isolation-MIGRATE_CMA-isolation-functions-ad.patch"
+	git am "${DIR}/patches/drm/cma/0010-mm-Serialize-access-to-min_free_kbytes.patch"
+	git am "${DIR}/patches/drm/cma/0011-mm-extract-reclaim-code-from-__alloc_pages_direct_re.patch"
+	git am "${DIR}/patches/drm/cma/0012-mm-trigger-page-reclaim-in-alloc_contig_range-to-sta.patch"
+	git am "${DIR}/patches/drm/cma/0013-drivers-add-Contiguous-Memory-Allocator.patch"
+	git am "${DIR}/patches/drm/cma/0014-X86-integrate-CMA-with-DMA-mapping-subsystem.patch"
+	git am "${DIR}/patches/drm/cma/0015-ARM-integrate-CMA-with-DMA-mapping-subsystem.patch"
+
+	#posted: 13 Mar 2012 for 3.4
+	git am "${DIR}/patches/drm/0001-omap2-add-drm-device.patch"
+
+	#might be merged in 3.4
+	git am "${DIR}/patches/drm/0002-ARM-OMAP2-3-HWMOD-Add-missing-flags-for-dispc-class.patch"
+	git am "${DIR}/patches/drm/0003-ARM-OMAP2-3-HWMOD-Add-missing-flag-for-rfbi-class.patch"
+	git am "${DIR}/patches/drm/0004-ARM-OMAP3-HWMOD-Add-omap_hwmod_class_sysconfig-for-d.patch"
+}
+
+dsp () {
+	echo "dsp patches"
+	git am "${DIR}/patches/dsp/0001-OMAP2-control-new-APIs-to-configure-boot-address-and.patch"
+	git am "${DIR}/patches/dsp/0002-OMAP-dsp-interface-to-control-module-functions.patch"
+	git am "${DIR}/patches/dsp/0003-staging-tidspbridge-use-scm-functions-to-set-boot-ad.patch"
+}
+
+sgx_mainline () {
+	echo "patches needed for external sgx bins"
+	git am "${DIR}/patches/sgx/0001-Revert-drm-kill-drm_sman.patch"
 }
 
 sgx () {
@@ -206,18 +198,15 @@ patch -s -p1 < "${DIR}/patches/sgx/0001-Revert-OMAP-DSS2-remove-update_mode-from
 }
 
 distro
-omap_cpufreq
-micrel_zippy2
 sakoman
 beagle
 devkit8000
-igep0020
-touchbook
 panda
 omap_fixes
-
-#dont push
-sgx
+omapdrm
+dsp
+sgx_mainline
+#sgx
 
 echo "patch.sh ran successful"
 
