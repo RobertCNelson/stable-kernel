@@ -1,20 +1,20 @@
-From ddcb28e5bc5c31e39cac595e8f1c9f370b9385f5 Mon Sep 17 00:00:00 2001
+From af419d643963e6a36d3b59a2973dc12750e32558 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 22 May 2012 15:31:43 -0500
 Subject: [PATCH 6/7] Beagle: expansion: add wifi
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
- arch/arm/mach-omap2/board-omap3beagle.c |  102 +++++++++++++++++++++++++++++++
- 1 file changed, 102 insertions(+)
+ arch/arm/mach-omap2/board-omap3beagle.c |  107 +++++++++++++++++++++++++++++++
+ 1 file changed, 107 insertions(+)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index dbe977f..5cd62b1 100644
+index 38b8c20..abfd96d 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -185,6 +185,71 @@ static struct {
- 	.i2c_settings = EXPANSION_I2C_NONE,
- };
+@@ -188,6 +188,71 @@ static struct {
+ #define OMAP3BEAGLE_GPIO_ZIPPY_MMC_WP 141
+ #define OMAP3BEAGLE_GPIO_ZIPPY_MMC_CD 162
  
 +#if defined(CONFIG_WL12XX) || defined(CONFIG_WL12XX_MODULE)
 +#include <linux/regulator/fixed.h>
@@ -84,10 +84,11 @@ index dbe977f..5cd62b1 100644
  #if defined(CONFIG_ENC28J60) || defined(CONFIG_ENC28J60_MODULE)
  #include <plat/mcspi.h>
  #include <linux/spi/spi.h>
-@@ -433,6 +498,25 @@ static struct omap2_hsmmc_info mmc_zippy[] = {
+@@ -440,6 +505,26 @@ static struct omap2_hsmmc_info mmc_zippy[] = {
+ 	},
  	{}	/* Terminator */
  };
- 
++
 +static struct omap2_hsmmc_info mmcbbt[] = {
 +	{
 +		.mmc		= 1,
@@ -110,17 +111,21 @@ index dbe977f..5cd62b1 100644
  static struct regulator_consumer_supply beagle_vmmc1_supply[] = {
  	REGULATOR_SUPPLY("vmmc", "omap_hsmmc.0"),
  };
-@@ -453,6 +537,9 @@ static int beagle_twl_gpio_setup(struct device *dev,
- 	mmc[0].gpio_cd = gpio + 0;
+@@ -456,6 +541,13 @@ static int beagle_twl_gpio_setup(struct device *dev,
+ 	int r;
  
  	switch (expansion_config.mmc_settings) {
 +	case 2:
++		mmcbbt[0].gpio_wp = beagle_config.mmc1_gpio_wp;
++		/* gpio + 0 is "mmc0_cd" (input/IRQ) */
++		mmcbbt[0].gpio_cd = gpio + 0;
++
 +		omap_hsmmc_late_init(mmcbbt);
 +		break;
  	case 1:
- 		omap_hsmmc_late_init(mmc_zippy);
- 		break;
-@@ -805,6 +892,9 @@ static void __init omap3_beagle_init(void)
+ 		mmc_zippy[0].gpio_wp = beagle_config.mmc1_gpio_wp;
+ 		/* gpio + 0 is "mmc0_cd" (input/IRQ) */
+@@ -821,6 +913,9 @@ static void __init omap3_beagle_init(void)
  		omap_mux_init_gpio(beagle_config.mmc1_gpio_wp, OMAP_PIN_INPUT);
  
  	switch (expansion_config.mmc_settings) {
@@ -130,7 +135,7 @@ index dbe977f..5cd62b1 100644
  	case 1:
  		omap_hsmmc_init(mmc_zippy);
  		break;
-@@ -874,6 +964,18 @@ static void __init omap3_beagle_init(void)
+@@ -890,6 +985,18 @@ static void __init omap3_beagle_init(void)
  		gpio_export(162, 1);
  	}
  

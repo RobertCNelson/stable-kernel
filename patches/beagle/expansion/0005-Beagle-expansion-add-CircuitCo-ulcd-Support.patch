@@ -1,4 +1,4 @@
-From fbe402195708c97efed91ea776594a85d6c523e1 Mon Sep 17 00:00:00 2001
+From 5eb447c8cf304ac5e3996479cd31e35f924b0fab Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 22 May 2012 15:18:27 -0500
 Subject: [PATCH 5/7] Beagle: expansion: add CircuitCo ulcd Support
@@ -24,7 +24,7 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  2 files changed, 160 insertions(+)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index ba5184a..dbe977f 100644
+index bc6549a..38b8c20 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
 @@ -43,6 +43,7 @@
@@ -67,7 +67,7 @@ index ba5184a..dbe977f 100644
  };
  
  static struct {
-@@ -328,9 +335,53 @@ static struct omap_dss_device beagle_tv_device = {
+@@ -331,9 +338,53 @@ static struct omap_dss_device beagle_tv_device = {
  	.phy.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
  };
  
@@ -121,7 +121,7 @@ index ba5184a..dbe977f 100644
  };
  
  static struct omap_dss_board_info beagle_dss_data = {
-@@ -347,6 +398,11 @@ static void __init beagle_display_init(void)
+@@ -350,6 +401,11 @@ static void __init beagle_display_init(void)
  			     "DVI reset");
  	if (r < 0)
  		printk(KERN_ERR "Unable to get DVI reset GPIO\n");
@@ -133,7 +133,7 @@ index ba5184a..dbe977f 100644
  }
  
  #include "sdram-micron-mt46h32m32lf-6.h"
-@@ -506,6 +562,56 @@ static struct i2c_board_info __initdata zippy_i2c2_rtc[] = {
+@@ -517,6 +573,56 @@ static struct i2c_board_info __initdata zippy_i2c2_rtc[] = {
  	},
  };
  
@@ -190,7 +190,7 @@ index ba5184a..dbe977f 100644
  static int __init omap3_beagle_i2c_init(void)
  {
  	omap3_pmic_get_config(&beagle_twldata,
-@@ -518,6 +624,10 @@ static int __init omap3_beagle_i2c_init(void)
+@@ -529,6 +635,10 @@ static int __init omap3_beagle_i2c_init(void)
  	omap3_pmic_init("twl4030", &beagle_twldata);
  
  	switch (expansion_config.i2c_settings) {
@@ -201,7 +201,7 @@ index ba5184a..dbe977f 100644
  	case 1:
  		omap_register_i2c_bus(2, 400, zippy_i2c2_rtc, ARRAY_SIZE(zippy_i2c2_rtc));
  		break;
-@@ -623,6 +733,15 @@ static int __init expansionboard_setup(char *str)
+@@ -634,6 +744,15 @@ static int __init expansionboard_setup(char *str)
  	return 0;
  }
  
@@ -217,8 +217,8 @@ index ba5184a..dbe977f 100644
  static void __init beagle_opp_init(void)
  {
  	int r = 0;
-@@ -677,6 +796,11 @@ static void __init omap3_beagle_init(void)
- 		expansion_config.i2c_settings = EXPANSION_I2C_ZIPPY;
+@@ -693,6 +812,11 @@ static void __init omap3_beagle_init(void)
+ 		//omap_mux_init_gpio(OMAP3BEAGLE_GPIO_ZIPPY_MMC_CD, OMAP_PIN_INPUT);
  	}
  
 +	if (!strcmp(expansionboard2_name, "bbtoys-ulcd"))
@@ -229,7 +229,7 @@ index ba5184a..dbe977f 100644
  	if (beagle_config.mmc1_gpio_wp != -EINVAL)
  		omap_mux_init_gpio(beagle_config.mmc1_gpio_wp, OMAP_PIN_INPUT);
  
-@@ -692,6 +816,10 @@ static void __init omap3_beagle_init(void)
+@@ -708,6 +832,10 @@ static void __init omap3_beagle_init(void)
  
  	gpio_buttons[0].gpio = beagle_config.usr_button_gpio;
  
@@ -240,7 +240,7 @@ index ba5184a..dbe977f 100644
  	platform_add_devices(omap3_beagle_devices,
  			ARRAY_SIZE(omap3_beagle_devices));
  	omap_display_init(&beagle_dss_data);
-@@ -746,6 +874,12 @@ static void __init omap3_beagle_init(void)
+@@ -762,6 +890,12 @@ static void __init omap3_beagle_init(void)
  		gpio_export(162, 1);
  	}
  
@@ -253,7 +253,7 @@ index ba5184a..dbe977f 100644
  	usb_musb_init(NULL);
  	usbhs_init(&usbhs_bdata);
  	omap_nand_flash_init(NAND_BUSWIDTH_16, omap3beagle_nand_partitions,
-@@ -763,6 +897,7 @@ static void __init omap3_beagle_init(void)
+@@ -779,6 +913,7 @@ static void __init omap3_beagle_init(void)
  }
  
  early_param("buddy", expansionboard_setup);
