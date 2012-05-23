@@ -190,6 +190,7 @@ function make_zImage_modules {
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 	if [ -f ./arch/arm/boot/zImage ] ; then
 		cp arch/arm/boot/zImage ${DIR}/deploy/${KERNEL_UTS}.zImage
+		cp .config ${DIR}/deploy/${KERNEL_UTS}.config
 	else
 		echo "Error: make zImage modules failed"
 		exit
