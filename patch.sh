@@ -32,7 +32,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -7
+	git format-patch -18
 	exit
 }
 
@@ -84,10 +84,8 @@ sakoman () {
 	git am "${DIR}/patches/sakoman/0003-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
 }
 
-
 beagle () {
 	echo "Board Patches for: BeagleBoard"
-
 	git am "${DIR}/patches/beagle/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
 	git am "${DIR}/patches/beagle/0002-expansion-add-mmc-regulator-and-ds1307-rtc.patch"
 	git am "${DIR}/patches/beagle/0003-expansion-add-zippy.patch"
@@ -104,6 +102,8 @@ beagle () {
 	git am "${DIR}/patches/beagle/0014-expansion-add-wifi.patch"
 	git am "${DIR}/patches/beagle/0015-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
 	git am "${DIR}/patches/beagle/0016-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
+	git am "${DIR}/patches/beagle/0017-Beagle-expansion-zippy1-2-rework-mmc-i2c-handling.patch"
+	git am "${DIR}/patches/beagle/0018-Beagle-expansion-add-beaglefpga.patch"
 
 }
 
