@@ -1,7 +1,7 @@
-From 7736b7376c4251e6a52010ac22e3c9673a41fba8 Mon Sep 17 00:00:00 2001
+From c470f28a362e1b09db74d567283309e5ad8927b3 Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Fri, 27 Apr 2012 21:30:00 +0200
-Subject: [PATCH 13/13] tlc59108: adjust for beagleboard+uLCD7
+Subject: [PATCH 13/16] tlc59108: adjust for beagleboard+uLCD7
 
 Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
 ---

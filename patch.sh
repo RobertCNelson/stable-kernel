@@ -94,25 +94,22 @@ beagle () {
 	git am "${DIR}/patches/beagle/0004-expansion-add-zippy2.patch"
 	git am "${DIR}/patches/beagle/0005-expansion-add-trainer.patch"
 	git am "${DIR}/patches/beagle/0006-expansion-add-ulcd.patch"
-	git am "${DIR}/patches/beagle/0007-expansion-add-wifi.patch"
-
-	git am "${DIR}/patches/beagle/0008-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
-	git am "${DIR}/patches/beagle/0009-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly.patch"
-	git am "${DIR}/patches/beagle/0010-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
-	git am "${DIR}/patches/beagle/0011-default-to-fifo-mode-5-for-old-musb-beagles.patch"
-
+	git am "${DIR}/patches/beagle/0007-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
+	git am "${DIR}/patches/beagle/0008-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly.patch"
+	git am "${DIR}/patches/beagle/0009-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
 	git am "${DIR}/patches/beagle/0010-beagleboard-fix-uLCD7-support.patch"
+	git am "${DIR}/patches/beagle/0011-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 	git am "${DIR}/patches/beagle/0012-backlight-Add-TLC59108-backlight-control-driver.patch"
 	git am "${DIR}/patches/beagle/0013-tlc59108-adjust-for-beagleboard-uLCD7.patch"
+	git am "${DIR}/patches/beagle/0014-expansion-add-wifi.patch"
+	git am "${DIR}/patches/beagle/0015-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
+	git am "${DIR}/patches/beagle/0016-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
 
-	#dont push, upstream went a different way..
-	git am "${DIR}/patches/beagle/0012-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
-	git am "${DIR}/patches/beagle/0013-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
 }
 
 devkit8000 () {
 	echo "Board Patches for: devkit8000"
-	git am "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
+	git am "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel.patch"
 }
 
 igep0020 () {
@@ -132,7 +129,7 @@ panda () {
 	git am "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 	git am "${DIR}/patches/panda/0002-panda-enable-bluetooth.patch"
 	git am "${DIR}/patches/panda/0003-ti-st-st-kim-fixing-firmware-path.patch"
-	git am "${DIR}/patches/panda/0001-panda-enable-asoc.patch"
+	git am "${DIR}/patches/panda/0004-panda-enable-asoc.patch"
 }
 
 omap_fixes () {
@@ -144,6 +141,11 @@ omap_fixes () {
 	git am "${DIR}/patches/omap_fixes/0005-ARM-OMAP4-clock-Add-CPU-local-timer-clock-node.patch"
 	git am "${DIR}/patches/omap_fixes/0006-ARM-OMAP3-hwmod-data-disable-multiblock-reads-on-MMC.patch"
 	git am "${DIR}/patches/omap_fixes/0007-OMAP-HWMOD-add-es3plus-to-am36xx-am35xx.patch"
+}
+
+led () {
+	echo "led fixes"
+	git am "${DIR}/patches/led/0001-leds-heartbeat-stop-on-shutdown-reboot-or-panic.patch"
 }
 
 sgx () {
@@ -215,6 +217,7 @@ igep0020
 touchbook
 panda
 omap_fixes
+led
 
 #dont push
 sgx

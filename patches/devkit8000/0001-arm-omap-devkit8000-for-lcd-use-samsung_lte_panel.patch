@@ -1,4 +1,4 @@
-From 09c0419996f2ba6d89a23f3da2847e47275028fb Mon Sep 17 00:00:00 2001
+From 937f6af6386c848db617e66b86462436f2e30f32 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 2 Nov 2010 09:59:09 -0500
 Subject: [PATCH] arm: omap: devkit8000: for lcd use samsung_lte_panel
@@ -24,5 +24,5 @@ index 90154e4..55760a0 100644
  	.phy.dpi.data_lines     = 24,
  };
 -- 
-1.7.9.5
+1.7.10
 

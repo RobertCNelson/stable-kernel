@@ -1,7 +1,7 @@
-From 2eb8353e5d6ad3bf3ce7f0e212f647fbb8362ec9 Mon Sep 17 00:00:00 2001
+From 7c9fb543aa8eb4956510d34a2d126f86dae4c924 Mon Sep 17 00:00:00 2001
 From: Koen Kooi <koen@dominion.thruhere.net>
 Date: Fri, 27 Apr 2012 16:57:27 +0200
-Subject: [PATCH 10/13] beagleboard: fix uLCD7 support
+Subject: [PATCH 10/16] beagleboard: fix uLCD7 support
 
 Signed-off-by: Koen Kooi <koen@dominion.thruhere.net>
 ---

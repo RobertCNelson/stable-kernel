@@ -1,7 +1,7 @@
-From 312ee1ae237f52bd1f94e08e48d328d1612a486b Mon Sep 17 00:00:00 2001
+From b662dcac284e2e79bed794587dc0694ed944806e Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Sat, 8 Jan 2011 14:31:37 -0600
-Subject: [PATCH 11/13] default to fifo mode 5, for old musb beagles
+Subject: [PATCH 11/16] default to fifo mode 5, for old musb beagles
 
 The fifo mode 4, 16kb can cause corruption on musb/omap35xx,
 use mode 5, 8kb...
@@ -25,5 +25,5 @@ index 920f04e..66ce5e0 100644
  	|| defined(CONFIG_USB_MUSB_UX500_MODULE)
  static ushort __initdata fifo_mode = 5;
 -- 
-1.7.9.5
+1.7.10
 

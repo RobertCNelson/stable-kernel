@@ -1,7 +1,7 @@
-From eea9c14aedabee529daff0e45f9359850df215ef Mon Sep 17 00:00:00 2001
+From 22d4c26c134dd2b1d8cfb60e8b7cb327cf9854ee Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Sat, 21 Apr 2012 18:23:26 -0500
-Subject: [PATCH] panda enable asoc
+Subject: [PATCH 4/4] panda enable asoc
 
 I applied the ASoC patch v4 (provided by Peter Ujfalusi) with some modification
 to fit your 3.2.15 kernel. Now with your kernel and the ASoC patch, I have a
@@ -1305,5 +1305,5 @@ index 0000000..231e728
 +
 +#endif
 -- 
-1.7.9.5
+1.7.10
 

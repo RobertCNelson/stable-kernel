@@ -1,7 +1,7 @@
-From 3bec68a6e77311064e5274284dce131fa3891bf0 Mon Sep 17 00:00:00 2001
+From 241f61b8739e30a1585e5535ddad1ac4df6a3b5b Mon Sep 17 00:00:00 2001
 From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
 Date: Mon, 1 Aug 2011 18:25:11 +0530
-Subject: [PATCH 12/13] backlight: Add TLC59108 backlight control driver
+Subject: [PATCH 12/16] backlight: Add TLC59108 backlight control driver
 
 This patch adds support for I2C configurable TLC59108 backlight
 control driver.

@@ -1,7 +1,7 @@
-From 19f58703c7177129a5b3f4c05a2470e85a0c58f0 Mon Sep 17 00:00:00 2001
+From aae330d291b60d2ab9507c8fb77c7454492f37aa Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 3 Jan 2012 11:03:32 -0600
-Subject: [PATCH 13/13] ASoC: omap: convert per-board modules to platform
+Subject: [PATCH 16/16] ASoC: omap: convert per-board modules to platform
  drivers
 
 This converts the per-board modules to platform drivers for a
@@ -1115,5 +1115,5 @@ index 7641a7f..8db8e10 100644
 -
 +MODULE_ALIAS("platform:zoom2-soc-audio");
 -- 
-1.7.9.5
+1.7.10
 

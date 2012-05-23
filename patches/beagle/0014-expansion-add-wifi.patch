@@ -1,7 +1,7 @@
-From 31285130fedbd6e72a72b2f41f1b325c54f84982 Mon Sep 17 00:00:00 2001
+From 04f8c30ecd7a60fb1b3b1f5a84bb6e9607e6f3ac Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Mon, 16 Apr 2012 10:56:17 -0500
-Subject: [PATCH 07/13] expansion: add wifi
+Subject: [PATCH 14/16] expansion: add wifi
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---

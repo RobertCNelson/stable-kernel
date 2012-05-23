@@ -1,7 +1,7 @@
-From f8136e40f703523304176ada9f4dfb4c37025ab6 Mon Sep 17 00:00:00 2001
+From 912acb1923b41a496cfd6943a9441a7192fa2410 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 3 Jan 2012 11:06:07 -0600
-Subject: [PATCH 12/13] ASoC: omap: add MODULE_ALIAS to mcbsp and pcm drivers
+Subject: [PATCH 15/16] ASoC: omap: add MODULE_ALIAS to mcbsp and pcm drivers
 
 This adds MODULE_ALIAS directives to the omap-mcbsp-dai and
 omap-pcm-audio drivers so they can be auto-loaded when platform
@@ -33,5 +33,5 @@ index 6ede7dc..d5cffcf 100644
  MODULE_LICENSE("GPL");
 +MODULE_ALIAS("platform:omap-pcm-audio");
 -- 
-1.7.9.5
+1.7.10
 

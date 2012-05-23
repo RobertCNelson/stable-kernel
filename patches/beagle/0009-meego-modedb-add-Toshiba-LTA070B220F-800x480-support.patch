@@ -1,7 +1,7 @@
-From e4530cf3139f96d814e095a764f9b914332cc3ee Mon Sep 17 00:00:00 2001
+From 5683bdf835b9bd99637d1905735574ebbd7fff9c Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Wed, 23 Mar 2011 08:37:54 -0500
-Subject: [PATCH 10/13] meego: modedb add Toshiba LTA070B220F 800x480 support
+Subject: [PATCH 09/16] meego: modedb add Toshiba LTA070B220F 800x480 support
 
  from http://wiki.meego.com/ARM/Meego_on_Beagleboard_from_scratch
 
@@ -26,5 +26,5 @@ index 5b686de..69ad1ec 100644
  
  #ifdef CONFIG_FB_MODE_HELPERS
 -- 
-1.7.9.5
+1.7.10
 
