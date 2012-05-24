@@ -133,6 +133,10 @@ sgx_mainline () {
 	git am "${DIR}/patches/sgx/0001-Revert-drm-kill-drm_sman.patch"
 }
 
+led () {
+	git am "${DIR}/patches/led/0001-leds-heartbeat-stop-on-shutdown-reboot-or-panic.patch"
+}
+
 sgx () {
 echo "merge in ti sgx modules"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
@@ -201,6 +205,7 @@ omap_fixes
 omapdrm
 dsp
 sgx_mainline
+led
 #sgx
 
 echo "patch.sh ran successful"
