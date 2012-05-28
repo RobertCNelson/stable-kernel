@@ -104,7 +104,7 @@ beagle () {
 	git am "${DIR}/patches/beagle/0016-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
 	git am "${DIR}/patches/beagle/0017-Beagle-expansion-zippy1-2-rework-mmc-i2c-handling.patch"
 	git am "${DIR}/patches/beagle/0018-Beagle-expansion-add-beaglefpga.patch"
-
+	git am "${DIR}/patches/beagle/0019-Enable-buddy-spidev.patch"
 }
 
 devkit8000 () {
