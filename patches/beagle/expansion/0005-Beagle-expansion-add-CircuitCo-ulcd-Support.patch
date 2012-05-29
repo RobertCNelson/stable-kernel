@@ -1,7 +1,7 @@
-From 1dafe5228eab72de252b8b51775d2736cd0b06ab Mon Sep 17 00:00:00 2001
+From 9481de9f68f9f34e27eb0e3745d3b9d3d3fb1988 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 22 May 2012 15:18:27 -0500
-Subject: [PATCH 5/7] Beagle: expansion: add CircuitCo ulcd Support
+Subject: [PATCH 5/8] Beagle: expansion: add CircuitCo ulcd Support
 
 This of a cleanup, squashed both ulcd commits into one:
 

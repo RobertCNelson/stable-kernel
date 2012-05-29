@@ -1,7 +1,7 @@
-From 10171dce2f9ec8265fb0fcf1cbb21172142d694f Mon Sep 17 00:00:00 2001
+From 806b0761ea1e3e90ce4377f4f486a49335f12568 Mon Sep 17 00:00:00 2001
 From: Bas van der Doorn <bas@doornvd.com>
 Date: Sat, 19 May 2012 17:09:28 +0200
-Subject: [PATCH 7/7] Beagle: expansion: add beaglefpga
+Subject: [PATCH 7/8] Beagle: expansion: add beaglefpga
 
 Added SPI dev and McBSP 3 mux when FPGA is detected
 

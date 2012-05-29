@@ -32,7 +32,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -5
+	git format-patch -8
 	exit
 }
 
@@ -59,6 +59,7 @@ beagle () {
 	git am "${DIR}/patches/beagle/expansion/0005-Beagle-expansion-add-CircuitCo-ulcd-Support.patch"
 	git am "${DIR}/patches/beagle/expansion/0006-Beagle-expansion-add-wifi.patch"
 	git am "${DIR}/patches/beagle/expansion/0007-Beagle-expansion-add-beaglefpga.patch"
+	git am "${DIR}/patches/beagle/expansion/0008-Enable-buddy-spidev.patch"
 
 	git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 	git am "${DIR}/patches/beagle/0002-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly.patch"

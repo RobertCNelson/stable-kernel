@@ -1,7 +1,7 @@
-From f7a892d3248436c7a5a7025ea004ad747c4cc135 Mon Sep 17 00:00:00 2001
+From 127593d9801b5bdfc7845cbc186f95ba9efe3bc5 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 22 May 2012 15:11:30 -0500
-Subject: [PATCH 4/7] Beagle: expansion: add trainer
+Subject: [PATCH 4/8] Beagle: expansion: add trainer
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---

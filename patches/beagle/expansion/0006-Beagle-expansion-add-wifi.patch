@@ -1,7 +1,7 @@
-From 00baa23d7a88459e46ee4287c44bdb6334ea2130 Mon Sep 17 00:00:00 2001
+From 60de897ff4ca5922e0017e0fe43741352d5d4c8a Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 22 May 2012 15:31:43 -0500
-Subject: [PATCH 6/7] Beagle: expansion: add wifi
+Subject: [PATCH 6/8] Beagle: expansion: add wifi
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
