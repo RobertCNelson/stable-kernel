@@ -1,4 +1,4 @@
-From 051221b9232f71eb5d709b0f77f35df16bf430f1 Mon Sep 17 00:00:00 2001
+From c4202c86cdd53c91744d652ec0e16fd28ff6d6f3 Mon Sep 17 00:00:00 2001
 From: Archit Taneja <archit@ti.com>
 Date: Tue, 22 Mar 2011 06:33:36 -0500
 Subject: [PATCH] OMAP4: DSS2: Register configuration changes for DSI
@@ -236,5 +236,5 @@ index 12e9c4e..c5c0b40 100644
  
  /* DSS register field id */
 -- 
-1.7.5.4
+1.7.1
 

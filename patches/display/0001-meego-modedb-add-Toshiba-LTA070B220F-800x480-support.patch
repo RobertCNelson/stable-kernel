@@ -1,9 +1,9 @@
-From b1dd05d8460dd4a376fcb0e8ef236fbccca46087 Mon Sep 17 00:00:00 2001
+From a406db68b211add3c2da1a04ad75e1de5cc28035 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Wed, 23 Mar 2011 08:37:54 -0500
 Subject: [PATCH] meego: modedb add Toshiba LTA070B220F 800x480 support
 
-from http://wiki.meego.com/ARM/Meego_on_Beagleboard_from_scratch
+from: http://wiki.meego.com/ARM/Meego_on_Beagleboard_from_scratch
 
 Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
 ---
@@ -11,10 +11,10 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  1 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 48c3ea8..aa154e9 100644
+index b320a30..828f711 100644
 --- a/drivers/video/modedb.c
 +++ b/drivers/video/modedb.c
-@@ -289,6 +289,10 @@ static const struct fb_videomode modedb[] = {
+@@ -293,6 +293,10 @@ static const struct fb_videomode modedb[] = {
  	/* 864x480 @ 60 Hz, 35.15 kHz hsync */
  	{ NULL, 60, 864, 480, 27777, 1, 1, 1, 1, 0, 0,
  		0, FB_VMODE_NONINTERLACED },
@@ -26,5 +26,5 @@ index 48c3ea8..aa154e9 100644
  
  #ifdef CONFIG_FB_MODE_HELPERS
 -- 
-1.7.5.4
+1.7.1
 

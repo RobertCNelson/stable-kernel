@@ -1,4 +1,4 @@
-From 57188c545e53405362e66c3837687241bb904ea9 Mon Sep 17 00:00:00 2001
+From 7b57c11f4cf05d5c08d30398300d91b19aad9272 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Wed, 17 Nov 2010 08:39:00 -0600
 Subject: [PATCH] staging add airlink awll7025 id for rt2860
@@ -9,10 +9,10 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  1 files changed, 1 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/staging/rt2860/usb_main_dev.c b/drivers/staging/rt2860/usb_main_dev.c
-index 322bf49..48f8ef4 100644
+index 1252392..dafff66 100644
 --- a/drivers/staging/rt2860/usb_main_dev.c
 +++ b/drivers/staging/rt2860/usb_main_dev.c
-@@ -110,6 +110,7 @@ struct usb_device_id rtusb_usb_id[] = {
+@@ -108,6 +108,7 @@ struct usb_device_id rtusb_usb_id[] = {
  	{USB_DEVICE(0x0411, 0x00e8)},	/* Buffalo WLI-UC-G300N */
  	{USB_DEVICE(0x050d, 0x815c)},	/* Belkin F5D8053 */
  	{USB_DEVICE(0x100D, 0x9031)},	/* Motorola 2770 */
@@ -21,5 +21,5 @@ index 322bf49..48f8ef4 100644
  #ifdef RT3070
  	{USB_DEVICE(0x148F, 0x3070)},	/* Ralink 3070 */
 -- 
-1.7.5.4
+1.7.1
 

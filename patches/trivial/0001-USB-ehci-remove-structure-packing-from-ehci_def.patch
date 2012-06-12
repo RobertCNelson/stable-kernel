@@ -1,4 +1,4 @@
-From 7655d9b6aca72710286fb4b624b98fb795420ad5 Mon Sep 17 00:00:00 2001
+From 139540170d9d9b7ead3caaf540f161756b356d56 Mon Sep 17 00:00:00 2001
 From: Rabin Vincent <rabin@rab.in>
 Date: Wed, 27 Apr 2011 21:07:28 +0530
 Subject: [PATCH] USB: ehci: remove structure packing from ehci_def
@@ -52,5 +52,5 @@ index e49dfd4..7879943 100644
  #ifdef CONFIG_EARLY_PRINTK_DBGP
  #include <linux/init.h>
 -- 
-1.7.5.4
+1.7.4.1
 
