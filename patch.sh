@@ -22,6 +22,8 @@
 
 # Split out, so build_kernel.sh and build_deb.sh can share..
 
+# DIR=`pwd`
+
 echo "Starting patch.sh"
 
 function bugs_trivial {

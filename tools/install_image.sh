@@ -26,43 +26,77 @@ unset ZRELADDR
 
 BOOT_PARITION="1"
 
-#FIXME: going to have to get creative to autodetect this one...
-ROOTFS_PARTITION="5"
-
 DIR=$PWD
 
 . version.sh
+
+backup_config () {
+	if [ -f "${DIR}/patches/previous_defconfig" ] ; then
+		rm -f "${DIR}/patches/previous_defconfig" || true
+	fi
+	if [ -f "${DIR}/patches/current_defconfig" ] ; then
+		mv "${DIR}/patches/current_defconfig" "${DIR}/patches/previous_defconfig"
+	fi
+	cp "${DIR}/KERNEL/.config" "${DIR}/patches/current_defconfig"
+	echo "-----------------------------"
+	echo "This script has finished successfully..."
+}
 
 mmc_write_modules () {
 	echo "Installing ${KERNEL_UTS}-modules.tar.gz to rootfs partition"
 	echo "-----------------------------"
 
-	if sudo mount ${MMC}${PARTITION_PREFIX}${ROOTFS_PARTITION} "${DIR}/deploy/disk/" ; then
-		if [ -d "${DIR}/deploy/disk/lib/modules/${KERNEL_UTS}" ] ; then
-			sudo rm -rf ${DIR}/deploy/disk/lib/modules/${KERNEL_UTS} || true
+	if [ -d "${DIR}/deploy/disk/lib/modules/${KERNEL_UTS}" ] ; then
+		sudo rm -rf ${DIR}/deploy/disk/lib/modules/${KERNEL_UTS} || true
+	fi
+
+	sudo tar xf "${DIR}/deploy/${KERNEL_UTS}-modules.tar.gz" -C "${DIR}/deploy/disk"
+}
+
+mmc_find_rootfs () {
+	echo "Starting search for rootfs"
+	echo "-----------------------------"
+	NUMBER=$(LC_ALL=C sudo fdisk -l 2>/dev/null | grep "^${MMC}" | grep "Linux" | grep -v "swap" | wc -l)
+
+	for (( c=1; c<=${NUMBER}; c++ ))
+	do
+		PART=$(LC_ALL=C sudo fdisk -l 2>/dev/null | grep "^${MMC}" | grep "Linux" | grep -v "swap" | head -${c} | tail -1 | awk '{print $1}')
+		echo "Trying ${PART}"
+
+		if [ ! -d "${DIR}/deploy/disk/" ] ; then
+			mkdir -p "${DIR}/deploy/disk/"
 		fi
 
-		sudo tar xfv "${DIR}/deploy/${KERNEL_UTS}-modules.tar.gz" -C "${DIR}/deploy/disk"
+		if sudo mount ${PART} "${DIR}/deploy/disk/" ; then
 
-		cd "${DIR}/deploy/disk"
-		sync
-		sync
-		cd -
-		sudo umount "${DIR}/deploy/disk" || true
+			if [ -f "${DIR}/deploy/disk/etc/fstab" ] ; then
+				echo "Found /etc/fstab, using ${PART}"
+				echo "-----------------------------"
+				mmc_write_modules
+			fi
 
-		echo "-----------------------------"
-		echo "This script has finished successfully..."
-	else
-		echo "-----------------------------"
-		echo "ERROR: Unable to mount ${MMC}${PARTITION_PREFIX}${ROOTFS_PARTITION} at "${DIR}/deploy/disk/" to copy modules..."
-		echo "Please retry running the script, sometimes rebooting your system helps."
-		echo "-----------------------------"
-	fi
+			cd "${DIR}/deploy/disk"
+			sync
+			sync
+			cd -
+			sudo umount "${DIR}/deploy/disk" || true
+
+		else
+			echo "-----------------------------"
+			echo "Trying Next Partition"
+		fi
+	done
+
+	backup_config
 }
 
 mmc_write_boot () {
 	echo "Installing ${KERNEL_UTS} to boot partition"
 	echo "-----------------------------"
+
+	if [ ! -d "${DIR}/deploy/disk/" ] ; then
+		mkdir -p "${DIR}/deploy/disk/"
+	fi
 
 	if sudo mount -t vfat ${MMC}${PARTITION_PREFIX}${BOOT_PARITION} "${DIR}/deploy/disk/" ; then
 		if [ -f "${DIR}/deploy/disk/uImage_bak" ] ; then
@@ -71,16 +105,25 @@ mmc_write_boot () {
 
 		if [ -f "${DIR}/deploy/disk/uImage" ] ; then
 			sudo mv "${DIR}/deploy/disk/uImage" "${DIR}/deploy/disk/uImage_bak"
+			sudo mkimage -A arm -O linux -T kernel -C none -a ${ZRELADDR} -e ${ZRELADDR} -n ${KERNEL_UTS} -d "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/uImage"
 		fi
 
-		sudo mkimage -A arm -O linux -T kernel -C none -a ${ZRELADDR} -e ${ZRELADDR} -n ${KERNEL_UTS} -d "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/uImage"
+		if [ -f "${DIR}/deploy/disk/zImage_bak" ] ; then
+			sudo rm -f "${DIR}/deploy/disk/zImage_bak" || true
+		fi
+
+		if [ -f "${DIR}/deploy/disk/zImage" ] ; then
+			sudo mv "${DIR}/deploy/disk/zImage" "${DIR}/deploy/disk/zImage_bak"
+		fi
+
+		sudo cp -v "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/zImage"
 
 		cd "${DIR}/deploy/disk"
 		sync
 		sync
 		cd -
 		sudo umount "${DIR}/deploy/disk" || true
-		mmc_write_modules
+		mmc_find_rootfs
 	else
 		echo "-----------------------------"
 		echo "ERROR: Unable to mount ${MMC}${PARTITION_PREFIX}${BOOT_PARITION} at "${DIR}/deploy/disk/" to copy uImage..."
