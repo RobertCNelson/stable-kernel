@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Linux/arm 2.6.39.3 Kernel Configuration
-# Sun Mar 25 13:48:25 2012
+# Mon Jun 11 19:56:14 2012
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y

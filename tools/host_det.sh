@@ -95,6 +95,13 @@ function debian_regs
 unset PACKAGE
 unset APT
 
+if [ ! $(dpkg -l | grep build-essential | awk '{print $2}') ] ; then
+	echo "Missing build-essential"
+	UPACKAGE="build-essential "
+	DPACKAGE="build-essential "
+	APT=1
+fi
+
 if [ ! $(which mkimage) ];then
  echo "Missing uboot-mkimage"
  UPACKAGE="u-boot-tools "
@@ -109,17 +116,20 @@ if [ ! $(which ccache) ];then
  APT=1
 fi
 
-if [ ! -f /usr/lib/libncurses.so ] ; then
-	ARCH=$(uname -m)
-	if [ "-${ARCH}-" == "-i686-" ] ; then
- 		ARCH="i386"
-	fi
-	if [ ! -f /usr/lib/${ARCH}-linux-gnu/libncurses.so ] ; then
-		echo "Missing ncurses"
-		UPACKAGE+="libncurses5-dev "
-		DPACKAGE+="libncurses5-dev "
-		APT=1
-	fi
+#Note: Without dpkg-dev from build-essential, this can be a false positive
+MULTIARCHLIB="/usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`"
+
+#oneiric is multiarch, but libncurses.so is under /usr/lib
+CHECK_ONEIRIC=$(lsb_release -c | grep oneiric | awk '{print $2}' 2>/dev/null)
+if [ "x${CHECK_ONEIRIC}" == "xoneiric" ] ; then
+	MULTIARCHLIB="/usr/lib/"
+fi
+
+if [ ! -f ${MULTIARCHLIB}/libncurses.so ] ; then
+	echo "Missing ncurses"
+	UPACKAGE+="libncurses5-dev "
+	DPACKAGE+="libncurses5-dev "
+	APT=1
 fi
 
 if [ "${APT}" ];then
@@ -131,6 +141,7 @@ if [ "${APT}" ];then
 fi
 }
 
+LC_ALL=C git --version
 
 BUILD_HOST=${BUILD_HOST:="$( detect_host )"}
 info "Detected build host [$BUILD_HOST]"
