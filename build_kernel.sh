@@ -230,13 +230,9 @@ function make_headers_pkg {
 if [ -e ${DIR}/system.sh ]; then
   . system.sh
   . version.sh
-	GCC="gcc"
-	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-		GCC="${GCC_OVERRIDE}"
-	fi
-	echo ""
-	echo "Using : $(LC_ALL=C ${CC}${GCC} --version)"
-	echo ""
+  echo ""
+  echo "Using : $(LC_ALL=C ${CC}gcc --version)"
+  echo ""
 
 if [ "${LATEST_GIT}" ] ; then
 	echo ""
@@ -254,9 +250,6 @@ fi
 #  bisect_kernel
   copy_defconfig
   make_menuconfig
-	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-		sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
-	fi
 	make_zImage_modules
 if [ "${BUILD_UIMAGE}" ] ; then
 	make_uImage
@@ -268,9 +261,6 @@ else
 fi
 	make_modules_pkg
 	make_headers_pkg
-	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-		sed -i -e 's:CROSS_COMPILE)'$GCC_OVERRIDE':CROSS_COMPILE)gcc:g' ${DIR}/KERNEL/Makefile
-	fi
 else
   echo ""
   echo "ERROR: Missing (your system) specific system.sh, please copy system.sh.sample to system.sh and edit as needed."
