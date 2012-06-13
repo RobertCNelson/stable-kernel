@@ -51,6 +51,15 @@ mmc_write_modules () {
 	fi
 
 	sudo tar xf "${DIR}/deploy/${KERNEL_UTS}-modules.tar.gz" -C "${DIR}/deploy/disk"
+
+	GFX=$(ls "${DIR}/deploy/" | grep GFX)
+	if [ "x${GFX}" != "x" ] ; then
+		if [ -d "${DIR}/deploy/disk/opt/sgx" ] ; then
+			sudo rm -rf "${DIR}/deploy/disk/opt/sgx"
+		fi
+		mkdir -p "${DIR}/deploy/disk/opt/sgx"
+		sudo cp -v "${DIR}/deploy/${GFX}" "${DIR}/deploy/disk/opt/"
+	fi
 }
 
 mmc_find_rootfs () {
