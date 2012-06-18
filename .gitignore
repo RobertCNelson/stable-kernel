@@ -12,3 +12,5 @@ Graphics_SDK_setuplinux_*.bin
 patches/patch-*.bz2
 patches/current_defconfig
 patches/previous_defconfig
+
+ti-sdk-pvr
