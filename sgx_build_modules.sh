@@ -20,14 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2012.06-0"
+VERSION="v2012.06-1"
 
 unset DIR
 
 DIR=$PWD
 
-SDK="4.06.00.02"
-SDK_DIR="4_06_00_02"
+SDK="4.06.00.03"
+SDK_DIR="4_06_00_03"
 SGX_SHA="origin/${SDK}"
 
 set_sgx_make_vars () {
@@ -88,19 +88,33 @@ copy_sgx_binaries () {
 		if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/tools" ] ; then
 			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/tools" || true
 		fi
-		cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/tools" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+
+		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/tools" ] ; then
+			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/tools" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+		else
+			echo "SGX: missing tools dir, did you get the FULL release"
+		fi
 
 		if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es3.x" ] ; then
 			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es3.x" || true
 		fi
-		cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es3.x" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+
+		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es3.x" ] ; then
+			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es3.x" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+		else
+			echo "SGX: missing gfx_rel_es3.x dir, did you get the FULL release"
+		fi
 
 		if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es5.x" ] ; then
 			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es5.x" || true
 		fi
-		cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es5.x" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
 
-		#From the full sdk
+		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es5.x" ] ; then
+			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es5.x" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+		else
+			echo "SGX: missing gfx_rel_es5.x dir, did you get the FULL release"
+		fi
+
 		if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/GFX_Linux_SDK" ] ; then
 			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/GFX_Linux_SDK" || true
 		fi
@@ -170,8 +184,7 @@ file_pvr_startup () {
 
 	/usr/bin/pvrsrvinit
 
-__EOF__
-
+	__EOF__
 }
 
 file_install_sgx () {
@@ -249,10 +262,9 @@ cat > "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
 	chmod +x /etc/init.d/pvr_init
 	update-rc.d pvr_init defaults
 
-__EOF__
+	__EOF__
 
 	chmod +x "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh"
-
 }
 
 file_run_sgx () {
@@ -274,10 +286,9 @@ file_run_sgx () {
 
 	/etc/init.d/pvr_init restart
 
-__EOF__
+	__EOF__
 
 	chmod +x "${DIR}/ti-sdk-pvr/pkg/run-sgx.sh"
-
 }
 
 mv_modules_libs_bins () {
@@ -307,6 +318,16 @@ mv_modules_libs_bins () {
 	mv ./xgle* ./usr/bin/${CORE}.0/ || true
 }
 
+gfx_rel_x () {
+	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x" ] ; then
+		cd "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x"
+		mv_modules_libs_bins
+		tar czf "${DIR}/ti-sdk-pvr/pkg"/gfx_rel_${CORE}.tar.gz *
+	else
+		echo "SGX: missing gfx_rel_${CORE}.x dir, did you get the FULL release"
+	fi
+}
+
 pkg_modules () {
 	if [ -d "${DIR}/ti-sdk-pvr/pkg/" ] ; then
 		rm -rf "${DIR}/ti-sdk-pvr/pkg" || true
@@ -314,14 +335,10 @@ pkg_modules () {
 	mkdir "${DIR}/ti-sdk-pvr/pkg"
 
 	CORE="es3"
-	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x"
-	mv_modules_libs_bins
-	tar czf "${DIR}/ti-sdk-pvr/pkg"/gfx_rel_${CORE}.tar.gz *
+	gfx_rel_x
 
 	CORE="es5"
-	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x"
-	mv_modules_libs_bins
-	tar czf "${DIR}/ti-sdk-pvr/pkg"/gfx_rel_${CORE}.tar.gz *
+	gfx_rel_x
 }
 
 pkg_helpers () {
