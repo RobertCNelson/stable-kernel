@@ -370,6 +370,64 @@ pkg_up () {
 	cd ${DIR}/
 }
 
+
+pkg_up_examples () {
+	OGLES="GFX_Linux_SDK/OGLES/SDKPackage"
+	OGLES2="GFX_Linux_SDK/OGLES2/SDKPackage"
+	OVG="GFX_Linux_SDK/OVG/SDKPackage"
+
+	if [ -d "${DIR}/ti-sdk-pvr/examples/" ] ; then
+		rm -rf "${DIR}/ti-sdk-pvr/examples" || true
+	fi
+	mkdir "${DIR}/ti-sdk-pvr/examples"
+
+	if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK" ] ; then
+		echo "Copying SDK example appications..."
+
+		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OGLES}/Binaries/" ] ; then
+			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OGLES}/Binaries/"
+			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OGLES}/Binaries/" "${DIR}/ti-sdk-pvr/examples/${OGLES}/"
+		fi
+
+		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OGLES2}/Binaries/" ] ; then
+			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OGLES2}/Binaries/"
+			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OGLES2}/Binaries/" "${DIR}/ti-sdk-pvr/examples/${OGLES2}/"
+		fi
+
+		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OVG}/Binaries/" ] ; then
+			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OVG}/Binaries/"
+			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OVG}/Binaries/" "${DIR}/ti-sdk-pvr/examples/${OVG}/"
+		fi
+
+		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK/ti-components/" ] ; then
+			mkdir -p "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/ti-components/"
+			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK/ti-components/" "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/"
+		fi
+
+		echo "taring SDK example files for use on the OMAP board"
+
+		echo "removing windows binaries"
+		find "${DIR}/ti-sdk-pvr/examples" -name "*.exe" -exec rm -rf {} \;
+		find "${DIR}/ti-sdk-pvr/examples" -name "*.dll" -exec rm -rf {} \;
+
+		cd "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK"
+		tar czf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK"/OGLES.tar.gz ./OGLES
+		rm -rf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/OGLES" || true
+		tar czf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK"/OGLES2.tar.gz ./OGLES2
+		rm -rf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/OGLES2" || true
+		tar czf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK"/OVG.tar.gz ./OVG
+		rm -rf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/OVG" || true
+
+		cd "${DIR}/ti-sdk-pvr/examples/"
+		tar czfv ${DIR}/deploy/GFX_Linux_${SDK}_examples.tar.gz ./GFX_Linux_SDK
+		echo "SGX examples are in: deploy/GFX_Linux_${SDK}_examples.tar.gz"
+		cd ${DIR}
+
+	else
+		echo "SGX: missing GFX_Linux_SDK dir, did you get the FULL release"
+	fi
+}
+
 if [ -e ${DIR}/system.sh ] ; then
 	source system.sh
 	source version.sh
@@ -391,6 +449,16 @@ if [ -e ${DIR}/system.sh ] ; then
 	pkg_helpers
 	pkg_install_script
 	pkg_up
+	pkg_up_examples
+
+	#Disable when debugging...
+	if [ -d "${DIR}/ti-sdk-pvr/pkg/" ] ; then
+		rm -rf "${DIR}/ti-sdk-pvr/pkg" || true
+	fi
+	if [ -d "${DIR}/ti-sdk-pvr/examples/" ] ; then
+		rm -rf "${DIR}/ti-sdk-pvr/examples" || true
+	fi
+
 else
 	echo ""
 	echo "ERROR: Missing (your system) specific system.sh, please copy system.sh.sample to system.sh and edit as needed."
