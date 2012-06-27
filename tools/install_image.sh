@@ -52,13 +52,13 @@ mmc_write_modules () {
 
 	sudo tar xf "${DIR}/deploy/${KERNEL_UTS}-modules.tar.gz" -C "${DIR}/deploy/disk"
 
-	GFX=$(ls "${DIR}/deploy/" | grep GFX)
+	GFX=$(ls "${DIR}/deploy/" | grep GFX | head -n 1)
 	if [ "x${GFX}" != "x" ] ; then
 		if [ -d "${DIR}/deploy/disk/opt/sgx" ] ; then
 			sudo rm -rf "${DIR}/deploy/disk/opt/sgx"
 		fi
 		mkdir -p "${DIR}/deploy/disk/opt/sgx"
-		sudo cp -v "${DIR}/deploy/${GFX}" "${DIR}/deploy/disk/opt/"
+		sudo cp -uv "${DIR}/deploy/"GFX* "${DIR}/deploy/disk/opt/"
 	fi
 }
 
