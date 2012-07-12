@@ -32,7 +32,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -18
+	git format-patch -18 -o ${DIR}/patches/
 	exit
 }
 
@@ -105,6 +105,7 @@ beagle () {
 	git am "${DIR}/patches/beagle/0017-Beagle-expansion-zippy1-2-rework-mmc-i2c-handling.patch"
 	git am "${DIR}/patches/beagle/0018-Beagle-expansion-add-beaglefpga.patch"
 	git am "${DIR}/patches/beagle/0019-Enable-buddy-spidev.patch"
+	git am "${DIR}/patches/beagle/0020-zeroMAP-Open-your-eyes.patch"
 }
 
 devkit8000 () {

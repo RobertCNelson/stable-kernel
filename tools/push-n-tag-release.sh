@@ -27,18 +27,17 @@ unset NO_DEVTMPS
 DIR=$PWD
 
 if [ -e ${DIR}/version.sh ]; then
+	unset STABLE_PATCH
 	. version.sh
 
 	if [ "${STABLE_PATCH}" ] ; then
 		git commit -a -m "${KERNEL_REL}.${STABLE_PATCH}-${BUILD} release" -s
 		git tag -a "${KERNEL_REL}.${STABLE_PATCH}-${BUILD}" -m "${KERNEL_REL}.${STABLE_PATCH}-${BUILD}"
-		git push origin --tags
-		git push origin
 	else
 		git commit -a -m "${KERNEL_REL}-${BUILD} release" -s
 		git tag -a "${KERNEL_REL}-${BUILD}" -m "${KERNEL_REL}-${BUILD}"
-		git push origin --tags
-		git push origin
 	fi
+	git push origin
+	git push origin --tags
 fi
 
