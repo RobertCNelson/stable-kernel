@@ -69,6 +69,7 @@ beagle () {
 
 	git am "${DIR}/patches/beagle/0006-backlight-Add-TLC59108-backlight-control-driver.patch"
 	git am "${DIR}/patches/beagle/0007-tlc59108-adjust-for-beagleboard-uLCD7.patch"
+	git am "${DIR}/patches/beagle/0008-zeroMAP-Open-your-eyes.patch"
 }
 
 devkit8000 () {

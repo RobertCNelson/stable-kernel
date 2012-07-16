@@ -57,7 +57,7 @@ mmc_write_modules () {
 		if [ -d "${DIR}/deploy/disk/opt/sgx" ] ; then
 			sudo rm -rf "${DIR}/deploy/disk/opt/sgx"
 		fi
-		mkdir -p "${DIR}/deploy/disk/opt/sgx"
+		sudo mkdir -p "${DIR}/deploy/disk/opt/sgx"
 		sudo cp -uv "${DIR}/deploy/"GFX* "${DIR}/deploy/disk/opt/"
 	fi
 }
