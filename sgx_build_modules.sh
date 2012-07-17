@@ -389,8 +389,8 @@ pkg_modules () {
 	gfx_rel_x
 
 	#FIXME: slightly ugly...
-	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/"
-	tar xf "/home/${USER}/sgx-hardfp.tar.gz"
+	cd "${DIR}/ti-sdk-pvr/"
+	tar xf "/home/${USER}/sgx-hardfp.tar.gz" -C ./
 
 	ARCH="armhf"
 	CORE="es3"
