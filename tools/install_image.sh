@@ -58,7 +58,7 @@ mmc_write_modules () {
 			sudo rm -rf "${DIR}/deploy/disk/opt/sgx"
 		fi
 		sudo mkdir -p "${DIR}/deploy/disk/opt/sgx"
-		sudo cp -uv "${DIR}/deploy/"GFX* "${DIR}/deploy/disk/opt/"
+		sudo cp -uv "${DIR}/deploy/"GFX* "${DIR}/deploy/disk/opt/sgx"
 	fi
 }
 
