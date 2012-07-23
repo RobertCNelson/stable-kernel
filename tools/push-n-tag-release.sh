@@ -29,7 +29,7 @@ BRANCH="v3.0.x"
 
 if [ -e ${DIR}/version.sh ]; then
 	unset RC_PATCH
-	unset TABLE_PATCH
+	unset STABLE_PATCH
 	. version.sh
 
 	if [ "${RC_PATCH}" ]; then

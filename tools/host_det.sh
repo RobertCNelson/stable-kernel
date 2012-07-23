@@ -116,6 +116,14 @@ if [ ! $(which ccache) ];then
  APT=1
 fi
 
+#Just temp, as with 3.4, switching to xz
+if [ ! $(which lzma) ];then
+	echo "Missing lzma"
+	UPACKAGE+="lzma "
+	DPACKAGE+="lzma "
+	APT=1
+fi
+
 #Note: Without dpkg-dev from build-essential, this can be a false positive
 MULTIARCHLIB="/usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`"
 
