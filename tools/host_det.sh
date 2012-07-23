@@ -117,10 +117,10 @@ if [ ! $(which ccache) ];then
 fi
 
 if [ ! $(which dtc) ];then
- echo "Missing device-tree-compiler"
- UPACKAGE+="device-tree-compiler "
- DPACKAGE+="device-tree-compiler "
- APT=1
+	echo "Missing device-tree-compiler"
+	UPACKAGE+="device-tree-compiler "
+	DPACKAGE+="device-tree-compiler "
+	APT=1
 fi
 
 #Note: Without dpkg-dev from build-essential, this can be a false positive
