@@ -147,6 +147,7 @@ function debian_regs
 	fi
 }
 
+BUILD_HOST=${BUILD_HOST:="$( detect_host )"}
 info "Detected build host [$BUILD_HOST]"
 case "$BUILD_HOST" in
     redhat*)
