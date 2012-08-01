@@ -22,14 +22,15 @@
 
 DIR=$PWD
 
-git_kernel_torvalds () {
-	echo "pulling from torvalds kernel.org tree"
-	git pull ${GIT_OPTS} git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master --tags || true
-}
-
 git_kernel_stable () {
 	echo "fetching from stable kernel.org tree"
 	git fetch git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git master --tags || true
+}
+
+git_kernel_torvalds () {
+	echo "pulling from torvalds kernel.org tree"
+	git pull ${GIT_OPTS} git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master --tags || true
+	git tag | grep v${KERNEL_TAG} &>/dev/null || git_kernel_stable
 }
 
 check_and_or_clone () {
@@ -82,19 +83,9 @@ git_kernel () {
 		git pull ${GIT_OPTS} || true
 
 		if [ ! "${LATEST_GIT}" ] ; then
-			if [ "${RC_PATCH}" ] ; then
-				git tag | grep v${RC_KERNEL}${RC_PATCH} &>/dev/null || git_kernel_torvalds
-				git branch -D v${RC_KERNEL}${RC_PATCH}-${BUILD} &>/dev/null || true
-				git checkout v${RC_KERNEL}${RC_PATCH} -b v${RC_KERNEL}${RC_PATCH}-${BUILD}
-			elif [ "${STABLE_PATCH}" ] ; then
-				git tag | grep v${KERNEL_REL}.${STABLE_PATCH} &>/dev/null || git_kernel_stable
-				git branch -D v${KERNEL_REL}.${STABLE_PATCH}-${BUILD} &>/dev/null || true
-				git checkout v${KERNEL_REL}.${STABLE_PATCH} -b v${KERNEL_REL}.${STABLE_PATCH}-${BUILD}
-			else
-				git tag | grep v${KERNEL_REL} | grep -v rc &>/dev/null || git_kernel_torvalds
-				git branch -D v${KERNEL_REL}-${BUILD} &>/dev/null || true
-				git checkout v${KERNEL_REL} -b v${KERNEL_REL}-${BUILD}
-			fi
+			git tag | grep v${KERNEL_TAG} | grep -v rc &>/dev/null || git_kernel_torvalds
+			git branch -D v${KERNEL_TAG}-${BUILD} &>/dev/null || true
+			git checkout v${KERNEL_TAG} -b v${KERNEL_TAG}-${BUILD}
 		else
 			git branch -D top-of-tree &>/dev/null || true
 			git checkout v${KERNEL_REL} -b top-of-tree

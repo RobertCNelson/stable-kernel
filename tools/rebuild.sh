@@ -20,35 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-unset KERNEL_REL
-unset STABLE_PATCH
-unset RC_KERNEL
-unset RC_PATCH
-unset BUILD
-unset CC
-unset LINUX_GIT
-unset LATEST_GIT
-unset DEBUG_SECTION
-
-unset LOCAL_PATCH_DIR
-
 DIR=$PWD
 
 mkdir -p ${DIR}/deploy/
 
 function patch_kernel {
 	cd ${DIR}/KERNEL
+
 	export DIR GIT_OPTS
 	/bin/bash -e ${DIR}/patch.sh || { git add . ; exit 1 ; }
 
 	git add .
-	if [ "${RC_PATCH}" ] ; then
-		git commit --allow-empty -a -m ''$RC_KERNEL''$RC_PATCH'-'$BUILD' patchset'
-	elif [ "${STABLE_PATCH}" ] ; then
-		git commit --allow-empty -a -m ''$KERNEL_REL'.'$STABLE_PATCH'-'$BUILD' patchset'
-	else
-		git commit --allow-empty -a -m ''$KERNEL_REL'-'$BUILD' patchset'
-	fi
+	git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
 
 #Test Patches:
 #exit
@@ -145,16 +128,21 @@ function make_headers_pkg {
   /bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
 
 if [ -e ${DIR}/system.sh ] ; then
+	unset CC
+	unset DEBUG_SECTION
+	unset LATEST_GIT
+	unset LINUX_GIT
+	unset LOCAL_PATCH_DIR
 	source ${DIR}/system.sh
+
 	source ${DIR}/version.sh
 	export LINUX_GIT
 
-	GCC="gcc"
 	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
 		GCC="${GCC_OVERRIDE}"
 	fi
 	echo ""
-	echo "Debug: using $(LC_ALL=C ${CC}${GCC} --version)"
+	echo "Debug: using $(LC_ALL=C ${CC}gcc --version)"
 	echo ""
 
 	if [ "${LATEST_GIT}" ] ; then
