@@ -126,6 +126,16 @@ mainline_fixes () {
 
 cpuidle () {
 	echo "cpuidle"
+	git am "${DIR}/patches/cpuidle/0001-cpuidle-remove-unused-hrtimer_peek_ahead_timers-call.patch"
+	git am "${DIR}/patches/cpuidle/0002-cpuidle-add-checks-to-avoid-NULL-pointer-dereference.patch"
+	git am "${DIR}/patches/cpuidle/0003-cpuidle-refactor-out-cpuidle_enter_state.patch"
+	git am "${DIR}/patches/cpuidle/0004-cpuidle-fix-error-handling-in-__cpuidle_register_dev.patch"
+	git am "${DIR}/patches/cpuidle/0005-cpuidle-add-support-for-states-that-affect-multiple-.patch"
+	git am "${DIR}/patches/cpuidle/0006-cpuidle-coupled-add-parallel-barrier-function.patch"
+	git am "${DIR}/patches/cpuidle/0007-cpuidle-move-field-disable-from-per-driver-to-per-cp.patch"
+	git am "${DIR}/patches/cpuidle/0008-PM-cpuidle-Add-driver-reference-counter.patch"
+	git am "${DIR}/patches/cpuidle/0009-PM-Domains-Add-preliminary-support-for-cpuidle-v2.patch"
+	git am "${DIR}/patches/cpuidle/0010-PM-cpuidle-System-resume-hang-fix-with-cpuidle.patch"
 }
 
 cpuidle_omap () {
@@ -152,7 +162,7 @@ sgx_mainline
 mainline_fixes
 
 cpuidle
-#cpuidle_omap
+cpuidle_omap
 
 echo "patch.sh ran successful"
 
