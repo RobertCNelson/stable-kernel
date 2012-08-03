@@ -32,7 +32,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -8
+	git format-patch -1 -o ${DIR}/patches/
 	exit
 }
 
@@ -45,9 +45,7 @@ sakoman () {
 	echo "Patches from: Sakoman git tree"
 	git am "${DIR}/patches/sakoman/0001-OMAP-DSS2-add-bootarg-for-selecting-svideo.patch"
 	git am "${DIR}/patches/sakoman/0002-video-add-timings-for-hd720.patch"
-	git am "${DIR}/patches/sakoman/0003-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
 }
-
 
 beagle () {
 	echo "Board Patches for: BeagleBoard"
@@ -66,53 +64,40 @@ beagle () {
 	git am "${DIR}/patches/beagle/0003-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
 	git am "${DIR}/patches/beagle/0004-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 	git am "${DIR}/patches/beagle/0005-omap3_beagle-init-uart2-for-beagle-rev-AX-BX-only.patch"
-
 	git am "${DIR}/patches/beagle/0006-backlight-Add-TLC59108-backlight-control-driver.patch"
 	git am "${DIR}/patches/beagle/0007-tlc59108-adjust-for-beagleboard-uLCD7.patch"
 	git am "${DIR}/patches/beagle/0008-zeroMAP-Open-your-eyes.patch"
 }
 
+sprz319_erratum () {
+	echo "sprz319 erratum 2.1"
+	git am "${DIR}/patches/sprz319-erratum-2.1/0001-Fix-sprz319-erratum-2.1.patch"
+}
+
 devkit8000 () {
 	echo "Board Patches for: devkit8000"
-	git am "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
+	git am "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel.patch"
 }
 
 panda () {
 	echo "Board Patches for: PandaBoard"
 	git am "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
-	git am "${DIR}/patches/panda/0002-panda-enable-bluetooth.patch"
-	git am "${DIR}/patches/panda/0003-ti-st-st-kim-fixing-firmware-path.patch"
+	git am "${DIR}/patches/panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
+	git am "${DIR}/patches/panda/0003-staging-OMAP4-thermal-introduce-bandgap-temperature-.patch"
+	git am "${DIR}/patches/panda/0004-staging-omap-thermal-common-code-to-expose-driver-to.patch"
+	git am "${DIR}/patches/panda/0005-staging-omap-thermal-add-OMAP4-data-structures.patch"
 }
 
 omap_fixes () {
 	echo "omap cherry pick fixes"
 	git am "${DIR}/patches/omap_fixes/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
-	git am "${DIR}/patches/omap_fixes/0002-OMAP2-UART-Remove-cpu-checks-for-populating-errata-f.patch"
-	git am "${DIR}/patches/omap_fixes/0003-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
-	git am "${DIR}/patches/omap_fixes/0004-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
-	git am "${DIR}/patches/omap_fixes/0005-Unconditional-call-to-smp_cross_call-on-UP-crashes.patch"
+	git am "${DIR}/patches/omap_fixes/0002-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
+	git am "${DIR}/patches/omap_fixes/0003-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
+	git am "${DIR}/patches/omap_fixes/0004-only-call-smp_send_stop-on-SMP.patch"
 }
 
 omapdrm () {
 	echo "omap testing omapdrm/kms"
-
-	echo "Patches for 3.4-rc1-cma-v24"
-	#git://git.linaro.org/people/mszyprowski/linux-dma-mapping.git 3.4-rc1-cma-v24
-	git am "${DIR}/patches/drm/cma/0001-mm-page_alloc-remove-trailing-whitespace.patch"
-	git am "${DIR}/patches/drm/cma/0002-mm-compaction-introduce-isolate_migratepages_range.patch"
-	git am "${DIR}/patches/drm/cma/0003-mm-compaction-introduce-map_pages.patch"
-	git am "${DIR}/patches/drm/cma/0004-mm-compaction-introduce-isolate_freepages_range.patch"
-	git am "${DIR}/patches/drm/cma/0005-mm-compaction-export-some-of-the-functions.patch"
-	git am "${DIR}/patches/drm/cma/0006-mm-page_alloc-introduce-alloc_contig_range.patch"
-	git am "${DIR}/patches/drm/cma/0007-mm-page_alloc-change-fallbacks-array-handling.patch"
-	git am "${DIR}/patches/drm/cma/0008-mm-mmzone-MIGRATE_CMA-migration-type-added.patch"
-	git am "${DIR}/patches/drm/cma/0009-mm-page_isolation-MIGRATE_CMA-isolation-functions-ad.patch"
-	git am "${DIR}/patches/drm/cma/0010-mm-Serialize-access-to-min_free_kbytes.patch"
-	git am "${DIR}/patches/drm/cma/0011-mm-extract-reclaim-code-from-__alloc_pages_direct_re.patch"
-	git am "${DIR}/patches/drm/cma/0012-mm-trigger-page-reclaim-in-alloc_contig_range-to-sta.patch"
-	git am "${DIR}/patches/drm/cma/0013-drivers-add-Contiguous-Memory-Allocator.patch"
-	git am "${DIR}/patches/drm/cma/0014-X86-integrate-CMA-with-DMA-mapping-subsystem.patch"
-	git am "${DIR}/patches/drm/cma/0015-ARM-integrate-CMA-with-DMA-mapping-subsystem.patch"
 
 	#posted: 13 Mar 2012 for 3.4
 	git am "${DIR}/patches/drm/0001-omap2-add-drm-device.patch"
@@ -125,9 +110,7 @@ omapdrm () {
 
 dsp () {
 	echo "dsp patches"
-	git am "${DIR}/patches/dsp/0001-OMAP2-control-new-APIs-to-configure-boot-address-and.patch"
-	git am "${DIR}/patches/dsp/0002-OMAP-dsp-interface-to-control-module-functions.patch"
-	git am "${DIR}/patches/dsp/0003-staging-tidspbridge-use-scm-functions-to-set-boot-ad.patch"
+	git am "${DIR}/patches/dsp/0001-dsp-add-memblock-include.patch"
 }
 
 sgx_mainline () {
@@ -135,80 +118,40 @@ sgx_mainline () {
 	git am "${DIR}/patches/sgx/0001-Revert-drm-kill-drm_sman.patch"
 }
 
-led () {
-	git am "${DIR}/patches/led/0001-leds-heartbeat-stop-on-shutdown-reboot-or-panic.patch"
+mainline_fixes () {
+	echo "mainline patches"
+	git am "${DIR}/patches/mainline-fixes/0001-arm-add-definition-of-strstr-to-decompress.c.patch"
 }
 
-sgx () {
-echo "merge in ti sgx modules"
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-enable-driver-building.patch"
+cpuidle () {
+	echo "cpuidle"
+}
 
-#3.01.00.06
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.06-into-TI-3.01.00.02.patch"
-
-#3.01.00.07 'the first wget-able release!!'
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.07-into-TI-3.01.00.06.patch"
-
-#4.00.00.01 adds ti8168 support, drops bc_cat.c patch
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-4.00.00.01-into-TI-3.01.00.07.patch"
-
-#4.03.00.01
-#Note: git am has problems with this patch...
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-4.03.00.01-into-TI-4.00.00.01.patch"
-
-#4.03.00.02 (main *.bin drops omap4)
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-4.03.00.02-into-TI-4.03.00.01.patch"
-
-#4.03.00.02
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.32-PSP.patch"
-
-#4.03.00.02 + 2.6.38-merge (2.6.37-git5)
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.38-merge-AUTOCONF_INCLUD.patch"
-
-#4.03.00.02 + 2.6.38-rc3
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.38-rc3-_console_sem-to-c.patch"
-
-#4.03.00.01
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.01-add-outer_cache.clean_all.patch"
-
-#4.03.00.02
-#omap3 doesn't work on omap3630
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-use-omap3630-as-TI_PLATFORM.patch"
-
-#4.03.00.02 + 2.6.39 (2.6.38-git2)
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.39-rc-SPIN_LOCK_UNLOCKED.patch"
-
-#4.03.00.02 + 2.6.40 (2.6.39-git11)
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.40-display.h-to-omapdss..patch"
-
-#with v3.0-git16
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:324:15: error: ‘OMAP_DSS_UPDATE_AUTO’ undeclared (first use in this function)
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:327:15: error: ‘OMAP_DSS_UPDATE_MANUAL’ undeclared (first use in this function)
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:330:15: error: ‘OMAP_DSS_UPDATE_DISABLED’ undeclared (first use in this function)
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:337:16: error: ‘struct omap_dss_driver’ has no member named ‘set_update_mode’
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:312:28: warning: unused variable ‘eDSSMode’
-#make[4]: *** [drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.o] Error 1
-#make[3]: *** [drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux] Error 2
-#make[2]: *** [drivers/staging/omap3-sgx] Error 2
-#for <3.2
-#patch -s -p1 < "${DIR}/patches/sgx/0001-Revert-OMAP-DSS2-remove-update_mode-from-omapdss.patch"
-#for >3.2
-patch -s -p1 < "${DIR}/patches/sgx/0001-Revert-OMAP-DSS2-remove-update_mode-from-omapdss-v3.2.patch"
-
+cpuidle_omap () {
+	echo "cpuidle_omap"
+	git am "${DIR}/patches/cpuidle_omap/0001-ARM-OMAP-timer-allow-gp-timer-clock-event-to-be-used.patch"
+	git am "${DIR}/patches/cpuidle_omap/0002-ARM-OMAP4-CPUidle-Use-coupled-cpuidle-states-to-impl.patch"
+	git am "${DIR}/patches/cpuidle_omap/0003-ARM-OMAP4-CPUidle-add-synchronization-for-coupled-id.patch"
+	git am "${DIR}/patches/cpuidle_omap/0004-ARM-OMAP4-CPUidle-Open-broadcast-clock-event-device.patch"
 }
 
 distro
 sakoman
 beagle
+
+#disabled as it breaks beagle c4...
+#sprz319_erratum
+
 devkit8000
 panda
 omap_fixes
 omapdrm
 dsp
 sgx_mainline
-led
-#sgx
+mainline_fixes
+
+cpuidle
+#cpuidle_omap
 
 echo "patch.sh ran successful"
 
