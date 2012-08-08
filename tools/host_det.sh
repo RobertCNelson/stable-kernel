@@ -116,13 +116,19 @@ function debian_regs
 		APT=1
 	fi
 
+	if [ ! $(which fakeroot) ];then
+		echo "Missing fakeroot"
+		UPACKAGE+="fakeroot "
+		DPACKAGE+="fakeroot "
+		APT=1
+	fi
+
 	if [ ! $(which dtc) ];then
 		echo "Missing device-tree-compiler"
 		UPACKAGE+="device-tree-compiler "
 		DPACKAGE+="device-tree-compiler "
 		APT=1
 	fi
-
 
 	#Lucid -> Oneiric
 	if [ ! -f "/usr/lib/libncurses.so" ] ; then
