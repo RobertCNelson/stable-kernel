@@ -130,6 +130,14 @@ function debian_regs
 		APT=1
 	fi
 
+	#Just temp, as with 3.4, switching to xz
+	if [ ! $(which lzma) ];then
+		echo "Missing lzma"
+		UPACKAGE+="lzma "
+		DPACKAGE+="lzma "
+		APT=1
+	fi
+
 	#Lucid -> Oneiric
 	if [ ! -f "/usr/lib/libncurses.so" ] ; then
 		#Precise ->
