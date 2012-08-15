@@ -59,7 +59,7 @@ beagle () {
 	git am "${DIR}/patches/beagle/expansion/0007-Beagle-expansion-add-beaglefpga.patch"
 	git am "${DIR}/patches/beagle/expansion/0008-Enable-buddy-spidev.patch"
 
-	#v3.5: looks to be removed: 
+	#v3.5: looks to be removed:
 	#http://git.kernel.org/?p=linux/kernel/git/stable/linux-stable.git;a=commit;h=b6e695abe710ee1ae248463d325169efac487e17
 	#git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 
@@ -97,7 +97,8 @@ omap_fixes () {
 	git am "${DIR}/patches/omap_fixes/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 	git am "${DIR}/patches/omap_fixes/0002-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
 	git am "${DIR}/patches/omap_fixes/0003-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
-	git am "${DIR}/patches/omap_fixes/0004-only-call-smp_send_stop-on-SMP.patch"
+	#in 3.5.2
+	#git am "${DIR}/patches/omap_fixes/0004-only-call-smp_send_stop-on-SMP.patch"
 }
 
 omapdrm () {
