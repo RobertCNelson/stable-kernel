@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2012.01-1"
+VERSION="v2012.08-1"
 
 unset DIR
 
@@ -48,8 +48,9 @@ SGX_VERSION=4_03_00_02
 SGX_BIN_NAME="Graphics_SDK_setuplinux"
 
 SGX_BIN=${SGX_BIN_NAME}_${SGX_VERSION}.bin
+TAROPTS="--owner=root --group=root"
 
-sudo rm -rf ${DIR}/SDK/ || true
+rm -rf ${DIR}/SDK/ || true
 mkdir -p ${DIR}/SDK/
 mkdir -p ${DIR}/SDK_BIN/
 
@@ -62,7 +63,7 @@ if [ -e ${DIR}/${SGX_BIN} ]; then
   else
     echo "${SGX_BIN} needs to be executable"
     echo ""
-    sudo chmod +x ${DIR}/${SGX_BIN}
+    chmod +x ${DIR}/${SGX_BIN}
     echo "running ${SGX_BIN}"
     echo ""
     ${DIR}/${SGX_BIN} --mode console --prefix ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION} <<setupSDK
@@ -250,7 +251,7 @@ runSGX
 }
 
 function copy_sgx_system_files {
-	sudo rm -rf ${DIR}/SDK/
+	rm -rf ${DIR}/SDK/
 	mkdir -p ${DIR}/SDK/libs/usr/lib/ES2.0
 	mkdir -p ${DIR}/SDK/libs/usr/bin/ES2.0
 
@@ -264,34 +265,34 @@ function copy_sgx_system_files {
 
  #Copy all Libaries
  FILE_PREFIX="*.so*"
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES2.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES3.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES5.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES2.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES3.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES5.0
 
  FILE_PREFIX="*.a"
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES2.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES3.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES5.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES2.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES3.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/lib/ES5.0
 
  FILE_PREFIX="*_test"
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES2.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES3.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES5.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES2.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES3.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES5.0
 
  FILE_PREFIX="*gl*"
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES2.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES3.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES5.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES2.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES3.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES5.0
 
  FILE_PREFIX="p[dv]*"
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES2.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES3.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES5.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES2.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES3.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES5.0
 
  FILE_PREFIX="xgle*"
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES2.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES3.0
- sudo cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES5.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es2.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES2.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es3.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES3.0
+ cp ${DIR}/SDK_BIN/${SGX_BIN_NAME}_${SGX_VERSION}/gfx_rel_es5.x/${FILE_PREFIX} ${DIR}/SDK/libs/usr/bin/ES5.0
 
 file-pvr-startup
 
@@ -303,9 +304,9 @@ file-pvr-startup
 	DEVMEM2=$(cat /tmp/index.html | grep _armel.deb | head -1 | awk -F"\"" '{print $8}')
 	wget -c http://ports.ubuntu.com/pool/universe/d/devmem2/${DEVMEM2}
 
-	tar czf ${DIR}/SDK/target_libs.tar.gz *
+	tar czf ${DIR}/SDK/target_libs.tar.gz $TAROPTS *
 	cd ${DIR}
-	sudo rm -rf ${DIR}/SDK/libs || true
+	rm -rf ${DIR}/SDK/libs || true
 
 file-install-SGX
 	chmod +x ./SDK/install-SGX.sh
@@ -313,10 +314,10 @@ file-run-SGX
 	chmod +x ./SDK/run-SGX.sh
 
 	cd ${DIR}/SDK
-	tar czf ${DIR}/GFX_${SGX_VERSION}_libs.tar.gz *
+	tar czf ${DIR}/GFX_${SGX_VERSION}_libs.tar.gz $TAROPTS *
 	cd ${DIR}
 
-	sudo rm -rf ${DIR}/SDK/ || true
+	rm -rf ${DIR}/SDK/ || true
 	echo "SGX libs are in: GFX_${SGX_VERSION}_libs.tar.gz"
 }
 
@@ -334,15 +335,15 @@ function tar_up_examples {
 	find ${DIR}/SDK/ -type d -name "MacOS" | xargs rm -r
 
 	cd ${DIR}/SDK/GFX_Linux_SDK
-	tar czf ${DIR}/SDK/GFX_Linux_SDK/OGLES.tar.gz ./OGLES
+	tar czf ${DIR}/SDK/GFX_Linux_SDK/OGLES.tar.gz $TAROPTS ./OGLES
 	rm -rf ${DIR}/SDK/GFX_Linux_SDK/OGLES
-	tar czf ${DIR}/SDK/GFX_Linux_SDK/OGLES2.tar.gz ./OGLES2
+	tar czf ${DIR}/SDK/GFX_Linux_SDK/OGLES2.tar.gz $TAROPTS ./OGLES2
 	rm -rf ${DIR}/SDK/GFX_Linux_SDK/OGLES2
-	tar czf ${DIR}/SDK/GFX_Linux_SDK/OVG.tar.gz ./OVG
+	tar czf ${DIR}/SDK/GFX_Linux_SDK/OVG.tar.gz $TAROPTS ./OVG
 	rm -rf ${DIR}/SDK/GFX_Linux_SDK/OVG
 
 	cd ${DIR}/SDK
-	tar czfv ${DIR}/GFX_Linux_SDK.tar.gz ./GFX_Linux_SDK
+	tar czfv ${DIR}/GFX_Linux_SDK.tar.gz $TAROPTS ./GFX_Linux_SDK
 	echo "SGX examples are in: GFX_Linux_SDK.tar.gz"
 	cd ${DIR}
 }
