@@ -32,7 +32,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -1 -o ${DIR}/patches/
+	git format-patch -7 -o ${DIR}/patches/
 	exit
 }
 
@@ -140,6 +140,8 @@ cpuidle () {
 	git am "${DIR}/patches/cpuidle/0008-PM-cpuidle-Add-driver-reference-counter.patch"
 	git am "${DIR}/patches/cpuidle/0009-PM-Domains-Add-preliminary-support-for-cpuidle-v2.patch"
 	git am "${DIR}/patches/cpuidle/0010-PM-cpuidle-System-resume-hang-fix-with-cpuidle.patch"
+	git am "${DIR}/patches/cpuidle/0011-cpuidle-coupled-fix-sleeping-while-atomic-in-cpu-not.patch"
+	git am "${DIR}/patches/cpuidle/0012-cpuidle-Prevent-null-pointer-dereference-in-cpuidle_.patch"
 }
 
 cpuidle_omap () {
@@ -148,6 +150,9 @@ cpuidle_omap () {
 	git am "${DIR}/patches/cpuidle_omap/0002-ARM-OMAP4-CPUidle-Use-coupled-cpuidle-states-to-impl.patch"
 	git am "${DIR}/patches/cpuidle_omap/0003-ARM-OMAP4-CPUidle-add-synchronization-for-coupled-id.patch"
 	git am "${DIR}/patches/cpuidle_omap/0004-ARM-OMAP4-CPUidle-Open-broadcast-clock-event-device.patch"
+	git am "${DIR}/patches/cpuidle_omap/0005-ARM-OMAP4-sleep-Save-the-complete-used-register-stac.patch"
+	git am "${DIR}/patches/cpuidle_omap/0006-cpufreq-OMAP-Handle-missing-frequency-table-on-SMP-s.patch"
+	git am "${DIR}/patches/cpuidle_omap/0007-ARM-OMAP4-Register-the-OPP-table-only-for-4430-devic.patch"
 }
 
 distro

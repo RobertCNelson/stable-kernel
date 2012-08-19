@@ -1,7 +1,7 @@
-From 4206c393d6f6d456097711a59666f0bc99028500 Mon Sep 17 00:00:00 2001
+From 517e2b236afaed40b73eb2fb7b4fb7b138f4db80 Mon Sep 17 00:00:00 2001
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Date: Mon, 9 Jul 2012 10:12:56 +0200
-Subject: [PATCH 10/10] PM / cpuidle: System resume hang fix with cpuidle
+Subject: [PATCH 10/12] PM / cpuidle: System resume hang fix with cpuidle
 
 On certain bios, resume hangs if cpus are allowed to enter idle states
 during suspend [1].
@@ -142,7 +142,7 @@ index 47a8caa..d8366ee 100644
  	if (cx->entry_method != ACPI_CSTATE_FFH) {
  		current_thread_info()->status &= ~TS_POLLING;
 diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9cb845e..63048f7 100644
+index 742fcbe..0f73e15 100644
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
 @@ -28,7 +28,7 @@

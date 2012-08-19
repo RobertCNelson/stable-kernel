@@ -1,7 +1,7 @@
-From 99a1bcb80f35e8f18de38f00a9587f1516d67a32 Mon Sep 17 00:00:00 2001
+From 0ac8c766b133caa0ccbdca50101c4bec4f171ca0 Mon Sep 17 00:00:00 2001
 From: Colin Cross <ccross@android.com>
 Date: Mon, 7 May 2012 17:57:40 -0700
-Subject: [PATCH 04/10] cpuidle: fix error handling in
+Subject: [PATCH 04/12] cpuidle: fix error handling in
  __cpuidle_register_device
 
 Fix the error handling in __cpuidle_register_device to include

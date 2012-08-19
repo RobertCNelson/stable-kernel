@@ -1,7 +1,7 @@
-From fb7e9f0e834094b64991ea68f1234547488da77d Mon Sep 17 00:00:00 2001
+From d16597d93729c0f7bba70cec7e395edaca6b16c1 Mon Sep 17 00:00:00 2001
 From: Colin Cross <ccross@android.com>
 Date: Mon, 7 May 2012 17:57:41 -0700
-Subject: [PATCH 05/10] cpuidle: add support for states that affect multiple
+Subject: [PATCH 05/12] cpuidle: add support for states that affect multiple
  cpus
 
 On some ARM SMP SoCs (OMAP4460, Tegra 2, and probably more), the

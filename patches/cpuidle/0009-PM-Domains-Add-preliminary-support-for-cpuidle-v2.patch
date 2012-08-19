@@ -1,7 +1,7 @@
-From 9eba6ff9eb18d5abd402fe7fe1f55044e332bb50 Mon Sep 17 00:00:00 2001
+From ab5cb0ff13db0a840188259fe72b944be2a6dec5 Mon Sep 17 00:00:00 2001
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Date: Tue, 3 Jul 2012 19:07:42 +0200
-Subject: [PATCH 09/10] PM / Domains: Add preliminary support for cpuidle, v2
+Subject: [PATCH 09/12] PM / Domains: Add preliminary support for cpuidle, v2
 
 On some systems there are CPU cores located in the same power
 domains as I/O devices.  Then, power can only be removed from the

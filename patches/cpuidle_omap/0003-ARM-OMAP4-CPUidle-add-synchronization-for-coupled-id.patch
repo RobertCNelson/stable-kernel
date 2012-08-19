@@ -1,7 +1,7 @@
-From 01b70f0651b436ad9316444ffe0532a666a16822 Mon Sep 17 00:00:00 2001
+From b6921e74e75de710a4301c2821b09ffffd8fe2e9 Mon Sep 17 00:00:00 2001
 From: Kevin Hilman <khilman@ti.com>
 Date: Wed, 14 Mar 2012 17:26:17 -0700
-Subject: [PATCH 3/4] ARM: OMAP4: CPUidle: add synchronization for coupled
+Subject: [PATCH 3/7] ARM: OMAP4: CPUidle: add synchronization for coupled
  idle states
 
 With coupled idle states, a failure for any CPU to hit a low power

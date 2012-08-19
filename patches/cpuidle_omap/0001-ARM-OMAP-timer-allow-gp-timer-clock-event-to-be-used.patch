@@ -1,7 +1,7 @@
-From ff014d3e03fa67247c63d56661f577be4144c472 Mon Sep 17 00:00:00 2001
+From 37422094f162d53caca154958de73334a442cb5b Mon Sep 17 00:00:00 2001
 From: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Date: Sat, 17 Mar 2012 15:00:16 +0530
-Subject: [PATCH 1/4] ARM: OMAP: timer: allow gp timer clock-event to be used
+Subject: [PATCH 1/7] ARM: OMAP: timer: allow gp timer clock-event to be used
  on both cpus
 
 For coupled cpuidle to work when both cpus are active, it needs a global timer

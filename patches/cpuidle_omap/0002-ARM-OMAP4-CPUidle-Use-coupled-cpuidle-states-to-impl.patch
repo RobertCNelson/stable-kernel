@@ -1,7 +1,7 @@
-From 813a8f64993d5f7f86befe8a2a7e07ad16cb723d Mon Sep 17 00:00:00 2001
+From 0619397ea180f86f9933780637faac99fcc81d4a Mon Sep 17 00:00:00 2001
 From: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Date: Sun, 25 Dec 2011 21:00:40 +0530
-Subject: [PATCH 2/4] ARM: OMAP4: CPUidle: Use coupled cpuidle states to
+Subject: [PATCH 2/7] ARM: OMAP4: CPUidle: Use coupled cpuidle states to
  implement SMP cpuidle.
 
 OMAP4 CPUDILE driver is converted mainly based on notes from the

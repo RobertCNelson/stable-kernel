@@ -1,7 +1,7 @@
-From 46c7130bf25c685ccaee5abcd5d053cb0d736f2a Mon Sep 17 00:00:00 2001
+From d1a7c2811c5a5d1a091dad8a2d5412b34a3f0db1 Mon Sep 17 00:00:00 2001
 From: Colin Cross <ccross@android.com>
 Date: Mon, 7 May 2012 17:57:39 -0700
-Subject: [PATCH 03/10] cpuidle: refactor out cpuidle_enter_state
+Subject: [PATCH 03/12] cpuidle: refactor out cpuidle_enter_state
 
 Split the code to enter a state and update the stats into a helper
 function, cpuidle_enter_state, and export it.  This function will

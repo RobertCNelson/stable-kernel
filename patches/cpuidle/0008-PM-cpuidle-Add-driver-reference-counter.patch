@@ -1,7 +1,7 @@
-From 625ced139be4a586205f7f76c1a6ade09f50385b Mon Sep 17 00:00:00 2001
+From 1c1b7c7cafa7f763d02e559df8824ccc399f9969 Mon Sep 17 00:00:00 2001
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Date: Sat, 16 Jun 2012 15:20:11 +0200
-Subject: [PATCH 08/10] PM / cpuidle: Add driver reference counter
+Subject: [PATCH 08/12] PM / cpuidle: Add driver reference counter
 
 Add a reference counter for the cpuidle driver, so that it can't
 be unregistered when it is in use.

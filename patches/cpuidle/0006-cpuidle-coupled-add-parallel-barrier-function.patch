@@ -1,7 +1,7 @@
-From 9698409069fb0ca00d6f6c0c285cd67c45930cf8 Mon Sep 17 00:00:00 2001
+From 24ef3ed76adb16d8917558a1b10b7ad13762dd55 Mon Sep 17 00:00:00 2001
 From: Colin Cross <ccross@android.com>
 Date: Mon, 7 May 2012 17:57:42 -0700
-Subject: [PATCH 06/10] cpuidle: coupled: add parallel barrier function
+Subject: [PATCH 06/12] cpuidle: coupled: add parallel barrier function
 
 Adds cpuidle_coupled_parallel_barrier, which can be used by coupled
 cpuidle state enter functions to handle resynchronization after

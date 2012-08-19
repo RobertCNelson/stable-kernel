@@ -1,7 +1,7 @@
-From 701029668e8ffbd110d87431334456a67f082d7a Mon Sep 17 00:00:00 2001
+From 42e1a6f31921dcf6b9e3cd1546d83665f4d6ba75 Mon Sep 17 00:00:00 2001
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Date: Fri, 4 May 2012 14:06:02 -0700
-Subject: [PATCH 02/10] cpuidle: add checks to avoid NULL pointer dereference
+Subject: [PATCH 02/12] cpuidle: add checks to avoid NULL pointer dereference
 
 The existing check for dev == NULL in __cpuidle_register_device() is
 rendered useless because dev is dereferenced before the check itself.

@@ -1,7 +1,7 @@
-From ea1f2799f309eae151fd3f97348c195713dc6933 Mon Sep 17 00:00:00 2001
+From b019deb9d780161336de56f5ea90c1c708680bde Mon Sep 17 00:00:00 2001
 From: Santosh Shilimkar <santosh.shilimkar@ti.com>
 Date: Tue, 17 Apr 2012 15:09:20 +0530
-Subject: [PATCH 4/4] ARM: OMAP4: CPUidle: Open broadcast clock-event device.
+Subject: [PATCH 4/7] ARM: OMAP4: CPUidle: Open broadcast clock-event device.
 
 OMAP4 idle driver uses CLOCK_EVT_NOTIFY_BROADCAST_[ENTER/EXIT]
 for broadcast clock events. But _ENTER/_EXIT doesn't really open
