@@ -102,7 +102,7 @@ git_kernel () {
 		echo "error: failure in git_kernel"
 		echo "debug: LINUX_GIT = ${LINUX_GIT}"
 		echo ""
-		exit
+		exit 1
 	fi
 }
 

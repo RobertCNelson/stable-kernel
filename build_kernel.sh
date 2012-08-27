@@ -173,7 +173,7 @@ if [ -e ${DIR}/system.sh ] ; then
 		CONFIG_DEBUG_SECTION="CONFIG_DEBUG_SECTION_MISMATCH=y"
 	fi
 
-	/bin/bash -e "${DIR}/scripts/git.sh"
+	/bin/bash -e "${DIR}/scripts/git.sh" || { exit 1 ; }
 	patch_kernel
 	copy_defconfig
 	make_menuconfig
