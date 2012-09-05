@@ -140,7 +140,12 @@ sgx () {
 
 mainline_fixes () {
 	echo "mainline patches"
+	#Status: v2 Review:
+	#http://lists.infradead.org/pipermail/linux-arm-kernel/2012-August/112440.html
 	${git} "${DIR}/patches/mainline-fixes/0001-arm-add-definition-of-strstr-to-decompress.c.patch"
+	#Status:
+	#http://git.kernel.org/?p=linux/kernel/git/tmlind/linux-omap.git;a=shortlog;h=refs/heads/devel-dt
+	${git} "${DIR}/patches/mainline-fixes/0002-ARM-omap-add-dtb-targets.patch"
 }
 
 cpuidle () {
