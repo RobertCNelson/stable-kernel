@@ -127,11 +127,6 @@ omapdrm () {
 	${git} "${DIR}/patches/drm/0004-ARM-OMAP3-HWMOD-Add-omap_hwmod_class_sysconfig-for-d.patch"
 }
 
-dsp () {
-	echo "dsp patches"
-	${git} "${DIR}/patches/dsp/0001-dsp-add-memblock-include.patch"
-}
-
 sgx () {
 	echo "patches needed for external sgx bins"
 	#Status: TI 4.06.00.xx needs this
@@ -186,7 +181,6 @@ devkit8000
 panda
 omap_fixes
 omapdrm
-dsp
 sgx
 mainline_fixes
 
