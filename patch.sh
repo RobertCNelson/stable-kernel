@@ -115,16 +115,11 @@ omap_fixes () {
 	#${git} "${DIR}/patches/omap_fixes/0004-only-call-smp_send_stop-on-SMP.patch"
 }
 
-omapdrm () {
+drm () {
 	echo "omap testing omapdrm/kms"
 
 	#posted: 13 Mar 2012 for 3.4
 	${git} "${DIR}/patches/drm/0001-omap2-add-drm-device.patch"
-
-	#might be merged in 3.4
-	${git} "${DIR}/patches/drm/0002-ARM-OMAP2-3-HWMOD-Add-missing-flags-for-dispc-class.patch"
-	${git} "${DIR}/patches/drm/0003-ARM-OMAP2-3-HWMOD-Add-missing-flag-for-rfbi-class.patch"
-	${git} "${DIR}/patches/drm/0004-ARM-OMAP3-HWMOD-Add-omap_hwmod_class_sysconfig-for-d.patch"
 }
 
 sgx () {
@@ -180,7 +175,7 @@ beagle
 devkit8000
 panda
 omap_fixes
-omapdrm
+drm
 sgx
 mainline_fixes
 
