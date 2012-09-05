@@ -35,7 +35,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -7 -o ${DIR}/patches/
+	git format-patch -2 -o ${DIR}/patches/
 	exit
 }
 
@@ -67,15 +67,15 @@ beagle () {
 	#git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 
 	#Status: for meego guys..
-	${git} "${DIR}/patches/beagle/0003-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
+	${git} "${DIR}/patches/beagle/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
 
-	${git} "${DIR}/patches/beagle/0006-backlight-Add-TLC59108-backlight-control-driver.patch"
-	${git} "${DIR}/patches/beagle/0007-tlc59108-adjust-for-beagleboard-uLCD7.patch"
+	${git} "${DIR}/patches/beagle/0002-backlight-Add-TLC59108-backlight-control-driver.patch"
+	${git} "${DIR}/patches/beagle/0003-tlc59108-adjust-for-beagleboard-uLCD7.patch"
 
 	#Status: not for upstream
-	${git} "${DIR}/patches/beagle/0008-zeroMAP-Open-your-eyes.patch"
+	${git} "${DIR}/patches/beagle/0004-zeroMAP-Open-your-eyes.patch"
 
-	${git} "${DIR}/patches/beagle/0009-OMAP3-USB-EHCI-fix.patch"
+	${git} "${DIR}/patches/beagle/0005-OMAP3-USB-EHCI-fix.patch"
 }
 
 sprz319_erratum () {

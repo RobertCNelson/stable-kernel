@@ -1,7 +1,7 @@
-From 9773ae8c0fb978f4f84587ef9030020056e753c0 Mon Sep 17 00:00:00 2001
+From b1e415c00a7618047baef3ce903ecee37616e85b Mon Sep 17 00:00:00 2001
 From: Shawn Landden <shawnlandden@gmail.com>
 Date: Wed, 30 May 2012 13:45:08 -0700
-Subject: [PATCH] arm: add definition of strstr() to decompress.c
+Subject: [PATCH 1/2] arm: add definition of strstr() to decompress.c
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
