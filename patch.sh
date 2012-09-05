@@ -70,7 +70,6 @@ beagle () {
 
 	#Status: for meego guys..
 	${git} "${DIR}/patches/beagle/0003-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
-	${git} "${DIR}/patches/beagle/0004-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 
 	${git} "${DIR}/patches/beagle/0006-backlight-Add-TLC59108-backlight-control-driver.patch"
 	${git} "${DIR}/patches/beagle/0007-tlc59108-adjust-for-beagleboard-uLCD7.patch"
