@@ -22,10 +22,14 @@
 
 # Split out, so build_kernel.sh and build_deb.sh can share..
 
-# DIR=`pwd`
-
 git="git am"
 #git="git am --whitespace=fix"
+
+source ${DIR}/system.sh
+
+if [ "${RUN_BISECT}" ] ; then
+	git="git apply"
+fi
 
 echo "Starting patch.sh"
 
@@ -41,7 +45,7 @@ cleanup () {
 
 distro () {
 	echo "Distro Specific Patches"
-	git am "${DIR}/patches/distro/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
+	${git} "${DIR}/patches/distro/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 }
 
 omap_cpufreq () {
