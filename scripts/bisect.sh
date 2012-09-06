@@ -22,6 +22,10 @@
 
 DIR=$PWD
 
+if [ ! -f ${DIR}/patches/bisect_defconfig ] ; then
+	cp ${DIR}/patches/defconfig ${DIR}/patches/bisect_defconfig
+fi
+
 cp -v ${DIR}/patches/bisect_defconfig ${DIR}/patches/defconfig
 
 cd ${DIR}/KERNEL/
