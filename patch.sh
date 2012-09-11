@@ -41,7 +41,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -2 -o ${DIR}/patches/
+	git format-patch -9 -o ${DIR}/patches/
 	exit
 }
 
@@ -102,11 +102,19 @@ panda () {
 	${git} "${DIR}/patches/panda/0003-staging-OMAP4-thermal-introduce-bandgap-temperature-.patch"
 	${git} "${DIR}/patches/panda/0004-staging-omap-thermal-common-code-to-expose-driver-to.patch"
 	${git} "${DIR}/patches/panda/0005-staging-omap-thermal-add-OMAP4-data-structures.patch"
+
+	#Status: https://lkml.org/lkml/2012/9/11/303
+	${git} "${DIR}/patches/panda/0006-staging-omap-thermal-Correct-checkpatch.pl-warnings.patch"
+	${git} "${DIR}/patches/panda/0007-staging-omap-thermal-remove-checkpatch.pl-warnings-o.patch"
+	${git} "${DIR}/patches/panda/0008-staging-omap-thermal-fix-polling-period-settings.patch"
+	${git} "${DIR}/patches/panda/0009-staging-omap-thermal-improve-conf-data-handling-and-.patch"
 }
 
 omap_fixes () {
 	echo "omap cherry pick fixes"
+	#Status: unknown: only needed when forcing mpurate over 999 using bootargs...
 	${git} "${DIR}/patches/omap_fixes/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
+	#Status: unknown: seem to be dropped after v3.4-rc-fixes request
 	${git} "${DIR}/patches/omap_fixes/0002-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
 	${git} "${DIR}/patches/omap_fixes/0003-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
 }

@@ -1,7 +1,7 @@
 From c008a1eb2ab9db6684f07355c2c6695a3c45a748 Mon Sep 17 00:00:00 2001
 From: Robert Nelson <robertcnelson@gmail.com>
 Date: Tue, 2 Aug 2011 21:55:34 -0500
-Subject: [PATCH 1/5] panda: fix wl12xx regulator
+Subject: [PATCH 1/9] panda: fix wl12xx regulator
 
 pulled from: http://elinux.org/Panda_How_to_kernel_3_0_rel
 
