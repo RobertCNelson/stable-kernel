@@ -1,7 +1,7 @@
-From f227ed2890fc5325eed1569fe8c3b8ac1e3a760c Mon Sep 17 00:00:00 2001
+From 856f077aaeabfd12d89faa4858f385f649838dab Mon Sep 17 00:00:00 2001
 From: Robert Gordon <robert@greenroomsoftware.com>
 Date: Wed, 13 Apr 2011 11:32:29 -0500
-Subject: [PATCH] kbuild, deb-pkg: set host machine after dpkg-gencontrol
+Subject: [PATCH 1/2] kbuild, deb-pkg: set host machine after dpkg-gencontrol
 
 scripts/package/builddeb script was setting the host machine
 $arch in the KERNEL/debian/control prior to an invocation of
@@ -10,11 +10,11 @@ debian arch for the target is written to the control file instead.
 
 Signed-off-by: Robert Gordon <robert@greenroomsoftware.com>
 ---
- scripts/package/builddeb |   70 +++++++++++++++++++++++----------------------
- 1 files changed, 36 insertions(+), 34 deletions(-)
+ scripts/package/builddeb |   70 ++++++++++++++++++++++++----------------------
+ 1 file changed, 36 insertions(+), 34 deletions(-)
 
 diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index f6cbc3d..2a15fda 100644
+index 3c6c0b1..2f86d7b 100644
 --- a/scripts/package/builddeb
 +++ b/scripts/package/builddeb
 @@ -26,37 +26,7 @@ create_package() {
@@ -109,5 +109,5 @@ index f6cbc3d..2a15fda 100644
   This is useful for people who need to build external modules
  EOF
 -- 
-1.7.5.4
+1.7.10.4
 

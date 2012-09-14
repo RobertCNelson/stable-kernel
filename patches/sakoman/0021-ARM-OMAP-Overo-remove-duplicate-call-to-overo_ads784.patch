@@ -1,0 +1,31 @@
+From 56f38fec160ed5d2612e4ab7538ca0bbe7143ec4 Mon Sep 17 00:00:00 2001
+From: Daniel Mack <zonque@gmail.com>
+Date: Fri, 17 Jun 2011 16:17:12 +0000
+Subject: [PATCH 21/48] ARM: OMAP: Overo: remove duplicate call to
+ overo_ads7846_init()
+
+overo_ads7846_init() is already called from overo_spi_init(), and
+calling it twice is not only unnecessary but causes a warning as
+"reg-fixed-voltage.1" is already added to the device tree.
+
+Signed-off-by: Daniel Mack <zonque@gmail.com>
+Tested-by: Kevin Hilman <khilman@ti.com>
+---
+ arch/arm/mach-omap2/board-overo.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm/mach-omap2/board-overo.c b/arch/arm/mach-omap2/board-overo.c
+index b7ede20..ea290e6 100644
+--- a/arch/arm/mach-omap2/board-overo.c
++++ b/arch/arm/mach-omap2/board-overo.c
+@@ -641,7 +641,6 @@ static void __init overo_init(void)
+ 	usb_musb_init(NULL);
+ 	usbhs_init(&usbhs_bdata);
+ 	overo_spi_init();
+-	overo_ads7846_init();
+ 	overo_init_smsc911x();
+ 	overo_display_init();
+ 	overo_init_led();
+-- 
+1.7.10.4
+

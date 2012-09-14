@@ -1,7 +1,7 @@
-From 8d130cdb19f956b321deee7400754550d4f7e417 Mon Sep 17 00:00:00 2001
+From 4942f71a03b3181d09100a939e568fd4eef73ee6 Mon Sep 17 00:00:00 2001
 From: Joel A Fernandes <joelagnel@ti.com>
 Date: Tue, 5 Jul 2011 03:38:22 -0700
-Subject: [PATCH] OMAP3: beagle: add support for beagleboard xM revision C
+Subject: [PATCH 1/5] OMAP3: beagle: add support for beagleboard xM revision C
 
 OMAP3: beagle: add support for beagleboard xM revision C
 
@@ -16,7 +16,7 @@ Acked-by: Jason Kridner <jkridner@beagleboard.org>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
  arch/arm/mach-omap2/board-omap3beagle.c |   78 ++++++++++++++++++++-----------
- 1 files changed, 51 insertions(+), 27 deletions(-)
+ 1 file changed, 51 insertions(+), 27 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
 index 7f21d24..4b113b2 100644
@@ -194,5 +194,5 @@ index 7f21d24..4b113b2 100644
  			ARRAY_SIZE(omap3_beagle_devices));
  	omap_display_init(&beagle_dss_data);
 -- 
-1.7.5.4
+1.7.10.4
 
