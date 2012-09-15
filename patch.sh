@@ -82,6 +82,9 @@ beagle () {
 	${git} "${DIR}/patches/beagle/0004-zeroMAP-Open-your-eyes.patch"
 
 	${git} "${DIR}/patches/beagle/0005-OMAP3-USB-EHCI-fix.patch"
+
+	#cpufreq: only 800Mhz seems to cause hard lock... disable for now..
+	${git} "${DIR}/patches/beagle/0006-TEMP-Beagle-xM-cpufreq-disable-800Mhz-opp.patch"
 }
 
 sprz319_erratum () {
