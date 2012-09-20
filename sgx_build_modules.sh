@@ -146,6 +146,13 @@ copy_sgx_binaries () {
 	fi
 }
 
+clean_sgx_modules () {
+	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+	echo "make ${GRAPHICS_PATH} ${KERNEL_PATH} ${USER_VAR} ${CROSS} clean"
+	make ${GRAPHICS_PATH} ${KERNEL_PATH} ${USER_VAR} ${CROSS} clean
+	cd ${DIR}/
+}
+
 build_sgx_modules () {
 	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/"
 	echo "make ${GRAPHICS_PATH} ${KERNEL_PATH} ${USER_VAR} ${CROSS} BUILD="$1" OMAPES="$2" FBDEV="$3" SUPPORT_XORG="$4" "$5""
@@ -228,6 +235,11 @@ cat > "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
 	ln -sf /usr/lib/libXdmcp.so.6.0.0 /usr/lib/libXdmcp.so.0
 	ln -sf /usr/lib/libXau.so.6.0.0 /usr/lib/libXau.so.0
 
+	sudo rm -rf /opt/sgx_ews/ || true || true
+	sudo rm -rf /opt/sgx_kernel_modules/ || true || true
+	sudo rm -rf /opt/sgx_other/ || true || true
+	sudo rm -rf /opt/sgx_xorg/ || true || true
+
 	#FIXME: kernel modules are in the armel, pkg's..
 	echo "Extracting gfx_rel_es3_armel.tar.gz"
 	tar xf ./gfx_rel_es3_armel.tar.gz -C /
@@ -287,6 +299,8 @@ cat > "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
 	grep -v -e "extra/bufferclass_ti.ko" /lib/modules/\$(uname -r)/modules.dep >/tmp/modules.tmp
 	echo "/lib/modules/\$(uname -r)/extra/bufferclass_ti.ko: /lib/modules/\$(uname -r)/extra/pvrsrvkm.ko" >>/tmp/modules.tmp
 	cp /tmp/modules.tmp /lib/modules/\$(uname -r)/modules.dep
+
+	depmod -a
 
 	update-rc.d -f pvr_init remove
 	if [ -f /etc/init.d/pvr_init ] ; then
@@ -504,6 +518,7 @@ if [ -e ${DIR}/system.sh ] ; then
 	sed -i -e 's:all_km all_sdk:all_km:g' "${DIR}/ti-sdk-pvr/Graphics_SDK/Makefile"
 	sed -i -e 's:install_km install_sdk:install_km:g' "${DIR}/ti-sdk-pvr/Graphics_SDK/Makefile"
 
+	clean_sgx_modules
 	build_sgx_modules release 3.x yes 0 all
 	build_sgx_modules release 5.x yes 0 all
 ##	build_sgx_modules release 6.x yes 0 all
