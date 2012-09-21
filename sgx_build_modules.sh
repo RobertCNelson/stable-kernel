@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2012.07-1"
+VERSION="v2012.09-1"
 
 unset DIR
 
@@ -66,24 +66,52 @@ git_sgx_modules () {
 }
 
 actually_dl_hardfp () {
-	wget -c --directory-prefix=/home/${USER}/ http://rcn-ee.net/sgx/armhf/sgx-hardfp.tar.gz
-	MD5SUM=$(md5sum "/home/${USER}/sgx-hardfp.tar.gz" | awk '{print $1}')
+	wget -c --directory-prefix=${HOME} http://rcn-ee.net/sgx/armhf/sgx-hardfp.tar.gz
+	MD5SUM=$(md5sum ${HOME}/sgx-hardfp.tar.gz | awk '{print $1}')
 	echo "Debug: md5sum ${MD5SUM}"
 }
 
 check_dl_hardfp () {
 	SGX_HARDFP_MD5SUM="423e649b6bfdca421f1574d01162bf24"
 
-	MD5SUM=$(md5sum "/home/${USER}/sgx-hardfp.tar.gz" | awk '{print $1}')
+	MD5SUM=$(md5sum ${HOME}/sgx-hardfp.tar.gz | awk '{print $1}')
 	if [ "x${SGX_HARDFP_MD5SUM}" != "x${MD5SUM}" ] ; then
 		echo "Debug: md5sum ${MD5SUM}"
-		rm -f "/home/${USER}/sgx-hardfp.tar.gz" || true
+		rm -f ${HOME}/sgx-hardfp.tar.gz || true
 		actually_dl_hardfp
 	fi
 }
 
+copy_sgx_es_armel () {
+	if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/gfx_rel_${es_version} ] ; then
+		mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/armel/gfx_rel_${es_version}" || true
+		cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/gfx_rel_${es_version}/* "${DIR}/ti-sdk-pvr/Graphics_SDK/armel/gfx_rel_${es_version}/"
+	else
+		echo "SGX: missing gfx_rel_${es_version} dir, did you get the FULL release"
+	fi
+}
+
+copy_sgx_es_armhf () {
+	if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/gfx_rel_${es_version} ] ; then
+		mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf/gfx_rel_${es_version}" || true
+		cp -r ${DIR}/ti-sdk-pvr/hardfp/gfx_rel_${es_version}/* "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf/gfx_rel_${es_version}/"
+	else
+		echo "SGX: missing gfx_rel_${es_version} dir, did you get the FULL release"
+	fi
+}
+
 copy_sgx_binaries () {
-	if [ ! -d "/home/${USER}/Graphics_SDK_${SDK_DIR}" ] ; then
+	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/armel" ] ; then
+		rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/armel" || true
+		mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/armel" || true
+	fi
+
+	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf" ] ; then
+		rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf" || true
+		mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf" || true
+	fi
+
+	if [ ! -d ${HOME}/Graphics_SDK_${SDK_DIR} ] ; then
 		echo ""
 		echo "The SDK is missing, please download the ${SDK} release from"
 		echo "http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/"
@@ -100,64 +128,91 @@ copy_sgx_binaries () {
 		if [  -d "${DIR}/ti-sdk-pvr/Graphics_SDK/targetfs" ] ; then
 			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/targetfs" || true
 		fi
-		mkdir "${DIR}/ti-sdk-pvr/Graphics_SDK/targetfs"
+		mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/targetfs" || true
 
 		if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/tools" ] ; then
 			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/tools" || true
 		fi
 
-		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/tools" ] ; then
-			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/tools" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+		if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/tools ] ; then
+			cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/tools "${DIR}/ti-sdk-pvr/Graphics_SDK/"
 		else
 			echo "SGX: missing tools dir, did you get the FULL release"
 		fi
 
-		if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es3.x" ] ; then
-			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es3.x" || true
-		fi
+		es_version="es3.x"
+		copy_sgx_es_armel
 
-		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es3.x" ] ; then
-			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es3.x" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
-		else
-			echo "SGX: missing gfx_rel_es3.x dir, did you get the FULL release"
-		fi
+		es_version="es5.x"
+		copy_sgx_es_armel
 
-		if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es5.x" ] ; then
-			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es5.x" || true
-		fi
+		es_version="es6.x"
+		copy_sgx_es_armel
 
-		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es5.x" ] ; then
-			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/gfx_rel_es5.x" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
-		else
-			echo "SGX: missing gfx_rel_es5.x dir, did you get the FULL release"
-		fi
+		es_version="es8.x"
+		copy_sgx_es_armel
+
 
 		if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/GFX_Linux_SDK" ] ; then
 			rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/GFX_Linux_SDK" || true
 		fi
-#		cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK" "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+#		cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK "${DIR}/ti-sdk-pvr/Graphics_SDK/"
 		echo "Done: copying files from the SDK"
 	fi
 
-	if [ -f "/home/${USER}/sgx-hardfp.tar.gz" ] ; then
+	if [ -f ${HOME}/sgx-hardfp.tar.gz ] ; then
 		check_dl_hardfp
 	else
 		actually_dl_hardfp
 	fi
+
+	mkdir -p "${DIR}/ti-sdk-pvr/hardfp" || true
+	tar xf ${HOME}/sgx-hardfp.tar.gz -C "${DIR}/ti-sdk-pvr/hardfp"
+
+	es_version="es3.x"
+	copy_sgx_es_armhf
+
+	es_version="es5.x"
+	copy_sgx_es_armhf
+
+	es_version="es6.x"
+	copy_sgx_es_armhf
+
+	es_version="es8.x"
+	copy_sgx_es_armhf
+
+	rm -rf "${DIR}/ti-sdk-pvr/hardfp" || true
 }
 
 clean_sgx_modules () {
+	echo "make clean"
+	echo "-----------------------------"
 	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/"
-	echo "make ${GRAPHICS_PATH} ${KERNEL_PATH} ${USER_VAR} ${CROSS} clean"
-	make ${GRAPHICS_PATH} ${KERNEL_PATH} ${USER_VAR} ${CROSS} clean
+	echo "make ${GRAPHICS_PATH} ${KERNEL_PATH} HOME=${HOME} ${CROSS} clean"
+	make ${GRAPHICS_PATH} ${KERNEL_PATH} HOME=${HOME} ${CROSS} clean &> /dev/null
 	cd ${DIR}/
+	echo "-----------------------------"
+	echo ""
 }
 
 build_sgx_modules () {
+	echo "Building es$2 modules"
+	echo "-----------------------------"
 	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/"
-	echo "make ${GRAPHICS_PATH} ${KERNEL_PATH} ${USER_VAR} ${CROSS} BUILD="$1" OMAPES="$2" FBDEV="$3" SUPPORT_XORG="$4" "$5""
-	make ${GRAPHICS_PATH} ${KERNEL_PATH} ${USER_VAR} ${CROSS} BUILD="$1" OMAPES="$2" FBDEV="$3" SUPPORT_XORG="$4" "$5"
+
+	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" ] ; then
+		rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" || true
+	fi
+	mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" || true
+
+	echo "make ${GRAPHICS_PATH} ${KERNEL_PATH} HOME=${HOME} ${CROSS} BUILD="$1" OMAPES="$2" FBDEV="$3" SUPPORT_XORG="$4" "$5""
+	make ${GRAPHICS_PATH} ${KERNEL_PATH} HOME=${HOME} ${CROSS} BUILD="$1" OMAPES="$2" FBDEV="$3" SUPPORT_XORG="$4" "$5"
 	cd ${DIR}/
+	echo "-----------------------------"
+	echo "modinfo sanity check: vermagic:"
+	sudo modinfo "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/"pvr* | grep vermagic || true
+	echo "-----------------------------"
+	echo ""
 }
 
 file_pvr_startup () {
@@ -183,9 +238,8 @@ file_pvr_startup () {
 	DPKG_ARCH=\$(dpkg --print-architecture | grep arm)
 
 	echo Starting PVR
-	#FIXME: added -f for armhf, getting 'Invalid module format'
-	modprobe -f omaplfb
-	modprobe -f bufferclass_ti
+	modprobe omaplfb
+	modprobe bufferclass_ti
 
 	pvr_maj=\$(grep "pvrsrvkm$" /proc/devices | cut -b1,2,3)
 	bc_maj=\$(grep "bc" /proc/devices | cut -b1,2,3)
@@ -221,7 +275,7 @@ file_pvr_startup () {
 }
 
 file_install_sgx () {
-cat > "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
+	cat > "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
 	#!/bin/sh
 
 	if ! id | grep -q root; then
@@ -236,20 +290,19 @@ cat > "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
 	ln -sf /usr/lib/libXau.so.6.0.0 /usr/lib/libXau.so.0
 
 	sudo rm -rf /opt/sgx_ews/ || true || true
-	sudo rm -rf /opt/sgx_kernel_modules/ || true || true
+	sudo rm -rf /opt/sgx_modules/ || true || true
 	sudo rm -rf /opt/sgx_other/ || true || true
 	sudo rm -rf /opt/sgx_xorg/ || true || true
 
-	#FIXME: kernel modules are in the armel, pkg's..
-	echo "Extracting gfx_rel_es3_armel.tar.gz"
-	tar xf ./gfx_rel_es3_armel.tar.gz -C /
-	echo "Extracting gfx_rel_es5_armel.tar.gz"
-	tar xf ./gfx_rel_es5_armel.tar.gz -C /
+	if [ -f ./gfx_rel_es3_\${DPKG_ARCH}.tar.gz ] ; then
+	        echo "Extracting gfx_rel_es3_\${DPKG_ARCH}.tar.gz"
+	        tar xf ./gfx_rel_es3_\${DPKG_ARCH}.tar.gz -C /
+	fi
 
-	echo "Extracting gfx_rel_es3_armhf.tar.gz"
-	tar xf ./gfx_rel_es3_armhf.tar.gz -C /
-	echo "Extracting gfx_rel_es5_armhf.tar.gz"
-	tar xf ./gfx_rel_es5_armhf.tar.gz -C /
+	if [ -f ./gfx_rel_es5_\${DPKG_ARCH}.tar.gz ] ; then
+	        echo "Extracting gfx_rel_es5_\${DPKG_ARCH}.tar.gz"
+	        tar xf ./gfx_rel_es5_\${DPKG_ARCH}.tar.gz -C /
+	fi
 
 	if [ -f /etc/powervr-esrev ] ; then
 	        rm -f /etc/powervr-esrev || true
@@ -286,7 +339,7 @@ cat > "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
 
 	#FIXME: is there a better way? A way that doesn't look like a hack...
 	mkdir -p /lib/modules/\$(uname -r)/extra/
-	cp -v /opt/sgx_kernel_modules/es\${ES_REVISION}.0/*.ko /lib/modules/\$(uname -r)/extra/
+	cp -v /opt/sgx_modules/es\${ES_REVISION}.0/*.ko /lib/modules/\$(uname -r)/extra/
 
 	grep -v -e "extra/pvrsrvkm.ko" /lib/modules/\$(uname -r)/modules.dep >/tmp/modules.tmp
 	echo "/lib/modules/\$(uname -r)/extra/pvrsrvkm.ko:" >>/tmp/modules.tmp
@@ -343,8 +396,13 @@ file_run_sgx () {
 }
 
 mv_modules_libs_bins () {
-	mkdir -p ./opt/sgx_kernel_modules/${CORE}.0/
-	mv ./*.ko ./opt/sgx_kernel_modules/${CORE}.0/ || true
+	echo "packaging: ${CORE}.x: ${ARCH} Kernel Modules:"
+	mkdir -p ./opt/sgx_modules/${CORE}.0/
+	cp -v "${DIR}"/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x/*.ko ./opt/sgx_modules/${CORE}.0/ || true
+	echo "-----------------------------"
+
+	#armhf has extra pre-built kernel modules, remove...(built against v3.4.4-x1 so not usable..)
+	rm -rf *.ko || true 
 
 	mkdir -p ./opt/sgx_xorg/${ARCH}/${CORE}.0/
 	mv ./pvr_drv* ./opt/sgx_xorg/${ARCH}/${CORE}.0/ || true
@@ -366,22 +424,11 @@ mv_modules_libs_bins () {
 	mv ./*_test ./usr/bin/${ARCH}/${CORE}.0/ || true
 	mv ./*gl* ./usr/bin/${ARCH}/${CORE}.0/ || true
 	mv ./p[dv]* ./usr/bin/${ARCH}/${CORE}.0/ || true
-	mv ./xgle* ./usr/bin/${ARCH}/${CORE}.0/ || true
 }
 
 gfx_rel_x () {
-	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x" ] ; then
-		cd "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x"
-		mv_modules_libs_bins
-		tar czf "${DIR}/ti-sdk-pvr/pkg"/gfx_rel_${CORE}_${ARCH}.tar.gz *
-	else
-		echo "SGX: missing gfx_rel_${CORE}.x dir, did you get the FULL release"
-	fi
-}
-
-gfx_rel_x_armhf () {
-	if [ -d "${DIR}/ti-sdk-pvr/gfx_rel_${CORE}.x" ] ; then
-		cd "${DIR}/ti-sdk-pvr/gfx_rel_${CORE}.x"
+	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/${ARCH}/gfx_rel_${CORE}.x" ] ; then
+		cd "${DIR}/ti-sdk-pvr/Graphics_SDK/${ARCH}/gfx_rel_${CORE}.x"
 		mv_modules_libs_bins
 		tar czf "${DIR}/ti-sdk-pvr/pkg"/gfx_rel_${CORE}_${ARCH}.tar.gz *
 	else
@@ -402,16 +449,12 @@ pkg_modules () {
 	CORE="es5"
 	gfx_rel_x
 
-	#FIXME: slightly ugly...
-	cd "${DIR}/ti-sdk-pvr/"
-	tar xf "/home/${USER}/sgx-hardfp.tar.gz" -C ./
-
 	ARCH="armhf"
 	CORE="es3"
-	gfx_rel_x_armhf
+	gfx_rel_x
 
 	CORE="es5"
-	gfx_rel_x_armhf
+	gfx_rel_x
 
 	rm -rf gfx_* || true
 	rm -rf README || true
@@ -424,13 +467,13 @@ pkg_helpers () {
 
 	#download devmem2
 	rm -f /tmp/index.html || true
-	wget --directory-prefix=/tmp http://ports.ubuntu.com/pool/universe/d/devmem2/
+	wget --no-verbose --directory-prefix=/tmp http://ports.ubuntu.com/pool/universe/d/devmem2/
 
 	DEVMEM_ARMEL=$(cat /tmp/index.html | grep _armel.deb | head -1 | awk -F"\"" '{print $8}')
 	DEVMEM_ARMHF=$(cat /tmp/index.html | grep _armhf.deb | head -1 | awk -F"\"" '{print $8}')
 
-	wget -c http://ports.ubuntu.com/pool/universe/d/devmem2/${DEVMEM_ARMEL}
-	wget -c http://ports.ubuntu.com/pool/universe/d/devmem2/${DEVMEM_ARMHF}
+	wget -c --no-verbose http://ports.ubuntu.com/pool/universe/d/devmem2/${DEVMEM_ARMEL}
+	wget -c --no-verbose http://ports.ubuntu.com/pool/universe/d/devmem2/${DEVMEM_ARMHF}
 }
 
 pkg_install_script () {
@@ -458,27 +501,27 @@ pkg_up_examples () {
 	fi
 	mkdir "${DIR}/ti-sdk-pvr/examples"
 
-	if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK" ] ; then
+	if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK ] ; then
 		echo "Copying SDK example appications..."
 
-		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OGLES}/Binaries/" ] ; then
+		if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/${OGLES}/Binaries/ ] ; then
 			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OGLES}/Binaries/"
-			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OGLES}/Binaries/" "${DIR}/ti-sdk-pvr/examples/${OGLES}/"
+			cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/${OGLES}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OGLES}/"
 		fi
 
-		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OGLES2}/Binaries/" ] ; then
+		if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/${OGLES2}/Binaries/ ] ; then
 			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OGLES2}/Binaries/"
-			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OGLES2}/Binaries/" "${DIR}/ti-sdk-pvr/examples/${OGLES2}/"
+			cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/${OGLES2}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OGLES2}/"
 		fi
 
-		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OVG}/Binaries/" ] ; then
+		if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/${OVG}/Binaries/ ] ; then
 			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OVG}/Binaries/"
-			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/${OVG}/Binaries/" "${DIR}/ti-sdk-pvr/examples/${OVG}/"
+			cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/${OVG}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OVG}/"
 		fi
 
-		if [ -d "/home/${USER}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK/ti-components/" ] ; then
+		if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK/ti-components/ ] ; then
 			mkdir -p "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/ti-components/"
-			cp -r "/home/${USER}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK/ti-components/" "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/"
+			cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK/ti-components/ "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/"
 		fi
 
 		echo "taring SDK example files for use on the OMAP board"
@@ -506,8 +549,8 @@ pkg_up_examples () {
 }
 
 if [ -e ${DIR}/system.sh ] ; then
-	source system.sh
-	source version.sh
+	source ${DIR}/system.sh
+	source ${DIR}/version.sh
 
 	set_sgx_make_vars
 
@@ -520,12 +563,18 @@ if [ -e ${DIR}/system.sh ] ; then
 
 	clean_sgx_modules
 	build_sgx_modules release 3.x yes 0 all
+
+	clean_sgx_modules
 	build_sgx_modules release 5.x yes 0 all
+
 ##	build_sgx_modules release 6.x yes 0 all
 ##	build_sgx_modules release 8.x yes 0 all
+
 	pkg_modules
+
 	pkg_helpers
 	pkg_install_script
+
 	pkg_up
 	pkg_up_examples
 
