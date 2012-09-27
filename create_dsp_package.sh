@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2012.02-1"
+VERSION="v2012.06-0"
 
 unset BUILD
 unset CC
@@ -82,7 +82,7 @@ cat > ${DIR}/DSP/opt/dsp <<dspscript
 case "\$1" in
 	start)
 		modprobe mailbox_mach
-		modprobe bridgedriver base_img=/lib/dsp/baseimage.dof
+		modprobe tidspbridge base_img=/lib/dsp/baseimage.dof
 		;;
 esac
 
