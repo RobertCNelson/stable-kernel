@@ -41,7 +41,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -18 -o ${DIR}/patches/
+	git format-patch -${number} -o ${DIR}/patches/
 	exit
 }
 
@@ -115,6 +115,7 @@ beagle () {
 	${git} "${DIR}/patches/beagle/0018-Beagle-expansion-add-beaglefpga.patch"
 	${git} "${DIR}/patches/beagle/0019-Enable-buddy-spidev.patch"
 	${git} "${DIR}/patches/beagle/0020-zeroMAP-Open-your-eyes.patch"
+	${git} "${DIR}/patches/beagle/0021-Beagle-Camera-add-MT9P031-Aptina-image-sensor-driver.patch"
 }
 
 devkit8000 () {
