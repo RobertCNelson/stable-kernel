@@ -1,25 +1,33 @@
 #!/bin/bash
 
-unset BUILD
+ARCH=$(uname -m)
 
-KERNEL_REL=2.6.37
-STABLE_PATCH=6
-KERNEL_PATCH=${KERNEL_REL}.${STABLE_PATCH}
-#RC_KERNEL=2.6.37
-#RC_PATCH=-rc8
-#KERNEL_PATCH=${RC_KERNEL}${RC_PATCH}
-DL_PATCH=patch-${KERNEL_PATCH}
-ABI=5
-
-if [ "${NO_DEVTMPS}" ] ; then
-BUILD+=old${ABI}
-else
-BUILD+=x${ABI}
+CORES=1
+if [ "x${ARCH}" == "xx86_64" ] || [ "x${ARCH}" == "xi686" ] ; then
+	CORES=$(cat /proc/cpuinfo | grep processor | wc -l)
+	let CORES=$CORES+1
 fi
+
+unset GIT_OPTS
+unset GIT_NOEDIT
+LC_ALL=C git help pull | grep -m 1 -e "--no-edit" &>/dev/null && GIT_NOEDIT=1
+
+if [ "${GIT_NOEDIT}" ] ; then
+	GIT_OPTS+="--no-edit"
+fi
+
+CCACHE=ccache
+
+config="omap2plus_defconfig"
+
+#Kernel/Build
+KERNEL_REL=2.6.37
+KERNEL_TAG=${KERNEL_REL}.6
+BUILD=x5
+
+#git branch
+BRANCH="v2.6.37.x"
 
 BUILDREV=1.0
 DISTRO=cross
-
-export KERNEL_REL BUILD RC_PATCH KERNEL_PATCH
-export BRANCH REL
-export BUILDREV DISTRO
+DEBARCH=armel
