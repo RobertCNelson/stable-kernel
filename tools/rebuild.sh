@@ -30,10 +30,8 @@ function patch_kernel {
 	export DIR GIT_OPTS
 	/bin/bash -e ${DIR}/patch.sh || { git add . ; exit 1 ; }
 
-	if [ ! "${RUN_BISECT}" ] ; then
-		git add .
-		git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
-	fi
+	git add .
+	git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
 
 #Test Patches:
 #exit
@@ -175,14 +173,9 @@ if [ -e ${DIR}/system.sh ] ; then
 		CONFIG_DEBUG_SECTION="CONFIG_DEBUG_SECTION_MISMATCH=y"
 	fi
 
-	/bin/bash -e "${DIR}/scripts/git.sh" || { exit 1 ; }
-
-	if [ "${RUN_BISECT}" ] ; then
-		/bin/bash -e "${DIR}/scripts/bisect.sh" || { exit 1 ; }
-	fi
-
-	patch_kernel
-	copy_defconfig
+#	/bin/bash -e "${DIR}/scripts/git.sh" || { exit 1 ; }
+#	patch_kernel
+#	copy_defconfig
 	make_menuconfig
 	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
 		sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
@@ -199,7 +192,7 @@ if [ -e ${DIR}/system.sh ] ; then
 	if [ "x${DTBS}" != "x" ] ; then
 		make_dtbs_pkg
 	fi
-	make_headers_pkg
+	#make_headers_pkg
 	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
 		sed -i -e 's:CROSS_COMPILE)'$GCC_OVERRIDE':CROSS_COMPILE)gcc:g' ${DIR}/KERNEL/Makefile
 	fi

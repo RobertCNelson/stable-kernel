@@ -30,10 +30,8 @@ function patch_kernel {
 	export DIR GIT_OPTS
 	/bin/bash -e ${DIR}/patch.sh || { git add . ; exit 1 ; }
 
-	if [ ! "${RUN_BISECT}" ] ; then
-		git add .
-		git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
-	fi
+	git add .
+	git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
 
 #Test Patches:
 #exit
@@ -62,10 +60,11 @@ function make_menuconfig {
   cd ${DIR}/
 }
 
-function make_kernel {
+function make_deb {
 	cd ${DIR}/KERNEL/
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} zImage modules"
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} zImage modules
+	echo "make -j${CORES} ARCH=arm KBUILD_DEBARCH=${DEBARCH} LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} ${CONFIG_DEBUG_SECTION} deb-pkg"
+	time fakeroot make -j${CORES} ARCH=arm KBUILD_DEBARCH=${DEBARCH} LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} ${CONFIG_DEBUG_SECTION} deb-pkg
+	mv ${DIR}/*.deb ${DIR}/deploy/
 
 	unset DTBS
 	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" &> /dev/null && DTBS=1
@@ -76,44 +75,8 @@ function make_kernel {
 	fi
 
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
-	if [ -f ./arch/arm/boot/zImage ] ; then
-		cp arch/arm/boot/zImage ${DIR}/deploy/${KERNEL_UTS}.zImage
-		cp .config ${DIR}/deploy/${KERNEL_UTS}.config
-	else
-		echo "Error: make zImage modules failed"
-		exit
-	fi
+
 	cd ${DIR}/
-}
-
-function make_uImage {
-	cd ${DIR}/KERNEL/
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} uImage"
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} uImage
-	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
-	if [ -f ./arch/arm/boot/uImage ] ; then
-		cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
-	else
-		echo "Error: make uImage failed"
-		exit
-	fi
-	cd ${DIR}/
-}
-
-function make_modules_pkg {
-  cd ${DIR}/KERNEL/
-
-  echo ""
-  echo "Building Module Archive"
-  echo ""
-
-  rm -rf ${DIR}/deploy/mod &> /dev/null || true
-  mkdir -p ${DIR}/deploy/mod
-  make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/mod
-  echo "Building ${KERNEL_UTS}-modules.tar.gz"
-  cd ${DIR}/deploy/mod
-  tar czf ../${KERNEL_UTS}-modules.tar.gz *
-  cd ${DIR}/
 }
 
 function make_dtbs_pkg {
@@ -131,22 +94,6 @@ function make_dtbs_pkg {
 	tar czf ../${KERNEL_UTS}-dtbs.tar.gz *
 
 	cd ${DIR}/
-}
-
-function make_headers_pkg {
-  cd ${DIR}/KERNEL/
-
-  echo ""
-  echo "Building Header Archive"
-  echo ""
-
-  rm -rf ${DIR}/deploy/headers &> /dev/null || true
-  mkdir -p ${DIR}/deploy/headers/usr
-  make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
-  cd ${DIR}/deploy/headers
-  echo "Building ${KERNEL_UTS}-headers.tar.gz"
-  tar czf ../${KERNEL_UTS}-headers.tar.gz *
-  cd ${DIR}/
 }
 
 /bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
@@ -175,31 +122,17 @@ if [ -e ${DIR}/system.sh ] ; then
 		CONFIG_DEBUG_SECTION="CONFIG_DEBUG_SECTION_MISMATCH=y"
 	fi
 
-	/bin/bash -e "${DIR}/scripts/git.sh" || { exit 1 ; }
-
-	if [ "${RUN_BISECT}" ] ; then
-		/bin/bash -e "${DIR}/scripts/bisect.sh" || { exit 1 ; }
-	fi
-
-	patch_kernel
-	copy_defconfig
+#	/bin/bash -e "${DIR}/scripts/git.sh" || { exit 1 ; }
+#	patch_kernel
+#	copy_defconfig
 	make_menuconfig
 	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
 		sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
 	fi
-	make_kernel
-	if [ "${BUILD_UIMAGE}" ] ; then
-		make_uImage
-	else
-		echo ""
-		echo "NOTE: enable BUILD_UIMAGE variables in system.sh to build uImage's"
-		echo ""
-	fi
-	make_modules_pkg
+	make_deb
 	if [ "x${DTBS}" != "x" ] ; then
 		make_dtbs_pkg
 	fi
-	make_headers_pkg
 	if [ "x${GCC_OVERRIDE}" != "x" ] ; then
 		sed -i -e 's:CROSS_COMPILE)'$GCC_OVERRIDE':CROSS_COMPILE)gcc:g' ${DIR}/KERNEL/Makefile
 	fi
