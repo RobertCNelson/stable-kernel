@@ -1,4 +1,20 @@
-This just a simple set of scripts to rebuild a known working kernel for omap devices..
+This just a simple set of scripts to rebuild a known working kernel for ARM devices..
+
+Config Notes:
+
+v3.6-rc7
+Beagle (omap3430/omap3530):
+CONFIG_ARM_ERRATA_430973=y (arm+thumb interwork issues)
+# CONFIG_CPU_FREQ_GOV_ONDEMAND is not set (hard locks on reboot)
+
+Beagle xM (omap36xx/DM3730):
+
+Panda (omap4430):
+CONFIG_PL310_ERRATA_769419=y (USB: compare [hdparm -tT /dev/sda])
+CONFIG_OMAP4_ERRATA_I688=y (silicon bug)
+CONFIG_ARCH_HAS_BARRIERS=y
+
+Panda ES (omap4460):
 
 Script Bugs: "bugs@rcn-ee.com"
 
@@ -19,8 +35,11 @@ touchbook (no video)
 
 Dependencies: GCC ARM Cross ToolChain
 
-Ubuntu:
+Ubuntu (for target "armel", prior to 12.04):
 sudo apt-get install gcc-arm-linux-gnueabi
+
+Ubuntu (for target "armhf", 12.04+ is available in armhf):
+sudo apt-get install gcc-arm-linux-gnueabihf
 
 Linaro:
 http://www.linaro.org/downloads/

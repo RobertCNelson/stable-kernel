@@ -22,13 +22,27 @@
 
 # Split out, so build_kernel.sh and build_deb.sh can share..
 
-# DIR=`pwd`
+git="git am"
+#git="git am --whitespace=fix"
+
+if [ -f ${DIR}/system.sh ] ; then
+	source ${DIR}/system.sh
+fi
+
+if [ "${RUN_BISECT}" ] ; then
+	git="git apply"
+fi
 
 echo "Starting patch.sh"
 
-function git_add {
-git add .
-git commit -a -m 'testing patchset'
+git_add () {
+	git add .
+	git commit -a -m 'testing patchset'
+}
+
+cleanup () {
+	git format-patch -${number} -o ${DIR}/patches/
+	exit
 }
 
 function bugs_trivial {
