@@ -68,6 +68,9 @@ beagle () {
 	${git} "${DIR}/patches/beagle/expansion/0007-Beagle-expansion-add-beaglefpga.patch"
 	${git} "${DIR}/patches/beagle/expansion/0008-Enable-buddy-spidev.patch"
 
+	#note: had to revert a few omap3isp patches to make this work...
+	${git} "${DIR}/patches/beagle/expansion/0009-Beagle-Camera-add-MT9P031-Aptina-image-sensor-driver.patch"
+
 	#v3.5: looks to be removed: (might want to revert it back in...)
 	#http://git.kernel.org/?p=linux/kernel/git/stable/linux-stable.git;a=commit;h=b6e695abe710ee1ae248463d325169efac487e17
 	#git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
@@ -171,6 +174,15 @@ cpuidle_omap () {
 	${git} "${DIR}/patches/cpuidle_omap/0007-ARM-OMAP4-Register-the-OPP-table-only-for-4430-devic.patch"
 }
 
+omap3isp () {
+	#omap3isp: Revert to v3.4.x, till we figure out, how to actually set the 'pixel rate control'
+	#"no pixel rate control in subdev %s\n","
+	${git} "${DIR}/patches/omap3isp/0001-Revert-media-omap3isp-Move-CCDC-link-validation-to-c.patch"
+	${git} "${DIR}/patches/omap3isp/0002-Revert-media-omap3isp-Default-link-validation-for-cc.patch"
+	${git} "${DIR}/patches/omap3isp/0003-Revert-media-omap3isp-Use-external-rate-instead-of-v.patch"
+	${git} "${DIR}/patches/omap3isp/0004-Revert-media-omap3isp-Introduce-isp_video_check_exte.patch"
+}
+
 distro
 sakoman
 beagle
@@ -186,6 +198,8 @@ mainline_fixes
 
 cpuidle
 cpuidle_omap
+
+omap3isp
 
 echo "patch.sh ran successful"
 
