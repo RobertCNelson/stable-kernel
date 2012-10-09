@@ -81,6 +81,8 @@ function beagle {
 	${git} "${DIR}/patches/sakoman/2.6.39/0007-video-add-timings-for-hd720.patch"
 	${git} "${DIR}/patches/sakoman/2.6.39/0025-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
 
+	${git} "${DIR}/patches/beagle/expansion/0007-Beagle-Camera-add-MT9P031-Aptina-image-sensor.patch"
+
 #	${git} "${DIR}/patches/omap/0001-Fix-sprz319-erratum-2.1.patch"
 }
 
