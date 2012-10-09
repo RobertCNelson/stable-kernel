@@ -47,70 +47,73 @@ cleanup () {
 
 function bugs_trivial {
 	echo "bugs and trivial stuff"
-	git am "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
+	${git} "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 }
 
 function beagle {
 	echo "Board Patches for: BeagleBoard"
 
-	git am "${DIR}/patches/beagle/expansion/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
-	git am "${DIR}/patches/beagle/expansion/0002-expansion-add-mmc-regulator-and-ds1307-rtc.patch"
-	git am "${DIR}/patches/beagle/expansion/0003-expansion-add-zippy.patch"
-	git am "${DIR}/patches/beagle/expansion/0004-expansion-add-zippy2.patch"
-	git am "${DIR}/patches/beagle/expansion/0005-expansion-add-trainer.patch"
-	git am "${DIR}/patches/beagle/expansion/0006-expansion-add-ulcd.patch"
+	${git} "${DIR}/patches/beagle/expansion/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
+	${git} "${DIR}/patches/beagle/expansion/0002-expansion-add-mmc-regulator-and-ds1307-rtc.patch"
+	${git} "${DIR}/patches/beagle/expansion/0003-expansion-add-zippy.patch"
+	${git} "${DIR}/patches/beagle/expansion/0004-expansion-add-zippy2.patch"
+	${git} "${DIR}/patches/beagle/expansion/0005-expansion-add-trainer.patch"
+	${git} "${DIR}/patches/beagle/expansion/0006-expansion-add-ulcd.patch"
 
-	git am "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
-	git am "${DIR}/patches/beagle/0001-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly-wh.patch"
-	git am "${DIR}/patches/beagle/0001-ARM-OMAP3-clock-data-fill-in-some-missing-clockdomai.patch"
-	git am "${DIR}/patches/beagle/0001-ARM-OMAP3-USB-Fix-the-EHCI-ULPI-PHY-reset-issue.patch"
-	git am "${DIR}/patches/beagle/0001-omap3_beagle-init-uart2-for-beagle-rev-AX-BX-only.patch"
+	${git} "${DIR}/patches/beagle/0001-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
+	${git} "${DIR}/patches/beagle/0001-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly-wh.patch"
+	${git} "${DIR}/patches/beagle/0001-ARM-OMAP3-clock-data-fill-in-some-missing-clockdomai.patch"
+	${git} "${DIR}/patches/beagle/0001-ARM-OMAP3-USB-Fix-the-EHCI-ULPI-PHY-reset-issue.patch"
 
-	git am "${DIR}/patches/beagle/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
-	git am "${DIR}/patches/beagle/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
+	${git} "${DIR}/patches/beagle/expansion/0001-beagle-resync-all-board-changes.patch"
 
-	git am "${DIR}/patches/omap/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
+	${git} "${DIR}/patches/beagle/0001-omap3_beagle-init-uart2-for-beagle-rev-AX-BX-only.patch"
 
-	git am "${DIR}/patches/beagle/0001-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
-	git am "${DIR}/patches/beagle/0001-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
+	${git} "${DIR}/patches/beagle/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
+	${git} "${DIR}/patches/beagle/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 
-	git am "${DIR}/patches/sakoman/2.6.39/0006-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
-	git am "${DIR}/patches/sakoman/2.6.39/0007-video-add-timings-for-hd720.patch"
-	git am "${DIR}/patches/sakoman/2.6.39/0025-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
+	${git} "${DIR}/patches/omap/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 
-#	git am "${DIR}/patches/omap/0001-Fix-sprz319-erratum-2.1.patch"
+	${git} "${DIR}/patches/beagle/0001-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
+	${git} "${DIR}/patches/beagle/0001-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
+
+	${git} "${DIR}/patches/sakoman/2.6.39/0006-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
+	${git} "${DIR}/patches/sakoman/2.6.39/0007-video-add-timings-for-hd720.patch"
+	${git} "${DIR}/patches/sakoman/2.6.39/0025-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
+
+#	${git} "${DIR}/patches/omap/0001-Fix-sprz319-erratum-2.1.patch"
 }
 
 function pandaboard {
 	echo "Board Patches for: PandaBoard"
-	git am "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
-	git am "${DIR}/patches/panda/0001-panda-enable-bluetooth.patch"
-	git am "${DIR}/patches/panda/0001-ti-st-st-kim-fixing-firmware-path.patch"
+	${git} "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
+	${git} "${DIR}/patches/panda/0001-panda-enable-bluetooth.patch"
+	${git} "${DIR}/patches/panda/0001-ti-st-st-kim-fixing-firmware-path.patch"
 }
 
 function fixes {
 	echo "omap cherry pick fixes"
 	#3/22/2012: replaces: 0001-OMAP-UART-Enable-tx-wakeup-bit-in-wer.patch
-	git am "${DIR}/patches/omap/0001-OMAP2-UART-Remove-cpu-checks-for-populating-errata-f.patch"
-	git am "${DIR}/patches/omap/0002-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
-	git am "${DIR}/patches/omap/0003-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
+	${git} "${DIR}/patches/omap/0001-OMAP2-UART-Remove-cpu-checks-for-populating-errata-f.patch"
+	${git} "${DIR}/patches/omap/0002-OMAP2-UART-enable-tx-wakeup-bit-for-wer-reg.patch"
+	${git} "${DIR}/patches/omap/0003-OMAP2-UART-replace-omap34xx-omap4xx-cpu-checks-with-.patch"
 
 	#3/22/2012: suspend testing:
 	#http://www.spinics.net/lists/linux-omap/msg67070.html
-	git am "${DIR}/patches/omap/0001-mmc-omap_hsmmc-Pass-on-the-suspend-failure-to-the-PM.patch"
+	${git} "${DIR}/patches/omap/0001-mmc-omap_hsmmc-Pass-on-the-suspend-failure-to-the-PM.patch"
 
 	#merged in 3.4-rc0
 	#http://git.kernel.org/?p=linux/kernel/git/khilman/linux-omap-pm.git;a=shortlog;h=refs/heads/for_3.4/cpufreq
-	git am "${DIR}/patches/omap-3.4/0001-cpufreq-OMAP-driver-depends-CPUfreq-tables.patch"
-	git am "${DIR}/patches/omap-3.4/0002-cpufreq-OMAP-scale-voltage-along-with-frequency.patch"
-	git am "${DIR}/patches/omap-3.4/0003-cpufreq-OMAP-specify-range-for-voltage-scaling.patch"
+	${git} "${DIR}/patches/omap-3.4/0001-cpufreq-OMAP-driver-depends-CPUfreq-tables.patch"
+	${git} "${DIR}/patches/omap-3.4/0002-cpufreq-OMAP-scale-voltage-along-with-frequency.patch"
+	${git} "${DIR}/patches/omap-3.4/0003-cpufreq-OMAP-specify-range-for-voltage-scaling.patch"
 
 	#http://git.kernel.org/?p=linux/kernel/git/khilman/linux-omap-pm.git;a=shortlog;h=refs/heads/for_3.4/fixes/pm
-	git am "${DIR}/patches/omap-3.4/0001-ARM-OMAP4-Workaround-the-OCP-synchronisation-issue-w.patch"
-	git am "${DIR}/patches/omap-3.4/0002-arm-omap3-pm34xx.c-Fix-omap3_pm_init-error-out-paths.patch"
-	git am "${DIR}/patches/omap-3.4/0003-arm-omap3-pm34xx.c-Replace-printk-with-appropriate-p.patch"
-	git am "${DIR}/patches/omap-3.4/0004-ARM-OMAP2-OPP-allow-OPP-enumeration-to-continue-if-d.patch"
-	git am "${DIR}/patches/omap-3.4/0005-ARM-OMAP3-fix-oops-triggered-in-omap_prcm_register_c.patch"
+	${git} "${DIR}/patches/omap-3.4/0001-ARM-OMAP4-Workaround-the-OCP-synchronisation-issue-w.patch"
+	${git} "${DIR}/patches/omap-3.4/0002-arm-omap3-pm34xx.c-Fix-omap3_pm_init-error-out-paths.patch"
+	${git} "${DIR}/patches/omap-3.4/0003-arm-omap3-pm34xx.c-Replace-printk-with-appropriate-p.patch"
+	${git} "${DIR}/patches/omap-3.4/0004-ARM-OMAP2-OPP-allow-OPP-enumeration-to-continue-if-d.patch"
+	${git} "${DIR}/patches/omap-3.4/0005-ARM-OMAP3-fix-oops-triggered-in-omap_prcm_register_c.patch"
 
 }
 
