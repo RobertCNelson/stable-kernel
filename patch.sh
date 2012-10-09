@@ -41,7 +41,7 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -2 -o ${DIR}/patches/
+	git format-patch -${number} -o ${DIR}/patches/
 	exit
 }
 
