@@ -28,7 +28,7 @@ BOOT_PARITION="1"
 
 DIR=$PWD
 
-. version.sh
+source ${DIR}/version.sh
 
 backup_config () {
 	if [ -f "${DIR}/patches/previous_defconfig" ] ; then
@@ -53,6 +53,30 @@ mmc_write_modules () {
 	sudo tar xf "${DIR}/deploy/${KERNEL_UTS}-modules.tar.gz" -C "${DIR}/deploy/disk"
 }
 
+mmc_write_image () {
+	if [ -f "${DIR}/deploy/disk/boot/uImage" ] ; then
+		echo "Looks like Angstrom:"
+		echo "-----------------------------"
+		if [ "x${ZRELADDR}" == "x" ] ; then
+			echo "ERROR: ZRELADDR is not defined in system.sh, can't install uImage to rootfs partition"
+			echo "-----------------------------"
+		else
+			echo "Installing uImage to rootfs partition"
+			echo "-----------------------------"
+
+			if [ -f "${DIR}/deploy/disk/boot/uImage_bak" ] ; then
+				sudo rm -f "${DIR}/deploy/disk/boot/uImage_bak" || true
+			fi
+
+			if [ -f "${DIR}/deploy/disk/boot/uImage" ] ; then
+				sudo mv "${DIR}/deploy/disk/boot/uImage" "${DIR}/deploy/disk/boot/uImage_bak"
+			fi
+
+			sudo mkimage -A arm -O linux -T kernel -C none -a ${ZRELADDR} -e ${ZRELADDR} -n ${KERNEL_UTS} -d "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/boot/uImage"
+		fi
+	fi
+}
+
 mmc_find_rootfs () {
 	echo "Starting search for rootfs"
 	echo "-----------------------------"
@@ -62,11 +86,17 @@ mmc_find_rootfs () {
 	do
 		PART=$(LC_ALL=C sudo fdisk -l 2>/dev/null | grep "^${MMC}" | grep "Linux" | grep -v "swap" | head -${c} | tail -1 | awk '{print $1}')
 		echo "Trying ${PART}"
+
+		if [ ! -d "${DIR}/deploy/disk/" ] ; then
+			mkdir -p "${DIR}/deploy/disk/"
+		fi
+
 		if sudo mount ${PART} "${DIR}/deploy/disk/" ; then
 
 			if [ -f "${DIR}/deploy/disk/etc/fstab" ] ; then
 				echo "Found /etc/fstab, using ${PART}"
 				echo "-----------------------------"
+				mmc_write_image
 				mmc_write_modules
 			fi
 
@@ -89,32 +119,69 @@ mmc_write_boot () {
 	echo "Installing ${KERNEL_UTS} to boot partition"
 	echo "-----------------------------"
 
+	if [ ! -d "${DIR}/deploy/disk/" ] ; then
+		mkdir -p "${DIR}/deploy/disk/"
+	fi
+
+	if [ -f "${DIR}/deploy/${KERNEL_UTS}-dtbs.tar.gz" ] ; then
+
+		if [ ! -d "${DIR}/deploy/disk/dtbs" ] ; then
+			sudo mkdir -p "${DIR}/deploy/disk/dtbs"
+		fi
+
+		sudo tar ${UNTAR} "${DIR}/deploy/${KERNEL_UTS}-dtbs.tar.gz" -C "${DIR}/deploy/disk/dtbs/"
+	fi
+
+	if [ -f "${DIR}/deploy/disk/SOC.sh" ] ; then
+		source "${DIR}/deploy/disk/SOC.sh"
+		ZRELADDR=${load_addr}
+	fi
+
+	if [ -f "${DIR}/deploy/disk/uImage_bak" ] ; then
+		sudo rm -f "${DIR}/deploy/disk/uImage_bak" || true
+	fi
+
+	if [ -f "${DIR}/deploy/disk/uImage" ] ; then
+		sudo mv "${DIR}/deploy/disk/uImage" "${DIR}/deploy/disk/uImage_bak"
+	fi
+
+	if [ "${ZRELADDR}" ] ; then
+		sudo mkimage -A arm -O linux -T kernel -C none -a ${ZRELADDR} -e ${ZRELADDR} -n ${KERNEL_UTS} -d "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/uImage"
+	fi
+
+	if [ -f "${DIR}/deploy/disk/zImage_bak" ] ; then
+		sudo rm -f "${DIR}/deploy/disk/zImage_bak" || true
+	fi
+
+	if [ -f "${DIR}/deploy/disk/zImage" ] ; then
+		sudo mv "${DIR}/deploy/disk/zImage" "${DIR}/deploy/disk/zImage_bak"
+	fi
+
+	#Assuming boot via zImage on first partition...
+	sudo cp -v "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/zImage"
+
+	cd "${DIR}/deploy/disk"
+	sync
+	sync
+	cd -
+	sudo umount "${DIR}/deploy/disk" || true
+	mmc_find_rootfs
+}
+
+mmc_mount_boot () {
+	if [ ! -d "${DIR}/deploy/disk/" ] ; then
+		mkdir -p "${DIR}/deploy/disk/"
+	fi
+
 	if sudo mount -t vfat ${MMC}${PARTITION_PREFIX}${BOOT_PARITION} "${DIR}/deploy/disk/" ; then
-		if [ -f "${DIR}/deploy/disk/uImage_bak" ] ; then
-			sudo rm -f "${DIR}/deploy/disk/uImage_bak" || true
-		fi
-
-		if [ -f "${DIR}/deploy/disk/uImage" ] ; then
-			sudo mv "${DIR}/deploy/disk/uImage" "${DIR}/deploy/disk/uImage_bak"
-			sudo mkimage -A arm -O linux -T kernel -C none -a ${ZRELADDR} -e ${ZRELADDR} -n ${KERNEL_UTS} -d "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/uImage"
-		fi
-
-		if [ -f "${DIR}/deploy/disk/zImage_bak" ] ; then
-			sudo rm -f "${DIR}/deploy/disk/zImage_bak" || true
-		fi
-
-		if [ -f "${DIR}/deploy/disk/zImage" ] ; then
-			sudo mv "${DIR}/deploy/disk/zImage" "${DIR}/deploy/disk/zImage_bak"
-		fi
-
-		sudo cp -v "${DIR}/deploy/${KERNEL_UTS}.zImage" "${DIR}/deploy/disk/zImage"
-
-		cd "${DIR}/deploy/disk"
-		sync
-		sync
-		cd -
-		sudo umount "${DIR}/deploy/disk" || true
-		mmc_find_rootfs
+		UNTAR="xfvo"
+		mmc_write_boot
+	elif sudo mount -t ext2 ${MMC}${PARTITION_PREFIX}${BOOT_PARITION} "${DIR}/deploy/disk/" ; then
+		echo "-----------------------------"
+		echo "So its not vfat, retrying with ext2"
+		echo "-----------------------------"
+		UNTAR="xfv"
+		mmc_write_boot
 	else
 		echo "-----------------------------"
 		echo "ERROR: Unable to mount ${MMC}${PARTITION_PREFIX}${BOOT_PARITION} at "${DIR}/deploy/disk/" to copy uImage..."
@@ -137,7 +204,7 @@ unmount_partitions () {
 	done
 
 	mkdir -p "${DIR}/deploy/disk/"
-	mmc_write_boot
+	mmc_mount_boot
 }
 
 check_mmc () {
@@ -169,25 +236,21 @@ check_mmc () {
 }
 
 if [ -f "${DIR}/system.sh" ] ; then
-	. system.sh
+	source ${DIR}/system.sh
 
-	if [ "x${ZRELADDR}" == "x" ] ; then
-		echo "ERROR: ZRELADDR is not defined in system.sh"
-	else
-		if [ -f "${DIR}/KERNEL/arch/arm/boot/zImage" ] ; then
-			KERNEL_UTS=$(cat "${DIR}/KERNEL/include/generated/utsrelease.h" | awk '{print $3}' | sed 's/\"//g' )
-			if [ "x${MMC}" == "x" ] ; then
-				echo "ERROR: MMC is not defined in system.sh"
-			else
-				unset PARTITION_PREFIX
-				if [[ "${MMC}" =~ "mmcblk" ]] ; then
-					PARTITION_PREFIX="p"
-				fi
-				check_mmc
-			fi
+	if [ -f "${DIR}/KERNEL/arch/arm/boot/zImage" ] ; then
+		KERNEL_UTS=$(cat "${DIR}/KERNEL/include/generated/utsrelease.h" | awk '{print $3}' | sed 's/\"//g' )
+		if [ "x${MMC}" == "x" ] ; then
+			echo "ERROR: MMC is not defined in system.sh"
 		else
-			echo "ERROR: Please run build_kernel.sh before running this script..."
+			unset PARTITION_PREFIX
+			if [[ "${MMC}" =~ "mmcblk" ]] ; then
+				PARTITION_PREFIX="p"
+			fi
+			check_mmc
 		fi
+	else
+		echo "ERROR: Please run build_kernel.sh before running this script..."
 	fi
 else
 	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
