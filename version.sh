@@ -1,23 +1,33 @@
 #!/bin/bash
 
-unset BUILD
+ARCH=$(uname -m)
 
+CORES=1
+if [ "x${ARCH}" == "xx86_64" ] || [ "x${ARCH}" == "xi686" ] ; then
+	CORES=$(cat /proc/cpuinfo | grep processor | wc -l)
+	let CORES=$CORES+1
+fi
+
+unset GIT_OPTS
+unset GIT_NOEDIT
+LC_ALL=C git help pull | grep -m 1 -e "--no-edit" &>/dev/null && GIT_NOEDIT=1
+
+if [ "${GIT_NOEDIT}" ] ; then
+	GIT_OPTS+="--no-edit"
+fi
+
+CCACHE=ccache
+
+config="omap2plus_defconfig"
+
+#Kernel/Build
 KERNEL_REL=3.1
+KERNEL_TAG=${KERNEL_REL}.10
+BUILD=x7
 
-#for x.x.X
-STABLE_PATCH=10
-
-#for x.x-rc
-#RC_KERNEL=2.6.37
-#RC_PATCH=-rc8
-
-ABI=7
-
-BUILD+=x${ABI}
+#git branch
+BRANCH=v3.1.x
 
 BUILDREV=1.0
 DISTRO=cross
 DEBARCH=armel
-
-export KERNEL_REL STABLE_PATCH RC_KERNEL RC_PATCH BUILD
-export BUILDREV DISTRO DEBARCH ABI

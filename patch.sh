@@ -19,9 +19,31 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
+
 # Split out, so build_kernel.sh and build_deb.sh can share..
 
+git="git am"
+#git="git am --whitespace=fix"
+
+if [ -f ${DIR}/system.sh ] ; then
+	source ${DIR}/system.sh
+fi
+
+if [ "${RUN_BISECT}" ] ; then
+	git="git apply"
+fi
+
 echo "Starting patch.sh"
+
+git_add () {
+	git add .
+	git commit -a -m 'testing patchset'
+}
+
+cleanup () {
+	git format-patch -${number} -o ${DIR}/patches/
+	exit
+}
 
 function bugs_trivial {
 echo "bugs and trivial stuff"
@@ -52,7 +74,7 @@ patch -s -p1 < "${DIR}/patches/trivial/0001-USB-DUALSPEED-Gadget-KConfig.patch"
 
 function cpufreq {
 echo "[git] omap-cpufreq"
-git pull git://github.com/RobertCNelson/linux.git omap_cpufreq_v3.1-rc8
+git pull ${GIT_OPTS} git://github.com/RobertCNelson/linux.git omap_cpufreq_v3.1-rc8
 }
 
 function dss2_next {
@@ -99,13 +121,13 @@ echo "[git] Micrel KZ8851 patches for: zippy2"
 #original from:
 #ftp://www.micrel.com/ethernet/8851/beagle_zippy_patches.tar.gz 137 KB 04/10/2010 12:26:00 AM
 
-git pull git://github.com/RobertCNelson/linux.git micrel_ks8851_v3.1-rc8
+git pull ${GIT_OPTS} git://github.com/RobertCNelson/linux.git micrel_ks8851_v3.1-rc8
 }
 
 function beagle {
 echo "[git] Board Patches for: BeagleBoard"
 
-git pull git://github.com/RobertCNelson/linux.git omap_beagle_expansion_v3.1-rc9
+git pull ${GIT_OPTS} git://github.com/RobertCNelson/linux.git omap_beagle_expansion_v3.1-rc9
 
 patch -s -p1 < "${DIR}/patches/beagle/ulcd/0001-WIP-ARM-OMAP-Beagle-ulcd.patch"
 
@@ -121,7 +143,7 @@ echo "[git] Board Patches for: igepv2"
 #pulled from: http://git.igep.es/?p=pub/scm/linux-omap-2.6.git;a=summary
 #git pull git://git.igep.es/pub/scm/linux-omap-2.6.git master
 
-git pull git://github.com/RobertCNelson/linux.git omap_igepv_v3.1-rc7
+git pull ${GIT_OPTS} git://github.com/RobertCNelson/linux.git omap_igepv_v3.1-rc7
 
 #Misha Manulis reply+i-2124203-89b49457cbc2980b8763661d...@reply.github.com
 #
