@@ -1,133 +1,107 @@
 #!/bin/bash -e
-
-unset KERNEL_REL
-unset KERNEL_PATCH
-unset RC_KERNEL
-unset RC_PATCH
-unset BUILD
-unset CC
-unset GIT_MODE
-unset NO_DEVTMPS
-unset FTP_KERNEL
-
-ARCH=$(uname -m)
-CCACHE=ccache
+#
+# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 DIR=$PWD
 
-CORES=1
-if test "-$ARCH-" = "-x86_64-" || test "-$ARCH-" = "-i686-"
-then
- CORES=$(cat /proc/cpuinfo | grep processor | wc -l)
- let CORES=$CORES+1
-fi
-
 mkdir -p ${DIR}/deploy/
-
-DL_DIR=${DIR}/dl
-
-mkdir -p ${DL_DIR}
-
-function rcn-ee_rel_mirror {
- wget -c --directory-prefix=${DL_DIR} http://www.rcn-ee.net/mirror/linux/kernel/v${FTP_KERNEL}/linux-${KERNEL_REL}.tar.bz2
-}
-
-function rcn-ee_patch_mirror {
- wget -c --directory-prefix=${DL_DIR} http://www.rcn-ee.net/mirror/linux/kernel/v${FTP_KERNEL}/${DL_PATCH}.bz2
-}
-
-function dl_kernel {
-	wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/linux-${KERNEL_REL}.tar.bz2 || rcn-ee_rel_mirror
-
-if [ "${KERNEL_PATCH}" ] ; then
-    if [ "${RC_PATCH}" ] ; then
-		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/testing/${DL_PATCH}.bz2
-	else
-		wget -c --directory-prefix=${DL_DIR} http://www.kernel.org/pub/linux/kernel/v${FTP_KERNEL}/${DL_PATCH}.bz2 || rcn-ee_patch_mirror
-    fi
-fi
-}
-
-function extract_kernel {
-	echo "Cleaning Up"
-	rm -rf ${DIR}/KERNEL || true
-	echo "Extracting: ${KERNEL_REL} Kernel"
-	tar xjf ${DL_DIR}/linux-${KERNEL_REL}.tar.bz2
-	mv linux-${KERNEL_REL} KERNEL
-	cd ${DIR}/KERNEL
-if [ "${GIT_MODE}" ] ; then
-	git init
-	git add .
-        git commit -a -m ''$KERNEL_REL' Kernel'
-        git tag -a $KERNEL_REL -m $KERNEL_REL
-fi
-if [ "${KERNEL_PATCH}" ] ; then
-	echo "Applying: ${KERNEL_PATCH} Patch"
-	bzcat ${DL_DIR}/patch-${KERNEL_PATCH}.bz2 | patch -s -p1
-if [ "${GIT_MODE}" ] ; then
-	git add .
-        git commit -a -m ''$KERNEL_PATCH' Kernel'
-        git tag -a $KERNEL_PATCH -m $KERNEL_PATCH
-fi
-fi
-	cd ${DIR}/
-}
 
 function patch_kernel {
 	cd ${DIR}/KERNEL
-	export DIR GIT_MODE
-	/bin/bash -e ${DIR}/patch.sh
 
-if [ "${GIT_MODE}" ] ; then
-if [ "${KERNEL_PATCH}" ] ; then
-        git add .
-        git commit -a -m ''$KERNEL_PATCH'-'$BUILD' patchset'
-        git tag -a $KERNEL_PATCH-$BUILD -m $KERNEL_PATCH-$BUILD
-else
-        git add .
-        git commit -a -m ''$KERNEL_REL'-'$BUILD' patchset'
-        git tag -a $KERNEL_REL-$BUILD -m $KERNEL_REL-$BUILD
-fi
-fi
+	export DIR GIT_OPTS
+	/bin/bash -e ${DIR}/patch.sh || { git add . ; exit 1 ; }
+
+	if [ ! "${RUN_BISECT}" ] ; then
+		git add .
+		git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
+	fi
+
 #Test Patches:
 #exit
+
+	if [ "${LOCAL_PATCH_DIR}" ] ; then
+		for i in ${LOCAL_PATCH_DIR}/*.patch ; do patch  -s -p1 < $i ; done
+		BUILD+='+'
+	fi
+
 	cd ${DIR}/
 }
 
 function copy_defconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} distclean
-if [ "${NO_DEVTMPS}" ] ; then
-	cp ${DIR}/patches/no_devtmps-defconfig .config
-else
-	cp ${DIR}/patches/defconfig .config
-fi
+	make ARCH=arm CROSS_COMPILE=${CC} ${config}
+	cp -v .config ${DIR}/patches/ref_${config}
+	cp -v ${DIR}/patches/defconfig .config
 	cd ${DIR}/
 }
 
 function make_menuconfig {
 	cd ${DIR}/KERNEL/
 	make ARCH=arm CROSS_COMPILE=${CC} menuconfig
-if [ "${NO_DEVTMPS}" ] ; then
-	cp .config ${DIR}/patches/no_devtmps-defconfig
-else
-	cp .config ${DIR}/patches/defconfig
-fi
+	cp -v .config ${DIR}/patches/defconfig
+	cd ${DIR}/
+}
+
+function make_kernel {
+	cd ${DIR}/KERNEL/
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} zImage modules"
+	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} zImage modules
+
+	unset DTBS
+	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" &> /dev/null && DTBS=1
+	if [ "x${DTBS}" != "x" ] ; then
+		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} dtbs"
+		time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} dtbs
+		ls arch/arm/boot/* | grep dtb || unset DTBS
+	fi
+
+	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+	if [ -f ./arch/arm/boot/zImage ] ; then
+		cp arch/arm/boot/zImage ${DIR}/deploy/${KERNEL_UTS}.zImage
+		cp .config ${DIR}/deploy/${KERNEL_UTS}.config
+	else
+		echo "Error: make zImage modules failed"
+		exit
+	fi
 	cd ${DIR}/
 }
 
 function make_uImage {
 	cd ${DIR}/KERNEL/
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" CONFIG_DEBUG_SECTION_MISMATCH=y uImage"
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y uImage
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} uImage"
+	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} uImage
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
-	cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
-	cd ${DIR}
+	if [ -f ./arch/arm/boot/uImage ] ; then
+		cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
+	else
+		echo "Error: make uImage failed"
+		exit
+	fi
+	cd ${DIR}/
 }
 
-function make_modules {
+function make_modules_pkg {
 	cd ${DIR}/KERNEL/
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" CONFIG_DEBUG_SECTION_MISMATCH=y modules
 
 	echo ""
 	echo "Building Module Archive"
@@ -139,10 +113,27 @@ function make_modules {
 	echo "Building ${KERNEL_UTS}-modules.tar.gz"
 	cd ${DIR}/deploy/mod
 	tar czf ../${KERNEL_UTS}-modules.tar.gz *
-	cd ${DIR}
+	cd ${DIR}/
 }
 
-function make_headers {
+function make_dtbs_pkg {
+	cd ${DIR}/KERNEL/
+
+	echo ""
+	echo "Building DTBS Archive"
+	echo ""
+
+	rm -rf ${DIR}/deploy/dtbs &> /dev/null || true
+	mkdir -p ${DIR}/deploy/dtbs
+	cp -v arch/arm/boot/*.dtb ${DIR}/deploy/dtbs
+	cd ${DIR}/deploy/dtbs
+	echo "Building ${KERNEL_UTS}-dtbs.tar.gz"
+	tar czf ../${KERNEL_UTS}-dtbs.tar.gz *
+
+	cd ${DIR}/
+}
+
+function make_headers_pkg {
 	cd ${DIR}/KERNEL/
 
 	echo ""
@@ -155,42 +146,62 @@ function make_headers {
 	cd ${DIR}/deploy/headers
 	echo "Building ${KERNEL_UTS}-headers.tar.gz"
 	tar czf ../${KERNEL_UTS}-headers.tar.gz *
-	cd ${DIR}
+	cd ${DIR}/
 }
 
+/bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
 
-	/bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
-if [ -e ${DIR}/system.sh ]; then
-	. system.sh
-	. version.sh
+if [ ! -f ${DIR}/system.sh ] ; then
+	cp ${DIR}/system.sh.sample ${DIR}/system.sh
+fi
 
-if [ "${IS_LUCID}" ] ; then
+unset CC
+unset DEBUG_SECTION
+unset LATEST_GIT
+unset LINUX_GIT
+unset LOCAL_PATCH_DIR
+source ${DIR}/system.sh
+/bin/bash -e "${DIR}/scripts/gcc.sh" || { exit 1 ; }
+
+source ${DIR}/version.sh
+export LINUX_GIT
+export LATEST_GIT
+
+if [ "${LATEST_GIT}" ] ; then
 	echo ""
-	echo "IS_LUCID setting in system.sh is Depreciated"
+	echo "Warning LATEST_GIT is enabled from system.sh I hope you know what your doing.."
 	echo ""
 fi
 
-if [ "${NO_DEVTMPS}" ] ; then
-	echo ""
-	echo "Building for Debian Lenny & Ubuntu 9.04/9.10"
-	echo ""
-else
-	echo ""
-	echo "Building for Debian Squeeze/Wheezy/Sid & Ubuntu 10.04/10.10/11.04/11.10"
-	echo ""
+unset CONFIG_DEBUG_SECTION
+if [ "${DEBUG_SECTION}" ] ; then
+	CONFIG_DEBUG_SECTION="CONFIG_DEBUG_SECTION_MISMATCH=y"
 fi
 
-	dl_kernel
-	extract_kernel
-	patch_kernel
-	copy_defconfig
+/bin/bash -e "${DIR}/scripts/git.sh" || { exit 1 ; }
+
+if [ "${RUN_BISECT}" ] ; then
+	/bin/bash -e "${DIR}/scripts/bisect.sh" || { exit 1 ; }
+fi
+
+patch_kernel
+copy_defconfig
+if [ ! ${AUTO_BUILD} ] ; then
 	make_menuconfig
+fi
+if [ "x${GCC_OVERRIDE}" != "x" ] ; then
+	sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
+fi
+make_kernel
+if [ "${BUILD_UIMAGE}" ] ; then
 	make_uImage
-	make_modules
-	make_headers
-else
-	echo "Missing system.sh, please copy system.sh.sample to system.sh and edit as needed"
-	echo "cp system.sh.sample system.sh"
-	echo "gedit system.sh"
+fi
+make_modules_pkg
+if [ "x${DTBS}" != "x" ] ; then
+	make_dtbs_pkg
+fi
+make_headers_pkg
+if [ "x${GCC_OVERRIDE}" != "x" ] ; then
+	sed -i -e 's:CROSS_COMPILE)'$GCC_OVERRIDE':CROSS_COMPILE)gcc:g' ${DIR}/KERNEL/Makefile
 fi
 
