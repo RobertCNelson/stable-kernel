@@ -26,7 +26,7 @@ KERNEL_TAG=${KERNEL_REL}.8
 BUILD=x0.3
 
 #git branch
-BRANCH=3.3.x
+BRANCH=v3.3.x
 
 BUILDREV=1.0
 DISTRO=cross
