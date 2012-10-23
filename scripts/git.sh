@@ -83,7 +83,7 @@ git_kernel () {
 	fi
 
 	#Automaticly, just recover the git repo from a git crash
-	if [ ! -f "${DIR}/KERNEL/.git/index.lock" ] ; then
+	if [ -f "${DIR}/KERNEL/.git/index.lock" ] ; then
 		rm -rf ${DIR}/KERNEL/ || true
 		git clone --shared ${LINUX_GIT} ${DIR}/KERNEL
 	fi
