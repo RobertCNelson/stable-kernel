@@ -22,7 +22,7 @@ config="omap2plus_defconfig"
 
 #Kernel/Build
 KERNEL_REL=3.2
-KERNEL_TAG=${KERNEL_REL}.32
+KERNEL_TAG=${KERNEL_REL}.33
 BUILD=x15
 
 #git branch
