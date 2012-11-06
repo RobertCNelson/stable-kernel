@@ -55,7 +55,7 @@ index 04d551b..c67a91c 100644
   * Clksel parent setting function - not passed in struct clk function
   * pointer - instead, the OMAP clock code currently assumes that any
 diff --git a/arch/arm/mach-omap2/clock.h b/arch/arm/mach-omap2/clock.h
-index a1bb23a..c32a89e 100644
+index 35ec5f3..5be4dea 100644
 --- a/arch/arm/mach-omap2/clock.h
 +++ b/arch/arm/mach-omap2/clock.h
 @@ -61,6 +61,12 @@ void omap3_dpll_allow_idle(struct clk *clk);
@@ -180,10 +180,10 @@ index 8bbeeaf..0ede513 100644
  void omap3_clk_lock_dpll5(void);
  
 diff --git a/arch/arm/mach-omap2/clock3xxx_data.c b/arch/arm/mach-omap2/clock3xxx_data.c
-index 1efdec2..b3fa2a7 100644
+index 83bed9a..f9cbdeb 100644
 --- a/arch/arm/mach-omap2/clock3xxx_data.c
 +++ b/arch/arm/mach-omap2/clock3xxx_data.c
-@@ -944,7 +944,7 @@ static struct clk dpll5_ck = {
+@@ -932,7 +932,7 @@ static struct clk dpll5_ck = {
  	.parent		= &sys_ck,
  	.dpll_data	= &dpll5_dd,
  	.round_rate	= &omap2_dpll_round_rate,
@@ -193,10 +193,10 @@ index 1efdec2..b3fa2a7 100644
  	.recalc		= &omap3_dpll_recalc,
  };
 diff --git a/arch/arm/mach-omap2/dpll3xxx.c b/arch/arm/mach-omap2/dpll3xxx.c
-index f0f10be..3be52f5 100644
+index b9c8d2f..93fe10a 100644
 --- a/arch/arm/mach-omap2/dpll3xxx.c
 +++ b/arch/arm/mach-omap2/dpll3xxx.c
-@@ -288,7 +288,7 @@ static void _lookup_sddiv(struct clk *clk, u8 *sd_div, u16 m, u8 n)
+@@ -298,7 +298,7 @@ static void _lookup_sddiv(struct clk *clk, u8 *sd_div, u16 m, u8 n)
   * Program the DPLL with the supplied M, N values, and wait for the DPLL to
   * lock..  Returns -EINVAL upon error, or 0 upon success.
   */
