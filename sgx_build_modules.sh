@@ -624,6 +624,9 @@ if [ -e ${DIR}/system.sh ] ; then
 	sed -i -e 's:all_km all_sdk:all_km:g' "${DIR}/ti-sdk-pvr/Graphics_SDK/Makefile"
 	sed -i -e 's:install_km install_sdk:install_km:g' "${DIR}/ti-sdk-pvr/Graphics_SDK/Makefile"
 
+	#Disable building of devmem2, as it breaks with hardfp based cross compilers, and we use the distro package anyways...
+	sed -i -e 's:prepare_km buildkernel builddevmem2:prepare_km buildkernel:g' "${DIR}/ti-sdk-pvr/Graphics_SDK/Makefile.KM"
+
 	if [ ! -f "${DIR}/KERNEL/Makefile" ] ; then
 		echo ""
 		echo "ERROR: Run: ./build_kernel.sh first"
