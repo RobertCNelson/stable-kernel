@@ -154,6 +154,13 @@ omap3isp () {
 	${git} "${DIR}/patches/omap3isp/0004-Revert-media-omap3isp-Introduce-isp_video_check_exte.patch"
 }
 
+omap () {
+	echo "dir: omap/beagle"
+	#With this hack, ondemand no longer, locks up the Beagle C4 on software reset...
+	#CONFIG_CPU_FREQ_GOV_ONDEMAND=m
+	${git} "${DIR}/patches/omap/beagle/0001-HACK-arm-omap-beagle-c4-fix-hardlock-on-software-res.patch"
+}
+
 distro
 sakoman
 beagle
@@ -167,6 +174,7 @@ sgx
 mainline_fixes
 #debug
 omap3isp
+#omap
 
 echo "patch.sh ran successful"
 
