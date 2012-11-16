@@ -134,5 +134,19 @@ else
 	torvalds_linux="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 	linux_stable="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
 fi
-git_kernel
 
+unset ON_MASTER
+if [ "${DISABLE_MASTER_BRANCH}" ] ; then
+	git branch | grep "*" | grep master &>/dev/null && ON_MASTER=1
+fi
+
+if [ ! "${ON_MASTER}" ] ; then
+	git_kernel
+else
+	echo "-----------------------------"
+	echo "Please checkout one of the active branches, building from the master branch has been disable..."
+	echo "-----------------------------"
+	cat ${DIR}/branches.list | grep -v INACTIVE
+	echo "-----------------------------"
+	exit
+fi
