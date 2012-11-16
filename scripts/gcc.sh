@@ -30,7 +30,7 @@ unset armhf_pkg
 if [ $(which lsb_release) ] ; then
 	distro=$(lsb_release -is)
 	if [ "x${distro}" == "xUbuntu" ] ; then
-		distro_release=$(lsb_release -is)
+		distro_release=$(lsb_release -cs)
 
 		case "${distro_release}" in
 		maverick|natty|oneiric|precise|quantal|raring)
