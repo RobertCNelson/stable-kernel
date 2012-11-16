@@ -133,7 +133,7 @@ function debian_regs
 		cpu_arch=$(uname -m)
 		if [ "x${cpu_arch}" == "xx86_64" ] ; then
 			case "${deb_distro}" in
-			squeeze|wheezy)
+			squeeze|wheezy|lucid|maverick|natty|oneiric|precise|quantal|raring)
 				dpkg -l | grep ia32-libs >/dev/null || deb_pkgs+="ia32-libs "
 				;;
 			esac
