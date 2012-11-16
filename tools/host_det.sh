@@ -148,17 +148,21 @@ function debian_regs
 			DPACKAGE+="libncurses5-dev "
 			APT=1
 		else
+		echo "-----------------------------"
 			echo "Debug: found libncurses.so: /usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`/libncurses.so"
+		echo "-----------------------------"
 		fi
 	else
+		echo "-----------------------------"
 		echo "Debug: found libncurses.so: /usr/lib/libncurses.so"
+		echo "-----------------------------"
 	fi
 
 	if [ "${APT}" ];then
 		echo "Missing Dependicies"
 		echo "Ubuntu: please install: sudo aptitude install ${UPACKAGE}"
 		echo "Debian: please install: sudo aptitude install ${DPACKAGE}"
-		echo "---------------------------------------------------------"
+		echo "-----------------------------"
 		return 1
 	fi
 }

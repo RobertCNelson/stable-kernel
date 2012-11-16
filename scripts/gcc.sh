@@ -27,7 +27,7 @@ source ${DIR}/system.sh
 ARCH=$(uname -m)
 if [ "x${CC}" == "x" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
 	echo "-----------------------------"
-	echo "Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
+	echo "scripts/gcc: Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
 	echo ""
 	echo "with a (sane editor) open system.sh and modify the commented Line 18: #CC=arm-linux-gnueabi-"
 	echo ""
@@ -45,16 +45,18 @@ GCC_TEST=$(LC_ALL=C ${CC}${GCC} -v 2>&1 | grep "Target:" | grep arm || true)
 GCC_REPORT=$(LC_ALL=C ${CC}${GCC} -v 2>&1 || true)
 
 if [ "x${GCC_TEST}" == "x" ] ; then
-	echo ""
-	echo "Error: The GCC ARM Cross Compiler you setup in system.sh (CC variable)."
+	echo "-----------------------------"
+	echo "scripts/gcc: Error: The GCC ARM Cross Compiler you setup in system.sh (CC variable)."
 	echo "Doesn't seem to be valid for ARM, double check it's location, or that"
 	echo "you chose the correct GCC Cross Compiler."
 	echo ""
 	echo "Output of: LC_ALL=C ${CC}${GCC} --version"
+	echo "-----------------------------"
 	echo "${GCC_REPORT}"
-	echo ""
+	echo "-----------------------------"
 	exit 1
 else
-	echo "Debug Using: `LC_ALL=C ${CC}${GCC} --version`"
+	echo "-----------------------------"
+	echo "scripts/gcc: Debug Using: `LC_ALL=C ${CC}${GCC} --version`"
+	echo "-----------------------------"
 fi
-

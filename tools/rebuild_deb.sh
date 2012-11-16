@@ -64,7 +64,9 @@ function make_menuconfig {
 
 function make_deb {
 	cd ${DIR}/KERNEL/
+	echo "-----------------------------"
 	echo "make -j${CORES} ARCH=arm KBUILD_DEBARCH=${DEBARCH} LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} ${CONFIG_DEBUG_SECTION} deb-pkg"
+	echo "-----------------------------"
 	time fakeroot make -j${CORES} ARCH=arm KBUILD_DEBARCH=${DEBARCH} LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" KDEB_PKGVERSION=${BUILDREV}${DISTRO} ${CONFIG_DEBUG_SECTION} deb-pkg
 	mv ${DIR}/*.deb ${DIR}/deploy/
 
@@ -84,17 +86,18 @@ function make_deb {
 function make_dtbs_pkg {
 	cd ${DIR}/KERNEL/
 
-	echo ""
+	echo "-----------------------------"
 	echo "Building DTBS Archive"
-	echo ""
+	echo "-----------------------------"
 
 	rm -rf ${DIR}/deploy/dtbs &> /dev/null || true
 	mkdir -p ${DIR}/deploy/dtbs
 	cp -v arch/arm/boot/*.dtb ${DIR}/deploy/dtbs
 	cd ${DIR}/deploy/dtbs
+	echo "-----------------------------"
 	echo "Building ${KERNEL_UTS}-dtbs.tar.gz"
 	tar czf ../${KERNEL_UTS}-dtbs.tar.gz *
-
+	echo "-----------------------------"
 	cd ${DIR}/
 }
 
@@ -117,9 +120,9 @@ export LINUX_GIT
 export LATEST_GIT
 
 if [ "${LATEST_GIT}" ] ; then
-	echo ""
+	echo "-----------------------------"
 	echo "Warning LATEST_GIT is enabled from system.sh I hope you know what your doing.."
-	echo ""
+	echo "-----------------------------"
 fi
 
 unset CONFIG_DEBUG_SECTION
