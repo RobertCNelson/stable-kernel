@@ -77,19 +77,42 @@ ubuntu_arm_gcc_installed () {
 	fi
 }
 
+armv7_toolchain () {
+	#https://launchpad.net/linaro-toolchain-binaries/+download
+	#https://launchpad.net/linaro-toolchain-binaries/trunk/2012.04/+download/gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux.tar.bz2
+
+	armv7_ver="2012.04"
+	armv7_date="20120426"
+	ARMV7_GCC="gcc-linaro-arm-linux-gnueabi-${armv7_ver}-${armv7_date}_linux.tar.bz2"
+	if [ ! -f ${DIR}/dl/${armv7_date} ] ; then
+		echo "Installing gcc-arm toolchain"
+		echo "-----------------------------"
+		${WGET} https://launchpad.net/linaro-toolchain-binaries/trunk/${armv7_ver}/+download/${ARMV7_GCC}
+		touch ${DIR}/dl/${armv7_date}
+		if [ -d ${DIR}/dl/${armv7_ver} ] ; then
+			rm -rf ${DIR}/dl/${armv7_ver} || true
+		fi
+		tar xjf ${DIR}/dl/${ARMV7_GCC} -C ${DIR}/dl/
+	fi
+
+	export CC="${DIR}/dl/gcc-linaro-arm-linux-gnueabi-${armv7_ver}-${armv7_date}_linux/bin/arm-linux-gnueabi-"
+}
+
 if [ "x${CC}" == "x" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
 	ubuntu_arm_gcc_installed
-
 	if [ "x${CC}" == "x" ] ; then
-		echo "-----------------------------"
-		echo "Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
-		echo ""
-		echo "with a (sane editor) open system.sh and modify the commented:"
-		echo "Line 18: #CC=arm-linux-gnueabi-"
-		echo ""
-		echo "If you need hints on installing an ARM GCC Cross ToolChain, view README file"
-		echo "-----------------------------"
-		exit 1
+		armv7_toolchain
+		if [ "x${CC}" == "x" ] ; then
+			echo "-----------------------------"
+			echo "Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
+			echo ""
+			echo "with a (sane editor) open system.sh and modify the commented:"
+			echo "Line 18: #CC=arm-linux-gnueabi-"
+			echo ""
+			echo "If you need hints on installing an ARM GCC Cross ToolChain, view README file"
+			echo "-----------------------------"
+			exit 1
+		fi
 	fi
 fi
 
