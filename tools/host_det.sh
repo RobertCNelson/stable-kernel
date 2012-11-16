@@ -131,10 +131,10 @@ function debian_regs
 		echo "Missing Dependicies: Please Install"
 		echo "-----------------------------"
 		echo "Debian Squeeze"
-		echo "sudo apt-get install ${deb_pkgs} ${squeeze_mkimage}"
+		echo "sudo apt-get install ${deb_pkgs}${squeeze_mkimage}"
 		echo "-----------------------------"
 		echo "Ubuntu/Debian Wheezy:"
-		echo "sudo apt-get install ${deb_pkgs} ${all_mkimage}"
+		echo "sudo apt-get install ${deb_pkgs}${all_mkimage}"
 		echo "-----------------------------"
 		return 1
 	fi
