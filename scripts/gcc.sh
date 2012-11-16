@@ -25,66 +25,72 @@ DIR=$PWD
 
 source ${DIR}/system.sh
 
-unset armel_pkg
-unset armhf_pkg
-if [ $(which lsb_release) ] ; then
-	distro=$(lsb_release -is)
-	if [ "x${distro}" == "xUbuntu" ] ; then
-		distro_release=$(lsb_release -cs)
+ubuntu_arm_gcc_installed () {
+	unset armel_pkg
+	unset armhf_pkg
+	if [ $(which lsb_release) ] ; then
+		distro=$(lsb_release -is)
+		if [ "x${distro}" == "xUbuntu" ] ; then
+			distro_release=$(lsb_release -cs)
 
-		case "${distro_release}" in
-		maverick|natty|oneiric|precise|quantal|raring)
-			#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabi
-			armel_pkg="gcc-arm-linux-gnueabi"
-			;;
-		esac
+			case "${distro_release}" in
+			maverick|natty|oneiric|precise|quantal|raring)
+				#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabi
+				armel_pkg="gcc-arm-linux-gnueabi"
+				;;
+			esac
 
-		case "${distro_release}" in
-		oneiric|precise|quantal|raring)
-			#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabihf
-			armhf_pkg="gcc-arm-linux-gnueabihf"
-			;;
-		esac
+			case "${distro_release}" in
+			oneiric|precise|quantal|raring)
+				#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabihf
+				armhf_pkg="gcc-arm-linux-gnueabihf"
+				;;
+			esac
 
-		if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
-			echo "fyi: ${distro} ${distro_release} has these ARM gcc cross compilers available in their repo:"
-			if [ "${armel_pkg}" ] ; then
-				echo "sudo apt-get install ${armel_pkg}"
+			if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
+				echo "fyi: ${distro} ${distro_release} has these ARM gcc cross compilers available in their repo:"
+				if [ "${armel_pkg}" ] ; then
+					echo "sudo apt-get install ${armel_pkg}"
+				fi
+				if [ "${armhf_pkg}" ] ; then
+					echo "sudo apt-get install ${armhf_pkg}"
+				fi
+				echo "-----------------------------"
 			fi
-			if [ "${armhf_pkg}" ] ; then
-				echo "sudo apt-get install ${armhf_pkg}"
-			fi
-			echo "-----------------------------"
 		fi
 	fi
-fi
 
-if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
-	if [ $(which arm-linux-gnueabi-gcc) ] ; then
-		armel_gcc_test=$(LC_ALL=C arm-linux-gnueabi-gcc -v 2>&1 | grep "Target:" | grep arm || true)
-	fi
-	if [ $(which arm-linux-gnueabihf-gcc) ] ; then
-		armhf_gcc_test=$(LC_ALL=C arm-linux-gnueabihf-gcc -v 2>&1 | grep "Target:" | grep arm || true)
-	fi
+	if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
+		if [ $(which arm-linux-gnueabi-gcc) ] ; then
+			armel_gcc_test=$(LC_ALL=C arm-linux-gnueabi-gcc -v 2>&1 | grep "Target:" | grep arm || true)
+		fi
+		if [ $(which arm-linux-gnueabihf-gcc) ] ; then
+			armhf_gcc_test=$(LC_ALL=C arm-linux-gnueabihf-gcc -v 2>&1 | grep "Target:" | grep arm || true)
+		fi
 
-	if [ "x${armel_gcc_test}" != "x" ] ; then
-		export CC="arm-linux-gnueabi-"
+		if [ "x${armel_gcc_test}" != "x" ] ; then
+			export CC="arm-linux-gnueabi-"
+		fi
+		if [ "x${armhf_gcc_test}" != "x" ] ; then
+			export CC="arm-linux-gnueabihf-"
+		fi
 	fi
-	if [ "x${armhf_gcc_test}" != "x" ] ; then
-		export CC="arm-linux-gnueabihf-"
-	fi
-fi
+}
 
 if [ "x${CC}" == "x" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
-	echo "-----------------------------"
-	echo "Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
-	echo ""
-	echo "with a (sane editor) open system.sh and modify the commented:"
-	echo "Line 18: #CC=arm-linux-gnueabi-"
-	echo ""
-	echo "If you need hints on installing an ARM GCC Cross ToolChain, view README file"
-	echo "-----------------------------"
-	exit 1
+	ubuntu_arm_gcc_installed
+
+	if [ "x${CC}" == "x" ] ; then
+		echo "-----------------------------"
+		echo "Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
+		echo ""
+		echo "with a (sane editor) open system.sh and modify the commented:"
+		echo "Line 18: #CC=arm-linux-gnueabi-"
+		echo ""
+		echo "If you need hints on installing an ARM GCC Cross ToolChain, view README file"
+		echo "-----------------------------"
+		exit 1
+	fi
 fi
 
 GCC="gcc"
