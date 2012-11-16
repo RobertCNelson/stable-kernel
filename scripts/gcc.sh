@@ -59,10 +59,10 @@ fi
 
 if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
 	if [ $(which arm-linux-gnueabi-gcc) ] ; then
-		armel_gcc_test=$(LC_ALL=C arm-linux-gnueabi-gcc -v 2>&1 | grep "Target:" | grep arm || true)
+		armel_gcc_test=$(LC_ALL=C arm-linux-gnueabi-gcc -v 2>&1 | grep "Target:" | grep arm &>/dev/null || true)
 	fi
 	if [ $(which arm-linux-gnueabihf-gcc) ] ; then
-		armhf_gcc_test=$(LC_ALL=C arm-linux-gnueabihf-gcc -v 2>&1 | grep "Target:" | grep arm || true)
+		armhf_gcc_test=$(LC_ALL=C arm-linux-gnueabihf-gcc -v 2>&1 | grep "Target:" | grep arm &>/dev/null || true)
 	fi
 
 	if [ "x${armel_gcc_test}" == "x" ] ; then
