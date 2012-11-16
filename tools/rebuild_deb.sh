@@ -134,11 +134,6 @@ unset FULL_REBUILD
 #FULL_REBUILD=1
 if [ "${FULL_REBUILD}" ] ; then
 	/bin/bash -e "${DIR}/scripts/git.sh" || { exit 1 ; }
-	if [ "${DISABLE_MASTER_BRANCH}" ] ; then
-		if [ "${ON_MASTER}" ] ; then
-			exit
-		fi
-	fi
 
 	if [ "${RUN_BISECT}" ] ; then
 		/bin/bash -e "${DIR}/scripts/bisect.sh" || { exit 1 ; }

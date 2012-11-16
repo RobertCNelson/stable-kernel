@@ -160,5 +160,5 @@ else
 	echo "-----------------------------"
 	cat ${DIR}/branches.list | grep -v INACTIVE
 	echo "-----------------------------"
-	exit
+	exit 1
 fi
