@@ -46,14 +46,16 @@ if [ $(which lsb_release) ] ; then
 			;;
 		esac
 
-		echo "fyi: ${distro} ${distro_release} has these ARM cross compilers in the repo:"
-		if [ "${armel_pkg}" ] ; then
-			echo "sudo apt-get install ${armel_pkg}"
+		if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
+			echo "fyi: ${distro} ${distro_release} has these ARM gcc cross compilers available in their repo:"
+			if [ "${armel_pkg}" ] ; then
+				echo "sudo apt-get install ${armel_pkg}"
+			fi
+			if [ "${armhf_pkg}" ] ; then
+				echo "sudo apt-get install ${armhf_pkg}"
+			fi
+			echo "-----------------------------"
 		fi
-		if [ "${armhf_pkg}" ] ; then
-			echo "sudo apt-get install ${armhf_pkg}"
-		fi
-		echo "-----------------------------"
 	fi
 fi
 
@@ -75,9 +77,10 @@ fi
 
 if [ "x${CC}" == "x" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
 	echo "-----------------------------"
-	echo "scripts/gcc: Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
+	echo "Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
 	echo ""
-	echo "with a (sane editor) open system.sh and modify the commented Line 18: #CC=arm-linux-gnueabi-"
+	echo "with a (sane editor) open system.sh and modify the commented:"
+	echo "Line 18: #CC=arm-linux-gnueabi-"
 	echo ""
 	echo "If you need hints on installing an ARM GCC Cross ToolChain, view README file"
 	echo "-----------------------------"
