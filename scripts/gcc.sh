@@ -46,7 +46,7 @@ if [ $(which lsb_release) ] ; then
 			;;
 		esac
 
-		echo "fyi: ${distro} ${distro_release} has these ARM cross compilers:"
+		echo "fyi: ${distro} ${distro_release} has these ARM cross compilers in the repo:"
 		if [ "${armel_pkg}" ] ; then
 			echo "sudo apt-get install ${armel_pkg}"
 		fi
@@ -58,17 +58,17 @@ if [ $(which lsb_release) ] ; then
 fi
 
 if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
-	if [ $(which arm-linux-gnueabi-gcc &>/dev/null) ] ; then
-		armel_gcc_test=$(LC_ALL=C arm-linux-gnueabi-gcc -v 2>&1 | grep "Target:" | grep arm &>/dev/null || true)
+	if [ $(which arm-linux-gnueabi-gcc) ] ; then
+		armel_gcc_test=$(LC_ALL=C arm-linux-gnueabi-gcc -v 2>&1 | grep "Target:" | grep arm || true)
 	fi
-	if [ $(which arm-linux-gnueabihf-gcc &>/dev/null) ] ; then
-		armhf_gcc_test=$(LC_ALL=C arm-linux-gnueabihf-gcc -v 2>&1 | grep "Target:" | grep arm &>/dev/null || true)
+	if [ $(which arm-linux-gnueabihf-gcc) ] ; then
+		armhf_gcc_test=$(LC_ALL=C arm-linux-gnueabihf-gcc -v 2>&1 | grep "Target:" | grep arm || true)
 	fi
 
-	if [ "x${armel_gcc_test}" == "x" ] ; then
+	if [ "x${armel_gcc_test}" != "x" ] ; then
 		export CC="arm-linux-gnueabi-"
 	fi
-	if [ "x${armhf_gcc_test}" == "x" ] ; then
+	if [ "x${armhf_gcc_test}" != "x" ] ; then
 		export CC="arm-linux-gnueabihf-"
 	fi
 fi
