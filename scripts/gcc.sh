@@ -69,10 +69,10 @@ ubuntu_arm_gcc_installed () {
 		fi
 
 		if [ "x${armel_gcc_test}" != "x" ] ; then
-			export CC="arm-linux-gnueabi-"
+			CC="arm-linux-gnueabi-"
 		fi
 		if [ "x${armhf_gcc_test}" != "x" ] ; then
-			export CC="arm-linux-gnueabihf-"
+			CC="arm-linux-gnueabihf-"
 		fi
 	fi
 }
@@ -96,7 +96,7 @@ armv7_toolchain () {
 		tar xjf ${DIR}/dl/${ARMV7_GCC} -C ${DIR}/dl/
 	fi
 
-	export CC="${DIR}/dl/gcc-linaro-arm-linux-gnueabi-${armv7_ver}-${armv7_date}_linux/bin/arm-linux-gnueabi-"
+	CC="${DIR}/dl/gcc-linaro-arm-linux-gnueabi-${armv7_ver}-${armv7_date}_linux/bin/arm-linux-gnueabi-"
 }
 
 if [ "x${CC}" == "x" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
@@ -129,4 +129,5 @@ else
 	echo "-----------------------------"
 	echo "scripts/gcc: Debug Using: `LC_ALL=C ${CC}${GCC} --version`"
 	echo "-----------------------------"
+	echo "CC=${CC}" > ${DIR}/.CC
 fi

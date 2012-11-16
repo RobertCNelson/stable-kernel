@@ -114,6 +114,8 @@ unset LINUX_GIT
 unset LOCAL_PATCH_DIR
 source ${DIR}/system.sh
 /bin/bash -e "${DIR}/scripts/gcc.sh" || { exit 1 ; }
+source ${DIR}/.CC
+echo "debug: CC=${CC}"
 
 source ${DIR}/version.sh
 export LINUX_GIT

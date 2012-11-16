@@ -135,7 +135,7 @@ function make_dtbs_pkg {
 	mkdir -p ${DIR}/deploy/dtbs
 	cp -v arch/arm/boot/*.dtb ${DIR}/deploy/dtbs
 	cd ${DIR}/deploy/dtbs
-	echo "-----------------------------"	
+	echo "-----------------------------"
 	echo "Building ${KERNEL_UTS}-dtbs.tar.gz"
 	tar czf ../${KERNEL_UTS}-dtbs.tar.gz *
 	echo "-----------------------------"
@@ -173,6 +173,8 @@ unset LINUX_GIT
 unset LOCAL_PATCH_DIR
 source ${DIR}/system.sh
 /bin/bash -e "${DIR}/scripts/gcc.sh" || { exit 1 ; }
+source ${DIR}/.CC
+echo "debug: CC=${CC}"
 
 source ${DIR}/version.sh
 export LINUX_GIT
