@@ -120,6 +120,7 @@ function debian_regs
 	if [ $(which lsb_release) ] ; then
 		deb_distro=$(lsb_release -cs)
 
+		#mkimage
 		case "${deb_distro}" in
 		squeeze|lucid|maverick)
 			dpkg -l | grep uboot-mkimage >/dev/null || deb_pkgs+="uboot-mkimage "
@@ -128,6 +129,15 @@ function debian_regs
 			dpkg -l | grep u-boot-tools >/dev/null || deb_pkgs+="u-boot-tools "
 			;;
 		esac
+
+		cpu_arch=$(uname -m)
+		if [ "x${cpu_arch}" == "xx86_64" ] ; then
+			case "${deb_distro}" in
+			squeeze|wheezy)
+				dpkg -l | grep ia32-libs >/dev/null || deb_pkgs+="ia32-libs "
+				;;
+			esac
+		fi
 
 	fi
 
