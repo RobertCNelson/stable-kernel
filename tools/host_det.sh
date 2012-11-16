@@ -117,7 +117,7 @@ function debian_regs
 	fi
 
 	#lsb_release might not be installed...
-	if [ ! $(which lsb_release) ] ; then
+	if [ $(which lsb_release) ] ; then
 		deb_distro=$(lsb_release -cs)
 
 		case "${deb_distro}" in
