@@ -103,17 +103,6 @@ if [ "x${CC}" == "x" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
 	ubuntu_arm_gcc_installed
 	if [ "x${CC}" == "x" ] ; then
 		armv7_toolchain
-		if [ "x${CC}" == "x" ] ; then
-			echo "-----------------------------"
-			echo "Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
-			echo ""
-			echo "with a (sane editor) open system.sh and modify the commented:"
-			echo "Line 18: #CC=arm-linux-gnueabi-"
-			echo ""
-			echo "If you need hints on installing an ARM GCC Cross ToolChain, view README file"
-			echo "-----------------------------"
-			exit 1
-		fi
 	fi
 fi
 
