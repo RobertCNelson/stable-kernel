@@ -20,11 +20,51 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+ARCH=$(uname -m)
 DIR=$PWD
 
 source ${DIR}/system.sh
 
-ARCH=$(uname -m)
+unset armel_pkg
+unset armhf_pkg
+if [ $(which lsb_release) ] ; then
+	distro=$(lsb_release -is)
+	if [ "x${distro}" == "xUbuntu" ] ; then
+		distro_release=$(lsb_release -is)
+
+		case "${distro_release}" in
+		maverick|natty|oneiric|precise|quantal|raring)
+			#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabi
+			armel_pkg="gcc-arm-linux-gnueabi"
+			;;
+		esac
+
+		case "${distro_release}" in
+		oneiric|precise|quantal|raring)
+			#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabihf
+			armhf_pkg="gcc-arm-linux-gnueabihf"
+			;;
+		esac
+
+	fi
+fi
+
+if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
+	if [ $(which arm-linux-gnueabi-gcc) ] ; then
+		armel_gcc_test=$(LC_ALL=C arm-linux-gnueabi-gcc -v 2>&1 | grep "Target:" | grep arm || true)
+	fi
+	if [ $(which arm-linux-gnueabihf-gcc) ] ; then
+		armhf_gcc_test=$(LC_ALL=C arm-linux-gnueabihf-gcc -v 2>&1 | grep "Target:" | grep arm || true)
+	fi
+
+	if [ "x${armel_gcc_test}" == "x" ] ; then
+		export CC="arm-linux-gnueabi-"
+	fi
+	if [ "x${armhf_gcc_test}" == "x" ] ; then
+		export CC="arm-linux-gnueabihf-"
+	fi
+fi
+
 if [ "x${CC}" == "x" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
 	echo "-----------------------------"
 	echo "scripts/gcc: Error: You haven't setup the Cross Compiler (CC variable) in system.sh"
