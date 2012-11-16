@@ -22,12 +22,12 @@ CCACHE=ccache
 config="omap2plus_defconfig"
 
 #Kernel/Build
-KERNEL_REL=3.X
-KERNEL_TAG=${KERNEL_REL}
+KERNEL_REL=3.7
+KERNEL_TAG=${KERNEL_REL}-rc5
 BUILD=x0
 
 #git branch
-BRANCH="3.X.x"
+BRANCH="3.7.x"
 
 BUILDREV=1.0
 DISTRO=cross
