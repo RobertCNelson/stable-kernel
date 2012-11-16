@@ -156,7 +156,7 @@ if [ ! "${ON_MASTER}" ] ; then
 	git_kernel
 else
 	echo "-----------------------------"
-	echo "Please checkout one of the active branches, building from the master branch has been disable..."
+	echo "Please checkout one of the active branches, building from the master branch has been disabled..."
 	echo "-----------------------------"
 	cat ${DIR}/branches.list | grep -v INACTIVE
 	echo "-----------------------------"
