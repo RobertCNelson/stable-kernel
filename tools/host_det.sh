@@ -96,6 +96,7 @@ function debian_regs
 	dpkg -l | grep build-essential >/dev/null || deb_pkgs+="build-essential "
 	dpkg -l | grep ccache >/dev/null || deb_pkgs+="ccache "
 	dpkg -l | grep device-tree-compiler >/dev/null || deb_pkgs+="device-tree-compiler "
+	dpkg -l | grep lsb-release >/dev/null || deb_pkgs+="lsb-release "
 	dpkg -l | grep lzma >/dev/null || deb_pkgs+="lzma "
 	dpkg -l | grep fakeroot >/dev/null || deb_pkgs+="fakeroot "
 
@@ -115,26 +116,29 @@ function debian_regs
 		echo "-----------------------------"
 	fi
 
+	#lsb_release might not be installed...
+	if [ ! $(which lsb_release) ] ; then
+		deb_distro=$(lsb_release -cs)
+
+		case "${deb_distro}" in
+		squeeze|lucid|maverick)
+			dpkg -l | grep uboot-mkimage >/dev/null || deb_pkgs+="uboot-mkimage "
+			;;
+		wheezy|natty|oneiric|precise|quantal|raring)
+			dpkg -l | grep u-boot-tools >/dev/null || deb_pkgs+="u-boot-tools "
+			;;
+		esac
+
+	fi
+
 	if [ "${deb_pkgs}" ] ; then
-		APT=1
-	fi
-
-	unset squeeze_mkimage
-	unset all_mkimage
-	if [ ! $(which mkimage) ];then
-		all_mkimage="u-boot-tools "
-		squeeze_mkimage="uboot-mkimage "
-		APT=1
-	fi
-
-	if [ "${APT}" ];then
 		echo "Missing Dependicies: Please Install"
 		echo "-----------------------------"
 		echo "Debian Squeeze"
-		echo "sudo apt-get install ${deb_pkgs}${squeeze_mkimage}"
+		echo "sudo apt-get install ${deb_pkgs}"
 		echo "-----------------------------"
 		echo "Ubuntu/Debian Wheezy:"
-		echo "sudo apt-get install ${deb_pkgs}${all_mkimage}"
+		echo "sudo apt-get install ${deb_pkgs}"
 		echo "-----------------------------"
 		return 1
 	fi
