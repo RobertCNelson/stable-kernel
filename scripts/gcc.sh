@@ -46,6 +46,14 @@ if [ $(which lsb_release) ] ; then
 			;;
 		esac
 
+		echo "fyi: ${distro} ${distro_release} has these ARM cross compilers:"
+		if [ "${armel_pkg}" ] ; fi
+			echo "sudo apt-get install ${armel_pkg}"
+		fi
+		if [ "${armhf_pkg}" ] ; fi
+			echo "sudo apt-get install ${armhf_pkg}"
+		fi
+		echo "-----------------------------"
 	fi
 fi
 
