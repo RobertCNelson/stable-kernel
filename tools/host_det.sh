@@ -120,8 +120,9 @@ function debian_regs
 	fi
 
 	unset squeeze_mkimage
+	unset all_mkimage
 	if [ ! $(which mkimage) ];then
-		deb_pkgs+="u-boot-tools "
+		all_mkimage="u-boot-tools "
 		squeeze_mkimage="uboot-mkimage "
 		APT=1
 	fi
@@ -133,7 +134,7 @@ function debian_regs
 		echo "sudo apt-get install ${deb_pkgs} ${squeeze_mkimage}"
 		echo "-----------------------------"
 		echo "Ubuntu/Debian Wheezy:"
-		echo "sudo apt-get install ${deb_pkgs}"
+		echo "sudo apt-get install ${deb_pkgs} ${all_mkimage}"
 		echo "-----------------------------"
 		return 1
 	fi
