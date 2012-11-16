@@ -134,10 +134,7 @@ function debian_regs
 	if [ "${deb_pkgs}" ] ; then
 		echo "Missing Dependicies: Please Install"
 		echo "-----------------------------"
-		echo "Debian Squeeze"
-		echo "sudo apt-get install ${deb_pkgs}"
-		echo "-----------------------------"
-		echo "Ubuntu/Debian Wheezy:"
+		echo "Ubuntu/Debian"
 		echo "sudo apt-get install ${deb_pkgs}"
 		echo "-----------------------------"
 		return 1
