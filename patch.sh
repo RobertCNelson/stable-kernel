@@ -86,6 +86,8 @@ beagle () {
 
 	#cpufreq: only 800Mhz seems to cause hard lock... disable for now..
 	${git} "${DIR}/patches/beagle/0005-TEMP-Beagle-xM-cpufreq-disable-800Mhz-opp.patch"
+
+	${git} "${DIR}/patches/beagle/0006-ARM-OMAP-Beagle-C4-fix-reboot-problem.patch"
 }
 
 sprz319_erratum () {
