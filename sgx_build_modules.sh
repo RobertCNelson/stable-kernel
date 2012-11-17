@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2012.10-1"
+VERSION="v2012.11-1"
 
 unset DIR
 
@@ -119,6 +119,7 @@ install_sgx () {
 }
 
 set_sgx_make_vars () {
+	source ${DIR}/.CC
 	GRAPHICS_PATH="GRAPHICS_INSTALL_DIR="${DIR}/ti-sdk-pvr/Graphics_SDK/""
 	KERNEL_PATH="KERNEL_INSTALL_DIR="${DIR}/KERNEL""
 	USER_VAR="HOME=/home/${USER}"
@@ -560,6 +561,7 @@ pkg_up () {
 
 
 pkg_up_examples () {
+	BASE_DIR=""${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}"
 	OGLES="GFX_Linux_SDK/OGLES/SDKPackage"
 	OGLES2="GFX_Linux_SDK/OGLES2/SDKPackage"
 
@@ -568,22 +570,23 @@ pkg_up_examples () {
 	fi
 	mkdir "${DIR}/ti-sdk-pvr/examples"
 
-	if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK ] ; then
+
+	if [ -d "${BASE_DIR}"/GFX_Linux_SDK ] ; then
 		echo "Copying SDK example appications..."
 
-		if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/${OGLES}/Binaries/ ] ; then
+		if [ -d "${BASE_DIR}"/${OGLES}/Binaries/ ] ; then
 			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OGLES}/Binaries/"
-			cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/${OGLES}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OGLES}/"
+			cp -r "${BASE_DIR}"/${OGLES}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OGLES}/"
 		fi
 
-		if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/${OGLES2}/Binaries/ ] ; then
+		if [ -d "${BASE_DIR}"/${OGLES2}/Binaries/ ] ; then
 			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OGLES2}/Binaries/"
-			cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/${OGLES2}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OGLES2}/"
+			cp -r "${BASE_DIR}"/${OGLES2}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OGLES2}/"
 		fi
 
-		if [ -d ${HOME}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK/ti-components/ ] ; then
+		if [ -d "${BASE_DIR}"/GFX_Linux_SDK/ti-components/ ] ; then
 			mkdir -p "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/ti-components/"
-			cp -r ${HOME}/Graphics_SDK_${SDK_DIR}/GFX_Linux_SDK/ti-components/ "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/"
+			cp -r "${BASE_DIR}"/GFX_Linux_SDK/ti-components/ "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/"
 		fi
 
 		echo "taring SDK example files for use on the OMAP board"
