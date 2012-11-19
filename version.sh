@@ -1,6 +1,7 @@
 #!/bin/bash
-
+#
 ARCH=$(uname -m)
+DISABLE_MASTER_BRANCH=1
 
 CORES=1
 if [ "x${ARCH}" == "xx86_64" ] || [ "x${ARCH}" == "xi686" ] ; then
@@ -26,7 +27,7 @@ KERNEL_TAG=${KERNEL_REL}.33
 BUILD=x15
 
 #git branch
-BRANCH="3.2.x"
+BRANCH="v3.2.x"
 
 BUILDREV=1.0
 DISTRO=cross
