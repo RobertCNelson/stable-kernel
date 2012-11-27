@@ -108,9 +108,6 @@ am33x () {
 	${git} "${DIR}/patches/adc/0011-input-ti_am335x_tsc-Add-variance-filters.patch"
 	${git} "${DIR}/patches/adc/0012-ti_tscadc-Update-with-IIO-map-interface-deal-with-pa.patch"
 	${git} "${DIR}/patches/adc/0013-ti_tscadc-Match-mfd-sub-devices-to-regmap-interface.patch"
-}
-
-am33x_broken () {
 
 	echo "dir: pwm"
 	${git} "${DIR}/patches/pwm/0001-ARM-OMAP3-hwmod-Corrects-resource-data-for-PWM-devic.patch"
@@ -122,7 +119,11 @@ am33x_broken () {
 	${git} "${DIR}/patches/pwm/0007-pwm-pwm_test-Driver-support-for-PWM-module-testing.patch"
 	${git} "${DIR}/patches/pwm/0008-arm-dts-DT-support-for-EHRPWM-and-ECAP-device.patch"
 	${git} "${DIR}/patches/pwm/0009-pwm-pwm-tiehrpwm-Add-device-tree-binding-support-EHR.patch"
+	${git} "${DIR}/patches/pwm/0010-ARM-OMAP2-PWM-limit-am33xx_register_ehrpwm-to-soc_is.patch"
 
+}
+
+am33x_broken () {
 	echo "dir: i2c"
 	${git} "${DIR}/patches/i2c/0001-pinctrl-pinctrl-single-must-be-initialized-early.patch"
 	${git} "${DIR}/patches/i2c/0002-Bone-DTS-working-i2c2-i2c3-in-the-tree.patch"
