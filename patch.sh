@@ -121,9 +121,6 @@ am33x () {
 	${git} "${DIR}/patches/pwm/0009-pwm-pwm-tiehrpwm-Add-device-tree-binding-support-EHR.patch"
 	${git} "${DIR}/patches/pwm/0010-ARM-OMAP2-PWM-limit-am33xx_register_ehrpwm-to-soc_is.patch"
 
-}
-
-am33x_broken () {
 	echo "dir: i2c"
 	${git} "${DIR}/patches/i2c/0001-pinctrl-pinctrl-single-must-be-initialized-early.patch"
 	${git} "${DIR}/patches/i2c/0002-Bone-DTS-working-i2c2-i2c3-in-the-tree.patch"
@@ -157,6 +154,28 @@ am33x_broken () {
 
 	echo "dir: fixes"
 	${git} "${DIR}/patches/fixes/0001-ARM-AM33XX-hwmod-Remove-wrong-INIT_NO_RESET-IDLE-fla.patch"
+
+	echo "dir: f2fs"
+	${git} "${DIR}/patches/f2fs/0001-f2fs-add-document.patch"
+	${git} "${DIR}/patches/f2fs/0002-f2fs-add-on-disk-layout.patch"
+	${git} "${DIR}/patches/f2fs/0003-f2fs-add-superblock-and-major-in-memory-structure.patch"
+	${git} "${DIR}/patches/f2fs/0004-f2fs-add-super-block-operations.patch"
+	${git} "${DIR}/patches/f2fs/0005-f2fs-add-checkpoint-operations.patch"
+	${git} "${DIR}/patches/f2fs/0006-f2fs-add-node-operations.patch"
+	${git} "${DIR}/patches/f2fs/0007-f2fs-add-segment-operations.patch"
+	${git} "${DIR}/patches/f2fs/0008-f2fs-add-file-operations.patch"
+	${git} "${DIR}/patches/f2fs/0009-f2fs-add-address-space-operations-for-data.patch"
+	${git} "${DIR}/patches/f2fs/0010-f2fs-add-core-inode-operations.patch"
+	${git} "${DIR}/patches/f2fs/0011-f2fs-add-inode-operations-for-special-inodes.patch"
+	${git} "${DIR}/patches/f2fs/0012-f2fs-add-core-directory-operations.patch"
+	${git} "${DIR}/patches/f2fs/0013-f2fs-add-xattr-and-acl-functionalities.patch"
+	${git} "${DIR}/patches/f2fs/0014-f2fs-add-garbage-collection-functions.patch"
+	${git} "${DIR}/patches/f2fs/0015-f2fs-add-recovery-routines-for-roll-forward.patch"
+	${git} "${DIR}/patches/f2fs/0016-f2fs-update-Kconfig-and-Makefile.patch"
+	${git} "${DIR}/patches/f2fs/0017-f2fs-gc.h-make-should_do_checkpoint-inline.patch"
+	${git} "${DIR}/patches/f2fs/0018-f2fs-move-statistics-code-into-one-file.patch"
+	${git} "${DIR}/patches/f2fs/0019-f2fs-move-proc-files-to-debugfs.patch"
+	${git} "${DIR}/patches/f2fs/0020-f2fs-compile-fix.patch"
 
 	echo "dir: 6lowpan"
 	${git} "${DIR}/patches/6lowpan/0001-6lowpan-lowpan_is_iid_16_bit_compressable-does-not-d.patch"
