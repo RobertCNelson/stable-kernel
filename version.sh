@@ -26,8 +26,11 @@ KERNEL_REL=3.X
 KERNEL_TAG=${KERNEL_REL}
 BUILD=x0
 
+#v3.X-rcX + upto SHA
+#KERNEL_SHA=""
+
 #git branch
-BRANCH="3.X.x"
+#BRANCH="v3.X.x"
 
 BUILDREV=1.0
 DISTRO=cross
