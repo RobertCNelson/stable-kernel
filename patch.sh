@@ -222,6 +222,10 @@ am33x () {
 	${git} "${DIR}/patches/capebus/0024-beaglebone-Update-default-config-for-capebus.patch"
 	${git} "${DIR}/patches/capebus/0025-capebus-Geiger-Cape-config-bugfixs.patch"
 	${git} "${DIR}/patches/capebus/0026-am335x-bone-Add-spi0-pins-defines.patch"
+	${git} "${DIR}/patches/capebus/0027-Allow-more-than-one-instance-of-generic-devices.patch"
+	${git} "${DIR}/patches/capebus/0028-Mark-the-device-as-PRIVATE.patch"
+	${git} "${DIR}/patches/capebus/0029-DT-overlay.patch"
+	${git} "${DIR}/patches/capebus/0030-Bug-fixes-pinctl-gpio-reset.patch"
 
 	echo "dir: hdmi"
 	${git} "${DIR}/patches/hdmi/0001-Import-working-HDMI-driver-from-3.2-kernel.patch"
@@ -299,6 +303,11 @@ omap () {
 	${git} "${DIR}/patches/omap_thermal/0005-staging-omap-thermal-fix-context-restore-function.patch"
 }
 
+am33x_after () {
+	echo "dir: net"
+	${git} "${DIR}/patches/net/0001-Attempted-SMC911x-BQL-patch.patch"
+}
+
 sprz319_erratum () {
 	echo "sprz319 erratum 2.1"
 	#Breaks: Beagle C4, hardlocks on bootup...
@@ -317,6 +326,7 @@ xm_cpufreq_debug () {
 am33x
 arm
 omap
+am33x_after
 
 #disabled as it breaks beagle c4...
 #sprz319_erratum
