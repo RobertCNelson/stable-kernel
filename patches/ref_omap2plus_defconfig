@@ -1804,6 +1804,7 @@ CONFIG_FB_TILEBLITTING=y
 # CONFIG_FB_TMIO is not set
 # CONFIG_FB_SMSCUFX is not set
 # CONFIG_FB_UDL is not set
+# CONFIG_FB_DA8XX is not set
 # CONFIG_FB_VIRTUAL is not set
 # CONFIG_FB_METRONOME is not set
 # CONFIG_FB_BROADSHEET is not set
@@ -1863,6 +1864,7 @@ CONFIG_BACKLIGHT_GENERIC=m
 # CONFIG_BACKLIGHT_PANDORA is not set
 # CONFIG_BACKLIGHT_TPS65217 is not set
 # CONFIG_BACKLIGHT_TLC59108 is not set
+# CONFIG_NXP_TDA998X_OLD is not set
 
 #
 # Console display driver support
@@ -2323,6 +2325,11 @@ CONFIG_OF_IOMMU=y
 # CONFIG_PWM is not set
 
 #
+# CAPEBUS support
+#
+# CONFIG_CAPEBUS is not set
+
+#
 # File systems
 #
 CONFIG_DCACHE_WORD_ACCESS=y
@@ -2441,6 +2448,7 @@ CONFIG_CRAMFS=y
 # CONFIG_PSTORE is not set
 # CONFIG_SYSV_FS is not set
 # CONFIG_UFS_FS is not set
+# CONFIG_F2FS_FS is not set
 CONFIG_NETWORK_FILESYSTEMS=y
 CONFIG_NFS_FS=y
 CONFIG_NFS_V2=y
