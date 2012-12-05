@@ -225,9 +225,8 @@ am33x () {
 	${git} "${DIR}/patches/capebus/0027-Allow-more-than-one-instance-of-generic-devices.patch"
 	${git} "${DIR}/patches/capebus/0028-Mark-the-device-as-PRIVATE.patch"
 	${git} "${DIR}/patches/capebus/0029-DT-overlay.patch"
-
-#breaks omap4 hsmmc
-#	${git} "${DIR}/patches/capebus/0030-Bug-fixes-pinctl-gpio-reset.patch"
+	${git} "${DIR}/patches/capebus/0030-Bug-fixes-pinctl-gpio-reset.patch"
+	${git} "${DIR}/patches/capebus/0031-ARM-HSMMC-fix-error-path-when-no-gpio_reset.patch"
 
 	echo "dir: hdmi"
 	${git} "${DIR}/patches/hdmi/0001-Import-working-HDMI-driver-from-3.2-kernel.patch"
