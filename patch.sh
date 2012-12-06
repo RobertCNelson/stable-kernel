@@ -265,6 +265,7 @@ omap () {
 	${git} "${DIR}/patches/omap_beagle_expansion/0007-Beagle-expansion-add-beaglefpga.patch"
 	${git} "${DIR}/patches/omap_beagle_expansion/0008-Enable-buddy-spidev.patch"
 	${git} "${DIR}/patches/omap_beagle_expansion/0009-Beagle-Camera-add-MT9P031-Aptina-image-sensor-driver.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0010-Beagle-expansion-limit-buddy-to-beagle-only.patch"
 
 	echo "dir: omap/beagle"
 	#Status: for meego guys..
