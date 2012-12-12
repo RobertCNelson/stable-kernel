@@ -274,6 +274,7 @@ omap () {
 	${git} "${DIR}/patches/omap_beagle_expansion/0008-Beagle-expansion-add-spidev.patch"
 	${git} "${DIR}/patches/omap_beagle_expansion/0009-Beagle-expansion-add-Aptina-li5m03-camera.patch"
 	${git} "${DIR}/patches/omap_beagle_expansion/0010-Beagle-expansion-add-LSR-COM6L-Adapter-Board.patch"
+	#${git} "${DIR}/patches/omap_beagle_expansion/0011-WIP-Beagle-expansion-extend-spidev-to-uart2.patch"
 
 	echo "dir: omap/beagle"
 	#Status: for meego guys..
