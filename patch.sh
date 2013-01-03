@@ -300,6 +300,8 @@ omap () {
 	echo "dir: omap/sgx"
 	#Status: TI 4.06.00.xx needs this, when building drm modues for Xorg.
 	${git} "${DIR}/patches/omap_sgx/0001-Revert-drm-kill-drm_sman.patch"
+	#Status: TI: 4.08.00.02, needs this revert...
+	${git} "${DIR}/patches/omap_sgx/0002-Revert-OMAPDSS-Remove-old-way-of-setting-manager-and.patch"
 
 	echo "dir: omap/fixes"
 	#Status: unknown: only needed when forcing mpurate over 999 using bootargs...
