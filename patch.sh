@@ -304,6 +304,11 @@ omap () {
 	${git} "${DIR}/patches/omap_sgx/0001-Revert-drm-kill-drm_sman.patch"
 	#Status: TI: 4.08.00.02, needs this revert...
 	${git} "${DIR}/patches/omap_sgx/0002-Revert-OMAPDSS-Remove-old-way-of-setting-manager-and.patch"
+	#Status: not for upstream: http://www.spinics.net/lists/arm-kernel/msg214633.html
+	#Fixes:
+	#WARNING: "v7_dma_flush_range" *pvrsrvkm.ko] undefined!
+	#WARNING: "v7_dma_map_area" *pvrsrvkm.ko] undefined!
+	${git} "${DIR}/patches/omap_sgx/0003-arm-Export-cache-flush-management-symbols-when-MULTI.patch"
 
 	echo "dir: omap/fixes"
 	#Status: unknown: only needed when forcing mpurate over 999 using bootargs...
