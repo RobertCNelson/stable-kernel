@@ -90,6 +90,7 @@ am33x () {
 	${git} "${DIR}/patches/pinctrl/0002-arm-dts-AM33XX-Configure-pinmuxs-for-user-leds-contr.patch"
 	${git} "${DIR}/patches/pinctrl/0003-beaglebone-DT-set-default-triggers-for-LEDS.patch"
 	${git} "${DIR}/patches/pinctrl/0004-beaglebone-add-a-cpu-led-trigger.patch"
+	${git} "${DIR}/patches/pinctrl/0005-pinctrl-pinctrl-single-Fix-the-pins-debug-output.patch"
 
 	echo "dir: cpufreq"
 	${git} "${DIR}/patches/cpufreq/0001-arm-dts-AM33XX-Add-device-tree-OPP-table.patch"
@@ -329,6 +330,9 @@ am33x_after () {
 
 	echo "dir: spi"
 	${git} "${DIR}/patches/spi/0001-spi-spidev-Add-device-tree-bindings.patch"
+
+	echo "dir: capes"
+	${git} "${DIR}/patches/capes/0001-da8xx-fb-add-Chalk-Electronics-LVDS-cape-and-10in-di.patch"
 }
 
 sprz319_erratum () {
