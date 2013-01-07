@@ -5,9 +5,9 @@
 [git checkout origin/v2.6.39.x -b tmp] [INACTIVE]
 [git checkout origin/v3.0.x -b tmp] [INACTIVE]
 [git checkout origin/v3.1.x -b tmp] [INACTIVE]
-[git checkout origin/v3.2.x -b tmp] (PandaBoard Non ES)
+[git checkout origin/v3.2.x -b tmp] [INACTIVE]
 [git checkout origin/v3.3.x -b tmp] [INACTIVE]
 [git checkout origin/v3.4.x -b tmp] [INACTIVE]
 [git checkout origin/v3.5.x -b tmp] [INACTIVE]
-[git checkout origin/v3.6.x -b tmp] (BeagleBoard Cx/xM PandaBoard ES)
-[git checkout origin/v3.7.x -b tmp] (BeagleBoard Cx/xM PandaBoard ES)
+[git checkout origin/v3.6.x -b tmp] [INACTIVE]
+[git checkout origin/v3.7.x -b tmp] (BeagleBoard Cx/xM PandaBoard/PandaBoard ES)
