@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (c) 2012 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2012-2013 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -85,34 +85,34 @@ dl_n_verify_sdk () {
 }
 
 install_sgx () {
-	if [ ! -f "${DIR}/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}/verify.${sgx_md5sum}" ] ; then
+	if [ ! -f "${DIR}/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}/verify.${sgx_md5sum}" ] ; then
 		echo "Installing: Graphics_SDK_setuplinux_${sdk_version}"
-		if [ -d "${DIR}/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}" ] ; then
-			rm -rf "${DIR}/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}" || true
+		if [ -d "${DIR}/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}" ] ; then
+			rm -rf "${DIR}/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}" || true
 		fi
 		chmod +x "${DIR}"/dl/Graphics_SDK_setuplinux_${sdk_version}.bin
-		"${DIR}"/dl/Graphics_SDK_setuplinux_${sdk_version}.bin --mode console --prefix "${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version} <<-__EOF__
+		"${DIR}"/dl/Graphics_SDK_setuplinux_${sdk_version}.bin --mode console --prefix "${DIR}"/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version} <<-__EOF__
 		Y
 		qy
 	
 		__EOF__
-		touch "${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}/verify.${sgx_md5sum}
+		touch "${DIR}"/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}/verify.${sgx_md5sum}
 	else
 		echo "Graphics_SDK_setuplinux_${sdk_version} is installed"
 	fi
 
-	if [ ! -f "${DIR}/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly/verify.${sgx_hfp_md5sum}" ] ; then
+	if [ ! -f "${DIR}/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly/verify.${sgx_hfp_md5sum}" ] ; then
 		echo "Installing: Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly"
-		if [ -d "${DIR}/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly.bin" ] ; then
-			rm -rf "${DIR}/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly.bin" || true
+		if [ -d "${DIR}/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly.bin" ] ; then
+			rm -rf "${DIR}/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly.bin" || true
 		fi
 		chmod +x "${DIR}"/dl/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly.bin
-		"${DIR}"/dl/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly.bin --mode console --prefix "${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly <<-__EOF__
+		"${DIR}"/dl/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly.bin --mode console --prefix "${DIR}"/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly <<-__EOF__
 		Y
 		qy
 	
 		__EOF__
-		touch "${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly/verify.${sgx_hfp_md5sum}
+		touch "${DIR}"/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly/verify.${sgx_hfp_md5sum}
 	else
 		echo "Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly is installed"
 	fi
@@ -120,7 +120,7 @@ install_sgx () {
 
 set_sgx_make_vars () {
 	source ${DIR}/.CC
-	GRAPHICS_PATH="GRAPHICS_INSTALL_DIR="${DIR}/ti-sdk-pvr/Graphics_SDK/""
+	GRAPHICS_PATH="GRAPHICS_INSTALL_DIR="${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/""
 	KERNEL_PATH="KERNEL_INSTALL_DIR="${DIR}/KERNEL""
 	USER_VAR="HOME=/home/${USER}"
 	CSTOOL_PREFIX=${CC##*/}
@@ -136,13 +136,13 @@ set_sgx_make_vars () {
 }
 
 git_sgx_modules () {
-	if [ ! -f "${DIR}/ti-sdk-pvr/.git/config" ] ; then
-		git clone git://github.com/RobertCNelson/ti-sdk-pvr.git
-		cd "${DIR}/ti-sdk-pvr/"
+	if [ ! -f "${DIR}/ignore/ti-sdk-pvr/.git/config" ] ; then
+		git clone git://github.com/RobertCNelson/ti-sdk-pvr.git "${DIR}/ignore/ti-sdk-pvr/"
+		cd "${DIR}/ignore/ti-sdk-pvr/"
 		git checkout ${SGX_SHA} -b tmp-build
 		cd ${DIR}/
 	else
-		cd "${DIR}/ti-sdk-pvr/"
+		cd "${DIR}/ignore/ti-sdk-pvr/"
 		git add .
 		git commit --allow-empty -a -m 'empty cleanup commit'
 		git checkout origin/master -b tmp-scratch
@@ -156,39 +156,39 @@ git_sgx_modules () {
 
 copy_sgx_es_armel () {
 	echo "Copying: armel: ${es_version} to build dir"
-	mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/armel/gfx_rel_${es_version}" || true
-	cp -r "${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}/gfx_rel_${es_version}/* "${DIR}/ti-sdk-pvr/Graphics_SDK/armel/gfx_rel_${es_version}/"
+	mkdir -p "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armel/gfx_rel_${es_version}" || true
+	cp -r "${DIR}"/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}/gfx_rel_${es_version}/* "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armel/gfx_rel_${es_version}/"
 }
 
 copy_sgx_es_armhf () {
 	echo "Copying: armhf: ${es_version} to build dir"
-	mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf/gfx_rel_${es_version}" || true
-	cp -r "${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly/gfx_rel_${es_version}/* "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf/gfx_rel_${es_version}/"
+	mkdir -p "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armhf/gfx_rel_${es_version}" || true
+	cp -r "${DIR}"/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}_hardfp_BinOnly/gfx_rel_${es_version}/* "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armhf/gfx_rel_${es_version}/"
 }
 
 copy_sgx_binaries () {
-	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/armel" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/armel" || true
-		mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/armel" || true
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armel" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armel" || true
+		mkdir -p "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armel" || true
 	fi
 
-	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf" || true
-		mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/armhf" || true
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armhf" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armhf" || true
+		mkdir -p "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/armhf" || true
 	fi
 
 	echo "Starting: copying files from the SDK"
-	if [  -d "${DIR}/ti-sdk-pvr/Graphics_SDK/targetfs" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/targetfs" || true
+	if [  -d "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/targetfs" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/targetfs" || true
 	fi
-	mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/targetfs" || true
+	mkdir -p "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/targetfs" || true
 
-	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/tools" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/tools" || true
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/tools" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/tools" || true
 	fi
-	mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/tools" || true
+	mkdir -p "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/tools" || true
 
-	cp -r "${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}/tools "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+	cp -r "${DIR}"/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}/tools "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/"
 
 	es_version="es3.x"
 	copy_sgx_es_armel
@@ -211,7 +211,7 @@ clean_sgx_modules () {
 	echo "-----------------------------"
 	echo "make clean"
 	echo "-----------------------------"
-	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+	cd "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/"
 	pwd
 	echo "make ${GRAPHICS_PATH} ${KERNEL_PATH} HOME=${HOME} ${CROSS} clean"
 	make ${GRAPHICS_PATH} ${KERNEL_PATH} HOME=${HOME} ${CROSS} clean &> /dev/null
@@ -223,12 +223,12 @@ build_sgx_modules () {
 	echo "-----------------------------"
 	echo "Building es$2 modules"
 	echo "-----------------------------"
-	cd "${DIR}/ti-sdk-pvr/Graphics_SDK/"
+	cd "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/"
 
-	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" || true
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" || true
 	fi
-	mkdir -p "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" || true
+	mkdir -p "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/" || true
 
 	pwd
 	echo "make ${GRAPHICS_PATH} ${KERNEL_PATH} HOME=${HOME} ${CROSS} BUILD="$1" OMAPES="$2" FBDEV="$3" SUPPORT_XORG="$4" "$5""
@@ -236,12 +236,12 @@ build_sgx_modules () {
 	cd ${DIR}/
 	echo "-----------------------------"
 	echo "modinfo sanity check: vermagic:"
-	sudo modinfo "${DIR}/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/"pvr* | grep vermagic || true
+	sudo modinfo "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/"pvr* | grep vermagic || true
 	echo "-----------------------------"
 }
 
 file_pvr_startup () {
-	cat > "${DIR}/ti-sdk-pvr/pkg/pvr_startup" <<-__EOF__
+	cat > "${DIR}/ignore/ti-sdk-pvr/pkg/pvr_startup" <<-__EOF__
 	#!/bin/sh -e
 	### BEGIN INIT INFO
 	# Provides:          pvr_startup
@@ -344,7 +344,7 @@ file_pvr_startup () {
 }
 
 file_install_sgx () {
-	cat > "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
+	cat > "${DIR}/ignore/ti-sdk-pvr/pkg/install-sgx.sh" <<-__EOF__
 	#!/bin/sh
 
 	if ! id | grep -q root; then
@@ -437,11 +437,11 @@ file_install_sgx () {
 
 	__EOF__
 
-	chmod +x "${DIR}/ti-sdk-pvr/pkg/install-sgx.sh"
+	chmod +x "${DIR}/ignore/ti-sdk-pvr/pkg/install-sgx.sh"
 }
 
 file_run_sgx () {
-	cat > "${DIR}/ti-sdk-pvr/pkg/run-sgx.sh" <<-__EOF__
+	cat > "${DIR}/ignore/ti-sdk-pvr/pkg/run-sgx.sh" <<-__EOF__
 	#!/bin/sh
 
 	if ! id | grep -q root; then
@@ -461,13 +461,13 @@ file_run_sgx () {
 
 	__EOF__
 
-	chmod +x "${DIR}/ti-sdk-pvr/pkg/run-sgx.sh"
+	chmod +x "${DIR}/ignore/ti-sdk-pvr/pkg/run-sgx.sh"
 }
 
 mv_modules_libs_bins () {
 	echo "packaging: ${CORE}.x: ${ARCH} Kernel Modules:"
 	mkdir -p ./opt/sgx_modules/${CORE}.0/
-	cp -v "${DIR}"/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x/*.ko ./opt/sgx_modules/${CORE}.0/ || true
+	cp -v "${DIR}"/ignore/ti-sdk-pvr/Graphics_SDK/gfx_rel_${CORE}.x/*.ko ./opt/sgx_modules/${CORE}.0/ || true
 	echo "-----------------------------"
 
 	#armhf has extra pre-built kernel modules, remove...(built against v3.4.4-x1 so not usable..)
@@ -496,20 +496,20 @@ mv_modules_libs_bins () {
 }
 
 gfx_rel_x () {
-	if [ -d "${DIR}/ti-sdk-pvr/Graphics_SDK/${ARCH}/gfx_rel_${CORE}.x" ] ; then
-		cd "${DIR}/ti-sdk-pvr/Graphics_SDK/${ARCH}/gfx_rel_${CORE}.x"
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/${ARCH}/gfx_rel_${CORE}.x" ] ; then
+		cd "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/${ARCH}/gfx_rel_${CORE}.x"
 		mv_modules_libs_bins
-		tar czf "${DIR}/ti-sdk-pvr/pkg"/gfx_rel_${CORE}_${ARCH}.tar.gz *
+		tar czf "${DIR}/ignore/ti-sdk-pvr/pkg"/gfx_rel_${CORE}_${ARCH}.tar.gz *
 	else
 		echo "SGX: missing gfx_rel_${CORE}.x dir, did you get the FULL release"
 	fi
 }
 
 pkg_modules () {
-	if [ -d "${DIR}/ti-sdk-pvr/pkg/" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/pkg" || true
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/pkg/" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/pkg" || true
 	fi
-	mkdir "${DIR}/ti-sdk-pvr/pkg"
+	mkdir "${DIR}/ignore/ti-sdk-pvr/pkg"
 
 	ARCH="armel"
 	CORE="es3"
@@ -531,8 +531,8 @@ pkg_modules () {
 }
 
 pkg_helpers () {
-	mkdir "${DIR}/ti-sdk-pvr/pkg/tools/"
-	cd "${DIR}/ti-sdk-pvr/pkg/tools"
+	mkdir "${DIR}/ignore/ti-sdk-pvr/pkg/tools/"
+	cd "${DIR}/ignore/ti-sdk-pvr/pkg/tools"
 
 	#download devmem2
 	rm -f /tmp/index.html || true
@@ -546,7 +546,7 @@ pkg_helpers () {
 }
 
 pkg_install_script () {
-	cd "${DIR}/ti-sdk-pvr/pkg"
+	cd "${DIR}/ignore/ti-sdk-pvr/pkg"
 	file_pvr_startup
 	file_install_sgx
 	file_run_sgx
@@ -554,54 +554,54 @@ pkg_install_script () {
 }
 
 pkg_up () {
-	cd "${DIR}/ti-sdk-pvr/pkg"
+	cd "${DIR}/ignore/ti-sdk-pvr/pkg"
 	tar czf ${DIR}/deploy/GFX_${SDK}_libs.tar.gz *
 	cd ${DIR}/
 }
 
 
 pkg_up_examples () {
-	BASE_DIR=""${DIR}"/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}"
+	BASE_DIR=""${DIR}"/ignore/SDK_BIN/Graphics_SDK_setuplinux_${sdk_version}"
 	OGLES="GFX_Linux_SDK/OGLES/SDKPackage"
 	OGLES2="GFX_Linux_SDK/OGLES2/SDKPackage"
 
-	if [ -d "${DIR}/ti-sdk-pvr/examples/" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/examples" || true
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/examples/" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/examples" || true
 	fi
-	mkdir "${DIR}/ti-sdk-pvr/examples"
+	mkdir "${DIR}/ignore/ti-sdk-pvr/examples"
 
 
 	if [ -d "${BASE_DIR}"/GFX_Linux_SDK ] ; then
 		echo "Copying SDK example appications..."
 
 		if [ -d "${BASE_DIR}"/${OGLES}/Binaries/ ] ; then
-			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OGLES}/Binaries/"
-			cp -r "${BASE_DIR}"/${OGLES}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OGLES}/"
+			mkdir -p "${DIR}/ignore/ti-sdk-pvr/examples/${OGLES}/Binaries/"
+			cp -r "${BASE_DIR}"/${OGLES}/Binaries/ "${DIR}/ignore/ti-sdk-pvr/examples/${OGLES}/"
 		fi
 
 		if [ -d "${BASE_DIR}"/${OGLES2}/Binaries/ ] ; then
-			mkdir -p "${DIR}/ti-sdk-pvr/examples/${OGLES2}/Binaries/"
-			cp -r "${BASE_DIR}"/${OGLES2}/Binaries/ "${DIR}/ti-sdk-pvr/examples/${OGLES2}/"
+			mkdir -p "${DIR}/ignore/ti-sdk-pvr/examples/${OGLES2}/Binaries/"
+			cp -r "${BASE_DIR}"/${OGLES2}/Binaries/ "${DIR}/ignore/ti-sdk-pvr/examples/${OGLES2}/"
 		fi
 
 		if [ -d "${BASE_DIR}"/GFX_Linux_SDK/ti-components/ ] ; then
-			mkdir -p "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/ti-components/"
-			cp -r "${BASE_DIR}"/GFX_Linux_SDK/ti-components/ "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/"
+			mkdir -p "${DIR}/ignore/ti-sdk-pvr/examples/GFX_Linux_SDK/ti-components/"
+			cp -r "${BASE_DIR}"/GFX_Linux_SDK/ti-components/ "${DIR}/ignore/ti-sdk-pvr/examples/GFX_Linux_SDK/"
 		fi
 
 		echo "taring SDK example files for use on the OMAP board"
 
 		echo "removing windows binaries"
-		find "${DIR}/ti-sdk-pvr/examples" -name "*.exe" -exec rm -rf {} \;
-		find "${DIR}/ti-sdk-pvr/examples" -name "*.dll" -exec rm -rf {} \;
+		find "${DIR}/ignore/ti-sdk-pvr/examples" -name "*.exe" -exec rm -rf {} \;
+		find "${DIR}/ignore/ti-sdk-pvr/examples" -name "*.dll" -exec rm -rf {} \;
 
-		cd "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK"
-		tar czf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK"/OGLES.tar.gz ./OGLES
-		rm -rf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/OGLES" || true
-		tar czf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK"/OGLES2.tar.gz ./OGLES2
-		rm -rf "${DIR}/ti-sdk-pvr/examples/GFX_Linux_SDK/OGLES2" || true
+		cd "${DIR}/ignore/ti-sdk-pvr/examples/GFX_Linux_SDK"
+		tar czf "${DIR}/ignore/ti-sdk-pvr/examples/GFX_Linux_SDK"/OGLES.tar.gz ./OGLES
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/examples/GFX_Linux_SDK/OGLES" || true
+		tar czf "${DIR}/ignore/ti-sdk-pvr/examples/GFX_Linux_SDK"/OGLES2.tar.gz ./OGLES2
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/examples/GFX_Linux_SDK/OGLES2" || true
 
-		cd "${DIR}/ti-sdk-pvr/examples/"
+		cd "${DIR}/ignore/ti-sdk-pvr/examples/"
 		tar czfv ${DIR}/deploy/GFX_Linux_${SDK}_examples.tar.gz ./GFX_Linux_SDK
 		echo "SGX examples are in: deploy/GFX_Linux_${SDK}_examples.tar.gz"
 		cd ${DIR}
@@ -615,6 +615,10 @@ if [ -e ${DIR}/system.sh ] ; then
 	source ${DIR}/system.sh
 	source ${DIR}/version.sh
 
+	if [ ! -d "${DIR}/ignore/" ] ; then
+		mkdir "${DIR}/ignore/"
+	fi
+
 	dl_n_verify_sdk
 	install_sgx
 
@@ -624,11 +628,11 @@ if [ -e ${DIR}/system.sh ] ; then
 	copy_sgx_binaries
 
 	#No reason to rebuild the sdk...
-	sed -i -e 's:all_km all_sdk:all_km:g' "${DIR}/ti-sdk-pvr/Graphics_SDK/Makefile"
-	sed -i -e 's:install_km install_sdk:install_km:g' "${DIR}/ti-sdk-pvr/Graphics_SDK/Makefile"
+	sed -i -e 's:all_km all_sdk:all_km:g' "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/Makefile"
+	sed -i -e 's:install_km install_sdk:install_km:g' "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/Makefile"
 
 	#Disable building of devmem2, as it breaks with hardfp based cross compilers, and we use the distro package anyways...
-	sed -i -e 's:prepare_km buildkernel builddevmem2:prepare_km buildkernel:g' "${DIR}/ti-sdk-pvr/Graphics_SDK/Makefile.KM"
+	sed -i -e 's:prepare_km buildkernel builddevmem2:prepare_km buildkernel:g' "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/Makefile.KM"
 
 	if [ ! -f "${DIR}/KERNEL/Makefile" ] ; then
 		echo ""
@@ -655,11 +659,11 @@ if [ -e ${DIR}/system.sh ] ; then
 	pkg_up_examples
 
 	#Disable when debugging...
-	if [ -d "${DIR}/ti-sdk-pvr/pkg/" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/pkg" || true
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/pkg/" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/pkg" || true
 	fi
-	if [ -d "${DIR}/ti-sdk-pvr/examples/" ] ; then
-		rm -rf "${DIR}/ti-sdk-pvr/examples" || true
+	if [ -d "${DIR}/ignore/ti-sdk-pvr/examples/" ] ; then
+		rm -rf "${DIR}/ignore/ti-sdk-pvr/examples" || true
 	fi
 
 else
