@@ -44,7 +44,6 @@ backup_config () {
 
 mmc_write_modules () {
 	echo "Installing ${KERNEL_UTS}-modules.tar.gz to rootfs partition"
-	echo "Installing ${KERNEL_UTS}-firmware.tar.gz to rootfs partition"
 	echo "-----------------------------"
 
 	if [ -d "${DIR}/deploy/disk/lib/modules/${KERNEL_UTS}" ] ; then
@@ -52,7 +51,16 @@ mmc_write_modules () {
 	fi
 
 	sudo tar xf "${DIR}/deploy/${KERNEL_UTS}-modules.tar.gz" -C "${DIR}/deploy/disk"
-	sudo tar xf "${DIR}/deploy/${KERNEL_UTS}-firmware.tar.gz" -C "${DIR}/deploy/disk"
+
+	echo "Installing ${KERNEL_UTS}-firmware.tar.gz to rootfs partition"
+	echo "-----------------------------"
+	sudo mkdir -p "${DIR}/deploy/disk/tmp/fir"
+	sudo tar xf "${DIR}/deploy/${KERNEL_UTS}-firmware.tar.gz" -C "${DIR}/deploy/disk/tmp/fir/"
+	if [ ! -d "${DIR}/deploy/disk/lib/firmware/capes/" ] ; then
+		sudo mkdir -p "${DIR}/deploy/disk/lib/firmware/capes/"
+	fi
+	sudo cp -v "${DIR}/deploy/disk/tmp/fir/lib/firmware/capes/*.dtbo" "${DIR}/deploy/disk/lib/firmware/capes/"
+	sudo rm -rf "${DIR}/deploy/disk/tmp/fir/"
 }
 
 mmc_write_image () {
