@@ -62,7 +62,7 @@ mmc_write_modules () {
 			sudo mkdir -p "${DIR}/deploy/disk/lib/firmware/capes/"
 		fi
 
-		sudo cp -v "${DIR}"/deploy/disk/tmp/fir/lib/firmware/capes/* "${DIR}/deploy/disk/lib/firmware/capes/"
+		sudo cp -v "${DIR}"/deploy/disk/tmp/fir/capes/* "${DIR}/deploy/disk/lib/firmware/capes/"
 	fi
 }
 
