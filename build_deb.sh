@@ -187,9 +187,6 @@ fi
 if [ ! ${AUTO_BUILD} ] ; then
 	make_menuconfig
 fi
-if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-	sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
-fi
 make_deb
 if [ "${IMX_BOOTLETS}" ] ; then
 	make_bootlets
@@ -197,7 +194,4 @@ fi
 make_firmware_pkg
 if [ "x${DTBS}" != "x" ] ; then
 	make_dtbs_pkg
-fi
-if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-	sed -i -e 's:CROSS_COMPILE)'$GCC_OVERRIDE':CROSS_COMPILE)gcc:g' ${DIR}/KERNEL/Makefile
 fi

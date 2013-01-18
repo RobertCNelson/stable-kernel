@@ -174,12 +174,7 @@ if [ "${IMX_BOOTLETS}" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
 	arm_embedded
 fi
 
-GCC="gcc"
-if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-	GCC="${GCC_OVERRIDE}"
-fi
-
-GCC_TEST=$(LC_ALL=C ${CC}${GCC} -v 2>&1 | grep "Target:" | grep arm || true)
+GCC_TEST=$(LC_ALL=C ${CC}gcc -v 2>&1 | grep "Target:" | grep arm || true)
 
 if [ "x${GCC_TEST}" == "x" ] ; then
 	echo "-----------------------------"
@@ -189,10 +184,10 @@ if [ "x${GCC_TEST}" == "x" ] ; then
 fi
 
 echo "-----------------------------"
-echo "scripts/gcc: Debug Using: `LC_ALL=C ${CC}${GCC} --version`"
+echo "scripts/gcc: Debug Using: `LC_ALL=C ${CC}gcc --version`"
 if [ "${IMX_BOOTLETS}" ] ; then
 	echo "-----------------------------"
-	echo "scripts/gcc: imx-bootlets Using: `LC_ALL=C ${ARM_NONE_CC}${GCC} --version`"
+	echo "scripts/gcc: imx-bootlets Using: `LC_ALL=C ${ARM_NONE_CC}gcc --version`"
 fi
 echo "-----------------------------"
 echo "CC=${CC}" > ${DIR}/.CC
