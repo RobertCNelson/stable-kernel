@@ -282,8 +282,6 @@ omap () {
 	${git} "${DIR}/patches/omap_beagle_expansion/0010-Beagle-expansion-add-LSR-COM6L-Adapter-Board.patch"
 	${git} "${DIR}/patches/omap_beagle_expansion/0011-Beagle-expansion-LSR-COM6L-Adapter-Board-also-initia.patch"
 
-	#${git} "${DIR}/patches/omap_beagle_expansion/0011-WIP-Beagle-expansion-extend-spidev-to-uart2.patch"
-
 	echo "dir: omap/beagle"
 	#Status: for meego guys..
 	${git} "${DIR}/patches/omap_beagle/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
