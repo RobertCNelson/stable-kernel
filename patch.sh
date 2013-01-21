@@ -302,7 +302,7 @@ omap () {
 	#Status: unknown: cherry picked from linaro
 	${git} "${DIR}/patches/omap_panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
 
-	${git} "${DIR}/patches/omap_panda/0003-OMAP-omap4-panda-add-UART2-muxing-for-WiLink-shared-.patch
+	${git} "${DIR}/patches/omap_panda/0003-OMAP-omap4-panda-add-UART2-muxing-for-WiLink-shared-.patch"
 
 	echo "dir: omap/sgx"
 	#Status: TI 4.06.00.xx needs this, when building drm modues for Xorg.
@@ -347,13 +347,6 @@ sprz319_erratum () {
 	${git} "${DIR}/patches/omap_sprz319-erratum-2.1/0001-Fix-sprz319-erratum-2.1.patch"
 }
 
-xm_cpufreq_debug () {
-	echo "debug: cpufreq"
-	${git} "${DIR}/patches/debug/0001-beagle_xm-cpufreq-debug.patch"
-
-	patch -p1 -R < "${DIR}/patches/omap/beagle/0005-TEMP-Beagle-xM-cpufreq-disable-800Mhz-opp.patch"
-}
-
 am33x
 arm
 omap
@@ -361,7 +354,5 @@ am33x_after
 
 #disabled as it breaks beagle c4...
 #sprz319_erratum
-
-#xm_cpufreq_debug
 
 echo "patch.sh ran successful"
