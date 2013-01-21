@@ -246,9 +246,6 @@ fi
 if [ ! ${AUTO_BUILD} ] ; then
 	make_menuconfig
 fi
-if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-	sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
-fi
 make_kernel
 if [ "${BUILD_UIMAGE}" ] ; then
 	make_uImage
@@ -263,7 +260,4 @@ if [ "x${DTBS}" != "x" ] ; then
 fi
 if [ "${FULL_REBUILD}" ] ; then
 	make_headers_pkg
-fi
-if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-	sed -i -e 's:CROSS_COMPILE)'$GCC_OVERRIDE':CROSS_COMPILE)gcc:g' ${DIR}/KERNEL/Makefile
 fi
