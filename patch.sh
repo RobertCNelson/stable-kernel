@@ -263,6 +263,8 @@ omap () {
 	#Fixes 800Mhz boot lockup: http://www.spinics.net/lists/linux-omap/msg83737.html
 	${git} "${DIR}/patches/omap/0002-regulator-core-if-voltage-scaling-fails-restore-orig.patch"
 
+	${git} "${DIR}/patches/omap/0003-Revert-drivers-misc-ti-st-remove-gpio-handling.patch"
+
 	echo "dir: omap/sakoman"
 	${git} "${DIR}/patches/omap_sakoman/0001-OMAP-DSS2-add-bootarg-for-selecting-svideo.patch"
 	${git} "${DIR}/patches/omap_sakoman/0002-video-add-timings-for-hd720.patch"
@@ -300,7 +302,7 @@ omap () {
 	#Status: unknown: cherry picked from linaro
 	${git} "${DIR}/patches/omap_panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
 
-	${git} "${DIR}/patches/omap_panda/0003-OMAP-omap4-panda-add-WiLink-shared-transport-power-f.patch"
+	${git} "${DIR}/patches/omap_panda/0003-OMAP-omap4-panda-add-UART2-muxing-for-WiLink-shared-.patch
 
 	echo "dir: omap/sgx"
 	#Status: TI 4.06.00.xx needs this, when building drm modues for Xorg.
