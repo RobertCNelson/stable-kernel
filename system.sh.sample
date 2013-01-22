@@ -60,16 +60,6 @@ fi
 
 ###ADVANCED:
 
-###ADVANCED: LATEST_GIT: useful with rebasing patchset during the rc0 merge
-#Do not enable, unless you know exactly what you are doing..
-#
-#This is only useful during an 'rc0' merge, when Tovalds begings pulling in
-#patches to form the '-rc1' release..
-#
-#It is never supported... Enable at your own risk...
-#
-#LATEST_GIT=1
-
 ###ADVANCED: DEBUG_SECTION: enable DEBUG_SECTION_MISMATCH
 #http://cateee.net/lkddb/web-lkddb/DEBUG_SECTION_MISMATCH.html
 #
