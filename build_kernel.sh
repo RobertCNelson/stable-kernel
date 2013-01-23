@@ -204,11 +204,11 @@ if [ ! ${AUTO_BUILD} ] ; then
 	make_menuconfig
 fi
 make_kernel
-if [ "${IMX_BOOTLETS}" ] ; then
-	make_bootlets
-fi
 make_modules_pkg
 make_firmware_pkg
 if [ "x${DTBS}" != "x" ] ; then
 	make_dtbs_pkg
+fi
+if [ "${IMX_BOOTLETS}" ] ; then
+	make_bootlets
 fi

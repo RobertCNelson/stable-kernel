@@ -180,10 +180,10 @@ if [ ! ${AUTO_BUILD} ] ; then
 	make_menuconfig
 fi
 make_deb
-if [ "${IMX_BOOTLETS}" ] ; then
-	make_bootlets
-fi
 make_firmware_pkg
 if [ "x${DTBS}" != "x" ] ; then
 	make_dtbs_pkg
+fi
+if [ "${IMX_BOOTLETS}" ] ; then
+	make_bootlets
 fi
