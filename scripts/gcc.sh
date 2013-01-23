@@ -85,7 +85,7 @@ arm_embedded () {
 	arm_embedded_dir="4.7/4.7-2012-q4-major"
 	arm_embedded_ver="4_7-2012q4"
 	arm_embedded_date="20121208"
-	ARM_EMBEDDED_GCC="gcc-arm-none-eabi-${arm_embedded_ver}-${arm_embedded_date}.tar.bz2"
+	ARM_EMBEDDED_GCC="gcc-arm-none-eabi-${arm_embedded_ver}-${arm_embedded_date}-linux.tar.bz2"
 	if [ ! -f ${DIR}/dl/${arm_embedded_date} ] ; then
 		echo "Installing gcc-arm-embedded toolchain"
 		echo "-----------------------------"
