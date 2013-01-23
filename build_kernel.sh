@@ -182,24 +182,6 @@ function make_dtbs_pkg {
 	cd ${DIR}/
 }
 
-function make_headers_pkg {
-	cd ${DIR}/KERNEL/
-
-	echo "-----------------------------"
-	echo "Building Header Archive"
-	echo "-----------------------------"
-
-	rm -rf ${DIR}/deploy/headers &> /dev/null || true
-	mkdir -p ${DIR}/deploy/headers/usr
-	make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
-	cd ${DIR}/deploy/headers
-	echo "-----------------------------"	
-	echo "Building ${KERNEL_UTS}-headers.tar.gz"
-	tar czf ../${KERNEL_UTS}-headers.tar.gz *
-	echo "-----------------------------"	
-	cd ${DIR}/
-}
-
 /bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
 
 if [ ! -f ${DIR}/system.sh ] ; then
@@ -249,7 +231,4 @@ make_modules_pkg
 make_firmware_pkg
 if [ "x${DTBS}" != "x" ] ; then
 	make_dtbs_pkg
-fi
-if [ "${FULL_REBUILD}" ] ; then
-	make_headers_pkg
 fi
