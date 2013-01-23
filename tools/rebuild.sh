@@ -89,23 +89,6 @@ function make_kernel {
 	cd ${DIR}/
 }
 
-function make_uImage {
-	cd ${DIR}/KERNEL/
-	echo "-----------------------------"
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} uImage"
-	echo "-----------------------------"
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} uImage
-	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
-	if [ -f ./arch/arm/boot/uImage ] ; then
-		cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
-	else
-		echo "-----------------------------"
-		echo "Error: make uImage failed"
-		exit
-	fi
-	cd ${DIR}/
-}
-
 function make_bootlets {
 	cd ${DIR}/ignore/imx-bootlets/
 
@@ -221,9 +204,6 @@ if [ ! ${AUTO_BUILD} ] ; then
 	make_menuconfig
 fi
 make_kernel
-if [ "${BUILD_UIMAGE}" ] ; then
-	make_uImage
-fi
 if [ "${IMX_BOOTLETS}" ] ; then
 	make_bootlets
 fi
