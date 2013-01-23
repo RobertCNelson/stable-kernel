@@ -210,5 +210,12 @@ if [ "x${DTBS}" != "x" ] ; then
 	make_dtbs_pkg
 fi
 if [ "${IMX_BOOTLETS}" ] ; then
+	if [ ! $(which elftosb2) ] ; then
+		echo "-----------------------------"
+		echo "Error: Please install elftosb"
+		echo "See: http://eewiki.net/display/linuxonarm/iMX233-OLinuXino#iMX233-OLinuXino-elftosb"
+		echo "-----------------------------"
+		exit
+	fi
 	make_bootlets
 fi
