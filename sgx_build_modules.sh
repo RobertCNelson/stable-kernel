@@ -237,7 +237,7 @@ build_sgx_modules () {
 	cd ${DIR}/
 	echo "-----------------------------"
 	echo "modinfo sanity check: vermagic:"
-	sudo modinfo "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/"pvr* | grep vermagic || true
+	/sbin/modinfo "${DIR}/ignore/ti-sdk-pvr/Graphics_SDK/gfx_rel_es$2/"pvr* | grep vermagic || true
 	echo "-----------------------------"
 }
 
