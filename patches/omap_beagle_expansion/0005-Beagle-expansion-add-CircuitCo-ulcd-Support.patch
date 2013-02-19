@@ -24,18 +24,18 @@ Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
  2 files changed, 164 insertions(+)
 
 diff --git a/arch/arm/mach-omap2/board-omap3beagle.c b/arch/arm/mach-omap2/board-omap3beagle.c
-index 0f71d6d..8768b4c 100644
+index a8ca83d..04f06b2 100644
 --- a/arch/arm/mach-omap2/board-omap3beagle.c
 +++ b/arch/arm/mach-omap2/board-omap3beagle.c
-@@ -43,6 +43,7 @@
+@@ -42,6 +42,7 @@
+ #include <asm/mach/flash.h>
  
- #include "common.h"
  #include <video/omapdss.h>
 +#include <video/omap-panel-generic-dpi.h>
  #include <video/omap-panel-tfp410.h>
- #include <plat/gpmc.h>
  #include <linux/platform_data/mtd-nand-omap2.h>
-@@ -85,12 +86,16 @@ static struct {
+ 
+@@ -88,12 +89,16 @@ static struct {
  	int dvi_pd_gpio;
  	int usr_button_gpio;
  	int mmc_caps;
@@ -52,7 +52,7 @@ index 0f71d6d..8768b4c 100644
  };
  
  static struct gpio omap3_beagle_rev_gpios[] __initdata = {
-@@ -162,6 +167,7 @@ static void __init omap3_beagle_init_rev(void)
+@@ -165,6 +170,7 @@ static void __init omap3_beagle_init_rev(void)
  }
  
  char expansionboard_name[16];
@@ -60,7 +60,7 @@ index 0f71d6d..8768b4c 100644
  
  enum {
  	EXPANSION_MMC_NONE = 0,
-@@ -172,6 +178,7 @@ enum {
+@@ -175,6 +181,7 @@ enum {
  enum {
  	EXPANSION_I2C_NONE = 0,
  	EXPANSION_I2C_ZIPPY,
@@ -68,7 +68,7 @@ index 0f71d6d..8768b4c 100644
  };
  
  static struct {
-@@ -336,9 +343,53 @@ static struct omap_dss_device beagle_tv_device = {
+@@ -339,9 +346,53 @@ static struct omap_dss_device beagle_tv_device = {
  	.phy.venc.type = OMAP_DSS_VENC_TYPE_SVIDEO,
  };
  
@@ -122,7 +122,7 @@ index 0f71d6d..8768b4c 100644
  };
  
  static struct omap_dss_board_info beagle_dss_data = {
-@@ -506,6 +557,53 @@ static struct i2c_board_info __initdata zippy_i2c2_rtc[] = {
+@@ -509,6 +560,53 @@ static struct i2c_board_info __initdata zippy_i2c2_rtc[] = {
  #endif
  };
  
@@ -176,7 +176,7 @@ index 0f71d6d..8768b4c 100644
  static int __init omap3_beagle_i2c_init(void)
  {
  	omap3_pmic_get_config(&beagle_twldata,
-@@ -518,6 +616,10 @@ static int __init omap3_beagle_i2c_init(void)
+@@ -521,6 +619,10 @@ static int __init omap3_beagle_i2c_init(void)
  	omap3_pmic_init("twl4030", &beagle_twldata);
  
  	switch (expansion_config.i2c_settings) {
@@ -187,7 +187,7 @@ index 0f71d6d..8768b4c 100644
  	case EXPANSION_I2C_ZIPPY:
  		omap_register_i2c_bus(2, 400, zippy_i2c2_rtc, ARRAY_SIZE(zippy_i2c2_rtc));
  		break;
-@@ -626,6 +728,18 @@ static int __init expansionboard_setup(char *str)
+@@ -629,6 +731,18 @@ static int __init expansionboard_setup(char *str)
  	return 0;
  }
  
@@ -206,7 +206,7 @@ index 0f71d6d..8768b4c 100644
  static int __init beagle_opp_init(void)
  {
  	int r = 0;
-@@ -691,6 +805,20 @@ static void __init omap3_beagle_init(void)
+@@ -694,6 +808,20 @@ static void __init omap3_beagle_init(void)
  		omap_mux_init_gpio(OMAP3BEAGLE_GPIO_ZIPPY_MMC_CD, OMAP_PIN_INPUT);
  	}
  
@@ -227,7 +227,7 @@ index 0f71d6d..8768b4c 100644
  	if (gpio_is_valid(beagle_config.mmc1_gpio_wp))
  		omap_mux_init_gpio(beagle_config.mmc1_gpio_wp, OMAP_PIN_INPUT);
  
-@@ -760,6 +888,14 @@ static void __init omap3_beagle_init(void)
+@@ -763,6 +891,14 @@ static void __init omap3_beagle_init(void)
  		gpio_export(162, 1);
  	}
  
@@ -241,8 +241,8 @@ index 0f71d6d..8768b4c 100644
 +
  	usb_musb_init(NULL);
  	usbhs_init(&usbhs_bdata);
- 	omap_nand_flash_init(NAND_BUSWIDTH_16, omap3beagle_nand_partitions,
-@@ -775,6 +911,7 @@ static void __init omap3_beagle_init(void)
+ 	board_nand_init(omap3beagle_nand_partitions,
+@@ -779,6 +915,7 @@ static void __init omap3_beagle_init(void)
  }
  
  early_param("buddy", expansionboard_setup);
@@ -251,7 +251,7 @@ index 0f71d6d..8768b4c 100644
  MACHINE_START(OMAP3_BEAGLE, "OMAP3 Beagle Board")
  	/* Maintainer: Syed Mohammed Khasim - http://beagleboard.org */
 diff --git a/drivers/video/omap2/displays/panel-generic-dpi.c b/drivers/video/omap2/displays/panel-generic-dpi.c
-index 88295c5..b7f296b 100644
+index 54ca8ae..f176003 100644
 --- a/drivers/video/omap2/displays/panel-generic-dpi.c
 +++ b/drivers/video/omap2/displays/panel-generic-dpi.c
 @@ -538,6 +538,33 @@ static struct panel_config generic_dpi_panels[] = {
