@@ -23,8 +23,8 @@ config="omap2plus_defconfig"
 
 #Kernel/Build
 KERNEL_REL=3.8
-KERNEL_TAG=${KERNEL_REL}
-BUILD=x0
+KERNEL_TAG=${KERNEL_REL}.1
+BUILD=x0.1
 
 #v3.X-rcX + upto SHA
 #KERNEL_SHA=""
@@ -34,4 +34,4 @@ BRANCH="v3.8.x"
 
 BUILDREV=1.0
 DISTRO=cross
-DEBARCH=armel
+DEBARCH=armhf
