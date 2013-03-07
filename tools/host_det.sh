@@ -98,6 +98,7 @@ function debian_regs
 	dpkg -l | grep device-tree-compiler >/dev/null || deb_pkgs+="device-tree-compiler "
 	dpkg -l | grep lsb-release >/dev/null || deb_pkgs+="lsb-release "
 	dpkg -l | grep lzma >/dev/null || deb_pkgs+="lzma "
+	dpkg -l | grep lzop >/dev/null || deb_pkgs+="lzop "
 	dpkg -l | grep fakeroot >/dev/null || deb_pkgs+="fakeroot "
 
 	#Lucid -> Oneiric
@@ -137,6 +138,22 @@ function debian_regs
 				dpkg -l | grep ia32-libs >/dev/null || deb_pkgs+="ia32-libs "
 				;;
 			esac
+
+#			case "${deb_distro}" in
+#			wheezy)
+#				unset wheezy_multiarch
+#				dpkg -l | grep ia32-libs-i386 >/dev/null || wheezy_multiarch=1
+#				;;
+#			esac
+
+			if [ "${wheezy_multiarch}" ] ; then
+				deb_pkgs+="ia32-libs-i386 "
+				echo "-----------------------------"
+				echo "Debian Wheezy:"
+				echo "sudo dpkg --add-architecture i386"
+				echo "sudo apt-get update"
+				echo "-----------------------------"
+			fi
 		fi
 
 	fi
