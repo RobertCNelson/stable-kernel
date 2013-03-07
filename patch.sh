@@ -116,6 +116,8 @@ beagle () {
 	${git} "${DIR}/patches/beagle/0019-Enable-buddy-spidev.patch"
 	${git} "${DIR}/patches/beagle/0020-zeroMAP-Open-your-eyes.patch"
 	${git} "${DIR}/patches/beagle/0021-Beagle-Camera-add-MT9P031-Aptina-image-sensor-driver.patch"
+	${git} "${DIR}/patches/beagle/0022-Beagle-expansion-add-LSR-COM6L-Adapter-Board.patch"
+	${git} "${DIR}/patches/beagle/0023-Beagle-expansion-LSR-COM6L-Adapter-Board-also-initia.patch"
 }
 
 devkit8000 () {
