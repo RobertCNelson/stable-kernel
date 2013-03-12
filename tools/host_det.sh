@@ -139,19 +139,20 @@ function debian_regs
 				;;
 			esac
 
-#			case "${deb_distro}" in
-#			wheezy)
-#				unset wheezy_multiarch
-#				dpkg -l | grep ia32-libs-i386 >/dev/null || wheezy_multiarch=1
-#				;;
-#			esac
+			case "${deb_distro}" in
+			wheezy)
+				unset wheezy_multiarch
+				dpkg -l | grep ia32-libs >/dev/null || wheezy_multiarch=1
+				;;
+			esac
 
 			if [ "${wheezy_multiarch}" ] ; then
-				deb_pkgs+="ia32-libs-i386 "
 				echo "-----------------------------"
-				echo "Debian Wheezy:"
+				echo "Note: for Debian Wheezy `uname -m`: to install ia32-libs:"
+				echo "-----------------------------"
 				echo "sudo dpkg --add-architecture i386"
 				echo "sudo apt-get update"
+				echo "sudo apt-get install ia32-libs"
 				echo "-----------------------------"
 			fi
 		fi
