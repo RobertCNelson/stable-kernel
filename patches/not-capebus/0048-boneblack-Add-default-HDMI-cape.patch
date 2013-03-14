@@ -1,7 +1,7 @@
-From d82c7ac03e023989b3195b623c46293f49a20a68 Mon Sep 17 00:00:00 2001
+From c8a1b5466e5a3f3554200a89f0cfe96d9a16e7b9 Mon Sep 17 00:00:00 2001
 From: Pantelis Antoniou <panto@antoniou-consulting.com>
 Date: Wed, 9 Jan 2013 20:00:04 +0200
-Subject: [PATCH 48/98] boneblack: Add default HDMI cape
+Subject: [PATCH 048/123] boneblack: Add default HDMI cape
 
 WIP, doesn't work for me...
 
