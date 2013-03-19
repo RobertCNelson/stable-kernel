@@ -286,6 +286,7 @@ omap () {
 	${git} "${DIR}/patches/omap_beagle/0004-zeroMAP-Open-your-eyes.patch"
 
 	${git} "${DIR}/patches/omap_beagle/0005-ARM-OMAP-Beagle-use-TWL4030-generic-reset-script.patch"
+	${git} "${DIR}/patches/omap_beagle/0006-DSS2-use-DSI-PLL-for-DPI-with-OMAP3.patch"
 
 	echo "dir: omap/panda"
 	#Status: not for upstream: push device tree version upstream...
@@ -494,9 +495,15 @@ am33x_after () {
 	${git} "${DIR}/patches/firmware/0001-firmware-add-for-beaglebone.patch"
 }
 
+fixes () {
+	echo "dir: fixes"
+	${git} "${DIR}/patches/fixes/0001-am335x-tester-disable-usb_otg_hs.patch"
+}
+
 am33x
 arm
 omap
 am33x_after
+fixes
 
 echo "patch.sh ran successful"
