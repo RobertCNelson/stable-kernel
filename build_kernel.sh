@@ -65,15 +65,15 @@ function make_menuconfig {
 function make_kernel {
 	cd ${DIR}/KERNEL/
 	echo "-----------------------------"
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} zImage modules"
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" ${CONFIG_DEBUG_SECTION} zImage modules"
 	echo "-----------------------------"
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} zImage modules
+	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" ${CONFIG_DEBUG_SECTION} zImage modules
 
 	unset DTBS
 	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" &> /dev/null && DTBS=1
 	if [ "x${DTBS}" != "x" ] ; then
-		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} dtbs"
-		time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} dtbs
+		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" ${CONFIG_DEBUG_SECTION} dtbs"
+		time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" ${CONFIG_DEBUG_SECTION} dtbs
 		ls arch/arm/boot/* | grep dtb || unset DTBS
 	fi
 
@@ -86,45 +86,6 @@ function make_kernel {
 		echo "Error: make zImage modules failed"
 		exit
 	fi
-	cd ${DIR}/
-}
-
-function make_uImage {
-	cd ${DIR}/KERNEL/
-	echo "-----------------------------"
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CCACHE} ${CC}\" ${CONFIG_DEBUG_SECTION} uImage"
-	echo "-----------------------------"
-	time make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CCACHE} ${CC}" ${CONFIG_DEBUG_SECTION} uImage
-	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
-	if [ -f ./arch/arm/boot/uImage ] ; then
-		cp arch/arm/boot/uImage ${DIR}/deploy/${KERNEL_UTS}.uImage
-	else
-		echo "-----------------------------"
-		echo "Error: make uImage failed"
-		exit
-	fi
-	cd ${DIR}/
-}
-
-function make_bootlets {
-	cd ${DIR}/ignore/imx-bootlets/
-
-	echo "-----------------------------"
-	echo "Building IMX BOOTLETS"
-	echo "-----------------------------"
-
-	make CROSS_COMPILE=${ARM_NONE_CC} clean 2>/dev/null
-	cat ${DIR}/KERNEL/arch/arm/boot/zImage ${DIR}/KERNEL/arch/arm/boot/${imx_bootlets_target}.dtb > ${DIR}/ignore/imx-bootlets/zImage
-	make CROSS_COMPILE=${ARM_NONE_CC} 2>/dev/null
-
-	if [ -f ${DIR}/ignore/imx-bootlets/sd_mmc_bootstream.raw ] ; then
-		cp ${DIR}/ignore/imx-bootlets/sd_mmc_bootstream.raw ${DIR}/deploy/${KERNEL_UTS}.sd_mmc_bootstream.raw
-	else
-		echo "-----------------------------"
-		echo "Error: make_bootlets failed"
-		exit
-	fi
-
 	cd ${DIR}/
 }
 
@@ -182,24 +143,6 @@ function make_dtbs_pkg {
 	cd ${DIR}/
 }
 
-function make_headers_pkg {
-	cd ${DIR}/KERNEL/
-
-	echo "-----------------------------"
-	echo "Building Header Archive"
-	echo "-----------------------------"
-
-	rm -rf ${DIR}/deploy/headers &> /dev/null || true
-	mkdir -p ${DIR}/deploy/headers/usr
-	make ARCH=arm CROSS_COMPILE=${CC} headers_install INSTALL_HDR_PATH=${DIR}/deploy/headers/usr
-	cd ${DIR}/deploy/headers
-	echo "-----------------------------"	
-	echo "Building ${KERNEL_UTS}-headers.tar.gz"
-	tar czf ../${KERNEL_UTS}-headers.tar.gz *
-	echo "-----------------------------"	
-	cd ${DIR}/
-}
-
 /bin/bash -e ${DIR}/tools/host_det.sh || { exit 1 ; }
 
 if [ ! -f ${DIR}/system.sh ] ; then
@@ -208,7 +151,6 @@ fi
 
 unset CC
 unset DEBUG_SECTION
-unset LATEST_GIT
 unset LINUX_GIT
 unset LOCAL_PATCH_DIR
 source ${DIR}/system.sh
@@ -218,13 +160,6 @@ echo "debug: CC=${CC}"
 
 source ${DIR}/version.sh
 export LINUX_GIT
-export LATEST_GIT
-
-if [ "${LATEST_GIT}" ] ; then
-	echo "-----------------------------"
-	echo "Warning LATEST_GIT is enabled from system.sh I hope you know what your doing.."
-	echo "-----------------------------"
-fi
 
 unset CONFIG_DEBUG_SECTION
 if [ "${DEBUG_SECTION}" ] ; then
@@ -246,24 +181,13 @@ fi
 if [ ! ${AUTO_BUILD} ] ; then
 	make_menuconfig
 fi
-if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-	sed -i -e 's:CROSS_COMPILE)gcc:CROSS_COMPILE)'$GCC_OVERRIDE':g' ${DIR}/KERNEL/Makefile
-fi
 make_kernel
-if [ "${BUILD_UIMAGE}" ] ; then
-	make_uImage
-fi
-if [ "${IMX_BOOTLETS}" ] ; then
-	make_bootlets
-fi
 make_modules_pkg
 make_firmware_pkg
 if [ "x${DTBS}" != "x" ] ; then
 	make_dtbs_pkg
 fi
-if [ "${FULL_REBUILD}" ] ; then
-	make_headers_pkg
-fi
-if [ "x${GCC_OVERRIDE}" != "x" ] ; then
-	sed -i -e 's:CROSS_COMPILE)'$GCC_OVERRIDE':CROSS_COMPILE)gcc:g' ${DIR}/KERNEL/Makefile
-fi
+echo "-----------------------------"
+echo "Script Complete"
+echo "eewiki.net: [user@localhost:~$ export kernel_version=${KERNEL_UTS}]"
+echo "-----------------------------"
