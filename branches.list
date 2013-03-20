@@ -11,3 +11,4 @@
 [git checkout origin/v3.5.x -b tmp] [INACTIVE]
 [git checkout origin/v3.6.x -b tmp] [INACTIVE]
 [git checkout origin/v3.7.x -b tmp] (BeagleBoard Cx/xM PandaBoard/PandaBoard ES)
+[git checkout origin/v3.8.x -b tmp] [INACTIVE]
