@@ -446,6 +446,12 @@ am33x_after () {
 	${git} "${DIR}/patches/not-capebus/0128-capemgr-Added-module-param-descriptions.patch"
 	${git} "${DIR}/patches/not-capebus/0129-beaglebone-Add-Adafruit-RTC-prototype-cape.patch"
 	${git} "${DIR}/patches/not-capebus/0130-cape-vsense-scale-division-by-zero-check.patch"
+	${git} "${DIR}/patches/not-capebus/0131-capes-add-cape-for-beaglebone-based-Hexy-robot.patch"
+	${git} "${DIR}/patches/not-capebus/0132-Extend-bone-iio-helper.patch"
+	${git} "${DIR}/patches/not-capebus/0133-Update-iio-helper-with-more-channels.patch"
+	${git} "${DIR}/patches/not-capebus/0134-Add-ADC-IIO-helper.patch"
+	${git} "${DIR}/patches/not-capebus/0135-Changing-DT-data-to-make-selection-of-standard-i.e.-.patch"
+	${git} "${DIR}/patches/not-capebus/0136-Enhancing-to-support-extra-device-tree-options-for-t.patch"
 
 	echo "dir: pru"
 	${git} "${DIR}/patches/pru/0001-uio-uio_pruss-port-to-AM33xx.patch"
@@ -479,12 +485,10 @@ am33x_after () {
 	${git} "${DIR}/patches/iio/0006-pwm-pca9685-skeleton-i2c-client-driver-for-PCA9685-1.patch"
 
 	echo "dir: w1"
-	#v3.8.4
-	#${git} "${DIR}/patches/w1/0001-W1-w1-gpio-fix-incorrect-__init-__exit-markups.patch"
-	${git} "${DIR}/patches/w1/0002-W1-w1-gpio-switch-to-using-dev_pm_ops.patch"
-	${git} "${DIR}/patches/w1/0003-W1-w1-gpio-guard-DT-IDs-with-CONFIG_OF.patch"
-	${git} "${DIR}/patches/w1/0004-W1-w1-gpio-rework-handling-of-platform-data.patch"
-	${git} "${DIR}/patches/w1/0005-W1-w1-gpio-switch-to-using-managed-resources-devm.patch"
+	${git} "${DIR}/patches/w1/0001-W1-w1-gpio-switch-to-using-dev_pm_ops.patch"
+	${git} "${DIR}/patches/w1/0002-W1-w1-gpio-guard-DT-IDs-with-CONFIG_OF.patch"
+	${git} "${DIR}/patches/w1/0003-W1-w1-gpio-rework-handling-of-platform-data.patch"
+	${git} "${DIR}/patches/w1/0004-W1-w1-gpio-switch-to-using-managed-resources-devm.patch"
 
 	echo "dir: gpmc"
 	${git} "${DIR}/patches/gpmc/0001-ARM-OMAP-gpmc-don-t-create-devices-from-initcall-on-.patch"
