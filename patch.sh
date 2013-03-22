@@ -258,6 +258,7 @@ omap () {
 	#Fixes 800Mhz boot lockup: http://www.spinics.net/lists/linux-omap/msg83737.html
 	${git} "${DIR}/patches/omap/0001-regulator-core-if-voltage-scaling-fails-restore-orig.patch"
 	${git} "${DIR}/patches/omap/0002-omap2-twl-common-Add-default-power-configuration.patch"
+	${git} "${DIR}/patches/omap/0003-mfd-omap-usb-host-Fix-clk-warnings-at-boot.patch"
 
 	echo "dir: omap/sakoman"
 	${git} "${DIR}/patches/omap_sakoman/0001-OMAP-DSS2-add-bootarg-for-selecting-svideo.patch"

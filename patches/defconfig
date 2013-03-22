@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 3.8.3 Kernel Configuration
+# Linux/arm 3.8.4 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -567,7 +567,7 @@ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
 CONFIG_CPU_FREQ_GOV_USERSPACE=m
 CONFIG_CPU_FREQ_GOV_ONDEMAND=m
 CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
-CONFIG_GENERIC_CPUFREQ_CPU0=y
+# CONFIG_GENERIC_CPUFREQ_CPU0 is not set
 
 #
 # ARM CPU frequency scaling drivers
