@@ -295,6 +295,7 @@ omap () {
 	${git} "${DIR}/patches/omap_panda/0001-panda-fix-wl12xx-regulator.patch"
 	#Status: unknown: cherry picked from linaro
 	${git} "${DIR}/patches/omap_panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
+	${git} "${DIR}/patches/omap_panda/0003-Panda-expansion-add-spidev.patch"
 
 #	${git} "${DIR}/patches/omap_panda/0003-OMAP-omap4-panda-add-UART2-muxing-for-WiLink-shared-.patch"
 
