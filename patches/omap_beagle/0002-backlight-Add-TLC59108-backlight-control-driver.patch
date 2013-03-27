@@ -1,4 +1,4 @@
-From 9bc6458ba321107a017a93a055a0a82b31bcbef6 Mon Sep 17 00:00:00 2001
+From e989473bea15beef8d480b822a619e7b8fca860c Mon Sep 17 00:00:00 2001
 From: "Manjunathappa, Prakash" <prakash.pm@ti.com>
 Date: Mon, 1 Aug 2011 18:25:11 +0530
 Subject: [PATCH 2/5] backlight: Add TLC59108 backlight control driver
@@ -9,18 +9,18 @@ control driver.
 Signed-off-by: Manjunathappa, Prakash <prakash.pm@ti.com>
 Signed-off-by: Vaibhav Hiremath <hvaibhav@ti.com>
 ---
- drivers/video/backlight/Kconfig    |   8 ++
- drivers/video/backlight/Makefile   |   1 +
- drivers/video/backlight/tlc59108.c | 160 +++++++++++++++++++++++++++++++++++++
+ drivers/video/backlight/Kconfig    |    8 ++
+ drivers/video/backlight/Makefile   |    1 +
+ drivers/video/backlight/tlc59108.c |  160 ++++++++++++++++++++++++++++++++++++
  3 files changed, 169 insertions(+)
  create mode 100644 drivers/video/backlight/tlc59108.c
 
 diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 765a945..50c9e35 100644
+index db10d01..04a2275 100644
 --- a/drivers/video/backlight/Kconfig
 +++ b/drivers/video/backlight/Kconfig
-@@ -390,6 +390,14 @@ config BACKLIGHT_TPS65217
- 	  If you have a Texas Instruments TPS65217 say Y to enable the
+@@ -418,6 +418,14 @@ config BACKLIGHT_AS3711
+ 	  If you have an Austrian Microsystems AS3711 say Y to enable the
  	  backlight driver.
  
 +config BACKLIGHT_TLC59108
@@ -35,16 +35,17 @@ index 765a945..50c9e35 100644
  
  endif # BACKLIGHT_LCD_SUPPORT
 diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index e7ce729..2f4711d 100644
+index 96c4d62..3687852 100644
 --- a/drivers/video/backlight/Makefile
 +++ b/drivers/video/backlight/Makefile
-@@ -43,5 +43,6 @@ obj-$(CONFIG_BACKLIGHT_ADP8870)	+= adp8870_bl.o
- obj-$(CONFIG_BACKLIGHT_88PM860X) += 88pm860x_bl.o
- obj-$(CONFIG_BACKLIGHT_PCF50633)	+= pcf50633-backlight.o
- obj-$(CONFIG_BACKLIGHT_AAT2870) += aat2870_bl.o
+@@ -41,6 +41,7 @@ obj-$(CONFIG_BACKLIGHT_LP855X)		+= lp855x_bl.o
+ obj-$(CONFIG_BACKLIGHT_LP8788)		+= lp8788_bl.o
+ obj-$(CONFIG_BACKLIGHT_MAX8925)		+= max8925_bl.o
+ obj-$(CONFIG_BACKLIGHT_OMAP1)		+= omap1_bl.o
 +obj-$(CONFIG_BACKLIGHT_TLC59108)	+= tlc59108.o
- obj-$(CONFIG_BACKLIGHT_OT200) += ot200_bl.o
- obj-$(CONFIG_BACKLIGHT_TPS65217) += tps65217_bl.o
+ obj-$(CONFIG_BACKLIGHT_OT200)		+= ot200_bl.o
+ obj-$(CONFIG_BACKLIGHT_PANDORA)		+= pandora_bl.o
+ obj-$(CONFIG_BACKLIGHT_PCF50633)	+= pcf50633-backlight.o
 diff --git a/drivers/video/backlight/tlc59108.c b/drivers/video/backlight/tlc59108.c
 new file mode 100644
 index 0000000..4f4ea34
@@ -212,5 +213,5 @@ index 0000000..4f4ea34
 +MODULE_AUTHOR("Senthil Natarajan <senthil.n@ti.com>");
 +MODULE_LICENSE("GPL v2");
 -- 
-1.8.1.4
+1.7.10.4
 
