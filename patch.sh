@@ -112,16 +112,12 @@ omap () {
 	#Status: unknown: cherry picked from linaro
 	${git} "${DIR}/patches/omap_panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
 	${git} "${DIR}/patches/omap_panda/0003-Panda-expansion-add-spidev.patch"
-}
-
-hack () {
-	echo "dir: hack"
-	${git} "${DIR}/patches/hack/0001-HACK-panda-enable-OMAP4_ERRATA_I688.patch"
+	${git} "${DIR}/patches/omap_panda/0004-HACK-PandaES-disable-cpufreq-so-board-will-boot.patch"
+	${git} "${DIR}/patches/omap_panda/0005-HACK-panda-enable-OMAP4_ERRATA_I688.patch"
 }
 
 edma
 arm
 omap
-hack
 
 echo "patch.sh ran successful"
