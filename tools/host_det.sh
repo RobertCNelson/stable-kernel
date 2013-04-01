@@ -123,7 +123,7 @@ function debian_regs
 
 		#mkimage
 		case "${deb_distro}" in
-		squeeze|lucid|maverick)
+		squeeze|lucid)
 			dpkg -l | grep uboot-mkimage >/dev/null || deb_pkgs+="uboot-mkimage "
 			;;
 		wheezy|natty|oneiric|precise|quantal|raring)
@@ -134,7 +134,7 @@ function debian_regs
 		cpu_arch=$(uname -m)
 		if [ "x${cpu_arch}" == "xx86_64" ] ; then
 			case "${deb_distro}" in
-			squeeze|wheezy|lucid|maverick|natty|oneiric|precise|quantal|raring)
+			squeeze|wheezy|lucid|natty|oneiric|precise|quantal|raring)
 				dpkg -l | grep ia32-libs >/dev/null || deb_pkgs+="ia32-libs "
 				;;
 			esac
