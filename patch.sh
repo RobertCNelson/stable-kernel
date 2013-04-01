@@ -92,6 +92,7 @@ omap () {
 	#Status: unknown: cherry picked from linaro
 	${git} "${DIR}/patches/omap_panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
 	${git} "${DIR}/patches/omap_panda/0003-Panda-expansion-add-spidev.patch"
+	${git} "${DIR}/patches/omap_panda/0004-HACK-PandaES-disable-cpufreq-so-board-will-boot.patch"
 }
 
 sprz319_erratum () {
