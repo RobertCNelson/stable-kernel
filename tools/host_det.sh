@@ -133,30 +133,31 @@ function debian_regs
 
 		cpu_arch=$(uname -m)
 		if [ "x${cpu_arch}" == "xx86_64" ] ; then
+			unset dpkg_multiarch
 			case "${deb_distro}" in
-			squeeze|wheezy|lucid|natty|oneiric|precise|quantal|raring)
+			squeeze|lucid|natty|oneiric|precise)
 				dpkg -l | grep ia32-libs >/dev/null || deb_pkgs+="ia32-libs "
 				;;
-			esac
-
-			case "${deb_distro}" in
-			wheezy)
-				unset wheezy_multiarch
-				dpkg -l | grep ia32-libs >/dev/null || wheezy_multiarch=1
+			wheezy|quantal|raring)
+				dpkg -l | grep ia32-libs >/dev/null || deb_pkgs+="ia32-libs "
+				dpkg -l | grep ia32-libs >/dev/null || dpkg_multiarch=1
 				;;
 			esac
 
-			if [ "${wheezy_multiarch}" ] ; then
-				echo "-----------------------------"
-				echo "Note: for Debian Wheezy `uname -m`: to install ia32-libs:"
-				echo "-----------------------------"
-				echo "sudo dpkg --add-architecture i386"
-				echo "sudo apt-get update"
-				echo "sudo apt-get install ia32-libs"
-				echo "-----------------------------"
+			if [ "${dpkg_multiarch}" ] ; then
+				unset check_foreign
+				check_foreign=$(LC_ALL=C dpkg --print-foreign-architectures)
+				if [ "x" == "x${check_foreign}" ] ; then
+					echo "-----------------------------"
+					echo "To install ia32-libs:"
+					echo "-----------------------------"
+					echo "sudo dpkg --add-architecture i386"
+					echo "sudo apt-get update"
+					echo "sudo apt-get install ia32-libs"
+					echo "-----------------------------"
+				fi
 			fi
 		fi
-
 	fi
 
 	if [ "${deb_pkgs}" ] ; then
