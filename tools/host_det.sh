@@ -117,6 +117,7 @@ function debian_regs
 		echo "-----------------------------"
 	fi
 
+	unset warn_dpkg_ia32
 	#lsb_release might not be installed...
 	if [ $(which lsb_release) ] ; then
 		deb_distro=$(lsb_release -cs)
@@ -148,22 +149,19 @@ function debian_regs
 				unset check_foreign
 				check_foreign=$(LC_ALL=C dpkg --print-foreign-architectures)
 				if [ "x" == "x${check_foreign}" ] ; then
-					echo "-----------------------------"
-					echo "To install ia32-libs:"
-					echo "-----------------------------"
-					echo "sudo dpkg --add-architecture i386"
-					echo "sudo apt-get update"
-					echo "sudo apt-get install ia32-libs"
-					echo "-----------------------------"
+					warn_dpkg_ia32=1
 				fi
 			fi
 		fi
 	fi
 
 	if [ "${deb_pkgs}" ] ; then
-		echo "Missing Dependicies: Please Install"
+		echo "Ubuntu/Debian, missing dependicies, please install:"
 		echo "-----------------------------"
-		echo "Ubuntu/Debian"
+		if [ "${warn_dpkg_ia32}" ] ; then
+			echo "sudo dpkg --add-architecture i386"
+		fi
+		echo "sudo apt-get update"
 		echo "sudo apt-get install ${deb_pkgs}"
 		echo "-----------------------------"
 		return 1
