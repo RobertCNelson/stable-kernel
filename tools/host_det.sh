@@ -26,8 +26,12 @@ elif [ -f /etc/SuSE-release ] ; then
     trim "suse-$REV"
 elif [ -f /etc/debian_version ] ; then
 	DIST="Debian Based"
-	REV=""
-    echo "debian-$REV"
+	if [ $(which lsb_release) ] ; then
+		debian=$(lsb_release -sd)
+	else
+		debian="debian"
+	fi
+    echo "${debian}"
 fi
 
 }
