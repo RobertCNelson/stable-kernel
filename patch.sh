@@ -115,6 +115,12 @@ omap () {
 	${git} "${DIR}/patches/omap_panda/0004-HACK-PandaES-disable-cpufreq-so-board-will-boot.patch"
 	${git} "${DIR}/patches/omap_panda/0005-HACK-panda-enable-OMAP4_ERRATA_I688.patch"
 	${git} "${DIR}/patches/omap_panda/0006-ARM-hw_breakpoint-Enable-debug-powerdown-only-if-sys.patch"
+
+	#Status: not for upstream: http://www.spinics.net/lists/arm-kernel/msg214633.html
+	#Fixes:
+	#WARNING: "v7_dma_flush_range" *pvrsrvkm.ko] undefined!
+	#WARNING: "v7_dma_map_area" *pvrsrvkm.ko] undefined!
+	${git} "${DIR}/patches/omap_sgx/0001-arm-Export-cache-flush-management-symbols-when-MULTI.patch"
 }
 
 edma

@@ -20,17 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-VERSION="v2013.01-1"
+VERSION="v2013.04-1"
 
 unset DIR
 
 DIR=$PWD
 
-SDK="4.08.00.02"
-sdk_version="4_08_00_02"
-SDK_DIR="4_08_00_02"
-#SGX_SHA="origin/${SDK}"
-SGX_SHA="1e9797aea52bfa9b80fc9baf1ba2626af5e828d9"
+SDK="4.09.00.01"
+sdk_version="4_09_00_01"
+SDK_DIR="4_09_00_01"
+SGX_SHA="origin/${SDK}"
 
 http_ti="http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/"
 
@@ -53,8 +52,8 @@ dl_sdk_hardfp () {
 }
 
 dl_n_verify_sdk () {
-	sgx_md5sum="7c29d8eb6631ee42317fdc4487cb6e68"
-	sgx_hfp_md5sum="750028a893b6e586eadb78610afc5fa6"
+	sgx_md5sum="7eb02ffbfc7b4843259ac919bd964b57"
+	sgx_hfp_md5sum="e44ecc1573c85e14524477d011742714"
 
 	if [ -f "${DIR}/dl/Graphics_SDK_setuplinux_${sdk_version}.bin" ] ; then
 		echo "Verifying: Graphics_SDK_setuplinux_${sdk_version}.bin"
