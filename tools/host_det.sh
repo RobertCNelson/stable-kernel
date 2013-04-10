@@ -106,15 +106,7 @@ function debian_regs
 		#Precise ->
 		if [ ! -f "/usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`/libncurses.so" ] ; then
 			deb_pkgs+="libncurses5-dev "
-		else
-		echo "-----------------------------"
-			echo "Debug: found libncurses.so: /usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`/libncurses.so"
-		echo "-----------------------------"
 		fi
-	else
-		echo "-----------------------------"
-		echo "Debug: found libncurses.so: /usr/lib/libncurses.so"
-		echo "-----------------------------"
 	fi
 
 	#Linux Mint:
