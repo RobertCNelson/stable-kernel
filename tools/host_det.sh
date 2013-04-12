@@ -26,8 +26,12 @@ elif [ -f /etc/SuSE-release ] ; then
     trim "suse-$REV"
 elif [ -f /etc/debian_version ] ; then
 	DIST="Debian Based"
-	REV=""
-    echo "debian-$REV"
+	if [ $(which lsb_release) ] ; then
+		debian=$(lsb_release -sd)
+	else
+		debian="debian"
+	fi
+    echo "${debian}"
 fi
 
 }
@@ -106,15 +110,7 @@ function debian_regs
 		#Precise ->
 		if [ ! -f "/usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`/libncurses.so" ] ; then
 			deb_pkgs+="libncurses5-dev "
-		else
-		echo "-----------------------------"
-			echo "Debug: found libncurses.so: /usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`/libncurses.so"
-		echo "-----------------------------"
 		fi
-	else
-		echo "-----------------------------"
-		echo "Debug: found libncurses.so: /usr/lib/libncurses.so"
-		echo "-----------------------------"
 	fi
 
 	#Linux Mint:
