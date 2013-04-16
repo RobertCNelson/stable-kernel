@@ -29,8 +29,8 @@ DIR=$PWD
 SDK="4.08.00.02"
 sdk_version="4_08_00_02"
 SDK_DIR="4_08_00_02"
-#SGX_SHA="origin/${SDK}"
-SGX_SHA="1e9797aea52bfa9b80fc9baf1ba2626af5e828d9"
+SGX_SHA="origin/4.08.00.02_v3.8.x"
+#SGX_SHA="1e9797aea52bfa9b80fc9baf1ba2626af5e828d9"
 
 http_ti="http://software-dl.ti.com/dsps/dsps_public_sw/sdo_sb/targetcontent/gfxsdk/"
 
