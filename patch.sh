@@ -93,6 +93,13 @@ omap () {
 	${git} "${DIR}/patches/omap_panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
 	${git} "${DIR}/patches/omap_panda/0003-Panda-expansion-add-spidev.patch"
 	${git} "${DIR}/patches/omap_panda/0004-HACK-PandaES-disable-cpufreq-so-board-will-boot.patch"
+
+	#Status: not for upstream: http://www.spinics.net/lists/arm-kernel/msg214633.html
+	#Fixes:
+	#WARNING: "v7_dma_flush_range" *pvrsrvkm.ko] undefined!
+	#WARNING: "v7_dma_map_area" *pvrsrvkm.ko] undefined!
+	${git} "${DIR}/patches/omap_sgx/0001-arm-Export-cache-flush-management-symbols-when-MULTI.patch"
+
 }
 
 sprz319_erratum () {
