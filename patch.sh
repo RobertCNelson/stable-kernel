@@ -123,8 +123,15 @@ omap () {
 	${git} "${DIR}/patches/omap_sgx/0001-arm-Export-cache-flush-management-symbols-when-MULTI.patch"
 }
 
+sprz319_erratum () {
+	echo "dir: omap_sprz319-erratum-2.1"
+	${git} "${DIR}/patches/omap_sprz319-erratum-2.1/0001-hack-omap-clockk-dpll5-apply-sprz319e-2.1-erratum.patch"
+}
+
 edma
 arm
 omap
+#Disabled for testing...
+#sprz319_erratum
 
 echo "patch.sh ran successful"
