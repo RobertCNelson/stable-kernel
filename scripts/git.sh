@@ -70,12 +70,12 @@ git_kernel () {
 		check_and_or_clone
 	fi
 
-	#does the specified directory contain a git repo?
+	#is it actually a git repo?
 	if [ ! -f "${LINUX_GIT}/.git/config" ] ; then
-		rm -rf "${LINUX_GIT}/*" || true
+		unset LINUX_GIT
 		echo "-----------------------------"
-		echo "scripts/git: Warning: LINUX_GIT seems empty, cloning inital tree:"
-		git clone ${torvalds_linux} "${LINUX_GIT}/"
+		echo "scripts/git: Warning: LINUX_GIT is an invalid tree:"
+		check_and_or_clone
 	fi
 
 	cd ${LINUX_GIT}/
