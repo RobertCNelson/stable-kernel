@@ -23,7 +23,7 @@
 ARCH=$(uname -m)
 DIR=$PWD
 
-source ${DIR}/system.sh
+. ${DIR}/system.sh
 
 ubuntu_arm_gcc_installed () {
 	unset armel_pkg
