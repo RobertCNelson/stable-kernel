@@ -240,9 +240,7 @@ if [ -f "${DIR}/system.sh" ] ; then
 			echo "ERROR: MMC is not defined in system.sh"
 		else
 			unset PARTITION_PREFIX
-			if [ "${MMC}" =~ "mmcblk" ] ; then
-				PARTITION_PREFIX="p"
-			fi
+			echo ${MMC} | grep mmcblk >/dev/null && PARTITION_PREFIX="p"
 			check_mmc
 		fi
 	else
