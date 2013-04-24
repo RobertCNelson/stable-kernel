@@ -106,6 +106,7 @@ debian_regs () {
 	#nadia=quantal
 
 	unset warn_dpkg_ia32
+	unset warn_eol_distro
 	#lsb_release might not be installed...
 	if [ $(which lsb_release) ] ; then
 		deb_distro=$(lsb_release -cs)
@@ -118,6 +119,9 @@ debian_regs () {
 			;;
 		wheezy|natty|oneiric|precise|nadia|quantal|raring)
 			dpkg -l | grep u-boot-tools >/dev/null || deb_pkgs="${deb_pkgs}u-boot-tools"
+			;;
+		maverick)
+			warn_eol_distro=1
 			;;
 		*)
 			error_unknown_deb_distro=1
@@ -145,6 +149,13 @@ debian_regs () {
 				fi
 			fi
 		fi
+	fi
+
+	if [ "${warn_eol_distro}" ] ; then
+		echo "End Of Life (EOL) deb based distro detected."
+		echo "Dependicey check skipped, you are on your own."
+		echo "-----------------------------"
+		unset deb_pkgs
 	fi
 
 	if [ "${error_unknown_deb_distro}" ] ; then
