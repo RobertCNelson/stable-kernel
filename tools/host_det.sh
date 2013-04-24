@@ -153,7 +153,7 @@ debian_regs () {
 
 	if [ "${warn_eol_distro}" ] ; then
 		echo "End Of Life (EOL) deb based distro detected."
-		echo "Dependicey check skipped, you are on your own."
+		echo "Dependency check skipped, you are on your own."
 		echo "-----------------------------"
 		unset deb_pkgs
 	fi
