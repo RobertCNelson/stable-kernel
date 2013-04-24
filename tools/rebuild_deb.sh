@@ -40,7 +40,7 @@ patch_kernel () {
 
 	if [ "${LOCAL_PATCH_DIR}" ] ; then
 		for i in ${LOCAL_PATCH_DIR}/*.patch ; do patch  -s -p1 < $i ; done
-		BUILD='${BUILD}+'
+		BUILD="${BUILD}+"
 	fi
 
 	cd ${DIR}/
