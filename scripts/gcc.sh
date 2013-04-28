@@ -79,29 +79,17 @@ ubuntu_arm_gcc_installed () {
 
 dl_gcc_generic () {
 	WGET="wget -c --directory-prefix=${DIR}/dl/"
-	if [ ! -f ${DIR}/dl/${datestamp} ] ; then
+	if [ ! -f ${DIR}/dl/${directory}/${datestamp} ] ; then
 		echo "Installing: ${toolchain_name}"
 		echo "-----------------------------"
 		${WGET} ${site}/${version}/+download/${filename}
-		touch ${DIR}/dl/${datestamp}
 		if [ -d ${DIR}/dl/${directory} ] ; then
 			rm -rf ${DIR}/dl/${directory} || true
 		fi
 		tar xjf ${DIR}/dl/${filename} -C ${DIR}/dl/
-	fi
-
-	#There is a chance user canceled the script...
-	if [ ! -d ${DIR}/dl/${directory} ] ; then
-		${WGET} ${site}/${version}/+download/${filename}
-		tar xjf ${DIR}/dl/${filename} -C ${DIR}/dl/
-	fi
-
-	#Or maybe the file was never extracted...
-	if [ ! -f ${DIR}/dl/${directory}/${binary}gcc ] ; then
-		if [ -d ${DIR}/dl/${directory} ] ; then
-			rm -rf ${DIR}/dl/${directory} || true
+		if [ -f ${DIR}/dl/${directory}/${binary}gcc ] ; then
+			touch ${DIR}/dl/${directory}/${datestamp}
 		fi
-		tar xjf ${DIR}/dl/${filename} -C ${DIR}/dl/
 	fi
 
 	if [ "x${ARCH}" = "xarmv7l" ] ; then
