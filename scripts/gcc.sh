@@ -29,34 +29,34 @@ ubuntu_arm_gcc_installed () {
 	unset armel_pkg
 	unset armhf_pkg
 	if [ $(which lsb_release) ] ; then
-		distro=$(lsb_release -is)
-		if [ "x${distro}" = "xUbuntu" ] ; then
-			distro_release=$(lsb_release -cs)
+		distro_release=$(lsb_release -cs)
 
-			case "${distro_release}" in
-			oneiric|precise|quantal|raring)
-				#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabi
-				armel_pkg="gcc-arm-linux-gnueabi"
-				;;
-			esac
+		#Linux Mint:
+		#Ubuntu Quantal = nadia
 
-			case "${distro_release}" in
-			oneiric|precise|quantal|raring)
-				#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabihf
-				armhf_pkg="gcc-arm-linux-gnueabihf"
-				;;
-			esac
+		case "${distro_release}" in
+		oneiric|precise|quantal|nadia|raring)
+			#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabi
+			armel_pkg="gcc-arm-linux-gnueabi"
+			;;
+		esac
 
-			if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
-				echo "fyi: ${distro} ${distro_release} has these ARM gcc cross compilers available in their repo:"
-				if [ "${armel_pkg}" ] ; then
-					echo "sudo apt-get install ${armel_pkg}"
-				fi
-				if [ "${armhf_pkg}" ] ; then
-					echo "sudo apt-get install ${armhf_pkg}"
-				fi
-				echo "-----------------------------"
+		case "${distro_release}" in
+		oneiric|precise|quantal|nadia|raring)
+			#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabihf
+			armhf_pkg="gcc-arm-linux-gnueabihf"
+			;;
+		esac
+
+		if [ "${armel_pkg}" ] || [ "${armhf_pkg}" ] ; then
+			echo "fyi: ${distro} ${distro_release} has these ARM gcc cross compilers available in their repo:"
+			if [ "${armel_pkg}" ] ; then
+				echo "sudo apt-get install ${armel_pkg}"
 			fi
+			if [ "${armhf_pkg}" ] ; then
+				echo "sudo apt-get install ${armhf_pkg}"
+			fi
+			echo "-----------------------------"
 		fi
 	fi
 
