@@ -111,8 +111,7 @@ armv7_toolchain () {
 #	version="trunk/2012.04"
 #	filename="gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux.tar.bz2"
 #	directory="gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux"
-#	datestamp="20120426"
-##	datestamp="20120426-gcc-linaro-arm-linux-gnueabi"
+#	datestamp="20120426-gcc-linaro-arm-linux-gnueabi"
 
 #	binary="bin/arm-linux-gnueabi-"
 
@@ -124,7 +123,6 @@ armv7_toolchain () {
 	version="trunk/2013.03"
 	filename="gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux.tar.bz2"
 	directory="gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux"
-	datestamp="20130313"
 	datestamp="20130313-gcc-linaro-arm-linux-gnueabihf"
 
 	binary="bin/arm-linux-gnueabihf-"
