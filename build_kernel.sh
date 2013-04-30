@@ -163,7 +163,18 @@ unset LOCAL_PATCH_DIR
 source ${DIR}/system.sh
 /bin/bash -e "${DIR}/scripts/gcc.sh" || { exit 1 ; }
 
-source ${DIR}/version.sh
+. ${DIR}/version.sh
+if [ "${EXPIRED_BRANCH}" ] ; then
+	echo "-----------------------------"
+	echo "Support for this branch has expired."
+	unset response
+	echo -n "Do you wish to bypass this warning and support your self: (y/n)? "
+	read response
+	if [ "x${response}" != "xy" ] ; then
+		exit
+	fi
+	echo "-----------------------------"
+fi
 export LINUX_GIT
 export LATEST_GIT
 

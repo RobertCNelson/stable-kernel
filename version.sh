@@ -1,6 +1,8 @@
 #!/bin/bash
 
 ARCH=$(uname -m)
+DISABLE_MASTER_BRANCH=1
+EXPIRED_BRANCH=1
 
 CORES=1
 if [ "x${ARCH}" == "xx86_64" ] || [ "x${ARCH}" == "xi686" ] ; then
