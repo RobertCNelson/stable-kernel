@@ -153,6 +153,16 @@ git_kernel () {
 . ${DIR}/version.sh
 . ${DIR}/system.sh
 
+unset git_config_user_email
+git_config_user_email=$(git config -l | grep user.email)
+
+unset git_config_user_name
+git_config_user_name=$(git config -l | grep user.name)
+
+if [ ! "${git_config_user_email}" ] || [ ! "${git_config_user_name}" ] ; then
+	echo "-----------------------------"
+fi
+
 if [ "${GIT_OVER_HTTP}" ] ; then
 	torvalds_linux="http://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 	linux_stable="http://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
@@ -161,18 +171,4 @@ else
 	linux_stable="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
 fi
 
-unset ON_MASTER
-if [ "${DISABLE_MASTER_BRANCH}" ] ; then
-	git branch | grep "*" | grep master >/dev/null 2>&1 && ON_MASTER=1
-fi
-
-if [ ! "${ON_MASTER}" ] ; then
-	git_kernel
-else
-	echo "-----------------------------"
-	echo "Please checkout one of the active branches, building from the master branch has been disabled..."
-	echo "-----------------------------"
-	cat ${DIR}/branches.list | grep -v INACTIVE
-	echo "-----------------------------"
-	exit 1
-fi
+git_kernel
