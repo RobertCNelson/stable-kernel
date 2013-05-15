@@ -154,13 +154,22 @@ git_kernel () {
 . ${DIR}/system.sh
 
 unset git_config_user_email
-git_config_user_email=$(git config -l | grep user.email)
+git_config_user_email=$(git config -l | grep user.email || true)
 
 unset git_config_user_name
-git_config_user_name=$(git config -l | grep user.name)
+git_config_user_name=$(git config -l | grep user.name || true)
 
 if [ ! "${git_config_user_email}" ] || [ ! "${git_config_user_name}" ] ; then
 	echo "-----------------------------"
+	echo "This script relies heavily on git, and will fail if user.email/user.name are not defined."
+	echo "-----------------------------"
+	echo "See: https://help.github.com/articles/setting-your-email-in-git"
+	echo "git config --global user.email \"me@here.com\""
+	echo "-----------------------------"
+	echo "See: https://help.github.com/articles/setting-your-username-in-git"
+	echo "git config --global user.name \"Billy Everyteen\""
+	echo "-----------------------------"
+	exit 1
 fi
 
 if [ "${GIT_OVER_HTTP}" ] ; then
