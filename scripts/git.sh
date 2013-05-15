@@ -153,6 +153,16 @@ git_kernel () {
 . ${DIR}/version.sh
 . ${DIR}/system.sh
 
+unset git_config_user_email
+git_config_user_email=$(git config -l | grep user.email)
+
+unset git_config_user_name
+git_config_user_name=$(git config -l | grep user.name)
+
+if [ ! "${git_config_user_email}" ] || [ ! "${git_config_user_name}" ] ; then
+	echo "-----------------------------"
+fi
+
 if [ "${GIT_OVER_HTTP}" ] ; then
 	torvalds_linux="http://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
 	linux_stable="http://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
