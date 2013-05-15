@@ -47,12 +47,12 @@ check_and_or_clone () {
 	if [ ! "${LINUX_GIT}" ]; then
 		if [ -f "${DIR}/ignore/linux-src/.git/config" ] ; then
 			echo "-----------------------------"
-			echo "scripts/git: Warning: LINUX_GIT not defined in system.sh"
+			echo "scripts/git: LINUX_GIT not defined in system.sh"
 			echo "using default location: ${DIR}/ignore/linux-src/"
 		else
 			echo "-----------------------------"
-			echo "scripts/git: Warning: LINUX_GIT not defined in system.sh"
-			echo "cloning ${torvalds_linux} to default location: ${DIR}/ignore/linux-src"
+			echo "scripts/git: LINUX_GIT not defined in system.sh"
+			echo "cloning ${torvalds_linux} into default location: ${DIR}/ignore/linux-src"
 			git clone ${torvalds_linux} ${DIR}/ignore/linux-src
 		fi
 		LINUX_GIT="${DIR}/ignore/linux-src"
