@@ -171,18 +171,4 @@ else
 	linux_stable="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
 fi
 
-unset ON_MASTER
-if [ "${DISABLE_MASTER_BRANCH}" ] ; then
-	git branch | grep "*" | grep master >/dev/null 2>&1 && ON_MASTER=1
-fi
-
-if [ ! "${ON_MASTER}" ] ; then
-	git_kernel
-else
-	echo "-----------------------------"
-	echo "Please checkout one of the active branches, building from the master branch has been disabled..."
-	echo "-----------------------------"
-	cat ${DIR}/branches.list | grep -v INACTIVE
-	echo "-----------------------------"
-	exit 1
-fi
+git_kernel
