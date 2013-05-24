@@ -128,10 +128,10 @@ debian_regs () {
 		squeeze|lucid)
 			dpkg -l | grep uboot-mkimage >/dev/null || deb_pkgs="${deb_pkgs}uboot-mkimage"
 			;;
-		wheezy|jessie|oneiric|precise|quantal|raring|saucy)
+		wheezy|jessie|precise|quantal|raring|saucy)
 			dpkg -l | grep u-boot-tools >/dev/null || deb_pkgs="${deb_pkgs}u-boot-tools"
 			;;
-		maverick|natty)
+		maverick|natty|oneiric)
 			warn_eol_distro=1
 			;;
 		*)

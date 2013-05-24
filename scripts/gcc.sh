@@ -46,14 +46,14 @@ ubuntu_arm_gcc_installed () {
 		esac
 
 		case "${distro_release}" in
-		oneiric|precise|quantal|raring)
+		precise|quantal|raring)
 			#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabi
 			armel_pkg="gcc-arm-linux-gnueabi"
 			;;
 		esac
 
 		case "${distro_release}" in
-		oneiric|precise|quantal|raring)
+		precise|quantal|raring)
 			#http://packages.ubuntu.com/raring/gcc-arm-linux-gnueabihf
 			armhf_pkg="gcc-arm-linux-gnueabihf"
 			;;
