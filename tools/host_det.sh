@@ -131,7 +131,9 @@ debian_regs () {
 		wheezy|jessie|precise|quantal|raring|saucy)
 			dpkg -l | grep u-boot-tools >/dev/null || deb_pkgs="${deb_pkgs}u-boot-tools"
 			;;
-		maverick|natty|oneiric)
+		natty|oneiric)
+			#Remove when no longer listed here:
+			#http://us.archive.ubuntu.com/ubuntu/dists/
 			warn_eol_distro=1
 			;;
 		*)
