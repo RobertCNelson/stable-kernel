@@ -94,13 +94,10 @@ debian_regs () {
 	dpkg -l | grep lzop >/dev/null || deb_pkgs="${deb_pkgs}lzop "
 	dpkg -l | grep fakeroot >/dev/null || deb_pkgs="${deb_pkgs}fakeroot "
 
-	#Lucid -> Oneiric
-	if [ ! -f "/usr/lib/libncurses.so" ] ; then
-		#Precise ->
-		if [ ! -f "/usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`/libncurses.so" ] ; then
-			deb_pkgs="${deb_pkgs}libncurses5-dev "
-		fi
-	fi
+	#Libraires: (make sure we atleast get the native arch one)
+	#ii  libncurses5-dev:amd64                 5.9+20130504-1                     amd64        developer's libraries for ncurses
+	deb_arch=$(dpkg --print-architecture)
+	dpkg -l | grep libncurses5-dev | grep ${deb_arch} >/dev/null || deb_pkgs="${deb_pkgs}libncurses5-dev "
 
 	unset warn_dpkg_ia32
 	unset warn_eol_distro
