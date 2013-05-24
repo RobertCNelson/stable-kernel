@@ -106,24 +106,19 @@ debian_regs () {
 		deb_distro=$(lsb_release -cs)
 
 		#Linux Mint: Compatibility Matrix
+		#http://www.linuxmint.com/oldreleases.php
 		case "${deb_distro}" in
+		debian)
+			deb_distro="jessie"
+			;;
 		maya)
 			deb_distro="precise"
 			;;
 		nadia)
 			deb_distro="quantal"
 			;;
-		debian)
-			#http://www.linuxmint.com/download_lmde.php
-			#lsb_release -a
-			#No LSB modules are available.
-			#Distributor ID:    LinuxMint
-			#Description:    Linux Mint Debian Edition
-			#Release:    1
-			#Codename:    debian
-			#
-			#why? 'debian' for Codename?
-			deb_distro="jessie"
+		olivia)
+			deb_distro="raring"
 			;;
 		esac
 

@@ -32,12 +32,16 @@ ubuntu_arm_gcc_installed () {
 		distro_release=$(lsb_release -cs)
 
 		#Linux Mint: Compatibility Matrix
+		#http://www.linuxmint.com/oldreleases.php
 		case "${distro_release}" in
 		maya)
-			distro_release="precise"
+			deb_distro="precise"
 			;;
 		nadia)
-			distro_release="quantal"
+			deb_distro="quantal"
+			;;
+		olivia)
+			deb_distro="raring"
 			;;
 		esac
 
