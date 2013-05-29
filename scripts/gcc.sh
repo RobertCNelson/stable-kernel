@@ -25,6 +25,10 @@ DIR=$PWD
 
 . ${DIR}/system.sh
 
+#For:
+#linaro_toolchain
+. ${DIR}/version.sh
+
 ubuntu_arm_gcc_installed () {
 	unset armel_pkg
 	unset armhf_pkg
@@ -111,47 +115,49 @@ dl_gcc_generic () {
 	fi
 }
 
-armv7_toolchain () {
+gcc_linaro_toolchain () {
 	#https://launchpad.net/linaro-toolchain-binaries/+download
+	case "${linaro_toolchain}" in
+	arm9)
+		#https://launchpad.net/linaro-toolchain-binaries/trunk/2012.04/+download/gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux.tar.bz2
 
-	#Used for ARM9
-	#https://launchpad.net/linaro-toolchain-binaries/trunk/2012.04/+download/gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux.tar.bz2
+		toolchain_name="gcc-linaro-arm-linux-gnueabi"
+		site="https://launchpad.net/linaro-toolchain-binaries"
+		version="trunk/2012.04"
+		filename="gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux.tar.bz2"
+		directory="gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux"
+		datestamp="20120426-gcc-linaro-arm-linux-gnueabi"
+		untar="tar -xjf"
 
-#	toolchain_name="gcc-linaro-arm-linux-gnueabi"
-#	site="https://launchpad.net/linaro-toolchain-binaries"
-#	version="trunk/2012.04"
-#	filename="gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux.tar.bz2"
-#	directory="gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux"
-#	datestamp="20120426-gcc-linaro-arm-linux-gnueabi"
-#	untar="tar -xjf"
+		binary="bin/arm-linux-gnueabi-"
+		;;
+	cortex|*) #This is also the backup, if none is specified in version.sh...
+		#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.03/+download/gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux.tar.bz2
 
-#	binary="bin/arm-linux-gnueabi-"
+		toolchain_name="gcc-linaro-arm-linux-gnueabihf"
+		site="https://launchpad.net/linaro-toolchain-binaries"
+		version="trunk/2013.03"
+		filename="gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux.tar.bz2"
+		directory="gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux"
+		datestamp="20130313-gcc-linaro-arm-linux-gnueabihf"
+		untar="tar -xjf"
 
-	#Used for Cortex-A
-	#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.03/+download/gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux.tar.bz2
+		binary="bin/arm-linux-gnueabihf-"
+		;;
+	cortex_latest)
+		#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.04/+download/gcc-linaro-arm-linux-gnueabihf-4.8-2013.04-20130417_linux.tar.xz
 
-#	toolchain_name="gcc-linaro-arm-linux-gnueabihf"
-#	site="https://launchpad.net/linaro-toolchain-binaries"
-#	version="trunk/2013.03"
-#	filename="gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux.tar.bz2"
-#	directory="gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux"
-#	datestamp="20130313-gcc-linaro-arm-linux-gnueabihf"
-#	untar="tar -xjf"
+		toolchain_name="gcc-linaro-arm-linux-gnueabihf"
+		site="https://launchpad.net/linaro-toolchain-binaries"
+		version="trunk/2013.04"
+		directory="${toolchain_name}-4.8-2013.04-20130417_linux"
+		filename="${directory}.tar.xz"
+		datestamp="20130313-${toolchain_name}"
+		untar="tar -xJf"
 
-#	binary="bin/arm-linux-gnueabihf-"
-
-	#Used for Cortex-A
-	#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.04/+download/gcc-linaro-arm-linux-gnueabihf-4.8-2013.04-20130417_linux.tar.xz
-
-	toolchain_name="gcc-linaro-arm-linux-gnueabihf"
-	site="https://launchpad.net/linaro-toolchain-binaries"
-	version="trunk/2013.04"
-	directory="${toolchain_name}-4.8-2013.04-20130417_linux"
-	filename="${directory}.tar.xz"
-	datestamp="20130313-${toolchain_name}"
-	untar="tar -xJf"
-
-	binary="bin/arm-linux-gnueabihf-"
+		binary="bin/arm-linux-gnueabihf-"
+		;;
+	esac
 
 	dl_gcc_generic
 }
@@ -159,7 +165,7 @@ armv7_toolchain () {
 if [ "x${CC}" = "x" ] && [ "x${ARCH}" != "xarmv7l" ] ; then
 	ubuntu_arm_gcc_installed
 	if [ "x${CC}" = "x" ] ; then
-		armv7_toolchain
+		gcc_linaro_toolchain
 	fi
 fi
 
@@ -169,7 +175,7 @@ if [ "x${GCC_TEST}" = "x" ] ; then
 	echo "-----------------------------"
 	echo "scripts/gcc: Error: The GCC ARM Cross Compiler you setup in system.sh (CC variable) is invalid."
 	echo "-----------------------------"
-	armv7_toolchain
+	gcc_linaro_toolchain
 fi
 
 echo "-----------------------------"
