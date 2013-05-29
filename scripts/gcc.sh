@@ -116,22 +116,24 @@ dl_gcc_generic () {
 }
 
 gcc_linaro_toolchain () {
+	#https://launchpad.net/gcc-arm-embedded/+download
 	#https://launchpad.net/linaro-toolchain-binaries/+download
 	case "${linaro_toolchain}" in
-	arm9)
-		#https://launchpad.net/linaro-toolchain-binaries/trunk/2012.04/+download/gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux.tar.bz2
+	arm9_gcc_4_7)
+		#https://launchpad.net/gcc-arm-embedded/4.7/4.7-2013-q1-update/+download/gcc-arm-none-eabi-4_7-2013q1-20130313-linux.tar.bz2
 
-		toolchain_name="gcc-linaro-arm-linux-gnueabi"
-		site="https://launchpad.net/linaro-toolchain-binaries"
-		version="trunk/2012.04"
-		filename="gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux.tar.bz2"
-		directory="gcc-linaro-arm-linux-gnueabi-2012.04-20120426_linux"
-		datestamp="20120426-gcc-linaro-arm-linux-gnueabi"
+		toolchain_name="gcc-arm-none-eabi"
+		site="https://launchpad.net/gcc-arm-embedded"
+		version="4.7/4.7-2013-q1-update"
+		version_date="20130313"
+		filename="${toolchain_name}-4_7-2013q1-${version_date}-linux.tar.bz2"
+		directory="${toolchain_name}-4_7-2013q1"
+		datestamp="${version_date}-${toolchain_name}"
 		untar="tar -xjf"
 
-		binary="bin/arm-linux-gnueabi-"
+		binary="bin/arm-none-eabi-"
 		;;
-	cortex|*) #This is also the backup, if none is specified in version.sh...
+	cortex_gcc_4_7)
 		#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.03/+download/gcc-linaro-arm-linux-gnueabihf-4.7-2013.03-20130313_linux.tar.bz2
 
 		toolchain_name="gcc-linaro-arm-linux-gnueabihf"
@@ -144,7 +146,7 @@ gcc_linaro_toolchain () {
 
 		binary="bin/arm-linux-gnueabihf-"
 		;;
-	cortex_latest)
+	cortex_gcc_4_8)
 		#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.04/+download/gcc-linaro-arm-linux-gnueabihf-4.8-2013.04-20130417_linux.tar.xz
 
 		toolchain_name="gcc-linaro-arm-linux-gnueabihf"
@@ -156,6 +158,11 @@ gcc_linaro_toolchain () {
 		untar="tar -xJf"
 
 		binary="bin/arm-linux-gnueabihf-"
+		;;
+	*)
+		echo "bug: maintainer forgot to set:"
+		echo "linaro_toolchain=\"xzy\" in version.sh"
+		exit 1
 		;;
 	esac
 
