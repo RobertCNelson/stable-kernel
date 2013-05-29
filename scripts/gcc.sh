@@ -136,11 +136,13 @@ gcc_linaro_toolchain () {
 	cortex_gcc_4_7)
 		#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.04/+download/gcc-linaro-arm-linux-gnueabihf-4.7-2013.04-20130415_linux.tar.xz
 
+		gcc_version="4.7"
+		release="2013.04"
 		toolchain_name="gcc-linaro-arm-linux-gnueabihf"
 		site="https://launchpad.net/linaro-toolchain-binaries"
-		version="trunk/2013.04"
+		version="trunk/${release}"
 		version_date="20130415"
-		directory="${toolchain_name}-4.7-2013.04-${version_date}_linux"
+		directory="${toolchain_name}-${gcc_version}-${release}-${version_date}_linux"
 		filename="${directory}.tar.xz"
 		datestamp="${version_date}-${toolchain_name}"
 		untar="tar -xJf"
@@ -148,14 +150,16 @@ gcc_linaro_toolchain () {
 		binary="bin/arm-linux-gnueabihf-"
 		;;
 	cortex_gcc_4_8)
-		#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.04/+download/gcc-linaro-arm-linux-gnueabihf-4.8-2013.04-20130417_linux.tar.xz
+		#https://launchpad.net/linaro-toolchain-binaries/trunk/2013.05/+download/gcc-linaro-arm-linux-gnueabihf-4.8-2013.05_linux.tar.xz
 
+		gcc_version="4.8"
+		release="2013.05"
 		toolchain_name="gcc-linaro-arm-linux-gnueabihf"
 		site="https://launchpad.net/linaro-toolchain-binaries"
-		version="trunk/2013.04"
-		directory="${toolchain_name}-4.8-2013.04-20130417_linux"
+		version="trunk/${release}"
+		directory="${toolchain_name}-${gcc_version}-${release}_linux"
 		filename="${directory}.tar.xz"
-		datestamp="20130313-${toolchain_name}"
+		datestamp="${release}-${toolchain_name}"
 		untar="tar -xJf"
 
 		binary="bin/arm-linux-gnueabihf-"
