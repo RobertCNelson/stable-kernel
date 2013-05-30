@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh -e
 #
 # Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
 #
@@ -28,7 +28,7 @@ BOOT_PARITION="1"
 
 DIR=$PWD
 
-source ${DIR}/version.sh
+. ${DIR}/version.sh
 
 mmc_write_rootfs () {
 	echo "Installing ${KERNEL_UTS}-modules.tar.gz to ${partition}"
@@ -42,12 +42,18 @@ mmc_write_rootfs () {
 
 	echo "Installing ${KERNEL_UTS}-firmware.tar.gz to ${partition}"
 
-	mkdir -p "${DIR}/deploy/tmp/fir"
-	tar ${UNTAR} "${DIR}/deploy/${KERNEL_UTS}-firmware.tar.gz" -C "${DIR}/deploy/tmp/fir/"
+	if [ -d "${DIR}/deploy/tmp" ] ; then
+		rm -rf "${DIR}/deploy/tmp" || true
+	fi
+	mkdir -p "${DIR}/deploy/tmp/"
+
+	tar -xf "${DIR}/deploy/${KERNEL_UTS}-firmware.tar.gz" -C "${DIR}/deploy/tmp/"
 	sync
 
-	sudo cp -v "${DIR}/deploy/tmp/fir"/*.dtbo "${location}/lib/firmware/" 2>/dev/null
+	sudo cp -v "${DIR}/deploy/tmp"/*.dtbo "${location}/lib/firmware/" 2>/dev/null || true
 	sync
+
+	rm -rf "${DIR}/deploy/tmp/" || true
 
 	if [ "${ZRELADDR}" ] ; then
 		if [ ! -f "${location}/boot/SOC.sh" ] ; then
@@ -68,7 +74,7 @@ mmc_write_boot () {
 	echo "Installing ${KERNEL_UTS} to ${partition}"
 
 	if [ -f "${location}/SOC.sh" ] ; then
-		source "${location}/SOC.sh"
+		. "${location}/SOC.sh"
 		ZRELADDR=${load_addr}
 	fi
 
@@ -139,9 +145,8 @@ mmc_detect_n_mount () {
 	echo "-----------------------------"
 	num_partitions=$(LC_ALL=C sudo fdisk -l 2>/dev/null | grep "^${MMC}" | grep -v "DM6" | grep -v "Extended" | grep -v "swap" | wc -l)
 
-	for (( c=1; c<=${num_partitions}; c++ ))
-	do
-		partition=$(LC_ALL=C sudo fdisk -l 2>/dev/null | grep "^${MMC}" | grep -v "DM6" | grep -v "Extended" | grep -v "swap" | head -${c} | tail -1 | awk '{print $1}')
+	i=0 ; while test $i -le ${num_partitions} ; do
+		partition=$(LC_ALL=C sudo fdisk -l 2>/dev/null | grep "^${MMC}" | grep -v "DM6" | grep -v "Extended" | grep -v "swap" | head -${i} | tail -1 | awk '{print $1}')
 		echo "Trying ${partition}"
 
 		if [ ! -d "${DIR}/deploy/disk/" ] ; then
@@ -160,11 +165,12 @@ mmc_detect_n_mount () {
 			mmc_partition_discover
 			mmc_unmount
 		fi
+	i=$(($i+1))
 	done
 
 	echo "-----------------------------"
 	echo "This script has finished..."
-	echo "Always test your device for verification..."
+	echo "For verification, always test this media with your end device..."
 }
 
 unmount_partitions () {
@@ -179,10 +185,10 @@ unmount_partitions () {
 
 	NUM_MOUNTS=$(mount | grep -v none | grep "${MMC}" | wc -l)
 
-	for (( c=1; c<=${NUM_MOUNTS}; c++ ))
-	do
+	i=0 ; while test $i -le ${NUM_MOUNTS} ; do
 		DRIVE=$(mount | grep -v none | grep "${MMC}" | tail -1 | awk '{print $1}')
-		sudo umount ${DRIVE} &> /dev/null || true
+		sudo umount ${DRIVE} >/dev/null 2>&1 || true
+	i=$(($i+1))
 	done
 
 	mkdir -p "${DIR}/deploy/disk/"
@@ -198,11 +204,19 @@ check_mmc () {
 		echo "fdisk -l:"
 		LC_ALL=C sudo fdisk -l 2>/dev/null | grep "Disk /dev/" --color=never
 		echo ""
-		echo "mount:"
-		mount | grep -v none | grep "/dev/" --color=never
+		if which lsblk > /dev/null ; then
+			echo "lsblk:"
+			lsblk | grep -v sr0
+		else
+			echo "mount:"
+			mount | grep -v none | grep "/dev/" --color=never
+		fi
 		echo ""
-		read -p "Are you 100% sure, on selecting [${MMC}] (y/n)? "
-		[ "${REPLY}" == "y" ] && unmount_partitions
+		echo -n "Are you 100% sure, on selecting [${MMC}] (y/n)? "
+		read response
+		if [ "x${response}" = "xy" ] ; then
+			unmount_partitions
+		fi
 		echo ""
 	else
 		echo ""
@@ -218,17 +232,15 @@ check_mmc () {
 }
 
 if [ -f "${DIR}/system.sh" ] ; then
-	source ${DIR}/system.sh
+	. ${DIR}/system.sh
 
 	if [ -f "${DIR}/KERNEL/arch/arm/boot/zImage" ] ; then
 		KERNEL_UTS=$(cat "${DIR}/KERNEL/include/generated/utsrelease.h" | awk '{print $3}' | sed 's/\"//g' )
-		if [ "x${MMC}" == "x" ] ; then
+		if [ "x${MMC}" = "x" ] ; then
 			echo "ERROR: MMC is not defined in system.sh"
 		else
 			unset PARTITION_PREFIX
-			if [[ "${MMC}" =~ "mmcblk" ]] ; then
-				PARTITION_PREFIX="p"
-			fi
+			echo ${MMC} | grep mmcblk >/dev/null && PARTITION_PREFIX="p"
 			check_mmc
 		fi
 	else
