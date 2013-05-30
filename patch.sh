@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 #
-# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ git="git am"
 #git="git am --whitespace=fix"
 
 if [ -f ${DIR}/system.sh ] ; then
-	source ${DIR}/system.sh
+	. ${DIR}/system.sh
 fi
 
 if [ "${RUN_BISECT}" ] ; then
@@ -45,12 +45,12 @@ cleanup () {
 	exit
 }
 
-function bugs_trivial {
+bugs_trivial () {
 	echo "bugs and trivial stuff"
 	${git} "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 }
 
-function beagle {
+beagle () {
 	echo "Board Patches for: BeagleBoard"
 
 	${git} "${DIR}/patches/beagle/expansion/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
@@ -86,14 +86,14 @@ function beagle {
 #	${git} "${DIR}/patches/omap/0001-Fix-sprz319-erratum-2.1.patch"
 }
 
-function pandaboard {
+pandaboard () {
 	echo "Board Patches for: PandaBoard"
 	${git} "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 	${git} "${DIR}/patches/panda/0001-panda-enable-bluetooth.patch"
 	${git} "${DIR}/patches/panda/0001-ti-st-st-kim-fixing-firmware-path.patch"
 }
 
-function fixes {
+fixes () {
 	echo "omap cherry pick fixes"
 	#3/22/2012: replaces: 0001-OMAP-UART-Enable-tx-wakeup-bit-in-wer.patch
 	${git} "${DIR}/patches/omap/0001-OMAP2-UART-Remove-cpu-checks-for-populating-errata-f.patch"
