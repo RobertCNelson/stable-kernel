@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 #
-# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ git="git am"
 #git="git am --whitespace=fix"
 
 if [ -f ${DIR}/system.sh ] ; then
-	source ${DIR}/system.sh
+	. ${DIR}/system.sh
 fi
 
 if [ "${RUN_BISECT}" ] ; then
@@ -41,17 +41,17 @@ git_add () {
 }
 
 cleanup () {
-	git format-patch -6 -o ${DIR}/patches/
+	git format-patch -${number} -o ${DIR}/patches/
 	exit
 }
 
-function bugs_trivial {
+bugs_trivial () {
 	echo "bugs and trivial stuff"
 	${git} "${DIR}/patches/trivial/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
 	${git} "${DIR}/patches/trivial/0002-USB-ehci-use-packed-aligned-4-instead-of-removing-th.patch"
 }
 
-function beagle {
+beagle () {
 	echo "Board Patchset: Beagle"
 	${git} "${DIR}/patches/beagle/0001-OMAP3-beagle-add-support-for-beagleboard-xM-revision.patch"
 	${git} "${DIR}/patches/beagle/0002-omap3-Increase-limit-on-bootarg-mpurate.patch"
@@ -60,7 +60,7 @@ function beagle {
 	${git} "${DIR}/patches/beagle/0005-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
 }
 
-function sakoman {
+sakoman () {
 	echo "sakoman's patches"
 	${git} "${DIR}/patches/sakoman/0001-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
 	${git} "${DIR}/patches/sakoman/0002-video-add-timings-for-hd720.patch"
@@ -112,7 +112,7 @@ function sakoman {
 	${git} "${DIR}/patches/sakoman/0048-omap3-Add-basic-support-for-720MHz-part.patch"
 }
 
-function sgx {
+sgx () {
 echo "merge in ti sgx modules"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-enable-driver-building.patch"

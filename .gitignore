@@ -1,7 +1,9 @@
+.CC
 system.sh
 KERNEL
 dl
 deploy
+ignore
 SDK
 SDK_BIN
 DSP_Install_libs.tar.gz
