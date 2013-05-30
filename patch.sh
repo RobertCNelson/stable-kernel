@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 #
-# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ git="git am"
 #git="git am --whitespace=fix"
 
 if [ -f ${DIR}/system.sh ] ; then
-	source ${DIR}/system.sh
+	. ${DIR}/system.sh
 fi
 
 if [ "${RUN_BISECT}" ] ; then
@@ -45,7 +45,7 @@ cleanup () {
 	exit
 }
 
-function bugs_trivial {
+bugs_trivial () {
 echo "bugs and trivial stuff"
 
 patch -s -p1 < "${DIR}/patches/trivial/0001-staging-add-airlink-awll7025-id-for-rt2860.patch"
@@ -64,24 +64,24 @@ patch -s -p1 < "${DIR}/patches/trivial/0001-USB-ehci-remove-structure-packing-fr
 patch -s -p1 < "${DIR}/patches/trivial/0001-USB-ehci-use-packed-aligned-4-instead-of-removing-th.patch"
 }
 
-function dss2_next {
+dss2_next () {
 echo "dss2 from for-next"
 
 patch -s -p1 < "${DIR}/patches/dss2_next/0001-OMAP4-DSS2-Register-configuration-changes-for-DSI.patch"
 
 }
 
-function dspbridge_next {
+dspbridge_next () {
 echo "dspbridge from for-next"
 
 }
 
-function omap_fixes {
+omap_fixes () {
 echo "omap fixes"
 
 }
 
-function for_next_40 {
+for_next_40 () {
 echo "for_next from tmlind's tree.."
 #patch -s -p1 < "${DIR}/patches/for_next_40/0003-OMAP3-voltage-remove-spurious-pr_notice-for-debugfs.patch"
 #patch -s -p1 < "${DIR}/patches/for_next_40/0004-OMAP4-PM-remove-redundant-ifdef-CONFIG_PM.patch"
@@ -97,7 +97,7 @@ patch -s -p1 < "${DIR}/patches/for_next_40/0016-OMAP3-4-l3-minor-cleanup-for-par
 }
 
 
-function wip_to_be_pushed_git  {
+wip_to_be_pushed_git () {
 echo "wip patches for mainline"
 
 git_add
@@ -113,7 +113,7 @@ git am "${DIR}/patches/wip_to_be_pushed/0009-omap3-beagle-expansionboard-zippy2.
 
 }
 
-function wip_to_be_pushed  {
+wip_to_be_pushed  () {
 echo "wip patches for mainline"
 
 patch -s -p1 < "${DIR}/patches/wip_to_be_pushed/0001-omap3-beagle-convert-printk-KERN_INFO-to-pr_info.patch"
@@ -128,7 +128,7 @@ patch -s -p1 < "${DIR}/patches/wip_to_be_pushed/0009-omap3-beagle-expansionboard
 
 }
 
-function sakoman {
+sakoman () {
 echo "sakoman's patches"
 
 patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0001-OMAP-DSS2-DSI-fix-use_sys_clk-highfreq.patch"
@@ -202,12 +202,12 @@ patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0063-OMAP2-cpufreq-fix-freq_table-
 
 }
 
-function musb {
+musb () {
 echo "musb patches"
 patch -s -p1 < "${DIR}/patches/musb/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 }
 
-function micrel {
+micrel () {
 echo "micrel patches"
 patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/01_eeprom_93cx6_2.6.35.patch"
 patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/02_eeprom_93cx6_2.6.35.patch"
@@ -225,7 +225,7 @@ patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/18_ksz8851_2.6.35.patch"
 
 }
 
-function beagle {
+beagle () {
 echo "beagle patches"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 #patch -s -p1 < "${DIR}/patches/beagle/0001-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
@@ -235,22 +235,22 @@ patch -s -p1 < "${DIR}/patches/display/0001-meego-modedb-add-Toshiba-LTA070B220F
 
 }
 
-function igepv2 {
+igepv2 () {
 echo "igepv2 board related patches"
 }
 
-function devkit8000 {
+devkit8000 () {
 echo "devkit8000"
 patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
 }
 
-function touchbook {
+touchbook () {
 echo "touchbook patches"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readonly.patch"
 }
 
-function omap4 {
+omap4 () {
 echo "omap4 related patches"
 patch -s -p1 < "${DIR}/patches/panda/0001-OMAP4-DSS2-add-dss_dss_clk.patch"
 
@@ -313,7 +313,7 @@ patch -s -p1 < "${DIR}/patches/panda/0001-OMAP4-DSS2-add-dss_dss_clk.patch"
 
 }
 
-function sgx {
+sgx () {
 echo "merge in ti sgx modules"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-enable-driver-building.patch"
