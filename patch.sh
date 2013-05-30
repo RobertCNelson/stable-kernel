@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 #
-# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ git="git am"
 #git="git am --whitespace=fix"
 
 if [ -f ${DIR}/system.sh ] ; then
-	source ${DIR}/system.sh
+	. ${DIR}/system.sh
 fi
 
 if [ "${RUN_BISECT}" ] ; then
@@ -45,7 +45,7 @@ cleanup () {
 	exit
 }
 
-function bugs_trivial {
+bugs_trivial () {
 echo "bugs and trivial stuff"
 
 #December 1st 2011: rcn-ee
@@ -72,17 +72,17 @@ patch -s -p1 < "${DIR}/patches/trivial/0001-USB-DUALSPEED-Gadget-KConfig.patch"
 
 }
 
-function cpufreq {
+cpufreq () {
 echo "[git] omap-cpufreq"
 git pull ${GIT_OPTS} git://github.com/RobertCNelson/linux.git omap_cpufreq_v3.1-rc8
 }
 
-function dss2_next {
+dss2_next () {
 echo "dss2 from for-next"
 
 }
 
-function dspbridge_next {
+dspbridge_next () {
 echo "dspbridge from for-next"
 patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-tidspbridge-dont-cast-void-from-kmalloc.patch"
 patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-tidspbridge-MMU2-registers-are-limited-to-32.patch"
@@ -90,17 +90,17 @@ patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-tidspbridge-include-module
 #patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-tidspbridge-request-dmtimer-clocks-on-init.patch"
 }
 
-function omap_fixes {
+omap_fixes () {
 echo "omap fixes"
 
 }
 
-function for_next {
+for_next (){
 echo "for_next from tmlind's tree.."
 
 }
 
-function sakoman {
+sakoman () {
 echo "sakoman's patches"
 
 patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0006-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
@@ -111,12 +111,12 @@ patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0026-OMAP-Overo-Add-support-for-sp
 
 }
 
-function musb {
+musb () {
 echo "musb patches"
 patch -s -p1 < "${DIR}/patches/musb/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 }
 
-function micrel {
+micrel () {
 echo "[git] Micrel KZ8851 patches for: zippy2"
 #original from:
 #ftp://www.micrel.com/ethernet/8851/beagle_zippy_patches.tar.gz 137 KB 04/10/2010 12:26:00 AM
@@ -124,7 +124,7 @@ echo "[git] Micrel KZ8851 patches for: zippy2"
 git pull ${GIT_OPTS} git://github.com/RobertCNelson/linux.git micrel_ks8851_v3.1-rc8
 }
 
-function beagle {
+beagle () {
 echo "[git] Board Patches for: BeagleBoard"
 
 git pull ${GIT_OPTS} git://github.com/RobertCNelson/linux.git omap_beagle_expansion_v3.1-rc9
@@ -138,7 +138,7 @@ patch -s -p1 < "${DIR}/patches/beagle/0001-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-a
 patch -s -p1 < "${DIR}/patches/beagle/0001-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
 }
 
-function igepv2 {
+igepv2 () {
 echo "[git] Board Patches for: igepv2"
 #pulled from: http://git.igep.es/?p=pub/scm/linux-omap-2.6.git;a=summary
 #git pull git://git.igep.es/pub/scm/linux-omap-2.6.git master
@@ -156,12 +156,12 @@ patch -s -p1 < "${DIR}/patches/trivial/0001-ARM-OMAP-igep00x0-fix-build-of-igep0
 
 }
 
-function devkit8000 {
+devkit8000 () {
 echo "devkit8000"
 patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
 }
 
-function touchbook {
+touchbook () {
 echo "touchbook patches"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readonly.patch"
@@ -169,14 +169,14 @@ patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readon
 #patch -s -p1 < "${DIR}/patches/touchbook/0002-touchbook-add-twl4030-bci-battery.patch"
 }
 
-function omap4 {
+omap4 () {
 echo "omap4 related patches"
 #drop with 3.0-git16
 #patch -s -p1 < "${DIR}/patches/panda/0001-OMAP4-DSS2-add-dss_dss_clk.patch"
 patch -s -p1 < "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 }
 
-function sgx {
+sgx () {
 echo "merge in ti sgx modules"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-enable-driver-building.patch"
