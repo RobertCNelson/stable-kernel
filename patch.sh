@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 #
-# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ git="git am"
 #git="git am --whitespace=fix"
 
 if [ -f ${DIR}/system.sh ] ; then
-	source ${DIR}/system.sh
+	. ${DIR}/system.sh
 fi
 
 if [ "${RUN_BISECT}" ] ; then
@@ -45,7 +45,7 @@ cleanup () {
 	exit
 }
 
-function kernel_org_down {
+kernel_org_down () {
 
 echo "Applying: 3.0.5 Patch"
 patch -s -p1 < "${DIR}/patches/stable/patch-3.0.4-5"
@@ -54,7 +54,7 @@ patch -s -p1 < "${DIR}/patches/stable/patch-3.0.5-6"
 
 }
 
-function bugs_trivial {
+bugs_trivial () {
 echo "bugs and trivial stuff"
 
 patch -p1 -R < "${DIR}/patches/trivial/0001-staging-rt2860sta-and-rt2870sta-Remove-drivers-repla.patch"
@@ -73,28 +73,28 @@ patch -s -p1 < "${DIR}/patches/trivial/0001-USB-ehci-use-packed-aligned-4-instea
 
 }
 
-function dss2_next {
+dss2_next () {
 echo "dss2 from for-next"
 
 }
 
-function dspbridge_next {
+dspbridge_next () {
 echo "dspbridge from for-next"
 
 }
 
-function omap_fixes {
+omap_fixes () {
 echo "omap fixes"
 
 }
 
-function for_next {
+for_next () {
 echo "for_next from tmlind's tree.."
 
 patch -s -p1 < "${DIR}/patches/beagle/0001-OMAP3-beagle-add-support-for-beagleboard-xM-revision.patch"
 }
 
-function sakoman {
+sakoman () {
 echo "sakoman's patches"
 
 patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0006-OMAP-DSS2-add-bootarg-for-selecting-svideo-or-compos.patch"
@@ -159,12 +159,12 @@ patch -s -p1 < "${DIR}/patches/sakoman/2.6.39/0072-omap3-Add-basic-support-for-7
 
 }
 
-function musb {
+musb () {
 echo "musb patches"
 patch -s -p1 < "${DIR}/patches/musb/0001-default-to-fifo-mode-5-for-old-musb-beagles.patch"
 }
 
-function micrel {
+micrel () {
 echo "micrel patches"
 patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/01_eeprom_93cx6_2.6.35.patch"
 patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/02_eeprom_93cx6_2.6.35.patch"
@@ -182,23 +182,23 @@ patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/18_ksz8851_2.6.35.patch"
 
 }
 
-function beagle {
+beagle () {
 echo "beagle patches"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 patch -s -p1 < "${DIR}/patches/display/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
 
 }
 
-function igepv2 {
+igepv2 () {
 echo "igepv2 board related patches"
 }
 
-function devkit8000 {
+devkit8000 () {
 echo "devkit8000"
 patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel-2.6.37-git10.patch"
 }
 
-function touchbook {
+touchbook () {
 echo "touchbook patches"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readonly.patch"
@@ -206,13 +206,13 @@ patch -s -p1 < "${DIR}/patches/touchbook/0001-touchbook-add-madc.patch"
 #patch -s -p1 < "${DIR}/patches/touchbook/0002-touchbook-add-twl4030-bci-battery.patch"
 }
 
-function omap4 {
+omap4 () {
 echo "omap4 related patches"
 patch -s -p1 < "${DIR}/patches/panda/0001-OMAP4-DSS2-add-dss_dss_clk.patch"
 patch -s -p1 < "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
 }
 
-function sgx {
+sgx () {
 echo "merge in ti sgx modules"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-enable-driver-building.patch"
