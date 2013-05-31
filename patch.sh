@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 #
-# Copyright (c) 2009-2012 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ git="git am"
 #git="git am --whitespace=fix"
 
 if [ -f ${DIR}/system.sh ] ; then
-	source ${DIR}/system.sh
+	. ${DIR}/system.sh
 fi
 
 if [ "${RUN_BISECT}" ] ; then
@@ -56,7 +56,7 @@ patch -s -p1 < "${DIR}/patches/beagle/0001-omap-Beagle-detect-new-xM-revision-B.
 patch -s -p1 < "${DIR}/patches/trivial/0001-staging-add-airlink-awll7025-id-for-rt2860.patch"
 patch -s -p1 < "${DIR}/patches/trivial/0001-OMAP4-enable-smc-instruction-in-new-assembler-versio.patch"
 
-function sakoman {
+sakoman () {
 echo "sakoman's patches"
 patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0001-video-add-timings-for-hd720.patch"
 patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0002-OMAP-hsmmc-boards-with-8-wires-are-also-capable-of-4.patch"
@@ -92,7 +92,7 @@ patch -s -p1 < "${DIR}/patches/sakoman/2.6.35/0031-Revert-omap2_mcspi-Flush-post
 
 }
 
-function dss2 {
+dss2 () {
 echo "dss2 patches"
 
 #http://www.spinics.net/lists/linux-omap/msg34582.html
@@ -103,12 +103,12 @@ patch -s -p1 < "${DIR}/patches/dss2/Combine-dsi-and-sdi-under-the-same-vdds-supp
 
 }
 
-function musb {
+musb () {
 echo "musb patches"
 patch -s -p1 < "${DIR}/patches/musb/force-fifo_mode-5.diff"
 }
 
-function micrel {
+micrel () {
 echo "micrel patches"
 patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/01_eeprom_93cx6_2.6.35.patch"
 patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/02_eeprom_93cx6_2.6.35.patch"
@@ -131,14 +131,14 @@ patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/18_ksz8851_2.6.35.patch"
 patch -s -p1 < "${DIR}/patches/micrel/linux-2.6.35/null-pointer-memory-leak.patch"
 }
 
-function zippy {
+zippy () {
 echo "zippy support"
 patch -s -p1 < ${DIR}/patches/angstrom/0003-ARM-OMAP-add-support-for-TCT-Zippy-to-Beagle-board-fixup.patch
 patch -s -p1 < ${DIR}/patches/angstrom/0043-ARM-OMAP-beagleboard-Add-infrastructure-to-do-fixups-fixup.patch
 patch -s -p1 < ${DIR}/patches/rcn/beagle-zippy-dont-load-i2c-on-boards-with-nozippy.diff
 }
 
-function xm {
+xm () {
 echo "early xm support"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
 patch -s -p1 < "${DIR}/patches/arago-project/0001-AM37x-Switch-SGX-clocks-to-200MHz.patch"
@@ -148,12 +148,12 @@ patch -s -p1 < "${DIR}/patches/beagle/0001-smsc95xx-generate-random-MAC-address-
 #patch -s -p1 < "${DIR}/patches/beagle/0001-omap-beagle-set-core-voltage-to-1.35-for-xM.patch"
 }
 
-function nand {
+nand () {
 echo "new nand interface"
 patch -s -p1 < ${DIR}/patches/nand/0001-ARM-OMAP-Beagle-use-new-gpmc-nand-infrastructure-fixup.patch
 }
 
-function sgx {
+sgx () {
 echo "merge in ti sgx modules"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
 patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-enable-driver-building.patch"
@@ -175,12 +175,12 @@ patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-use-omap3630.dif
 #patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-3.01.00.06-Compile-Fixes.patch"
 }
 
-function panda {
+panda () {
 echo "merge in panda support"
 patch -s -p1 < "${DIR}/patches/panda/0001-omap4-Add-OMAP4-Panda-Support.patch"
 }
 
-function igepv2 {
+igepv2 () {
 echo "igepv2 board related patches"
 patch -s -p1 < "${DIR}/patches/igepv2/0001-ARM-OMAP3-Add-S-Video-output-to-IGEPv2-board.patch"
 
@@ -193,7 +193,7 @@ patch -s -p1 < "${DIR}/patches/igepv2/0005-omap3-Add-i2c-eeprom-driver-to-read-E
 patch -s -p1 < "${DIR}/patches/igepv2/0006-omap3-Remove-VMMC2-regulator-on-IGEP-v2-because-it-s.patch"
 }
 
-function touchbook {
+touchbook () {
 echo "touchbook related patches"
 patch -s -p1 < "${DIR}/patches/touchbook/0001-ARM-OMAP-Touchbook-DSS2-support.patch"
 patch -s -p1 < "${DIR}/patches/touchbook/0002-ARM-OMAP-Touchbook-move-omap3_mux_init-beagle-like.patch"
@@ -239,7 +239,7 @@ patch -s -p1 < "${DIR}/patches/touchbook/0015-ARM-OMAP-Touchbook-upstream-rename
 ##patch -s -p1 < "${DIR}/patches/touchbook/0002-ARM-OMAP-Touchbook-upstream-backlight.patch"
 }
 
-function devkit8000 {
+devkit8000 () {
 echo "devkit8000 from 2.6.36"
 patch -s -p1 < "${DIR}/patches/devkit8000/0001-OMAP2-Devkit8000-Cleanup-for-power-supplies.patch"
 patch -s -p1 < "${DIR}/patches/devkit8000/0002-OMAP2-Devkit8000-change-panel-to-generic-panel.patch"
@@ -265,7 +265,7 @@ patch -s -p1 < "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-update-nand-t
 
 }
 
-function dspbridge {
+dspbridge () {
 echo "dspbridge from staging"
 patch -s -p1 < "${DIR}/patches/dspbridge/0001-staging-ti-dspbridge-add-driver-documentation.patch"
 patch -s -p1 < "${DIR}/patches/dspbridge/0002-staging-ti-dspbridge-add-core-driver-sources.patch"
