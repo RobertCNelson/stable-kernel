@@ -94,12 +94,21 @@ omap () {
 	${git} "${DIR}/patches/omap_panda/0003-Panda-expansion-add-spidev.patch"
 	${git} "${DIR}/patches/omap_panda/0004-HACK-PandaES-disable-cpufreq-so-board-will-boot.patch"
 
+	#Fix wlan0 on original Panda (strangly the ES was fine...)
+	#v3.7.x
+	#git revert --no-edit 029dd3cefa46ecdd879f9b4e2df3bdf4371cc22c -s
+	${git} "${DIR}/patches/omap_panda/0005-Revert-regulator-twl-Remove-another-unused-variable-.patch"
+	#v3.6.x
+	#git revert --no-edit e76ab829cc2d8b6350a3f01fffb208df4d7d8c1b -s
+	#git revert --no-edit 0e8e5c34cf1a8beaaf0a6a05c053592693bf8cb4 -s
+	${git} "${DIR}/patches/omap_panda/0006-Revert-regulator-twl-Remove-references-to-the-twl403.patch"
+	${git} "${DIR}/patches/omap_panda/0007-Revert-regulator-twl-Remove-references-to-32kHz-cloc.patch"
+
 	#Status: not for upstream: http://www.spinics.net/lists/arm-kernel/msg214633.html
 	#Fixes:
 	#WARNING: "v7_dma_flush_range" *pvrsrvkm.ko] undefined!
 	#WARNING: "v7_dma_map_area" *pvrsrvkm.ko] undefined!
 	${git} "${DIR}/patches/omap_sgx/0001-arm-Export-cache-flush-management-symbols-when-MULTI.patch"
-
 }
 
 sprz319_erratum () {
