@@ -1,0 +1,32 @@
+From 32c9ee46a149fa9abe0e94ff6507a3e79300a0a4 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Sat, 1 Jun 2013 11:16:16 -0500
+Subject: [PATCH 4/4] Revert "regulator: twl: Remove another unused variable
+ warning"
+
+This reverts commit 029dd3cefa46ecdd879f9b4e2df3bdf4371cc22c.
+---
+ drivers/regulator/twl-regulator.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/regulator/twl-regulator.c b/drivers/regulator/twl-regulator.c
+index d3d31ed..ff6bc32 100644
+--- a/drivers/regulator/twl-regulator.c
++++ b/drivers/regulator/twl-regulator.c
+@@ -650,6 +650,13 @@ static struct regulator_ops twl6030fixed_ops = {
+ 	.get_status	= twl6030reg_get_status,
+ };
+ 
++static struct regulator_ops twl6030_fixed_resource = {
++	.enable		= twl6030reg_enable,
++	.disable	= twl6030reg_disable,
++	.is_enabled	= twl6030reg_is_enabled,
++	.get_status	= twl6030reg_get_status,
++};
++
+ /*
+  * SMPS status and control
+  */
+-- 
+1.7.10.4
+

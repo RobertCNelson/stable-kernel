@@ -297,6 +297,16 @@ omap () {
 	${git} "${DIR}/patches/omap_panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
 	${git} "${DIR}/patches/omap_panda/0003-Panda-expansion-add-spidev.patch"
 
+	#Fix wlan0 on original Panda (strangly the ES was fine...)
+	#v3.7.x
+	#git revert --no-edit 029dd3cefa46ecdd879f9b4e2df3bdf4371cc22c
+	${git} "${DIR}/patches/omap_panda/0004-Revert-regulator-twl-Remove-another-unused-variable-.patch"
+	#v3.6.x
+	#git revert --no-edit e76ab829cc2d8b6350a3f01fffb208df4d7d8c1b
+	#git revert --no-edit 0e8e5c34cf1a8beaaf0a6a05c053592693bf8cb4
+	${git} "${DIR}/patches/omap_panda/0005-Revert-regulator-twl-Remove-references-to-the-twl403.patch"
+	${git} "${DIR}/patches/omap_panda/0006-Revert-regulator-twl-Remove-references-to-32kHz-cloc.patch"
+
 #	${git} "${DIR}/patches/omap_panda/0003-OMAP-omap4-panda-add-UART2-muxing-for-WiLink-shared-.patch"
 
 	echo "dir: omap/sgx"
