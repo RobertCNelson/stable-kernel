@@ -1,0 +1,28 @@
+From 21d21ad43d343f3edc36a9964293ab56cac67b70 Mon Sep 17 00:00:00 2001
+From: Robert Nelson <robertcnelson@gmail.com>
+Date: Sat, 1 Jun 2013 14:48:21 -0500
+Subject: [PATCH 8/9] Revert "regulator: twl: Remove references to the twl4030
+ regulator"
+
+This reverts commit e76ab829cc2d8b6350a3f01fffb208df4d7d8c1b.
+
+Signed-off-by: Robert Nelson <robertcnelson@gmail.com>
+---
+ drivers/regulator/twl-regulator.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/regulator/twl-regulator.c b/drivers/regulator/twl-regulator.c
+index 1926b92..dbade61 100644
+--- a/drivers/regulator/twl-regulator.c
++++ b/drivers/regulator/twl-regulator.c
+@@ -1036,6 +1036,7 @@ TWL6030_FIXED_LDO(VDAC, 0x64, 1800, 0);
+ TWL6030_FIXED_LDO(VUSB, 0x70, 3300, 0);
+ TWL6030_FIXED_LDO(V1V8, 0x16, 1800, 0);
+ TWL6030_FIXED_LDO(V2V1, 0x1c, 2100, 0);
++TWL6030_FIXED_RESOURCE(CLK32KG, 0x8C, 0);
+ TWL6025_ADJUSTABLE_SMPS(SMPS3, 0x34);
+ TWL6025_ADJUSTABLE_SMPS(SMPS4, 0x10);
+ TWL6025_ADJUSTABLE_SMPS(VIO, 0x16);
+-- 
+1.7.10.4
+
