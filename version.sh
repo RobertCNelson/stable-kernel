@@ -16,6 +16,7 @@ fi
 config="omap2plus_defconfig"
 
 #linaro_toolchain="arm9_gcc_4_7"
+#linaro_toolchain="cortex_gcc_4_6"
 linaro_toolchain="cortex_gcc_4_7"
 #linaro_toolchain="cortex_gcc_4_8"
 
