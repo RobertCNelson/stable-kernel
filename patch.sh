@@ -110,6 +110,12 @@ panda () {
 	${git} "${DIR}/patches/panda/0004-staging-omap-thermal-remove-checkpatch.pl-warnings-o.patch"
 	${git} "${DIR}/patches/panda/0005-staging-omap-thermal-fix-polling-period-settings.patch"
 	${git} "${DIR}/patches/panda/0006-staging-omap-thermal-improve-conf-data-handling-and-.patch"
+
+	#Fix wlan0 on original Panda (strangly the ES was fine...)
+	#git revert --no-edit e76ab829cc2d8b6350a3f01fffb208df4d7d8c1b
+	#git revert --no-edit 0e8e5c34cf1a8beaaf0a6a05c053592693bf8cb4
+	${git} "${DIR}/patches/panda/0007-Revert-regulator-twl-Remove-references-to-the-twl403.patch"
+	${git} "${DIR}/patches/panda/0008-Revert-regulator-twl-Remove-references-to-32kHz-cloc.patch"
 }
 
 omap_fixes () {
