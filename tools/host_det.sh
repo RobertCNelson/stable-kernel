@@ -142,7 +142,6 @@ debian_regs () {
 			dpkg -l | grep libncurses5-dev >/dev/null || deb_pkgs="${deb_pkgs}libncurses5-dev "
 			;;
 		*)
-			dpkg -l | grep uboot-mkimage >/dev/null || deb_pkgs="${deb_pkgs}uboot-mkimage"
 			#ii  libncurses5-dev:amd64                 5.9+20130504-1                     amd64        developer's libraries for ncurses
 			deb_arch=$(dpkg --print-architecture)
 			dpkg -l | grep libncurses5-dev | grep ${deb_arch} >/dev/null || deb_pkgs="${deb_pkgs}libncurses5-dev "
