@@ -310,6 +310,10 @@ omap () {
 	#spidev: make sure to set the pins up...
 	${git} "${DIR}/patches/omap_panda/0007-panda-spidev-setup-pinmux.patch"
 
+	#wl1xxx: fix firmware version check
+	${git} "${DIR}/patches/omap_panda/0008-wl12xx-ignore-some-of-the-firmware-version-fields.patch"
+	${git} "${DIR}/patches/omap_panda/0009-wlcore-change-way-of-checking-the-firmware-version.patch"
+
 #	${git} "${DIR}/patches/omap_panda/0003-OMAP-omap4-panda-add-UART2-muxing-for-WiLink-shared-.patch"
 
 	echo "dir: omap/sgx"

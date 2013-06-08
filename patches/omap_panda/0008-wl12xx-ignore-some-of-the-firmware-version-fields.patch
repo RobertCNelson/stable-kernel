@@ -1,0 +1,44 @@
+From c6087da77f3decd6b855bd890fd40298ea9d3271 Mon Sep 17 00:00:00 2001
+From: Luciano Coelho <coelho@ti.com>
+Date: Tue, 27 Nov 2012 15:51:59 +0200
+Subject: [PATCH 8/9] wl12xx: ignore some of the firmware version fields
+
+The firmware type and the project number fields in the firmware
+version number, cannot be checked as if they increase sequentially,
+because the former is the firmware type and the latter is an internal
+project number.  There's no guarantee that these numbers will remain
+incremental, so use WLCORE_FW_VER_IGNORE.
+
+Signed-off-by: Luciano Coelho <coelho@ti.com>
+---
+ drivers/net/wireless/ti/wl12xx/wl12xx.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/wireless/ti/wl12xx/wl12xx.h b/drivers/net/wireless/ti/wl12xx/wl12xx.h
+index 7182bbf..e38a7c02 100644
+--- a/drivers/net/wireless/ti/wl12xx/wl12xx.h
++++ b/drivers/net/wireless/ti/wl12xx/wl12xx.h
+@@ -26,16 +26,16 @@
+ 
+ /* minimum FW required for driver for wl127x */
+ #define WL127X_CHIP_VER		6
+-#define WL127X_IFTYPE_VER	3
++#define WL127X_IFTYPE_VER	WLCORE_FW_VER_IGNORE
+ #define WL127X_MAJOR_VER	10
+-#define WL127X_SUBTYPE_VER	2
++#define WL127X_SUBTYPE_VER	WLCORE_FW_VER_IGNORE
+ #define WL127X_MINOR_VER	115
+ 
+ /* minimum FW required for driver for wl128x */
+ #define WL128X_CHIP_VER		7
+-#define WL128X_IFTYPE_VER	3
++#define WL128X_IFTYPE_VER	WLCORE_FW_VER_IGNORE
+ #define WL128X_MAJOR_VER	10
+-#define WL128X_SUBTYPE_VER	2
++#define WL128X_SUBTYPE_VER	WLCORE_FW_VER_IGNORE
+ #define WL128X_MINOR_VER	115
+ 
+ #define WL12XX_AGGR_BUFFER_SIZE	(4 * PAGE_SIZE)
+-- 
+1.7.10.4
+
