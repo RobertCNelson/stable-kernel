@@ -307,6 +307,9 @@ omap () {
 	${git} "${DIR}/patches/omap_panda/0005-Revert-regulator-twl-Remove-references-to-the-twl403.patch"
 	${git} "${DIR}/patches/omap_panda/0006-Revert-regulator-twl-Remove-references-to-32kHz-cloc.patch"
 
+	#spidev: make sure to set the pins up...
+	${git} "${DIR}/patches/omap_panda/0007-panda-spidev-setup-pinmux.patch"
+
 #	${git} "${DIR}/patches/omap_panda/0003-OMAP-omap4-panda-add-UART2-muxing-for-WiLink-shared-.patch"
 
 	echo "dir: omap/sgx"

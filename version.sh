@@ -23,7 +23,7 @@ linaro_toolchain="cortex_gcc_4_7"
 #Kernel/Build
 KERNEL_REL=3.7
 KERNEL_TAG=${KERNEL_REL}.10
-BUILD=x11
+BUILD=x11.1
 
 #v3.X-rcX + upto SHA
 #KERNEL_SHA=""
