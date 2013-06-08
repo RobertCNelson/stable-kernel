@@ -129,6 +129,9 @@ omap () {
 	${git} "${DIR}/patches/omap_panda/0008-Revert-regulator-twl-Remove-references-to-the-twl403.patch"
 	${git} "${DIR}/patches/omap_panda/0009-Revert-regulator-twl-Remove-references-to-32kHz-cloc.patch"
 
+	#spidev: make sure to set the pins up...
+	${git} "${DIR}/patches/omap_panda/0010-panda-spidev-setup-pinmux.patch"
+
 	#Status: not for upstream: http://www.spinics.net/lists/arm-kernel/msg214633.html
 	#Fixes:
 	#WARNING: "v7_dma_flush_range" *pvrsrvkm.ko] undefined!
