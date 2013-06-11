@@ -24,15 +24,15 @@ index 8dcd9c7..3937ac3 100644
  #define mb()		do { dsb(); outer_sync(); } while (0)
  #define rmb()		dsb()
 diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-index 1d01905..1dba009 100644
+index f49cd51..f95e2a9 100644
 --- a/arch/arm/mach-omap2/Kconfig
 +++ b/arch/arm/mach-omap2/Kconfig
-@@ -409,7 +409,7 @@ config OMAP3_SDRC_AC_TIMING
+@@ -416,7 +416,7 @@ config OMAP3_SDRC_AC_TIMING
  
  config OMAP4_ERRATA_I688
  	bool "OMAP4 errata: Async Bridge Corruption"
--	depends on ARCH_OMAP4 && !ARCH_MULTIPLATFORM
-+	depends on ARCH_OMAP4
+-	depends on (ARCH_OMAP4 || SOC_OMAP5) && !ARCH_MULTIPLATFORM
++	depends on ARCH_OMAP4 || SOC_OMAP5
  	select ARCH_HAS_BARRIERS
  	help
  	  If a data is stalled inside asynchronous bridge because of back
