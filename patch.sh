@@ -48,193 +48,157 @@ cleanup () {
 	exit
 }
 
-distro () {
-	echo "Distro Specific Patches"
-	${git} "${DIR}/patches/distro/0001-kbuild-deb-pkg-set-host-machine-after-dpkg-gencontro.patch"
+edma () {
+	echo "dir: edma"
+#	${git} "${DIR}/patches/edma/0001-arm-davinci-fix-edma-dmaengine-induced-null-pointer-.patch"
+	${git} "${DIR}/patches/edma/0002-ARM-davinci-move-private-EDMA-API-to-arm-common.patch"
+	${git} "${DIR}/patches/edma/0003-ARM-edma-remove-unused-transfer-controller-handlers.patch"
+	${git} "${DIR}/patches/edma/0004-ARM-edma-add-AM33XX-support-to-the-private-EDMA-API.patch"
+	${git} "${DIR}/patches/edma/0005-dmaengine-edma-enable-build-for-AM33XX.patch"
+	${git} "${DIR}/patches/edma/0006-dmaengine-edma-Add-TI-EDMA-device-tree-binding.patch"
+	${git} "${DIR}/patches/edma/0007-ARM-dts-add-AM33XX-EDMA-support.patch"
+	${git} "${DIR}/patches/edma/0008-spi-omap2-mcspi-convert-to-dma_request_slave_channel.patch"
+	${git} "${DIR}/patches/edma/0009-spi-omap2-mcspi-add-generic-DMA-request-support-to-t.patch"
+	${git} "${DIR}/patches/edma/0010-ARM-dts-add-AM33XX-SPI-DMA-support.patch"
+	${git} "${DIR}/patches/edma/0011-mmc-omap_hsmmc-convert-to-dma_request_slave_channel_.patch"
+	${git} "${DIR}/patches/edma/0012-mmc-omap_hsmmc-add-generic-DMA-request-support-to-th.patch"
+	${git} "${DIR}/patches/edma/0013-dmaengine-add-dma_get_slave_sg_limits.patch"
+	${git} "${DIR}/patches/edma/0014-dma-edma-add-device_slave_sg_limits-support.patch"
+	${git} "${DIR}/patches/edma/0015-mmc-davinci-get-SG-segment-limits-with-dma_get_slave.patch"
+	${git} "${DIR}/patches/edma/0016-mmc-omap_hsmmc-set-max_segs-based-on-dma-engine-limi.patch"
+	${git} "${DIR}/patches/edma/0017-ARM-dts-add-AM33XX-MMC-support.patch"
 }
 
-omap_cpufreq () {
-	echo "omap-cpufreq"
-	${git} "${DIR}/patches/omap_cpufreq/0001-cpufreq-OMAP-cleanup-for-multi-SoC-support-move-into.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0002-cpufreq-OMAP-Add-SMP-support-for-OMAP4.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0003-cpufreq-OMAP-Enable-all-CPUs-in-shared-policy-mask.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0004-cpufreq-OMAP-notify-even-with-bad-boot-frequency.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0005-cpufreq-OMAP-move-clk-name-decision-to-init.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0006-cpufreq-OMAP-deny-initialization-if-no-mpudev.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0007-cpufreq-OMAP-dont-support-freq_table.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0008-cpufreq-OMAP-only-supports-OPP-library.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0009-cpufreq-OMAP-put-clk-if-cpu_init-failed.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0010-cpufreq-OMAP-fix-freq_table-leak.patch"
-	${git} "${DIR}/patches/omap_cpufreq/0011-cpufreq-OMAP-fixup-for-omap_device-changes-include-l.patch"
+arm () {
+	echo "dir: arm"
+	${git} "${DIR}/patches/arm/0001-deb-pkg-Simplify-architecture-matching-for-cross-bui.patch"
 }
 
-micrel_zippy2 () {
-	echo "Micrel KZ8851 patches for: zippy2"
-	#originaly from:
-	#ftp://www.micrel.com/ethernet/8851/beagle_zippy_patches.tar.gz 137 KB 04/10/2010 12:26:00 AM
+omap () {
+	echo "dir: omap"
+	#Fixes 800Mhz boot lockup: http://www.spinics.net/lists/linux-omap/msg83737.html
+#	${git} "${DIR}/patches/omap/0001-regulator-core-if-voltage-scaling-fails-restore-orig.patch"
+	${git} "${DIR}/patches/omap/0002-omap2-twl-common-Add-default-power-configuration.patch"
 
-	${git} "${DIR}/patches/micrel_zippy2/0001-ksz8851-eeprom-93cx6-add-drive_data.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0002-ksz8851-eeprom-93cx6-add-eeprom_93cx6_write.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0003-ksz8851-read_mac_addr.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0004-ksz8851-93cx6-eeprom-access.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0005-ks8851.h-it-helps-to-include-the-include-file.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0006-ksz8851-move-to-header.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0007-ksz8851-move-more-to-header.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0008-ksz8851-share-ks8851_tx_hdr-union.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0009-ksz8851-add-is_level_irq.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0010-ksz8851-turn-off-hardware-interrupt-druing-receive-p.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0011-ksz8851-make-sure-is-awake-before-writing-mac.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0012-ksz8851-add-mutex-lock-unlock-to-ks.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0013-ksz8851-add-ks8851_tx_check.patch"
-	${git} "${DIR}/patches/micrel_zippy2/0014-ksz8851-move-ks8851_set_powermode.patch"
+	echo "dir: omap/sakoman"
+	${git} "${DIR}/patches/omap_sakoman/0001-OMAP-DSS2-add-bootarg-for-selecting-svideo.patch"
+	${git} "${DIR}/patches/omap_sakoman/0002-video-add-timings-for-hd720.patch"
+
+	echo "dir: omap/beagle/expansion"
+	${git} "${DIR}/patches/omap_beagle_expansion/0001-Beagle-expansion-add-buddy-param-for-expansionboard-.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0002-Beagle-expansion-add-zippy.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0003-Beagle-expansion-add-zippy2.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0004-Beagle-expansion-add-trainer.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0005-Beagle-expansion-add-CircuitCo-ulcd-Support.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0006-Beagle-expansion-add-wifi.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0007-Beagle-expansion-add-beaglefpga.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0008-Beagle-expansion-add-spidev.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0009-Beagle-expansion-add-Aptina-li5m03-camera.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0010-Beagle-expansion-add-LSR-COM6L-Adapter-Board.patch"
+	${git} "${DIR}/patches/omap_beagle_expansion/0011-Beagle-expansion-LSR-COM6L-Adapter-Board-also-initia.patch"
+
+	echo "dir: omap/beagle"
+	#Status: for meego guys..
+	${git} "${DIR}/patches/omap_beagle/0001-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
+	${git} "${DIR}/patches/omap_beagle/0002-backlight-Add-TLC59108-backlight-control-driver.patch"
+	${git} "${DIR}/patches/omap_beagle/0003-tlc59108-adjust-for-beagleboard-uLCD7.patch"
+
+	#Status: not for upstream
+	${git} "${DIR}/patches/omap_beagle/0004-zeroMAP-Open-your-eyes.patch"
+
+	${git} "${DIR}/patches/omap_beagle/0005-ARM-OMAP-Beagle-use-TWL4030-generic-reset-script.patch"
+	${git} "${DIR}/patches/omap_beagle/0006-DSS2-use-DSI-PLL-for-DPI-with-OMAP3.patch"
+
+	echo "dir: omap/panda"
+	#Status: not for upstream: push device tree version upstream...
+	${git} "${DIR}/patches/omap_panda/0001-panda-fix-wl12xx-regulator.patch"
+	#Status: unknown: cherry picked from linaro
+	${git} "${DIR}/patches/omap_panda/0002-ti-st-st-kim-fixing-firmware-path.patch"
+	${git} "${DIR}/patches/omap_panda/0003-Panda-expansion-add-spidev.patch"
+	${git} "${DIR}/patches/omap_panda/0004-HACK-PandaES-disable-cpufreq-so-board-will-boot.patch"
+#	${git} "${DIR}/patches/omap_panda/0005-HACK-panda-enable-OMAP4_ERRATA_I688.patch"
+	${git} "${DIR}/patches/omap_panda/0006-ARM-hw_breakpoint-Enable-debug-powerdown-only-if-sys.patch"
+
+	#Fix wlan0 on original Panda (strangly the ES was fine...)
+	#v3.10.x
+	#git revert --no-edit d1924519fe1dada0cfd9a228bf2ff1ea15840c84 -s
+	${git} "${DIR}/patches/omap_panda/0007-Revert-regulator-twl-Remove-TWL6030_FIXED_RESOURCE.patch"
+	#v3.7.x
+	#git revert --no-edit 029dd3cefa46ecdd879f9b4e2df3bdf4371cc22c -s
+	${git} "${DIR}/patches/omap_panda/0008-Revert-regulator-twl-Remove-another-unused-variable-.patch"
+	#v3.6.x
+	#git revert --no-edit e76ab829cc2d8b6350a3f01fffb208df4d7d8c1b -s
+	#git revert --no-edit 0e8e5c34cf1a8beaaf0a6a05c053592693bf8cb4 -s
+	${git} "${DIR}/patches/omap_panda/0009-Revert-regulator-twl-Remove-references-to-the-twl403.patch"
+	${git} "${DIR}/patches/omap_panda/0010-Revert-regulator-twl-Remove-references-to-32kHz-cloc.patch"
+
+	#spidev: make sure to set the pins up...
+	${git} "${DIR}/patches/omap_panda/0011-panda-spidev-setup-pinmux.patch"
+
+	#Status: not for upstream: http://www.spinics.net/lists/arm-kernel/msg214633.html
+	#Fixes:
+	#WARNING: "v7_dma_flush_range" *pvrsrvkm.ko] undefined!
+	#WARNING: "v7_dma_map_area" *pvrsrvkm.ko] undefined!
+	${git} "${DIR}/patches/omap_sgx/0001-arm-Export-cache-flush-management-symbols-when-MULTI.patch"
 }
 
-sakoman () {
-	echo "Patches from: Sakoman git tree"
-	${git} "${DIR}/patches/sakoman/0001-OMAP-DSS2-add-bootarg-for-selecting-svideo.patch"
-	${git} "${DIR}/patches/sakoman/0002-video-add-timings-for-hd720.patch"
-	${git} "${DIR}/patches/sakoman/0003-omap-mmc-Adjust-dto-to-eliminate-timeout-errors.patch"
+sprz319_erratum () {
+	echo "dir: omap_sprz319-erratum-2.1"
+	${git} "${DIR}/patches/omap_sprz319-erratum-2.1/0001-hack-omap-clockk-dpll5-apply-sprz319e-2.1-erratum.patch"
 }
 
-beagle () {
-	echo "Board Patches for: BeagleBoard"
-	${git} "${DIR}/patches/beagle/0001-expansion-add-buddy-param-for-expansionboard-names.patch"
-	${git} "${DIR}/patches/beagle/0002-expansion-add-mmc-regulator-and-ds1307-rtc.patch"
-	${git} "${DIR}/patches/beagle/0003-expansion-add-zippy.patch"
-	${git} "${DIR}/patches/beagle/0004-expansion-add-zippy2.patch"
-	${git} "${DIR}/patches/beagle/0005-expansion-add-trainer.patch"
-	${git} "${DIR}/patches/beagle/0006-expansion-add-ulcd.patch"
-	${git} "${DIR}/patches/beagle/0007-beagleboard-reinstate-usage-of-hi-speed-PLL-divider.patch"
-	${git} "${DIR}/patches/beagle/0008-Turn-on-the-USB-regulator-on-Beagle-xM-explicitly.patch"
-	${git} "${DIR}/patches/beagle/0009-meego-modedb-add-Toshiba-LTA070B220F-800x480-support.patch"
-	${git} "${DIR}/patches/beagle/0010-beagleboard-fix-uLCD7-support.patch"
-	${git} "${DIR}/patches/beagle/0011-default-to-fifo-mode-5-for-old-musb-beagles.patch"
-	${git} "${DIR}/patches/beagle/0012-backlight-Add-TLC59108-backlight-control-driver.patch"
-	${git} "${DIR}/patches/beagle/0013-tlc59108-adjust-for-beagleboard-uLCD7.patch"
-	${git} "${DIR}/patches/beagle/0014-expansion-add-wifi.patch"
-	${git} "${DIR}/patches/beagle/0015-ASoC-omap-add-MODULE_ALIAS-to-mcbsp-and-pcm-drivers.patch"
-	${git} "${DIR}/patches/beagle/0016-ASoC-omap-convert-per-board-modules-to-platform-driv.patch"
-	${git} "${DIR}/patches/beagle/0017-Beagle-expansion-zippy1-2-rework-mmc-i2c-handling.patch"
-	${git} "${DIR}/patches/beagle/0018-Beagle-expansion-add-beaglefpga.patch"
-	${git} "${DIR}/patches/beagle/0019-Enable-buddy-spidev.patch"
-	${git} "${DIR}/patches/beagle/0020-zeroMAP-Open-your-eyes.patch"
-	${git} "${DIR}/patches/beagle/0021-Beagle-Camera-add-MT9P031-Aptina-image-sensor-driver.patch"
+imx () {
+	echo "dir: imx"
+	${git} "${DIR}/patches/imx/0001-ARM-imx-Enable-UART1-for-Sabrelite.patch"
+	${git} "${DIR}/patches/imx/0002-Add-IMX6Q-AHCI-support.patch"
+	${git} "${DIR}/patches/imx/0003-imx-Add-IMX53-AHCI-support.patch"
+	${git} "${DIR}/patches/imx/0005-SAUCE-imx6-enable-sata-clk-if-SATA_AHCI_PLATFORM.patch"
+#	${git} "${DIR}/patches/imx/0005-staging-imx-drm-request-irq-only-after-adding-the-cr.patch"
+#v3.10-rc5
+#	${git} "${DIR}/patches/imx/0006-arm-fec-use-random-mac-when-everything-else-fails.patch"
+#	${git} "${DIR}/patches/imx/0007-ARM-imx-compile-fix-for-hotplug.c.patch"
 }
 
-devkit8000 () {
-	echo "Board Patches for: devkit8000"
-	${git} "${DIR}/patches/devkit8000/0001-arm-omap-devkit8000-for-lcd-use-samsung_lte_panel.patch"
+chipidea () {
+	echo "dir: chipidea"
+	${git} "${DIR}/patches/chipidea/0001-USB-move-bulk-of-otg-otg.c-to-phy-phy.c.patch"
+	${git} "${DIR}/patches/chipidea/0002-USB-add-devicetree-helpers-for-determining-dr_mode-a.patch"
+	${git} "${DIR}/patches/chipidea/0003-USB-chipidea-ci13xxx-imx-create-dynamic-platformdata.patch"
+	${git} "${DIR}/patches/chipidea/0004-USB-chipidea-add-PTW-and-PTS-handling.patch"
+	${git} "${DIR}/patches/chipidea/0005-USB-chipidea-introduce-dual-role-mode-pdata-flags.patch"
+	${git} "${DIR}/patches/chipidea/0006-USB-chipidea-i.MX-introduce-dr_mode-property.patch"
+	${git} "${DIR}/patches/chipidea/0007-USB-mxs-phy-Register-phy-with-framework.patch"
+	${git} "${DIR}/patches/chipidea/0008-USB-chipidea-i.MX-use-devm_usb_get_phy_by_phandle-to.patch"
+	${git} "${DIR}/patches/chipidea/0009-Revert-USB-chipidea-add-vbus-detect-for-udc.patch"
+	${git} "${DIR}/patches/chipidea/0010-usb-chipidea-add-otg-file.patch"
+	${git} "${DIR}/patches/chipidea/0011-usb-chipidea-add-otg-id-switch-and-vbus-connect-disc.patch"
+	${git} "${DIR}/patches/chipidea/0012-usb-chipidea-udc-add-pullup-pulldown-dp-at-hw_device.patch"
+	${git} "${DIR}/patches/chipidea/0013-usb-chipidea-udc-retire-the-flag-CI13_PULLUP_ON_VBUS.patch"
+	${git} "${DIR}/patches/chipidea/0014-usb-chipidea-add-vbus-regulator-control.patch"
+	${git} "${DIR}/patches/chipidea/0015-usb-chipidea-delete-the-delayed-work.patch"
+	${git} "${DIR}/patches/chipidea/0016-usb-chipidea-imx-add-getting-vbus-regulator-code.patch"
+	${git} "${DIR}/patches/chipidea/0017-usb-chipidea-udc-fix-the-oops-when-plugs-in-usb-cabl.patch"
+	${git} "${DIR}/patches/chipidea/0018-usb-chipidea-imx-select-usb-id-pin-using-syscon-inte.patch"
+	${git} "${DIR}/patches/chipidea/0019-usb-chipidea-usbmisc-rename-file-struct-and-function.patch"
+	${git} "${DIR}/patches/chipidea/0020-usb-chipidea-usbmisc-unset-global-varibale-usbmisc-o.patch"
+	${git} "${DIR}/patches/chipidea/0021-usb-chipidea-usbmisc-fix-a-potential-race-condition.patch"
+	${git} "${DIR}/patches/chipidea/0022-usb-chipidea-usbmisc-prepare-driver-to-handle-more-t.patch"
+	${git} "${DIR}/patches/chipidea/0023-usb-chipidea-usbmisc-add-mx53-support.patch"
+	${git} "${DIR}/patches/chipidea/0024-usb-chipidea-usbmisc-add-post-handling-and-errata-fi.patch"
+	${git} "${DIR}/patches/chipidea/0025-usb-chipidea-imx-Add-system-suspend-resume-API.patch"
+	${git} "${DIR}/patches/chipidea/0026-ARM-dts-imx-add-imx5x-usbmisc-entries.patch"
+	${git} "${DIR}/patches/chipidea/0027-ARM-dts-imx-add-imx5x-usb-clock-DT-lookups.patch"
+	${git} "${DIR}/patches/chipidea/0028-ARM-dts-imx-use-usb-nop-xceiv-usbphy-entries-for-imx.patch"
+	${git} "${DIR}/patches/chipidea/0029-ARM-dts-imx-imx53-qsb.dts-enable-usbotg-and-usbh1.patch"
 }
 
-igep0020 () {
-	echo "Board Patches for: igep0020"
-	${git} "${DIR}/patches/igep0020/0001-ARM-OMAP2-nand-Make-board_onenand_init-visible-to-bo.patch"
-	${git} "${DIR}/patches/igep0020/0002-OMAP3-igep0020-Add-support-for-Micron-NAND-Flash-sto.patch"
-}
+#edma
+arm
+omap
+#Disabled for testing...
+#sprz319_erratum
 
-touchbook () {
-	echo "Board Patches for: Touchbook"
-	${git} "${DIR}/patches/touchbook/0001-omap3-touchbook-remove-mmc-gpio_wp.patch"
-	${git} "${DIR}/patches/touchbook/0002-omap3-touchbook-drop-u-boot-readonly.patch"
-}
-
-panda () {
-	echo "Board Patches for: PandaBoard"
-	${git} "${DIR}/patches/panda/0001-panda-fix-wl12xx-regulator.patch"
-	${git} "${DIR}/patches/panda/0002-panda-enable-bluetooth.patch"
-	${git} "${DIR}/patches/panda/0003-ti-st-st-kim-fixing-firmware-path.patch"
-	${git} "${DIR}/patches/panda/0004-panda-enable-asoc.patch"
-}
-
-omap_fixes () {
-	echo "omap cherry pick fixes"
-	${git} "${DIR}/patches/omap_fixes/0001-omap3-Increase-limit-on-bootarg-mpurate.patch"
-#	${git} "${DIR}/patches/omap_fixes/0002-Fix-sprz319-erratum-2.1.patch"
-	${git} "${DIR}/patches/omap_fixes/0003-ARM-OMAP-AM3517-3505-fix-crash-on-boot-due-to-incorr.patch"
-	${git} "${DIR}/patches/omap_fixes/0004-ARM-OMAP4-hwmod-Don-t-wait-for-the-idle-status-if-mo.patch"
-	${git} "${DIR}/patches/omap_fixes/0005-ARM-OMAP4-clock-Add-CPU-local-timer-clock-node.patch"
-	${git} "${DIR}/patches/omap_fixes/0006-ARM-OMAP3-hwmod-data-disable-multiblock-reads-on-MMC.patch"
-	${git} "${DIR}/patches/omap_fixes/0007-OMAP-HWMOD-add-es3plus-to-am36xx-am35xx.patch"
-}
-
-led () {
-	echo "led fixes"
-	${git} "${DIR}/patches/led/0001-leds-heartbeat-stop-on-shutdown-reboot-or-panic.patch"
-}
-
-sgx () {
-echo "merge in ti sgx modules"
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.02-Kernel-Modules.patch"
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-enable-driver-building.patch"
-
-#3.01.00.06
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.06-into-TI-3.01.00.02.patch"
-
-#3.01.00.07 'the first wget-able release!!'
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-3.01.00.07-into-TI-3.01.00.06.patch"
-
-#4.00.00.01 adds ti8168 support, drops bc_cat.c patch
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-4.00.00.01-into-TI-3.01.00.07.patch"
-
-#4.03.00.01
-#Note: git am has problems with this patch...
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-4.03.00.01-into-TI-4.00.00.01.patch"
-
-#4.03.00.02 (main *.bin drops omap4)
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-Merge-TI-4.03.00.02-into-TI-4.03.00.01.patch"
-
-#4.03.00.02
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.32-PSP.patch"
-
-#4.03.00.02 + 2.6.38-merge (2.6.37-git5)
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.38-merge-AUTOCONF_INCLUD.patch"
-
-#4.03.00.02 + 2.6.38-rc3
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.38-rc3-_console_sem-to-c.patch"
-
-#4.03.00.01
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.01-add-outer_cache.clean_all.patch"
-
-#4.03.00.02
-#omap3 doesn't work on omap3630
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-use-omap3630-as-TI_PLATFORM.patch"
-
-#4.03.00.02 + 2.6.39 (2.6.38-git2)
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.39-rc-SPIN_LOCK_UNLOCKED.patch"
-
-#4.03.00.02 + 2.6.40 (2.6.39-git11)
-patch -s -p1 < "${DIR}/patches/sgx/0001-OMAP3-SGX-TI-4.03.00.02-2.6.40-display.h-to-omapdss..patch"
-
-#with v3.0-git16
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:324:15: error: ‘OMAP_DSS_UPDATE_AUTO’ undeclared (first use in this function)
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:327:15: error: ‘OMAP_DSS_UPDATE_MANUAL’ undeclared (first use in this function)
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:330:15: error: ‘OMAP_DSS_UPDATE_DISABLED’ undeclared (first use in this function)
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:337:16: error: ‘struct omap_dss_driver’ has no member named ‘set_update_mode’
-#drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.c:312:28: warning: unused variable ‘eDSSMode’
-#make[4]: *** [drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux/omaplfb_linux.o] Error 1
-#make[3]: *** [drivers/staging/omap3-sgx/services4/3rdparty/dc_omapfb3_linux] Error 2
-#make[2]: *** [drivers/staging/omap3-sgx] Error 2
-#for <3.2
-#patch -s -p1 < "${DIR}/patches/sgx/0001-Revert-OMAP-DSS2-remove-update_mode-from-omapdss.patch"
-#for >3.2
-patch -s -p1 < "${DIR}/patches/sgx/0001-Revert-OMAP-DSS2-remove-update_mode-from-omapdss-v3.2.patch"
-
-}
-
-distro
-omap_cpufreq
-micrel_zippy2
-sakoman
-beagle
-devkit8000
-igep0020
-touchbook
-panda
-omap_fixes
-led
-
-#dont push
-sgx
+imx
+#chipidea
 
 echo "patch.sh ran successful"
-

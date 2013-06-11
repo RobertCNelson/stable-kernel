@@ -18,19 +18,19 @@ config="omap2plus_defconfig"
 #linaro_toolchain="arm9_gcc_4_7"
 #linaro_toolchain="cortex_gcc_4_6"
 #linaro_toolchain="cortex_gcc_4_7"
-#linaro_toolchain="cortex_gcc_4_8"
+linaro_toolchain="cortex_gcc_4_8"
 
 #Kernel/Build
-KERNEL_REL=3.X
-KERNEL_TAG=${KERNEL_REL}
+KERNEL_REL=3.10
+KERNEL_TAG=${KERNEL_REL}-rc5
 BUILD=x0
 
 #v3.X-rcX + upto SHA
 #KERNEL_SHA=""
 
 #git branch
-#BRANCH="v3.X.x"
+#BRANCH="v3.10.x"
 
 BUILDREV=1.0
 DISTRO=cross
-DEBARCH=armel
+DEBARCH=armhf
