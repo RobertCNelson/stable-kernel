@@ -123,7 +123,7 @@ debian_regs () {
 		squeeze|lucid)
 			dpkg -l | grep uboot-mkimage >/dev/null || deb_pkgs="${deb_pkgs}uboot-mkimage"
 			;;
-		wheezy|jessie|precise|quantal|raring|saucy)
+		wheezy|jessie|sid|precise|quantal|raring|saucy)
 			dpkg -l | grep u-boot-tools >/dev/null || deb_pkgs="${deb_pkgs}u-boot-tools"
 			;;
 		natty|oneiric)
@@ -155,7 +155,7 @@ debian_regs () {
 			squeeze|lucid|natty|oneiric|precise)
 				dpkg -l | grep ia32-libs >/dev/null || deb_pkgs="${deb_pkgs}ia32-libs "
 				;;
-			wheezy|jessie|quantal|raring|saucy)
+			wheezy|jessie|sid|quantal|raring|saucy)
 				dpkg -l | grep ia32-libs >/dev/null || deb_pkgs="${deb_pkgs}ia32-libs "
 				dpkg -l | grep ia32-libs >/dev/null || dpkg_multiarch=1
 				;;
