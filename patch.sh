@@ -354,6 +354,11 @@ am33x_after () {
 	${git} "${DIR}/patches/capes/0001-da8xx-fb-add-Chalk-Electronics-LVDS-cape-and-10in-di.patch"
 }
 
+saucy () {
+	echo "dir: saucy"
+	${git} "${DIR}/patches/saucy/0001-saucy-disable-stack-protector.patch"
+}
+
 sprz319_erratum () {
 	echo "sprz319 erratum 2.1"
 	#Breaks: Beagle C4, hardlocks on bootup...
@@ -366,6 +371,7 @@ am33x
 arm
 omap
 am33x_after
+saucy
 
 #disabled as it breaks beagle c4...
 #sprz319_erratum
