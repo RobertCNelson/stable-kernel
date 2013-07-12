@@ -252,8 +252,10 @@ debian_regs () {
 BUILD_HOST=${BUILD_HOST:="$( detect_host )"}
 if [ $(which lsb_release) ] ; then
 	info "Detected build host [`lsb_release -sd`]"
+	info "[debug: `git rev-parse HEAD`]"
 else
 	info "Detected build host [$BUILD_HOST]"
+	info "[debug: `git rev-parse HEAD`]"
 fi
 case "$BUILD_HOST" in
     redhat*)
