@@ -13,6 +13,9 @@ if [ "${GIT_NOEDIT}" ] ; then
 	GIT_OPTS="${GIT_OPTS} --no-edit"
 fi
 
+#TI's SGX, etc...
+need_32bit_libs="enable"
+
 config="omap2plus_defconfig"
 
 #linaro_toolchain="arm9_gcc_4_7"
