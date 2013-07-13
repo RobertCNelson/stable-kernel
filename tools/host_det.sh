@@ -169,7 +169,7 @@ debian_regs () {
 			pkg="uboot-mkimage"
 			LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || deb_pkgs="${deb_pkgs}${pkg} "
 			;;
-		wheezy|jessie|sid|precise|quantal|raring|saucy)
+		*)
 			pkg="u-boot-tools"
 			LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || deb_pkgs="${deb_pkgs}${pkg} "
 			;;
@@ -177,13 +177,19 @@ debian_regs () {
 
 		#pkg: libncurses5-dev
 		case "${deb_distro}" in
-		squeeze|lucid|precise)
-			#ii  libncurses5-dev  5.9-4  developer's libraries for ncurses
+		squeeze|lucid)
 			pkg="libncurses5-dev"
 			LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || deb_pkgs="${deb_pkgs}${pkg} "
 			;;
+		precise)
+			#precise, for some weird reason for some users, dpkg --list never seems to find the lib..
+			if [ ! -f "/usr/lib/libcurses.so" ] ; then
+				if [ ! -f "/usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null`/libncurses.so" ] ; then
+					deb_pkgs="${deb_pkgs}libncurses5-dev "
+				fi
+			fi
+			;;
 		*)
-			#ii  libncurses5-dev:amd64  5.9+20130504-1  amd64  developer's libraries for ncurses
 			deb_arch=$(LC_ALL=C dpkg --print-architecture)
 			pkg="libncurses5-dev"
 			LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}:${deb_arch}" >/dev/null || deb_pkgs="${deb_pkgs}${pkg} "
@@ -199,7 +205,7 @@ debian_regs () {
 				pkg="ia32-libs"
 				LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || deb_pkgs="${deb_pkgs}${pkg} "
 				;;
-			wheezy|jessie|sid|quantal|raring|saucy)
+			*)
 				pkg="ia32-libs"
 				LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || deb_pkgs="${deb_pkgs}${pkg} "
 				LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || dpkg_multiarch=1
