@@ -198,7 +198,7 @@ debian_regs () {
 
 		#pkg: ia32-libs
 		deb_arch=$(LC_ALL=C dpkg --print-architecture)
-		if [ "x${deb_arch}" = "xamd64" ] && [ "x${need_32bit_libs}" = "xenable" ]; then
+		if [ "x${deb_arch}" = "xamd64" ] ; then
 			unset dpkg_multiarch
 			case "${deb_distro}" in
 			squeeze|lucid|precise)
@@ -255,7 +255,6 @@ debian_regs () {
 	fi
 }
 
-. ./version.sh
 BUILD_HOST=${BUILD_HOST:="$( detect_host )"}
 if [ $(which lsb_release) ] ; then
 	info "Detected build host [`lsb_release -sd`]"
