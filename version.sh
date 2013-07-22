@@ -38,4 +38,4 @@ BUILD=x0
 
 BUILDREV=1.0
 DISTRO=cross
-DEBARCH=armel
+DEBARCH=armhf
