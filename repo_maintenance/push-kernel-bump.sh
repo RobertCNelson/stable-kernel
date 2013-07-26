@@ -11,12 +11,12 @@ if [ -e ${DIR}/version.sh ]; then
 		BRANCH="master"
 	fi
 
-        if [ ! "${KERNEL_TAG}" ] ; then
-                echo 'KERNEL_TAG undefined'
+	if [ ! "${KERNEL_TAG}" ] ; then
+		echo 'KERNEL_TAG undefined'
 		exit
-        fi
+	fi
 
-	git commit -a -m "bump: v${KERNEL_TAG}" -s
+	git commit -a -m "kernel bump: v${KERNEL_TAG}" -s
 	git push origin ${BRANCH}
 fi
 
