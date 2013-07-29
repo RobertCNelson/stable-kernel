@@ -35,14 +35,6 @@ patch_kernel () {
 		git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
 	fi
 
-#Test Patches:
-#exit
-
-	if [ "${LOCAL_PATCH_DIR}" ] ; then
-		for i in ${LOCAL_PATCH_DIR}/*.patch ; do patch  -s -p1 < $i ; done
-		BUILD="${BUILD}+"
-	fi
-
 	cd ${DIR}/
 }
 
@@ -151,7 +143,6 @@ fi
 
 unset CC
 unset LINUX_GIT
-unset LOCAL_PATCH_DIR
 . ${DIR}/system.sh
 /bin/sh -e "${DIR}/scripts/gcc.sh" || { exit 1 ; }
 . ${DIR}/.CC
