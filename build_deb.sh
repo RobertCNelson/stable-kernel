@@ -83,14 +83,14 @@ make_deb () {
 	cd ${DIR}/
 }
 
-make_firmware_pkg () {
+make_pkg () {
 	cd ${DIR}/KERNEL/
 
 	echo "-----------------------------"
-	echo "Building Firmware Archive"
+	echo "Building ${pkg} Archive"
 	echo "-----------------------------"
 
-	deployfile="-firmware.tar.gz"
+	deployfile="-${pkg}.tar.gz"
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
 	fi
@@ -100,7 +100,17 @@ make_firmware_pkg () {
 	fi
 	mkdir -p ${DIR}/deploy/tmp
 
-	make ARCH=arm CROSS_COMPILE=${CC} firmware_install INSTALL_FW_PATH=${DIR}/deploy/tmp
+	case "${pkg}" in
+	modules)
+		make ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/tmp
+		;;
+	firmware)
+		make ARCH=arm CROSS_COMPILE=${CC} firmware_install INSTALL_FW_PATH=${DIR}/deploy/tmp
+		;;
+	dtbs)
+		find ./arch/arm/boot/ -iname "*.dtb" -exec cp -v '{}' ${DIR}/deploy/tmp/ \;
+		;;
+	esac
 
 	cd ${DIR}/deploy/tmp
 	echo "-----------------------------"
@@ -119,40 +129,14 @@ make_firmware_pkg () {
 	fi
 }
 
+make_firmware_pkg () {
+	pkg="firmware"
+	make_pkg
+}
+
 make_dtbs_pkg () {
-	cd ${DIR}/KERNEL/
-
-	echo "-----------------------------"
-	echo "Building DTBS Archive"
-	echo "-----------------------------"
-
-	deployfile="-dtbs.tar.gz"
-	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
-		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
-	fi
-
-	if [ -d ${DIR}/deploy/tmp ] ; then
-		rm -rf ${DIR}/deploy/tmp || true
-	fi
-	mkdir -p ${DIR}/deploy/tmp
-
-	find ./arch/arm/boot/ -iname "*.dtb" -exec cp -v '{}' ${DIR}/deploy/tmp/ \;
-
-	cd ${DIR}/deploy/tmp
-	echo "-----------------------------"
-	echo "Building ${KERNEL_UTS}${deployfile}"
-	tar czf ../${KERNEL_UTS}${deployfile} *
-	echo "-----------------------------"
-
-	cd ${DIR}/
-	rm -rf ${DIR}/deploy/tmp || true
-
-	if [ ! -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
-		export ERROR_MSG="File Generation Failure: [${KERNEL_UTS}${deployfile}]"
-		/bin/sh -e "${DIR}/scripts/error.sh" && { exit 1 ; }
-	else
-		ls -lh "${DIR}/deploy/${KERNEL_UTS}${deployfile}"
-	fi
+	pkg="dtbs"
+	make_pkg
 }
 
 /bin/sh -e ${DIR}/tools/host_det.sh || { exit 1 ; }
