@@ -65,15 +65,15 @@ make_menuconfig () {
 make_kernel () {
 	cd ${DIR}/KERNEL/
 	echo "-----------------------------"
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" ${CONFIG_DEBUG_SECTION} zImage modules"
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" zImage modules"
 	echo "-----------------------------"
-	make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" ${CONFIG_DEBUG_SECTION} zImage modules
+	make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" zImage modules
 
 	unset DTBS
 	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" >/dev/null 2>&1 && DTBS=1
 	if [ "x${DTBS}" != "x" ] ; then
-		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" ${CONFIG_DEBUG_SECTION} dtbs"
-		make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" ${CONFIG_DEBUG_SECTION} dtbs
+		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" dtbs"
+		make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" dtbs
 		ls arch/arm/boot/* | grep dtb >/dev/null 2>&1 || unset DTBS
 	fi
 
@@ -173,7 +173,6 @@ else
 fi
 
 unset CC
-unset DEBUG_SECTION
 unset LINUX_GIT
 unset LOCAL_PATCH_DIR
 . ${DIR}/system.sh
@@ -183,11 +182,6 @@ echo "debug: CC=${CC}"
 
 . ${DIR}/version.sh
 export LINUX_GIT
-
-unset CONFIG_DEBUG_SECTION
-if [ "${DEBUG_SECTION}" ] ; then
-	CONFIG_DEBUG_SECTION="CONFIG_DEBUG_SECTION_MISMATCH=y"
-fi
 
 unset FULL_REBUILD
 #FULL_REBUILD=1
