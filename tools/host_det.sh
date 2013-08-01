@@ -200,10 +200,13 @@ debian_regs () {
 				pkg="ia32-libs"
 				check_dpkg
 				;;
-			*)
+			wheezy|jessie|sid|quantal|raring)
 				pkg="ia32-libs"
 				check_dpkg
 				LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || dpkg_multiarch=1
+				;;
+			saucy)
+				echo "todo.. ia32-libs is gone.."
 				;;
 			esac
 
