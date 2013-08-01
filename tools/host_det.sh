@@ -211,6 +211,8 @@ debian_regs () {
 				check_dpkg
 				pkg="libstdc++6:i386"
 				check_dpkg
+				pkg="zlib1g:i386"
+				check_dpkg
 				;;
 			esac
 
