@@ -204,12 +204,16 @@ debian_regs () {
 				pkg="ia32-libs"
 				check_dpkg
 				LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || dpkg_multiarch=1
+				pkg="libncurses5:i386"
+				check_dpkg
 				;;
 			saucy)
-				echo "todo.. ia32-libs is gone.."
+				#Fixme: this probally also covers wheezy|jessie|sid|quantal|raring too...
 				pkg="libc6:i386"
 				check_dpkg
 				pkg="libstdc++6:i386"
+				check_dpkg
+				pkg="libncurses5:i386"
 				check_dpkg
 				pkg="zlib1g:i386"
 				check_dpkg
