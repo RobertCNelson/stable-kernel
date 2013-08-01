@@ -207,6 +207,8 @@ debian_regs () {
 				;;
 			saucy)
 				echo "todo.. ia32-libs is gone.."
+				pkg="libc6:i386"
+				check_dpkg
 				;;
 			esac
 
