@@ -89,7 +89,7 @@ make_pkg () {
 	mkdir -p ${DIR}/deploy/tmp
 
 	echo "-----------------------------"
-	echo "Building ${pkg} Archive"
+	echo "Building ${pkg} archive..."
 
 	case "${pkg}" in
 	modules)
@@ -104,8 +104,8 @@ make_pkg () {
 		;;
 	esac
 
+	echo "Compressing ${KERNEL_UTS}${deployfile}..."
 	cd ${DIR}/deploy/tmp
-	echo "Compressing ${KERNEL_UTS}${deployfile}"
 	tar czf ../${KERNEL_UTS}${deployfile} *
 
 	cd ${DIR}/
