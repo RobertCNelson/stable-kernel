@@ -267,11 +267,11 @@ debian_regs () {
 BUILD_HOST=${BUILD_HOST:="$( detect_host )"}
 if [ $(which lsb_release) ] ; then
 	info "Detected build host [`lsb_release -sd`]"
-	info "host: [`dpkg --print-architecture`]"
+	info "host: [`uname -m`]"
 	info "git HEAD commit: [`git rev-parse HEAD`]"
 else
 	info "Detected build host [$BUILD_HOST]"
-	info "host: [`dpkg --print-architecture`]"
+	info "host: [`uname -m`]"
 	info "git HEAD commit: [`git rev-parse HEAD`]"
 fi
 case "$BUILD_HOST" in
