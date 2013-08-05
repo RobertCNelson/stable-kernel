@@ -200,15 +200,7 @@ debian_regs () {
 				pkg="ia32-libs"
 				check_dpkg
 				;;
-			wheezy|quantal)
-				pkg="ia32-libs"
-				check_dpkg
-				pkg="libncurses5:i386"
-				check_dpkg
-				dpkg_multiarch=1
-				;;
-			jessie|sid|raring|saucy)
-				#Fixme: this probally also covers quantal too...
+			wheezy|jessie|sid|quantal|raring|saucy)
 				pkg="libc6:i386"
 				check_dpkg
 				pkg="libstdc++6:i386"
