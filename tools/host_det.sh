@@ -203,9 +203,9 @@ debian_regs () {
 			wheezy|quantal|raring)
 				pkg="ia32-libs"
 				check_dpkg
-				LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || dpkg_multiarch=1
 				pkg="libncurses5:i386"
 				check_dpkg
+				dpkg_multiarch=1
 				;;
 			jessie|sid|saucy)
 				#Fixme: this probally also covers quantal|raring too...
@@ -217,6 +217,7 @@ debian_regs () {
 				check_dpkg
 				pkg="zlib1g:i386"
 				check_dpkg
+				dpkg_multiarch=1
 				;;
 			esac
 
