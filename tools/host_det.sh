@@ -41,6 +41,12 @@ redhat_reqs () {
 	pkg="wget"
 	check_rpm
 
+	arch=$(uname -m)
+	if [ "x${arch}" = "xx86_64" ] ; then
+		pkg="libstc++.i686"
+		check_rpm
+	fi
+
 	if [ "${rpm_pkgs}" ] ; then
 		echo "Fedora: missing dependicies, please install:"
 		echo "-----------------------------"
