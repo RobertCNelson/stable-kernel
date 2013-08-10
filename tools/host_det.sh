@@ -40,11 +40,15 @@ redhat_reqs () {
 	unset rpm_pkgs
 	pkg="gcc"
 	check_rpm
+	pkg="ncurses-devel"
+	check_rpm
 	pkg="wget"
 	check_rpm
 
 	arch=$(uname -m)
 	if [ "x${arch}" = "xx86_64" ] ; then
+		pkg="ncurses-devel.i686"
+		check_rpm
 		pkg="libstdc++.i686"
 		check_rpm
 		pkg="zlib.i686"
