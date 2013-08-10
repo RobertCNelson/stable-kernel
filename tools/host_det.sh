@@ -38,6 +38,8 @@ check_rpm () {
 
 redhat_reqs () {
 	unset rpm_pkgs
+	pkg="redhat-lsb-core"
+	check_rpm
 	pkg="gcc"
 	check_rpm
 	pkg="ncurses-devel"
