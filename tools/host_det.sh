@@ -43,7 +43,9 @@ redhat_reqs () {
 
 	arch=$(uname -m)
 	if [ "x${arch}" = "xx86_64" ] ; then
-		pkg="libstc++.i686"
+		pkg="libstdc++.i686"
+		check_rpm
+		pkg="zlib.i686"
 		check_rpm
 	fi
 
