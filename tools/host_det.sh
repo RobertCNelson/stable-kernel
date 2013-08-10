@@ -38,6 +38,8 @@ check_rpm () {
 
 redhat_reqs () {
 	unset rpm_pkgs
+	pkg="gcc"
+	check_rpm
 	pkg="wget"
 	check_rpm
 
