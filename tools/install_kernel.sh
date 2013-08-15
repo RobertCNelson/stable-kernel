@@ -239,13 +239,13 @@ if [ -f "${DIR}/system.sh" ] ; then
 	if [ -f "${DIR}/KERNEL/arch/arm/boot/zImage" ] ; then
 		KERNEL_UTS=$(cat "${DIR}/KERNEL/include/generated/utsrelease.h" | awk '{print $3}' | sed 's/\"//g' )
 		if [ "x${MMC}" = "x" ] ; then
-			echo "ERROR: MMC is not defined in system.sh"
 			if which lsblk > /dev/null ; then
 				echo "-----------------------------"
 				echo "lsblk:"
 				lsblk | grep -v sr0
 				echo "-----------------------------"
 			fi
+			echo "ERROR: MMC is not defined in system.sh"
 		else
 			unset PARTITION_PREFIX
 			echo ${MMC} | grep mmcblk >/dev/null && PARTITION_PREFIX="p"
