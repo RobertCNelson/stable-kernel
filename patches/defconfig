@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 3.2.40 Kernel Configuration
+# Linux/arm 3.2.50 Kernel Configuration
 #
 CONFIG_ARM=y
 CONFIG_SYS_SUPPORTS_APM_EMULATION=y
@@ -1565,7 +1565,7 @@ CONFIG_EQUALIZER=m
 CONFIG_MII=y
 CONFIG_IEEE802154_DRIVERS=m
 # CONFIG_IEEE802154_FAKEHARD is not set
-CONFIG_IFB=m
+# CONFIG_IFB is not set
 # CONFIG_MACVLAN is not set
 # CONFIG_NETCONSOLE is not set
 # CONFIG_NETPOLL is not set
