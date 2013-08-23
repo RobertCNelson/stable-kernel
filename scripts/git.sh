@@ -129,6 +129,7 @@ git_kernel () {
 		git_kernel_torvalds
 	fi
 
+	#CentOS 6.4: git version 1.7.1 (no --list option)
 	unset git_branch_has_list
 	LC_ALL=C git help branch | grep -m 1 -e "--list" >/dev/null 2>&1 && git_branch_has_list=1
 	if [ "${git_branch_has_list}" ] ; then
