@@ -29,8 +29,41 @@ detect_host () {
 	fi
 }
 
+check_rpm () {
+	pkg_test=$(LC_ALL=C rpm -q ${pkg})
+	if [ "x${pkg_test}" = "xpackage ${pkg} is not installed" ] ; then
+		rpm_pkgs="${rpm_pkgs}${pkg} "
+	fi
+}
+
 redhat_reqs () {
-	echo "RH Not implemented yet"
+	unset rpm_pkgs
+	pkg="redhat-lsb-core"
+	check_rpm
+	pkg="gcc"
+	check_rpm
+	pkg="ncurses-devel"
+	check_rpm
+	pkg="wget"
+	check_rpm
+
+	arch=$(uname -m)
+	if [ "x${arch}" = "xx86_64" ] ; then
+		pkg="ncurses-devel.i686"
+		check_rpm
+		pkg="libstdc++.i686"
+		check_rpm
+		pkg="zlib.i686"
+		check_rpm
+	fi
+
+	if [ "${rpm_pkgs}" ] ; then
+		echo "Red Hat, or derivatives: missing dependicies, please install:"
+		echo "-----------------------------"
+		echo "yum install ${rpm_pkgs}"
+		echo "-----------------------------"
+		return 1
+	fi
 }
 
 suse_regs () {
@@ -85,7 +118,7 @@ Missing mkimage command.
 }
 
 check_dpkg () {
-	LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || deb_pkgs="${deb_pkgs}${pkg} "
+	LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}$" >/dev/null || deb_pkgs="${deb_pkgs}${pkg} "
 }
 
 debian_regs () {
@@ -98,15 +131,13 @@ debian_regs () {
 	check_dpkg
 	pkg="fakeroot"
 	check_dpkg
-	pkg="man-db"
-	check_dpkg
-	pkg="libncurses5-dev"
-	check_dpkg
 	pkg="lsb-release"
 	check_dpkg
 	pkg="lzma"
 	check_dpkg
 	pkg="lzop"
+	check_dpkg
+	pkg="man-db"
 	check_dpkg
 
 	unset warn_dpkg_ia32
@@ -114,6 +145,18 @@ debian_regs () {
 	#lsb_release might not be installed...
 	if [ $(which lsb_release) ] ; then
 		deb_distro=$(lsb_release -cs)
+		deb_lsb_rs=$(lsb_release -rs | awk '{print $1}')
+
+		#lsb_release -a
+		#No LSB modules are available.
+		#Distributor ID:    Debian
+		#Description:    Debian GNU/Linux Kali Linux 1.0
+		#Release:    Kali Linux 1.0
+		#Codename:    n/a
+		#http://docs.kali.org/kali-policy/kali-linux-relationship-with-debian
+		if [ "x${deb_lsb_rs}" = "xKali" ] ; then
+			deb_distro="wheezy"
+		fi
 
 		#Linux Mint: Compatibility Matrix
 		#http://www.linuxmint.com/oldreleases.php
@@ -178,7 +221,8 @@ debian_regs () {
 
 	if [ $(which lsb_release) ] && [ ! "${stop_pkg_search}" ] ; then
 		deb_distro=$(lsb_release -cs)
-
+		deb_arch=$(LC_ALL=C dpkg --print-architecture)
+		
 		#pkg: mkimage
 		case "${deb_distro}" in
 		squeeze|lucid)
@@ -191,8 +235,19 @@ debian_regs () {
 			;;
 		esac
 
+		#Libs; starting with jessie/sid/saucy, lib<pkg_name>-dev:<arch>
+		case "${deb_distro}" in
+		jessie|sid|saucy)
+			pkg="libncurses5-dev:${deb_arch}"
+			check_dpkg
+			;;
+		*)
+			pkg="libncurses5-dev"
+			check_dpkg
+			;;
+		esac
+		
 		#pkg: ia32-libs
-		deb_arch=$(LC_ALL=C dpkg --print-architecture)
 		if [ "x${deb_arch}" = "xamd64" ] ; then
 			unset dpkg_multiarch
 			case "${deb_distro}" in
@@ -200,23 +255,16 @@ debian_regs () {
 				pkg="ia32-libs"
 				check_dpkg
 				;;
-			wheezy|quantal|raring)
-				pkg="ia32-libs"
-				check_dpkg
-				LC_ALL=C dpkg --list | awk '{print $2}' | grep "^${pkg}" >/dev/null || dpkg_multiarch=1
-				pkg="libncurses5:i386"
-				check_dpkg
-				;;
-			jessie|sid|saucy)
-				#Fixme: this probally also covers quantal|raring too...
+			wheezy|jessie|sid|quantal|raring|saucy)
 				pkg="libc6:i386"
+				check_dpkg
+				pkg="libncurses5:i386"
 				check_dpkg
 				pkg="libstdc++6:i386"
 				check_dpkg
-				pkg="libncurses5:i386"
-				check_dpkg
 				pkg="zlib1g:i386"
 				check_dpkg
+				dpkg_multiarch=1
 				;;
 			esac
 
@@ -267,16 +315,16 @@ debian_regs () {
 BUILD_HOST=${BUILD_HOST:="$( detect_host )"}
 if [ $(which lsb_release) ] ; then
 	info "Detected build host [`lsb_release -sd`]"
-	info "host: [`dpkg --print-architecture`]"
+	info "host: [`uname -m`]"
 	info "git HEAD commit: [`git rev-parse HEAD`]"
 else
 	info "Detected build host [$BUILD_HOST]"
-	info "host: [`dpkg --print-architecture`]"
+	info "host: [`uname -m`]"
 	info "git HEAD commit: [`git rev-parse HEAD`]"
 fi
 case "$BUILD_HOST" in
     redhat*)
-	    redhat_reqs
+	    redhat_reqs || error "Failed dependency check"
         ;;
     debian*)
 	    debian_regs || error "Failed dependency check"

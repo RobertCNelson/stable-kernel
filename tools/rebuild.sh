@@ -64,7 +64,9 @@ make_kernel () {
 	unset DTBS
 	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" >/dev/null 2>&1 && DTBS=1
 	if [ "x${DTBS}" != "x" ] ; then
+		echo "-----------------------------"
 		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" dtbs"
+		echo "-----------------------------"
 		make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" dtbs
 		ls arch/arm/boot/* | grep dtb >/dev/null 2>&1 || unset DTBS
 	fi
@@ -78,7 +80,6 @@ make_kernel () {
 	fi
 
 	if [ -f ./arch/arm/boot/zImage ] ; then
-		echo "-----------------------------"
 		cp -v arch/arm/boot/zImage "${DIR}/deploy/${KERNEL_UTS}.zImage"
 		cp -v .config "${DIR}/deploy/${KERNEL_UTS}.config"
 	fi
@@ -107,7 +108,7 @@ make_pkg () {
 	mkdir -p ${DIR}/deploy/tmp
 
 	echo "-----------------------------"
-	echo "Building ${pkg} Archive"
+	echo "Building ${pkg} archive..."
 
 	case "${pkg}" in
 	modules)
@@ -117,13 +118,12 @@ make_pkg () {
 		make -s ARCH=arm CROSS_COMPILE=${CC} firmware_install INSTALL_FW_PATH=${DIR}/deploy/tmp
 		;;
 	dtbs)
-		echo "-----------------------------"
 		find ./arch/arm/boot/ -iname "*.dtb" -exec cp -v '{}' ${DIR}/deploy/tmp/ \;
 		;;
 	esac
 
+	echo "Compressing ${KERNEL_UTS}${deployfile}..."
 	cd ${DIR}/deploy/tmp
-	echo "Compressing ${KERNEL_UTS}${deployfile}"
 	tar czf ../${KERNEL_UTS}${deployfile} *
 
 	cd ${DIR}/
