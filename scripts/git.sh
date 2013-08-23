@@ -114,16 +114,12 @@ git_kernel () {
 		git bisect reset || true
 	fi
 
-	#So we are now going to assume the worst, and create a new master branch
 	git am --abort || echo "git tree is clean..."
-	git add .
+	git add --all
 	git commit --allow-empty -a -m 'empty cleanup commit'
 
-	git checkout origin/master -b tmp-master
-	git branch -D master >/dev/null 2>&1 || true
-
-	git checkout origin/master -b master
-	git branch -D tmp-master >/dev/null 2>&1 || true
+	git reset --hard HEAD
+	git checkout master -f
 
 	git pull ${GIT_OPTS} || true
 
@@ -133,7 +129,19 @@ git_kernel () {
 		git_kernel_torvalds
 	fi
 
-	git branch -D v${KERNEL_TAG}-${BUILD} >/dev/null 2>&1 || true
+	#CentOS 6.4: git version 1.7.1 (no --list option)
+	unset git_branch_has_list
+	LC_ALL=C git help branch | grep -m 1 -e "--list" >/dev/null 2>&1 && git_branch_has_list=1
+	if [ "${git_branch_has_list}" ] ; then
+		test_for_branch=$(git branch --list v${KERNEL_TAG}-${BUILD})
+		if [ "x${test_for_branch}" != "x" ] ; then
+			git branch v${KERNEL_TAG}-${BUILD} -D
+		fi
+	else
+		echo "git: the following error: [error: branch 'v${KERNEL_TAG}-${BUILD}' not found.] is safe to ignore."
+		git branch v${KERNEL_TAG}-${BUILD} -D || true
+	fi
+
 	if [ ! "${KERNEL_SHA}" ] ; then
 		git checkout v${KERNEL_TAG} -b v${KERNEL_TAG}-${BUILD}
 	else
