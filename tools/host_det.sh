@@ -59,11 +59,11 @@ redhat_reqs () {
 
 	if [ $(which lsb_release) ] ; then
 		rpm_distro=$(lsb_release -rs)
-		echo "Distro: [${rpm_distro}]"
+		echo "RPM distro version: [${rpm_distro}]"
 
 		case "${rpm_distro}" in
 		6.4)
-			echo "Warning: [${rpm_distro}] has no [uboot-tools] pkg"
+			echo "Warning: RHEL/CentOS [${rpm_distro}] has no [uboot-tools] pkg"
 			;;
 		17|18|19|20)
 			pkg="uboot-tools"
@@ -73,7 +73,7 @@ redhat_reqs () {
 			echo "Warning: [uboot-tools] package check still in development"
 			echo "Please email to: bugs@rcn-ee.com"
 			echo "Success/Failure of [yum install uboot-tools]"
-			echo "Distro: [${rpm_distro}]"
+			echo "RPM distro version: [${rpm_distro}]"
 			pkg="uboot-tools"
 			check_rpm
 			;;
