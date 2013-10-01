@@ -57,8 +57,31 @@ redhat_reqs () {
 		check_rpm
 	fi
 
+	if [ $(which lsb_release) ] ; then
+		rpm_distro=$(lsb_release -rs)
+		echo "RPM distro version: [${rpm_distro}]"
+
+		case "${rpm_distro}" in
+		6.4)
+			echo "Warning: RHEL/CentOS [${rpm_distro}] has no [uboot-tools] pkg"
+			;;
+		17|18|19|20)
+			pkg="uboot-tools"
+			check_rpm
+			;;
+		*)
+			echo "Warning: [uboot-tools] package check still in development"
+			echo "Please email to: bugs@rcn-ee.com"
+			echo "Success/Failure of [yum install uboot-tools]"
+			echo "RPM distro version: [${rpm_distro}]"
+			pkg="uboot-tools"
+			check_rpm
+			;;
+		esac
+	fi
+
 	if [ "${rpm_pkgs}" ] ; then
-		echo "Red Hat, or derivatives: missing dependicies, please install:"
+		echo "Red Hat, or derivatives: missing dependencies, please install:"
 		echo "-----------------------------"
 		echo "yum install ${rpm_pkgs}"
 		echo "-----------------------------"
@@ -144,18 +167,33 @@ debian_regs () {
 	unset stop_pkg_search
 	#lsb_release might not be installed...
 	if [ $(which lsb_release) ] ; then
-		deb_distro=$(lsb_release -cs)
-		deb_lsb_rs=$(lsb_release -rs | awk '{print $1}')
+		deb_distro=$(lsb_release -cs | sed 's/\//_/g')
 
-		#lsb_release -a
-		#No LSB modules are available.
-		#Distributor ID:    Debian
-		#Description:    Debian GNU/Linux Kali Linux 1.0
-		#Release:    Kali Linux 1.0
-		#Codename:    n/a
-		#http://docs.kali.org/kali-policy/kali-linux-relationship-with-debian
-		if [ "x${deb_lsb_rs}" = "xKali" ] ; then
-			deb_distro="wheezy"
+		if [ "x${deb_distro}" = "xn_a" ] ; then
+			echo "+ Warning: [lsb_release -cs] just returned [n/a], so now testing [lsb_release -rs] instead..."
+			deb_lsb_rs=$(lsb_release -rs | awk '{print $1}' | sed 's/\//_/g')
+
+			#http://docs.kali.org/kali-policy/kali-linux-relationship-with-debian
+			#lsb_release -a
+			#No LSB modules are available.
+			#Distributor ID:    Debian
+			#Description:    Debian GNU/Linux Kali Linux 1.0
+			#Release:    Kali Linux 1.0
+			#Codename:    n/a
+			if [ "x${deb_lsb_rs}" = "xKali" ] ; then
+				deb_distro="wheezy"
+			fi
+
+			#Debian "testing"
+			#lsb_release -a
+			#No LSB modules are available.
+			#Distributor ID: Debian
+			#Description:    Debian GNU/Linux testing/unstable
+			#Release:        testing/unstable
+			#Codename:       n/a
+			if [ "x${deb_lsb_rs}" = "xtesting_unstable" ] ; then
+				deb_distro="jessie"
+			fi
 		fi
 
 		#Linux Mint: Compatibility Matrix
@@ -189,24 +227,32 @@ debian_regs () {
 
 		case "${deb_distro}" in
 		squeeze|wheezy|jessie|sid)
+			#Supported Debian:
 			unset error_unknown_deb_distro
 			unset warn_eol_distro
 			;;
 		lucid|precise|quantal|raring|saucy)
+			#Supported Ubuntu:
 			unset error_unknown_deb_distro
 			unset warn_eol_distro
 			;;
-		maverick|natty|oneiric)
-			#lucid -> precise
-			#http://us.archive.ubuntu.com/ubuntu/dists/
-			#list: dists between LTS's...
+		oneiric)
+			#Old Ubuntu: between lts: lucid -> precise
+			#But still on: http://us.archive.ubuntu.com/ubuntu/dists/ (supported except for oneiric)
+			#in 'theory' could bring oneiric back, but no reason too at this point...
+			unset error_unknown_deb_distro
+			warn_eol_distro=1
+			stop_pkg_search=1
+			;;
+		maverick|natty)
+			#Old Ubuntu: between lts: lucid -> precise
+			#removed from http://us.archive.ubuntu.com/ubuntu/dists/ thus unsupported...
 			unset error_unknown_deb_distro
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
 		hardy)
-			#Just old, but still on:
-			#http://us.archive.ubuntu.com/ubuntu/dists/
+			#Old Ubuntu LTS: unsupported...
 			unset error_unknown_deb_distro
 			warn_eol_distro=1
 			stop_pkg_search=1
@@ -220,7 +266,6 @@ debian_regs () {
 	fi
 
 	if [ $(which lsb_release) ] && [ ! "${stop_pkg_search}" ] ; then
-		deb_distro=$(lsb_release -cs)
 		deb_arch=$(LC_ALL=C dpkg --print-architecture)
 		
 		#pkg: mkimage
@@ -300,7 +345,7 @@ debian_regs () {
 	fi
 
 	if [ "${deb_pkgs}" ] ; then
-		echo "Debian/Ubuntu/Mint: missing dependicies, please install:"
+		echo "Debian/Ubuntu/Mint: missing dependencies, please install:"
 		echo "-----------------------------"
 		if [ "${warn_dpkg_ia32}" ] ; then
 			echo "sudo dpkg --add-architecture i386"
