@@ -196,7 +196,7 @@ debian_regs () {
 			fi
 		fi
 
-		if [ "x${deb_distro}" = "testing" ] ; then
+		if [ "x${deb_distro}" = "xtesting" ] ; then
 			echo "+ Warning: [lsb_release -cs] just returned [testing], so now testing [lsb_release -ds] instead..."
 			deb_lsb_ds=$(lsb_release -ds | awk '{print $1}')
 
