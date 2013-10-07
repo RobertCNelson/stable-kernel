@@ -200,6 +200,11 @@ chipidea () {
 	${git} "${DIR}/patches/chipidea/0029-ARM-dts-imx-imx53-qsb.dts-enable-usbotg-and-usbh1.patch"
 }
 
+rt () {
+	echo "dir: rt"
+	${git} "${DIR}/patches/rt/0001-3.10.14-rt9.patch"
+}
+
 #edma
 arm
 omap
@@ -210,5 +215,6 @@ saucy
 
 #imx
 #chipidea
+rt
 
 echo "patch.sh ran successful"
