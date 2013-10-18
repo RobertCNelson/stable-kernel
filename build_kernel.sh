@@ -90,6 +90,8 @@ make_kernel () {
 			mkdir -p "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/" || true
 			cp -uv arch/arm/boot/${image} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
 			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			mkimage -A arm -O linux -T kernel -C none -a 0x80008000 -e 0x80008000 -n ${KERNEL_UTS} -d arch/arm/boot/zImage "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.uImage"
+			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.uImage"
 			cp -uv .config "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.config"
 		fi
 		cp -v arch/arm/boot/${image} "${DIR}/deploy/${KERNEL_UTS}.${image}"

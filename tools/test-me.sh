@@ -253,7 +253,7 @@ validate_abi () {
 	fi
 }
 
-file_check () {
+file_download () {
 	if [ -f /boot/zImage ] ; then
 		wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}.zImage.xz
 		if [ ! -f "${tempdir}/dl/${kernel}.zImage.xz" ] ; then
@@ -280,13 +280,33 @@ file_check () {
 	fi
 }
 
+file_backup () {
+	if [ -d "/boot/`uname -r`/" ] ; then
+		rm -rf "/boot/`uname -r`/" || true
+	fi
+	mkdir -p /boot/`uname -r`.bak/firmware || true
+	mkdir -p /boot/`uname -r`.bak/modules || true
+	if [ -f /boot/zImage ] ; then
+		cp -v /boot/zImage /boot/`uname -r`.bak/zImage
+	fi
+	if [ -f /boot/uImage ] ; then
+		cp -v /boot/uImage /boot/`uname -r`.bak/uImage
+	fi
+	mv -v /boot/*.dtb /boot/`uname -r`.bak/
+
+	mv /lib/firmware/*dtbo /boot/`uname -r`.bak/firmware
+	mv /lib/firmware/*dts /boot/`uname -r`.bak/firmware
+	mv /lib/modules/`uname -r`/* /boot/`uname -r`.bak/modules
+}
+
 workingdir="$PWD"
 tempdir=$(mktemp -d)
 mkdir -p ${tempdir}/dl/ || true
 
 dl_latest
 validate_abi
-file_check
+file_download
+file_backup
 
 exit
 
