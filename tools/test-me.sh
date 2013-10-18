@@ -36,6 +36,16 @@ dl_latest () {
 	else
 		network_failure
 	fi
+
+	current_kernel=`uname -r`
+	if [ "x${current_kernel}" = "x${kernel}" ] ; then
+		echo "You are already running the latest: [${current_kernel}]"
+		echo -n "Do you wish to reinstall [${current_kernel}] anyways (y/n)? "
+		read response
+		if [ ! "x${response}" = "xy" ] ; then
+			exit
+		fi
+	fi
 }
 
 validate_abi () {
