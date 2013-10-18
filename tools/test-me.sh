@@ -224,6 +224,11 @@ check_mmc () {
 
 fileserver="http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org"
 
+network_failure () {
+	echo "Error: is network setup?"
+	exit
+}
+
 dl_latest () {
 	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/latest
 	if [ -f "${tempdir}/dl/latest" ] ; then
@@ -232,8 +237,34 @@ dl_latest () {
 		echo "Kernel:${kernel}"
 		exit
 	else
-		echo "Error: is network setup?"
-		exit
+		network_failure
+	fi
+}
+
+file_check () {
+	if [ -f /boot/zImage ] ; then
+		wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}.zImage.xz
+		if [ ! -f "${tempdir}/dl/${kernel}.zImage.xz" ] ; then
+			network_failure
+		fi
+	fi
+	if [ -f /boot/uImage ] ; then
+		wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}.uImage.xz
+		if [ ! -f "${tempdir}/dl/${kernel}.uImage.xz" ] ; then
+			network_failure
+		fi
+	fi
+	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}-dtbs.tar.xz
+	if [ ! -f "${tempdir}/dl/${kernel}-dtbs.tar.xz" ] ; then
+		network_failure
+	fi
+	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}-firmware.tar.xz
+	if [ ! -f "${tempdir}/dl/${kernel}-firmware.tar.xz" ] ; then
+		network_failure
+	fi
+	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}-modules.tar.xz
+	if [ ! -f "${tempdir}/dl/${kernel}-modules.tar.xz" ] ; then
+		network_failure
 	fi
 }
 
@@ -242,6 +273,7 @@ tempdir=$(mktemp -d)
 mkdir -p ${tempdir}/dl/ || true
 
 dl_latest
+file_check
 
 exit
 
