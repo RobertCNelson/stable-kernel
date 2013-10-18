@@ -24,12 +24,6 @@ unset KERNEL_UTS
 unset MMC
 unset ZRELADDR
 
-BOOT_PARITION="1"
-
-DIR=$PWD
-
-. ${DIR}/version.sh
-
 mmc_write_rootfs () {
 	echo "Installing ${KERNEL_UTS}-modules.tar.gz to ${partition}"
 
