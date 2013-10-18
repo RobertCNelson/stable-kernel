@@ -126,11 +126,11 @@ install_files () {
 	fi
 
 	echo "[Installing...dtbs]"
-	tar xf ${tempdir}/dl/${kernel}-dtbs.tar.xz -C /boot/
+	tar xfm ${tempdir}/dl/${kernel}-dtbs.tar.xz -C /boot/
 	echo "[Installing...modules]"
-	tar xf ${tempdir}/dl/${kernel}-modules.tar.xz -C /
+	tar xfm ${tempdir}/dl/${kernel}-modules.tar.xz -C /
 	echo "[Installing...firmware]"
-	tar xf ${tempdir}/dl/${kernel}-firmware.tar.xz -C ${tempdir}/dl/extract
+	tar xfm ${tempdir}/dl/${kernel}-firmware.tar.xz -C ${tempdir}/dl/extract
 	cp ${tempdir}/dl/extract/*.dtbo /lib/firmware/ || true
 	cp ${tempdir}/dl/extract/*.dts /lib/firmware/ || true
 	sync
