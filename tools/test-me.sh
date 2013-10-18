@@ -235,9 +235,19 @@ dl_latest () {
 		. "${tempdir}/dl/latest"
 		echo "ABI:${abi}"
 		echo "Kernel:${kernel}"
-		exit
 	else
 		network_failure
+	fi
+}
+
+validate_abi () {
+	if [ ! "x${abi}" = "xaaZ" ] ; then
+		echo "abi mismatch, please redownload test-me.sh from:"
+		echo "http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org/"
+		echo "shortcut:"
+		echo "rm -rf ./test-me.sh"
+		echo "wget http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org/test-me.sh"
+		echo "chmod +x ./test-me.sh"
 	fi
 }
 
@@ -273,6 +283,7 @@ tempdir=$(mktemp -d)
 mkdir -p ${tempdir}/dl/ || true
 
 dl_latest
+validate_abi
 file_check
 
 exit
