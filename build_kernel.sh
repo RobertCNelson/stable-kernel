@@ -178,8 +178,7 @@ make_dtbs_pkg () {
 }
 
 update_latest () {
-	touch "${DIR}/deploy/beagleboard.org/latest"
-	echo "#!/bin/sh -e" >> "${DIR}/deploy/beagleboard.org/latest"
+	echo "#!/bin/sh -e" > "${DIR}/deploy/beagleboard.org/latest"
 	echo "abi=aaa" >> "${DIR}/deploy/beagleboard.org/latest"
 	echo "kernel=${KERNEL_UTS}" >> "${DIR}/deploy/beagleboard.org/latest"
 }
