@@ -225,7 +225,7 @@ check_mmc () {
 fileserver="http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org"
 
 dl_latest () {
-	wget --no-verbose --directory-prefix="${tempdir}/dl/" ${fileserver}/latest
+	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/latest
 	if [ -f "${fileserver}/dl/latest" ] ; then
 		. "${fileserver}/dl/latest"
 		echo "ABI:${abi}"
