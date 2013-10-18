@@ -89,6 +89,7 @@ make_kernel () {
 		if [ ${AUTO_BUILD} ] ; then
 			mkdir -p "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/" || true
 			cp -uv arch/arm/boot/${image} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
 			cp -uv .config "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.config"
 		fi
 		cp -v arch/arm/boot/${image} "${DIR}/deploy/${KERNEL_UTS}.${image}"
