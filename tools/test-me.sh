@@ -127,12 +127,15 @@ install_files () {
 
 	echo "[Installing: dtbs]"
 	tar xfm ${tempdir}/dl/${kernel}-dtbs.tar.xz -C /boot/
+	sync
 	echo "[Installing: modules]"
 	tar xfm ${tempdir}/dl/${kernel}-modules.tar.xz -C /
+	sync
 	echo "[Installing: firmware]"
 	tar xfm ${tempdir}/dl/${kernel}-firmware.tar.xz -C ${tempdir}/dl/extract
-	cp ${tempdir}/dl/extract/*.dtbo /lib/firmware/ || true
-	cp ${tempdir}/dl/extract/*.dts /lib/firmware/ || true
+	sync
+	cp ${tempdir}/dl/extract/*.dtbo /lib/firmware/ 2>/dev/null || true
+	cp ${tempdir}/dl/extract/*.dts /lib/firmware/ 2>/dev/null || true
 	sync
 	echo "Please reboot..."
 }
