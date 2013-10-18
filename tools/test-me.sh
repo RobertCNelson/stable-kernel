@@ -116,13 +116,13 @@ install_files () {
 		echo "[Installing: zImage]"
 		unxz ${tempdir}/dl/${kernel}.zImage.xz
 		rm -rf /boot/zImage || true
-		mv -v ${tempdir}/dl/${kernel}.zImage /boot/zImage
+		mv ${tempdir}/dl/${kernel}.zImage /boot/zImage
 	fi
 	if [ -f /boot/uImage ] ; then
 		echo "[Installing: uImage]"
 		unxz ${tempdir}/dl/${kernel}.uImage.xz
 		rm -rf /boot/uImage || true
-		mv -v ${tempdir}/dl/${kernel}.uImage /boot/uImage
+		mv ${tempdir}/dl/${kernel}.uImage /boot/uImage
 	fi
 
 	echo "[Installing: dtbs]"
