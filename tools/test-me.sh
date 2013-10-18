@@ -241,7 +241,7 @@ dl_latest () {
 }
 
 validate_abi () {
-	if [ ! "x${abi}" = "xaaZ" ] ; then
+	if [ ! "x${abi}" = "xaaa" ] ; then
 		echo "abi mismatch, please redownload test-me.sh from:"
 		echo "http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org/"
 		echo "-----------------------------"
