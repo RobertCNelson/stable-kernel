@@ -244,10 +244,12 @@ validate_abi () {
 	if [ ! "x${abi}" = "xaaZ" ] ; then
 		echo "abi mismatch, please redownload test-me.sh from:"
 		echo "http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org/"
-		echo "shortcut:"
+		echo "-----------------------------"
 		echo "rm -rf ./test-me.sh"
 		echo "wget http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org/test-me.sh"
 		echo "chmod +x ./test-me.sh"
+		echo "-----------------------------"
+		exit
 	fi
 }
 
