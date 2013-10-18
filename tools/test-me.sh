@@ -255,25 +255,30 @@ validate_abi () {
 
 file_download () {
 	if [ -f /boot/zImage ] ; then
+		echo "Downloading: zImage"
 		wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}.zImage.xz
 		if [ ! -f "${tempdir}/dl/${kernel}.zImage.xz" ] ; then
 			network_failure
 		fi
 	fi
 	if [ -f /boot/uImage ] ; then
+		echo "Downloading: uImage"
 		wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}.uImage.xz
 		if [ ! -f "${tempdir}/dl/${kernel}.uImage.xz" ] ; then
 			network_failure
 		fi
 	fi
+	echo "Downloading: dtbs"
 	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}-dtbs.tar.xz
 	if [ ! -f "${tempdir}/dl/${kernel}-dtbs.tar.xz" ] ; then
 		network_failure
 	fi
+	echo "Downloading: firmware"
 	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}-firmware.tar.xz
 	if [ ! -f "${tempdir}/dl/${kernel}-firmware.tar.xz" ] ; then
 		network_failure
 	fi
+	echo "Downloading: modules"
 	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/${kernel}/${kernel}-modules.tar.xz
 	if [ ! -f "${tempdir}/dl/${kernel}-modules.tar.xz" ] ; then
 		network_failure
@@ -292,11 +297,11 @@ file_backup () {
 	if [ -f /boot/uImage ] ; then
 		cp -v /boot/uImage /boot/`uname -r`.bak/uImage
 	fi
-	mv -v /boot/*.dtb /boot/`uname -r`.bak/
+	cp -v /boot/*.dtb /boot/`uname -r`.bak/  || true
 
-	mv /lib/firmware/*dtbo /boot/`uname -r`.bak/firmware
-	mv /lib/firmware/*dts /boot/`uname -r`.bak/firmware
-	mv /lib/modules/`uname -r`/* /boot/`uname -r`.bak/modules
+	cp /lib/firmware/*dtbo /boot/`uname -r`.bak/firmware || true
+	cp /lib/firmware/*dts /boot/`uname -r`.bak/firmware || true
+	cp -ru /lib/modules/`uname -r`/* /boot/`uname -r`.bak/modules || true
 }
 
 workingdir="$PWD"
