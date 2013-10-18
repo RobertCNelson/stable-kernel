@@ -226,8 +226,8 @@ fileserver="http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org"
 
 dl_latest () {
 	wget --directory-prefix="${tempdir}/dl/" ${fileserver}/latest
-	if [ -f "${fileserver}/dl/latest" ] ; then
-		. "${fileserver}/dl/latest"
+	if [ -f "${tempdir}/dl/latest" ] ; then
+		. "${tempdir}/dl/latest"
 		echo "ABI:${abi}"
 		echo "Kernel:${kernel}"
 		exit
@@ -239,8 +239,7 @@ dl_latest () {
 
 workingdir="$PWD"
 tempdir=$(mktemp -d)
-mkdir -p ${tempdir}/dl/
-echo ${tempdir}
+mkdir -p ${tempdir}/dl/ || true
 
 dl_latest
 
