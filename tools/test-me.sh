@@ -91,21 +91,21 @@ file_backup () {
 	mkdir -p /boot/`uname -r`.bak/firmware || true
 	mkdir -p /boot/`uname -r`.bak/modules || true
 	if [ -f /boot/zImage ] ; then
-		echo "[Backing up...zImage]"
+		echo "[Backing up: zImage]"
 		cp -v /boot/zImage /boot/`uname -r`.bak/zImage
 	fi
 	if [ -f /boot/uImage ] ; then
-		echo "[Backing up...uImage]"
+		echo "[Backing up: uImage]"
 		cp -v /boot/uImage /boot/`uname -r`.bak/uImage
 	fi
-	echo "[Backing up...*.dtb]"
+	echo "[Backing up: *.dtb]"
 	cp /boot/*.dtb /boot/`uname -r`.bak/  || true
 
-	echo "[Backing up...firmware: *.dtbo]"
+	echo "[Backing up: firmware: *.dtbo]"
 	cp -u /lib/firmware/*dtbo /boot/`uname -r`.bak/firmware || true
-	echo "[Backing up...firmware: *.dts]"
+	echo "[Backing up: firmware: *.dts]"
 	cp -u /lib/firmware/*dts /boot/`uname -r`.bak/firmware || true
-	echo "[Backing up...modules]"
+	echo "[Backing up: modules]"
 	cp -ru /lib/modules/`uname -r`/* /boot/`uname -r`.bak/modules || true
 	sync
 }
@@ -113,23 +113,23 @@ file_backup () {
 install_files () {
 	echo "Installing files..."
 	if [ -f /boot/zImage ] ; then
-		echo "[Installing...zImage]"
+		echo "[Installing: zImage]"
 		unxz ${tempdir}/dl/${kernel}.zImage.xz
 		rm -rf /boot/zImage || true
 		mv -v ${tempdir}/dl/${kernel}.zImage /boot/zImage
 	fi
 	if [ -f /boot/uImage ] ; then
-		echo "[Installing...uImage]"
+		echo "[Installing: uImage]"
 		unxz ${tempdir}/dl/${kernel}.uImage.xz
 		rm -rf /boot/uImage || true
 		mv -v ${tempdir}/dl/${kernel}.uImage /boot/uImage
 	fi
 
-	echo "[Installing...dtbs]"
+	echo "[Installing: dtbs]"
 	tar xfm ${tempdir}/dl/${kernel}-dtbs.tar.xz -C /boot/
-	echo "[Installing...modules]"
+	echo "[Installing: modules]"
 	tar xfm ${tempdir}/dl/${kernel}-modules.tar.xz -C /
-	echo "[Installing...firmware]"
+	echo "[Installing: firmware]"
 	tar xfm ${tempdir}/dl/${kernel}-firmware.tar.xz -C ${tempdir}/dl/extract
 	cp ${tempdir}/dl/extract/*.dtbo /lib/firmware/ || true
 	cp ${tempdir}/dl/extract/*.dts /lib/firmware/ || true
