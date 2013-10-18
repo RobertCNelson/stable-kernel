@@ -240,6 +240,7 @@ dl_latest () {
 workingdir="$PWD"
 tempdir=$(mktemp -d)
 mkdir -p ${tempdir}/dl/
+echo ${tempdir}
 
 dl_latest
 
