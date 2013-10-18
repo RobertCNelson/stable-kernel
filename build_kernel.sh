@@ -86,6 +86,11 @@ make_kernel () {
 	fi
 
 	if [ -f ./arch/arm/boot/${image} ] ; then
+		if [ ${AUTO_BUILD} ] ; then
+			mkdir -p "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/" || true
+			cp -v arch/arm/boot/${image} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			cp -v .config "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.config"
+		fi
 		cp -v arch/arm/boot/${image} "${DIR}/deploy/${KERNEL_UTS}.${image}"
 		cp -v .config "${DIR}/deploy/${KERNEL_UTS}.config"
 	fi
@@ -131,6 +136,10 @@ make_pkg () {
 	echo "Compressing ${KERNEL_UTS}${deployfile}..."
 	cd ${DIR}/deploy/tmp
 	tar czf ../${KERNEL_UTS}${deployfile} *
+
+	if [ ${AUTO_BUILD} ] ; then
+		cp -v ../${KERNEL_UTS}${deployfile} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/"
+	fi
 
 	cd ${DIR}/
 	rm -rf ${DIR}/deploy/tmp || true
