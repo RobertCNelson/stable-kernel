@@ -22,6 +22,11 @@
 
 fileserver="http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org"
 
+if ! id | grep -q root; then
+	echo "must be run as root"
+	exit
+fi
+
 network_failure () {
 	echo "Error: is network setup?"
 	exit
@@ -50,7 +55,8 @@ dl_latest () {
 
 validate_abi () {
 	#aab: add ubuntu/debian support...
-	if [ ! "x${abi}" = "xaab" ] ; then
+	#aac: check that its run as root...
+	if [ ! "x${abi}" = "xaac" ] ; then
 		echo "abi mismatch, please redownload test-me.sh from:"
 		echo "http://rcn-ee.homeip.net:81/dl/jenkins/beagleboard.org/"
 		echo "-----------------------------"
