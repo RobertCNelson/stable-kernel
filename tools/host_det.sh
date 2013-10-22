@@ -215,6 +215,7 @@ debian_regs () {
 
 		#Linux Mint: Compatibility Matrix
 		#http://www.linuxmint.com/oldreleases.php
+		#http://packages.linuxmint.com/index.php
 		case "${deb_distro}" in
 		debian)
 			deb_distro="jessie"
@@ -239,6 +240,9 @@ debian_regs () {
 			;;
 		olivia)
 			deb_distro="raring"
+			;;
+		petra)
+			deb_distro="saucy"
 			;;
 		esac
 
