@@ -86,6 +86,14 @@ make_kernel () {
 	fi
 
 	if [ -f ./arch/arm/boot/${image} ] ; then
+		if [ ${AUTO_TESTER} ] ; then
+			mkdir -p "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/" || true
+			cp -uv arch/arm/boot/${image} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			mkimage -A arm -O linux -T kernel -C none -a 0x80008000 -e 0x80008000 -n ${KERNEL_UTS} -d arch/arm/boot/zImage "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.uImage"
+			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.uImage"
+			cp -uv .config "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.config"
+		fi
 		cp -v arch/arm/boot/${image} "${DIR}/deploy/${KERNEL_UTS}.${image}"
 		cp -v .config "${DIR}/deploy/${KERNEL_UTS}.config"
 	fi
@@ -106,7 +114,7 @@ make_pkg () {
 	deployfile="-${pkg}.tar.gz"
 	tar_options="--create --gzip --file"
 
-	if [ "${AUTO_BUILD}" ] ; then
+	if [ "${AUTO_TESTER}" ] ; then
 		#FIXME: xz might not be available everywhere...
 		#FIXME: ./tools/install_kernel.sh needs update...
 		deployfile="-${pkg}.tar.xz"
@@ -141,7 +149,7 @@ make_pkg () {
 	cd ${DIR}/deploy/tmp
 	tar ${tar_options} ../${KERNEL_UTS}${deployfile} *
 
-	if [ ${AUTO_BUILD} ] ; then
+	if [ ${AUTO_TESTER} ] ; then
 		cp -uv ../${KERNEL_UTS}${deployfile} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/"
 	fi
 
@@ -240,7 +248,7 @@ make_firmware_pkg
 if [ "x${DTBS}" != "x" ] ; then
 	make_dtbs_pkg
 fi
-if [ "${AUTO_BUILD}" ] ; then
+if [ "${AUTO_TESTER}" ] ; then
 	update_latest
 fi
 echo "-----------------------------"
