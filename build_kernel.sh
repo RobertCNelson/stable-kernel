@@ -31,7 +31,7 @@ patch_kernel () {
 	/bin/sh -e ${DIR}/patch.sh || { git add . ; exit 1 ; }
 
 	if [ ! "${RUN_BISECT}" ] ; then
-		git add .
+		git add --all
 		git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
 	fi
 
@@ -55,42 +55,56 @@ make_menuconfig () {
 }
 
 make_kernel () {
+	image="zImage"
+	unset address
+
+	#uImage, if you really really want a uImage, zreladdr needs to be defined on the build line going forward...
+	#image="uImage"
+	#address="LOADADDR=${ZRELADDR}"
+
 	cd ${DIR}/KERNEL/
 	echo "-----------------------------"
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" zImage modules"
+	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} ${address} ${image} modules"
 	echo "-----------------------------"
-	make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" zImage modules
+	make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} ${address} ${image} modules
 
 	unset DTBS
 	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" >/dev/null 2>&1 && DTBS=1
 	if [ "x${DTBS}" != "x" ] ; then
 		echo "-----------------------------"
-		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" dtbs"
+		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} dtbs"
 		echo "-----------------------------"
-		make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" dtbs
+		make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} dtbs
 		ls arch/arm/boot/* | grep dtb >/dev/null 2>&1 || unset DTBS
 	fi
 
 	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
 
-	deployfile=".zImage"
-	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
-		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
+	if [ -f "${DIR}/deploy/${KERNEL_UTS}.${image}" ] ; then
+		rm -rf "${DIR}/deploy/${KERNEL_UTS}.${image}" || true
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}.config" || true
 	fi
 
-	if [ -f ./arch/arm/boot/zImage ] ; then
-		cp -v arch/arm/boot/zImage "${DIR}/deploy/${KERNEL_UTS}.zImage"
+	if [ -f ./arch/arm/boot/${image} ] ; then
+		if [ ${AUTO_TESTER} ] ; then
+			mkdir -p "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/" || true
+			cp -uv arch/arm/boot/${image} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			mkimage -A arm -O linux -T kernel -C none -a 0x80008000 -e 0x80008000 -n ${KERNEL_UTS} -d arch/arm/boot/zImage "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.uImage"
+			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.uImage"
+			cp -uv .config "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.config"
+		fi
+		cp -v arch/arm/boot/${image} "${DIR}/deploy/${KERNEL_UTS}.${image}"
 		cp -v .config "${DIR}/deploy/${KERNEL_UTS}.config"
 	fi
 
 	cd ${DIR}/
 
-	if [ ! -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
-		export ERROR_MSG="File Generation Failure: [${KERNEL_UTS}${deployfile}]"
+	if [ ! -f "${DIR}/deploy/${KERNEL_UTS}.${image}" ] ; then
+		export ERROR_MSG="File Generation Failure: [${KERNEL_UTS}.${image}]"
 		/bin/sh -e "${DIR}/scripts/error.sh" && { exit 1 ; }
 	else
-		ls -lh "${DIR}/deploy/${KERNEL_UTS}${deployfile}"
+		ls -lh "${DIR}/deploy/${KERNEL_UTS}.${image}"
 	fi
 }
 
@@ -98,6 +112,15 @@ make_pkg () {
 	cd ${DIR}/KERNEL/
 
 	deployfile="-${pkg}.tar.gz"
+	tar_options="--create --gzip --file"
+
+	if [ "${AUTO_TESTER}" ] ; then
+		#FIXME: xz might not be available everywhere...
+		#FIXME: ./tools/install_kernel.sh needs update...
+		deployfile="-${pkg}.tar.xz"
+		tar_options="--create --xz --file"
+	fi
+
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
 	fi
@@ -124,7 +147,11 @@ make_pkg () {
 
 	echo "Compressing ${KERNEL_UTS}${deployfile}..."
 	cd ${DIR}/deploy/tmp
-	tar czf ../${KERNEL_UTS}${deployfile} *
+	tar ${tar_options} ../${KERNEL_UTS}${deployfile} *
+
+	if [ ${AUTO_TESTER} ] ; then
+		cp -uv ../${KERNEL_UTS}${deployfile} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/"
+	fi
 
 	cd ${DIR}/
 	rm -rf ${DIR}/deploy/tmp || true
@@ -150,6 +177,13 @@ make_firmware_pkg () {
 make_dtbs_pkg () {
 	pkg="dtbs"
 	make_pkg
+}
+
+update_latest () {
+	echo "#!/bin/sh -e" > "${DIR}/deploy/beagleboard.org/latest"
+	echo "abi=aac" >> "${DIR}/deploy/beagleboard.org/latest"
+	echo "kernel=${KERNEL_UTS}" >> "${DIR}/deploy/beagleboard.org/latest"
+	cp -uv ./tools/test-me.sh "${DIR}/deploy/beagleboard.org/"
 }
 
 /bin/sh -e ${DIR}/tools/host_det.sh || { exit 1 ; }
@@ -213,6 +247,9 @@ make_modules_pkg
 make_firmware_pkg
 if [ "x${DTBS}" != "x" ] ; then
 	make_dtbs_pkg
+fi
+if [ "${AUTO_TESTER}" ] ; then
+	update_latest
 fi
 echo "-----------------------------"
 echo "Script Complete"
