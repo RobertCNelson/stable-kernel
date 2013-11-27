@@ -68,6 +68,17 @@ mmc_write_rootfs () {
 			fi
 		fi
 	fi
+
+	if [ -f "${DIR}/deploy/GFX_4.08.00.02_libs.tar.gz" ] ; then
+		if [ ! -d "${location}/opt/sgx" ] ; then
+			mkdir -p "${location}/opt/sgx"
+		fi
+		cp -v "${DIR}/deploy/GFX_4.08.00.02_libs.tar.gz" "${location}/opt/sgx"
+	fi
+
+	if [ -f "${DIR}/deploy/GFX_Linux_4.08.00.02_examples.tar.gz" ] ; then
+		cp -v "${DIR}/deploy/GFX_Linux_4.08.00.02_examples.tar.gz" "${location}/opt/sgx"
+	fi
 }
 
 mmc_write_boot () {
