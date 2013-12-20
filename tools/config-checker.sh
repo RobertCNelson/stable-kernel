@@ -7,6 +7,7 @@ check_config_builtin () {
 	test_config=$(grep "${config}=y" ${DIR}/patches/defconfig || true)
 	if [ "x${test_config}" = "x" ] ; then
 		echo "Config: [${config}=y] not enabled"
+		echo "echo ${config}=y >> patches/defconfig"
 		exit
 	fi
 }
@@ -25,6 +26,8 @@ check_config () {
 	test_config=$(grep "${config}=" ${DIR}/patches/defconfig || true)
 	if [ "x${test_config}" = "x" ] ; then
 		echo "Config: [${config}] not enabled"
+		echo "echo ${config}=y >> patches/defconfig"
+		echo "echo ${config}=m >> patches/defconfig"
 		exit
 	fi
 }
@@ -72,8 +75,8 @@ config="CONFIG_SCHEDSTATS"
 check_config_builtin
 config="CONFIG_SCHED_DEBUG"
 check_config_builtin
-config="CONFIG_AUDIT"
-check_config_disabled
+#config="CONFIG_AUDIT"
+#check_config_disabled
 
 #zram
 config="CONFIG_ZSMALLOC"
