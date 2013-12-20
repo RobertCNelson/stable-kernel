@@ -72,6 +72,8 @@ config="CONFIG_SCHEDSTATS"
 check_config_builtin
 config="CONFIG_SCHED_DEBUG"
 check_config_builtin
+config="CONFIG_AUDIT"
+check_config_disabled
 
 #zram
 config="CONFIG_ZSMALLOC"
