@@ -18,7 +18,13 @@ check_config_disabled () {
 	if [ "x${test_config}" = "x" ] ; then
 		echo "------------------------------------"
 		echo "Disable config: [${config}]"
-		exit
+		unset test_config
+		test_config=$(grep "${config}=y" ${DIR}/patches/defconfig || true)
+		if [ "x${test_config}" = "x${config}=y" ] ; then
+			echo "sed -i -e 's:${config}=y:# ${config} is not set:g' ./KERNEL/.config"
+		else
+			echo "sed -i -e 's:${config}=m:# ${config} is not set:g' ./KERNEL/.config"
+		fi
 	fi
 }
 
