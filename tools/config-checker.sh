@@ -128,11 +128,11 @@ if_config="CONFIG_ARCH_MULTI_V7"
 config="CONFIG_KERNEL_MODE_NEON"
 check_if_set_then_set
 
+if_config="CONFIG_ARCH_MULTI_V7"
 config="CONFIG_XFS_FS"
-check_config_builtin
-
+check_if_set_then_set
 config="CONFIG_BTRFS_FS"
-check_config_builtin
+check_if_set_then_set
 
 config="CONFIG_MSDOS_FS"
 check_config_builtin
