@@ -6,8 +6,8 @@ check_config_builtin () {
 	unset test_config
 	test_config=$(grep "${config}=y" ${DIR}/patches/defconfig || true)
 	if [ "x${test_config}" = "x" ] ; then
-		echo "------------------------------------"
-		echo "Config: [${config}=y] not enabled"
+		echo "#------------------------------------"
+		echo "#Config: [${config}=y] not enabled"
 		echo "echo ${config}=y >> ./KERNEL/.config"
 	fi
 }
@@ -16,14 +16,14 @@ check_config_module () {
 	unset test_config
 	test_config=$(grep "${config}=y" ${DIR}/patches/defconfig || true)
 	if [ "x${test_config}" = "x${config}=y" ] ; then
-		echo "------------------------------------"
+		echo "#------------------------------------"
 		echo "sed -i -e 's:${config}=y:${config}=m:g' ./KERNEL/.config"
 	else
 		unset test_config
 		test_config=$(grep "${config}=" ${DIR}/patches/defconfig || true)
 		if [ "x${test_config}" = "x" ] ; then
-			echo "------------------------------------"
-			echo "Config: [${config}] not enabled"
+			echo "#------------------------------------"
+			echo "#Config: [${config}] not enabled"
 			echo "echo ${config}=m >> ./KERNEL/.config"
 		fi
 	fi
@@ -33,8 +33,8 @@ check_config () {
 	unset test_config
 	test_config=$(grep "${config}=" ${DIR}/patches/defconfig || true)
 	if [ "x${test_config}" = "x" ] ; then
-		echo "------------------------------------"
-		echo "Config: [${config}] not enabled"
+		echo "#------------------------------------"
+		echo "#Config: [${config}] not enabled"
 		echo "echo ${config}=y >> ./KERNEL/.config"
 		echo "echo ${config}=m >> ./KERNEL/.config"
 	fi
@@ -44,8 +44,8 @@ check_config_disabled () {
 	unset test_config
 	test_config=$(grep "${config} is not set" ${DIR}/patches/defconfig || true)
 	if [ "x${test_config}" = "x" ] ; then
-		echo "------------------------------------"
-		echo "Disable config: [${config}]"
+		echo "#------------------------------------"
+		echo "#Disable config: [${config}]"
 		unset test_config
 		test_config=$(grep "${config}=y" ${DIR}/patches/defconfig || true)
 		if [ "x${test_config}" = "x${config}=y" ] ; then
