@@ -47,6 +47,14 @@ check_config_disabled () {
 	fi
 }
 
+check_if_set_then_set_module () {
+	unset test_config
+	test_config=$(grep "${if_config}=y" ${DIR}/patches/defconfig || true)
+	if [ "x${test_config}" = "x${if_config}=y" ] ; then
+		check_config_module
+	fi
+}
+
 check_if_set_then_set () {
 	unset test_config
 	test_config=$(grep "${if_config}=y" ${DIR}/patches/defconfig || true)
