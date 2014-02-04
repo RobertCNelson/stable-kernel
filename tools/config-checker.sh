@@ -2,6 +2,18 @@
 
 DIR=$PWD
 
+check_config_value () {
+	unset test_config
+	test_config=$(grep "${config}=" ${DIR}/patches/defconfig || true)
+	if [ "x${test_config}" = "x" ] ; then
+		echo "echo ${config}=${value} >> ./KERNEL/.config"
+	else
+		if [ ! "x${test_config}" = "x${config}=${value}" ] ; then
+			echo "sed -i -e 's:${test_config}:${config}=${value}:g' ./KERNEL/.config"
+		fi
+	fi
+}
+
 check_config_builtin () {
 	unset test_config
 	test_config=$(grep "${config}=y" ${DIR}/patches/defconfig || true)
@@ -88,6 +100,18 @@ config="CONFIG_KERNEL_LZ4"
 check_if_set_then_disable
 config="CONFIG_LBDAF"
 check_if_set_then_set
+
+if_config="CONFIG_ARCH_MULTI_V7"
+config="CONFIG_KERNEL_GZIP"
+check_if_set_then_disable
+config="CONFIG_KERNEL_LZMA"
+check_if_set_then_disable
+config="CONFIG_KERNEL_XZ"
+check_if_set_then_set
+config="CONFIG_KERNEL_LZO"
+check_if_set_then_disable
+config="CONFIG_KERNEL_LZ4"
+check_if_set_then_disable
 
 config="CONFIG_SWAP"
 check_config_builtin
