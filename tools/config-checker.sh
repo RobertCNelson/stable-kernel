@@ -45,7 +45,7 @@ check_config () {
 	fi
 }
 
-check_config_disabled () {
+check_config_disable () {
 	unset test_config
 	test_config=$(grep "${config} is not set" ${DIR}/patches/defconfig || true)
 	if [ "x${test_config}" = "x" ] ; then
@@ -79,13 +79,13 @@ check_if_set_then_disable () {
 	unset test_config
 	test_config=$(grep "${if_config}=y" ${DIR}/patches/defconfig || true)
 	if [ "x${test_config}" = "x${if_config}=y" ] ; then
-		check_config_disabled
+		check_config_disable
 	fi
 }
 
 #Basic:
 config="CONFIG_LOCALVERSION_AUTO"
-check_config_disabled
+check_config_disable
 
 if_config="CONFIG_CPU_ARM926T"
 config="CONFIG_KERNEL_GZIP"
@@ -238,10 +238,10 @@ check_config_builtin
 config="CONFIG_PROC_FS"
 check_config_builtin
 config="CONFIG_SYSFS_DEPRECATED"
-check_config_disabled
+check_config_disable
 #CONFIG_UEVENT_HELPER_PATH=""
 config="CONFIG_FW_LOADER_USER_HELPER"
-check_config_disabled
+check_config_disable
 #CONFIG_DMIID
 config="CONFIG_FHANDLE"
 check_config_builtin
@@ -262,7 +262,7 @@ check_config_builtin
 config="CONFIG_SCHED_DEBUG"
 check_config_builtin
 #config="CONFIG_AUDIT"
-#check_config_disabled
+#check_config_disable
 
 #zram
 config="CONFIG_ZSMALLOC"
@@ -272,7 +272,7 @@ check_config_module
 
 #ancient...
 config="CONFIG_OABI_COMPAT"
-check_config_disabled
+check_config_disable
 
 #Useful
 config="CONFIG_I2C_CHARDEV"
