@@ -63,8 +63,23 @@ redhat_reqs () {
 		echo "RPM distro version: [${rpm_distro}]"
 
 		case "${rpm_distro}" in
-		6.4)
-			echo "Warning: RHEL/CentOS [${rpm_distro}] has no [uboot-tools] pkg"
+		6.4|6.5)
+			echo "-----------------------------"
+			echo "Warning: RHEL/CentOS [${rpm_distro}] has no [uboot-tools] pkg by default"
+			echo "add: [EPEL] repo: https://fedoraproject.org/wiki/EPEL"
+			echo "http://download.fedoraproject.org/pub/epel/6/i386/repoview/epel-release.html"
+			echo "-----------------------------"
+			pkg="uboot-tools"
+			check_rpm
+			;;
+		7.0)
+			echo "-----------------------------"
+			echo "Warning: RHEL/CentOS [${rpm_distro}] has no [uboot-tools] pkg by default"
+			echo "add: [EPEL] repo: https://fedoraproject.org/wiki/EPEL"
+			echo "http://download.fedoraproject.org/pub/epel/6/i386/repoview/epel-release.html"
+			echo "-----------------------------"
+			#pkg="uboot-tools"
+			#check_rpm
 			;;
 		17|18|19|20)
 			pkg="uboot-tools"
@@ -252,10 +267,16 @@ debian_regs () {
 			unset error_unknown_deb_distro
 			unset warn_eol_distro
 			;;
-		lucid|precise|quantal|raring|saucy|trusty)
+		lucid|precise|quantal|saucy|trusty)
 			#Supported Ubuntu:
 			unset error_unknown_deb_distro
 			unset warn_eol_distro
+			;;
+		raring)
+			#Old Ubuntu: between lts: precise -> trusty
+			#But still on: http://us.archive.ubuntu.com/ubuntu/dists/
+			unset error_unknown_deb_distro
+			warn_eol_distro=1
 			;;
 		oneiric)
 			#Old Ubuntu: between lts: lucid -> precise
@@ -346,6 +367,10 @@ debian_regs () {
 
 	if [ "${warn_eol_distro}" ] ; then
 		echo "End Of Life (EOL) deb based distro detected."
+		echo "-----------------------------"
+	fi
+
+	if [ "${stop_pkg_search}" ] ; then
 		echo "Dependency check skipped, you are on your own."
 		echo "-----------------------------"
 		unset deb_pkgs
