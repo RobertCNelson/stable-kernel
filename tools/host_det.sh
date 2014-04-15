@@ -270,6 +270,9 @@ debian_regs () {
 		petra)
 			deb_distro="saucy"
 			;;
+		qiana)
+			deb_distro="trusty"
+			;;
 		esac
 
 		case "${deb_distro}" in
