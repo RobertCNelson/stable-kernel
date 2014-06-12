@@ -2,10 +2,8 @@
 #
 ARCH=$(uname -m)
 
-#Dual/Quad Core arms are now more prevalent, so just don't limit it x86:
-check_cpuinfo=$(cat /proc/cpuinfo | grep "^processor" | awk '{print $1}' | head -n 1)
-if [ "x${check_cpuinfo}" = "xprocessor" ] ; then
-	CORES=$(cat /proc/cpuinfo | grep "^processor" | wc -l)
+if [ $(which nproc) ] ; then
+	CORES=$(nproc)
 else
 	CORES=1
 fi
@@ -21,10 +19,12 @@ fi
 
 config="omap2plus_defconfig"
 
-#linaro_toolchain="arm9_gcc_4_7"
-#linaro_toolchain="cortex_gcc_4_6"
-linaro_toolchain="cortex_gcc_4_7"
-#linaro_toolchain="cortex_gcc_4_8"
+#toolchain="gcc_linaro_eabi_4_8"
+#toolchain="gcc_linaro_eabi_4_9"
+#toolchain="gcc_linaro_gnueabi_4_6"
+toolchain="gcc_linaro_gnueabihf_4_7"
+#toolchain="gcc_linaro_gnueabihf_4_8"
+#toolchain="gcc_linaro_gnueabihf_4_9"
 
 #Kernel/Build
 KERNEL_REL=3.8
