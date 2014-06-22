@@ -37,10 +37,13 @@ check_rpm () {
 }
 
 redhat_reqs () {
+	#https://fedoraproject.org/wiki/Releases
 	unset rpm_pkgs
 	pkg="redhat-lsb-core"
 	check_rpm
 	pkg="gcc"
+	check_rpm
+	pkg="lzop"
 	check_rpm
 	pkg="ncurses-devel"
 	check_rpm
@@ -62,10 +65,25 @@ redhat_reqs () {
 		echo "RPM distro version: [${rpm_distro}]"
 
 		case "${rpm_distro}" in
-		6.4)
-			echo "Warning: RHEL/CentOS [${rpm_distro}] has no [uboot-tools] pkg"
+		6.4|6.5)
+			echo "-----------------------------"
+			echo "Warning: RHEL/CentOS [${rpm_distro}] has no [uboot-tools] pkg by default"
+			echo "add: [EPEL] repo: https://fedoraproject.org/wiki/EPEL"
+			echo "http://download.fedoraproject.org/pub/epel/6/i386/repoview/epel-release.html"
+			echo "-----------------------------"
+			pkg="uboot-tools"
+			check_rpm
 			;;
-		17|18|19|20)
+		7.0)
+			echo "-----------------------------"
+			echo "Warning: RHEL/CentOS [${rpm_distro}] has no [uboot-tools] pkg by default"
+			echo "add: [EPEL] repo: https://fedoraproject.org/wiki/EPEL"
+			echo "http://download.fedoraproject.org/pub/epel/6/i386/repoview/epel-release.html"
+			echo "-----------------------------"
+			#pkg="uboot-tools"
+			#check_rpm
+			;;
+		17|18|19|20|21)
 			pkg="uboot-tools"
 			check_rpm
 			;;
@@ -212,8 +230,20 @@ debian_regs () {
 			fi
 		fi
 
+		if [ "x${deb_distro}" = "xluna" ] ; then
+			#http://distrowatch.com/table.php?distribution=elementary
+			#lsb_release -a
+			#No LSB modules are available.
+			#Distributor ID:    elementary OS
+			#Description:    elementary OS Luna
+			#Release:    0.2
+			#Codename:    luna
+			deb_distro="precise"
+		fi
+
 		#Linux Mint: Compatibility Matrix
 		#http://www.linuxmint.com/oldreleases.php
+		#http://packages.linuxmint.com/index.php
 		case "${deb_distro}" in
 		debian)
 			deb_distro="jessie"
@@ -239,37 +269,50 @@ debian_regs () {
 		olivia)
 			deb_distro="raring"
 			;;
+		petra)
+			deb_distro="saucy"
+			;;
+		qiana)
+			deb_distro="trusty"
+			;;
 		esac
 
+		unset error_unknown_deb_distro
 		case "${deb_distro}" in
 		squeeze|wheezy|jessie|sid)
-			#Supported Debian:
-			unset error_unknown_deb_distro
 			unset warn_eol_distro
 			;;
-		lucid|precise|quantal|raring|saucy)
-			#Supported Ubuntu:
-			unset error_unknown_deb_distro
+		utopic)
+			#14.10
 			unset warn_eol_distro
 			;;
-		oneiric)
-			#Old Ubuntu: between lts: lucid -> precise
-			#But still on: http://us.archive.ubuntu.com/ubuntu/dists/ (supported except for oneiric)
-			#in 'theory' could bring oneiric back, but no reason too at this point...
-			unset error_unknown_deb_distro
+		trusty)
+			#14.04: lts: trusty -> xyz
+			unset warn_eol_distro
+			;;
+		quantal|saucy)
+			#12.10|13.10
+			unset warn_eol_distro
+			;;
+		raring)
+			#13.04
+			warn_eol_distro=1
+			;;
+		precise)
+			#12.04: lts: precise -> trusty
+			unset warn_eol_distro
+			;;
+		maverick|natty|oneiric)
+			#10.04|10.10|11.04
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
-		maverick|natty)
-			#Old Ubuntu: between lts: lucid -> precise
-			#removed from http://us.archive.ubuntu.com/ubuntu/dists/ thus unsupported...
-			unset error_unknown_deb_distro
-			warn_eol_distro=1
-			stop_pkg_search=1
+		lucid)
+			#10.04: lts: lucid -> precise
+			unset warn_eol_distro
 			;;
 		hardy)
-			#Old Ubuntu LTS: unsupported...
-			unset error_unknown_deb_distro
+			#8.04: lts: hardy -> lucid
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
@@ -298,7 +341,7 @@ debian_regs () {
 
 		#Libs; starting with jessie/sid/saucy, lib<pkg_name>-dev:<arch>
 		case "${deb_distro}" in
-		jessie|sid|saucy)
+		jessie|sid|saucy|trusty|utopic)
 			pkg="libncurses5-dev:${deb_arch}"
 			check_dpkg
 			;;
@@ -316,7 +359,7 @@ debian_regs () {
 				pkg="ia32-libs"
 				check_dpkg
 				;;
-			wheezy|jessie|sid|quantal|raring|saucy)
+			wheezy|jessie|sid|quantal|raring|saucy|trusty|utopic)
 				pkg="libc6:i386"
 				check_dpkg
 				pkg="libncurses5:i386"
@@ -341,6 +384,10 @@ debian_regs () {
 
 	if [ "${warn_eol_distro}" ] ; then
 		echo "End Of Life (EOL) deb based distro detected."
+		echo "-----------------------------"
+	fi
+
+	if [ "${stop_pkg_search}" ] ; then
 		echo "Dependency check skipped, you are on your own."
 		echo "-----------------------------"
 		unset deb_pkgs

@@ -1,6 +1,6 @@
 #!/bin/sh -e
 #
-# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2014 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -69,8 +69,18 @@ make_kernel () {
 	make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} ${address} ${image} modules
 
 	unset DTBS
-	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" >/dev/null 2>&1 && DTBS=1
-	if [ "x${DTBS}" != "x" ] ; then
+	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" >/dev/null 2>&1 && DTBS=enable
+
+	#FIXME: Starting with v3.15-rc0
+	unset has_dtbs_install
+	if [ "x${DTBS}" = "x" ] ; then
+		cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs dtbs_install:" >/dev/null 2>&1 && DTBS=enable
+		if [ "x${DTBS}" = "xenable" ] ; then
+			has_dtbs_install=enable
+		fi
+	fi
+
+	if [ "x${DTBS}" = "xenable" ] ; then
 		echo "-----------------------------"
 		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} dtbs"
 		echo "-----------------------------"
@@ -82,12 +92,20 @@ make_kernel () {
 
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}.${image}" ] ; then
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}.${image}" || true
-		rm -rf "${DIR}/deploy/${KERNEL_UTS}.config" || true
+		rm -rf "${DIR}/deploy/config-${KERNEL_UTS}" || true
 	fi
 
 	if [ -f ./arch/arm/boot/${image} ] ; then
+		if [ ${AUTO_TESTER} ] ; then
+			mkdir -p "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/" || true
+			cp -uv arch/arm/boot/${image} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.${image}"
+			mkimage -A arm -O linux -T kernel -C none -a 0x80008000 -e 0x80008000 -n ${KERNEL_UTS} -d arch/arm/boot/zImage "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.uImage"
+			xz -z "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/${KERNEL_UTS}.uImage"
+			cp -uv .config "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/config-${KERNEL_UTS}"
+		fi
 		cp -v arch/arm/boot/${image} "${DIR}/deploy/${KERNEL_UTS}.${image}"
-		cp -v .config "${DIR}/deploy/${KERNEL_UTS}.config"
+		cp -v .config "${DIR}/deploy/config-${KERNEL_UTS}"
 	fi
 
 	cd ${DIR}/
@@ -104,6 +122,15 @@ make_pkg () {
 	cd ${DIR}/KERNEL/
 
 	deployfile="-${pkg}.tar.gz"
+	tar_options="--create --gzip --file"
+
+	if [ "${AUTO_TESTER}" ] ; then
+		#FIXME: xz might not be available everywhere...
+		#FIXME: ./tools/install_kernel.sh needs update...
+		deployfile="-${pkg}.tar.xz"
+		tar_options="--create --xz --file"
+	fi
+
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
 	fi
@@ -124,13 +151,21 @@ make_pkg () {
 		make -s ARCH=arm CROSS_COMPILE=${CC} firmware_install INSTALL_FW_PATH=${DIR}/deploy/tmp
 		;;
 	dtbs)
-		find ./arch/arm/boot/ -iname "*.dtb" -exec cp -v '{}' ${DIR}/deploy/tmp/ \;
+		if [ "x${has_dtbs_install}" = "xenable" ] ; then
+			make -s ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=${CC} dtbs_install INSTALL_DTBS_PATH=${DIR}/deploy/tmp
+		else
+			find ./arch/arm/boot/ -iname "*.dtb" -exec cp -v '{}' ${DIR}/deploy/tmp/ \;
+		fi
 		;;
 	esac
 
 	echo "Compressing ${KERNEL_UTS}${deployfile}..."
 	cd ${DIR}/deploy/tmp
-	tar czf ../${KERNEL_UTS}${deployfile} *
+	tar ${tar_options} ../${KERNEL_UTS}${deployfile} *
+
+	if [ ${AUTO_TESTER} ] ; then
+		cp -uv ../${KERNEL_UTS}${deployfile} "${DIR}/deploy/beagleboard.org/${KERNEL_UTS}/"
+	fi
 
 	cd ${DIR}/
 	rm -rf ${DIR}/deploy/tmp || true
@@ -156,6 +191,13 @@ make_firmware_pkg () {
 make_dtbs_pkg () {
 	pkg="dtbs"
 	make_pkg
+}
+
+update_latest () {
+	echo "#!/bin/sh -e" > "${DIR}/deploy/beagleboard.org/latest"
+	echo "abi=aac" >> "${DIR}/deploy/beagleboard.org/latest"
+	echo "kernel=${KERNEL_UTS}" >> "${DIR}/deploy/beagleboard.org/latest"
+	cp -uv ./tools/test-me.sh "${DIR}/deploy/beagleboard.org/"
 }
 
 /bin/sh -e ${DIR}/tools/host_det.sh || { exit 1 ; }
@@ -217,8 +259,11 @@ fi
 make_kernel
 make_modules_pkg
 make_firmware_pkg
-if [ "x${DTBS}" != "x" ] ; then
+if [ "x${DTBS}" = "xenable" ] ; then
 	make_dtbs_pkg
+fi
+if [ "${AUTO_TESTER}" ] ; then
+	update_latest
 fi
 echo "-----------------------------"
 echo "Script Complete"
