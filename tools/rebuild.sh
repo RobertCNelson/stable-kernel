@@ -184,11 +184,7 @@ make_dtbs_pkg () {
 /bin/sh -e ${DIR}/tools/host_det.sh || { exit 1 ; }
 
 if [ ! -f ${DIR}/system.sh ] ; then
-	cp ${DIR}/system.sh.sample ${DIR}/system.sh
-else
-	#fixes for bash -> sh conversion...
-	sed -i 's/bash/sh/g' ${DIR}/system.sh
-	sed -i 's/==/=/g' ${DIR}/system.sh
+	cp -v ${DIR}/system.sh.sample ${DIR}/system.sh
 fi
 
 unset CC
