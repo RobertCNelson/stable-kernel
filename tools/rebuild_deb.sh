@@ -27,7 +27,7 @@ mkdir -p ${DIR}/deploy/
 patch_kernel () {
 	cd ${DIR}/KERNEL
 
-	export DIR GIT_OPTS
+	export DIR
 	/bin/sh -e ${DIR}/patch.sh || { git add . ; exit 1 ; }
 
 	if [ ! "${RUN_BISECT}" ] ; then
