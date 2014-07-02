@@ -35,6 +35,6 @@ BUILD=x0
 #git branch
 #BRANCH="v3.X.x"
 
-BUILDREV=1.0
 DISTRO=cross
 DEBARCH=armhf
+#

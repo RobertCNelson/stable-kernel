@@ -22,6 +22,8 @@
 
 DIR=$PWD
 
+BUILDREV=1
+
 mkdir -p ${DIR}/deploy/
 
 patch_kernel () {
