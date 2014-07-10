@@ -34,8 +34,8 @@ if [ -e ${DIR}/version.sh ]; then
 	git push origin ${BRANCH}
 	git push origin ${BRANCH} --tags
 
-	#cd ${DIR}/KERNEL/
-	#git push -f git@github.com:RobertCNelson/linux-stable-rcn-ee.git "${KERNEL_TAG}-${BUILD}"
-	#cd ${DIR}/
+	cd ${DIR}/KERNEL/
+	git push -f git@github.com:RobertCNelson/linux-stable-rcn-ee.git "v${KERNEL_TAG}-${BUILD}"
+	cd ${DIR}/
 fi
 
