@@ -24,7 +24,7 @@
 
 DIR=$PWD
 
-repo="git@github.com:RobertCNelson/linux-1"
+repo="git@github.com:beagleboard/linux.git"
 
 if [ -e ${DIR}/version.sh ]; then
 	unset BRANCH
