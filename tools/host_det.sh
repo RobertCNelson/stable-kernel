@@ -297,13 +297,10 @@ debian_regs () {
 			#14.04 (EOL: April 2019) lts: trusty -> xyz
 			unset warn_eol_distro
 			;;
-		saucy)
-			#13.10 (EOL: July 17, 2014)
-			unset warn_eol_distro
-			;;
-		quantal|raring)
+		quantal|raring|saucy)
 			#12.10 (EOL: May 16, 2014)
 			#13.04 (EOL: January 27, 2014)
+			#13.10 (EOL: July 17, 2014)
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
@@ -350,9 +347,9 @@ debian_regs () {
 			;;
 		esac
 
-		#Libs; starting with jessie/sid/saucy, lib<pkg_name>-dev:<arch>
+		#Libs; starting with jessie/sid, lib<pkg_name>-dev:<arch>
 		case "${deb_distro}" in
-		jessie|sid|saucy|trusty|utopic)
+		jessie|sid|trusty|utopic)
 			pkg="libncurses5-dev:${deb_arch}"
 			check_dpkg
 			;;
@@ -370,7 +367,7 @@ debian_regs () {
 				pkg="ia32-libs"
 				check_dpkg
 				;;
-			wheezy|jessie|sid|saucy|trusty|utopic)
+			wheezy|jessie|sid|trusty|utopic)
 				pkg="libc6:i386"
 				check_dpkg
 				pkg="libncurses5:i386"
