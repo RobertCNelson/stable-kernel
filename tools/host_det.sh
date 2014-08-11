@@ -283,43 +283,47 @@ debian_regs () {
 			;;
 		esac
 
+		#https://wiki.ubuntu.com/Releases
 		unset error_unknown_deb_distro
 		case "${deb_distro}" in
 		squeeze|wheezy|jessie|sid)
 			unset warn_eol_distro
 			;;
 		utopic)
-			#14.10
+			#14.10 (EOL: xyz)
 			unset warn_eol_distro
 			;;
 		trusty)
-			#14.04: lts: trusty -> xyz
+			#14.04 (EOL: April 2019) lts: trusty -> xyz
 			unset warn_eol_distro
 			;;
 		saucy)
-			#13.10
+			#13.10 (EOL: July 17, 2014)
 			unset warn_eol_distro
 			;;
 		quantal|raring)
-			#12.10|13.04
+			#12.10 (EOL: May 16, 2014)
+			#13.04 (EOL: January 27, 2014)
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
 		precise)
-			#12.04: lts: precise -> trusty
+			#12.04 (EOL: April 2017) lts: precise -> trusty
 			unset warn_eol_distro
 			;;
 		maverick|natty|oneiric)
-			#10.04|10.10|11.04
+			#10.10 (EOL: April 10, 2012)
+			#11.04 (EOL: October 28, 2012)
+			#11.10 (EOL: May 9, 2013)
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
 		lucid)
-			#10.04: lts: lucid -> precise
+			#10.04 (EOL: April 2015) lts: lucid -> precise
 			unset warn_eol_distro
 			;;
 		hardy)
-			#8.04: lts: hardy -> lucid
+			#8.04 (EOL: May 2013) lts: hardy -> lucid
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
