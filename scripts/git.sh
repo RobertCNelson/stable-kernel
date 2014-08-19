@@ -87,7 +87,6 @@ git_kernel () {
 	echo "-----------------------------"
 	echo "scripts/git: Debug: LINUX_GIT is setup as: [${LINUX_GIT}]."
 	echo "scripts/git: [`cat .git/config | grep url | sed 's/\t//g' | sed 's/ //g'`]"
-	echo "scripts/git: Updating LINUX_GIT tree via: git fetch"
 	git fetch || true
 	echo "-----------------------------"
 	cd ${DIR}/
