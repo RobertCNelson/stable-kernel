@@ -85,16 +85,16 @@ redhat_reqs () {
 			pkg="uboot-tools"
 			check_rpm
 			;;
-		22)
+		22|23)
 			pkgtool="dnf"
 			pkg="uboot-tools"
 			check_rpm
 			;;
-		20|21)
+		21)
 			pkg="uboot-tools"
 			check_rpm
 			;;
-		17|18|19)
+		17|18|19|20)
 			#end of life...
 			pkg="uboot-tools"
 			check_rpm
@@ -350,6 +350,10 @@ debian_regs () {
 		unset error_unknown_deb_distro
 		case "${deb_distro}" in
 		squeeze|wheezy|jessie|stretch|sid)
+			#squeeze: 2016-02-06 https://wiki.debian.org/DebianSqueeze
+			#wheezy: https://wiki.debian.org/DebianWheezy
+			#jessie: https://wiki.debian.org/DebianJessie
+			#stretch: https://wiki.debian.org/DebianStretch
 			unset warn_eol_distro
 			;;
 		vivid|wily)
@@ -384,11 +388,8 @@ debian_regs () {
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
-		lucid)
+		hardy|lucid)
 			#10.04 (EOL: April 2015) lts: lucid -> precise
-			unset warn_eol_distro
-			;;
-		hardy)
 			#8.04 (EOL: May 2013) lts: hardy -> lucid
 			warn_eol_distro=1
 			stop_pkg_search=1
@@ -406,7 +407,7 @@ debian_regs () {
 		
 		#pkg: mkimage
 		case "${deb_distro}" in
-		squeeze|lucid)
+		squeeze)
 			pkg="uboot-mkimage"
 			check_dpkg
 			;;
@@ -418,7 +419,7 @@ debian_regs () {
 
 		#Libs; starting with jessie/sid, lib<pkg_name>-dev:<arch>
 		case "${deb_distro}" in
-		squeeze|wheezy|lucid|precise)
+		squeeze|wheezy|precise)
 			pkg="libncurses5-dev"
 			check_dpkg
 			;;
@@ -432,7 +433,7 @@ debian_regs () {
 		if [ "x${deb_arch}" = "xamd64" ] ; then
 			unset dpkg_multiarch
 			case "${deb_distro}" in
-			squeeze|lucid|precise)
+			squeeze|precise)
 				pkg="ia32-libs"
 				check_dpkg
 				;;
