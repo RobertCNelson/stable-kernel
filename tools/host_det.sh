@@ -82,8 +82,8 @@ redhat_reqs () {
 			echo "add: [EPEL] repo: https://fedoraproject.org/wiki/EPEL"
 			echo "http://download.fedoraproject.org/pub/epel/7/x86_64/repoview/epel-release.html"
 			echo "-----------------------------"
-			pkg="uboot-tools"
-			check_rpm
+			#pkg="uboot-tools"
+			#check_rpm
 			;;
 		22|23)
 			pkgtool="dnf"
