@@ -62,6 +62,17 @@ redhat_reqs () {
 		check_rpm
 	fi
 
+	if [ $(which lsb_release) ] ; then
+		rpm_distro=$(lsb_release -rs)
+		echo "RPM distro version: [${rpm_distro}]"
+
+		case "${rpm_distro}" in
+		22|23)
+			pkgtool="dnf"
+			;;
+		esac
+	fi
+
 	if [ "${rpm_pkgs}" ] ; then
 		echo "Red Hat, or derivatives: missing dependencies, please install:"
 		echo "-----------------------------"
