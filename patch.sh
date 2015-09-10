@@ -60,6 +60,14 @@ cleanup () {
 	exit 2
 }
 
+pick () {
+	if [ ! -d ../patches/${pick_dir} ] ; then
+		mkdir -p ../patches/${pick_dir}
+	fi
+	git format-patch -1 ${SHA} --start-number ${num} -o ../patches/${pick_dir}
+	num=$(($num+1))
+}
+
 external_git () {
 	git_tag=""
 	echo "pulling: ${git_tag}"
@@ -73,22 +81,21 @@ rt_cleanup () {
 
 rt () {
 	echo "dir: rt"
-	rt_patch="4.1.3-rt3"
+	rt_patch="${KERNEL_REL}${kernel_rt}"
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
-		wget -c https://www.kernel.org/pub/linux/kernel/projects/rt/4.1/patch-${rt_patch}.patch.xz
+		wget -c https://www.kernel.org/pub/linux/kernel/projects/rt/${KERNEL_REL}/patch-${rt_patch}.patch.xz
 		xzcat patch-${rt_patch}.patch.xz | patch -p1 || rt_cleanup
-		rm -rf patch-${rt_patch}.patch.xz
+		rm -f patch-${rt_patch}.patch.xz
+		rm -f localversion-rt
 		git add .
 		git commit -a -m 'merge: CONFIG_PREEMPT_RT Patch Set' -s
 		git format-patch -1 -o ../patches/rt/
 
-		sed -i -e 's:rt1:rt3:g' ../patches/rt/0002-rt-we-append-rt-on-our-own.patch
 		exit 2
 	fi
 
 	${git} "${DIR}/patches/rt/0001-merge-CONFIG_PREEMPT_RT-Patch-Set.patch"
-	${git} "${DIR}/patches/rt/0002-rt-we-append-rt-on-our-own.patch"
 }
 
 local_patch () {
