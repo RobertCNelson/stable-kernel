@@ -75,11 +75,11 @@ make_deb () {
 	echo "make ${build_opts} CROSS_COMPILE="${CC}" deb-pkg"
 	echo "-----------------------------"
 	fakeroot make ${build_opts} CROSS_COMPILE="${CC}" deb-pkg
-	mv ${DIR}/*.deb ${DIR}/deploy/
-	mv ${DIR}/*.debian.tar.gz ${DIR}/deploy/
-	mv ${DIR}/*.dsc ${DIR}/deploy/
-	mv ${DIR}/*.changes ${DIR}/deploy/
-	mv ${DIR}/*.orig.tar.gz ${DIR}/deploy/
+	mv ${DIR}/*.deb ${DIR}/deploy/ || true
+	mv ${DIR}/*.debian.tar.gz ${DIR}/deploy/ || true
+	mv ${DIR}/*.dsc ${DIR}/deploy/ || true
+	mv ${DIR}/*.changes ${DIR}/deploy/ || true
+	mv ${DIR}/*.orig.tar.gz ${DIR}/deploy/ || true
 
 	if grep -q dtbs "${DIR}/KERNEL/arch/arm/Makefile"; then
 		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" dtbs"
