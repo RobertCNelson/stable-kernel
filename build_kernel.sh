@@ -68,13 +68,13 @@ make_kernel () {
 	echo "-----------------------------"
 	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" ${address} ${image} modules"
 	echo "-----------------------------"
-	make -j"${CORES}" ARCH=arm LOCALVERSION=-"${BUILD}" CROSS_COMPILE="${CC}" "${address}" "${image}" modules
+	make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" ${address} ${image} modules
 	echo "-----------------------------"
 
 	if grep -q dtbs "${DIR}/KERNEL/arch/arm/Makefile"; then
 		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" dtbs"
 		echo "-----------------------------"
-		make -j"${CORES}" ARCH=arm LOCALVERSION=-"${BUILD}" CROSS_COMPILE="${CC}" dtbs
+		make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" dtbs
 		echo "-----------------------------"
 	fi
 
