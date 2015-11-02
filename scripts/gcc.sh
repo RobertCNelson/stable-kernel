@@ -29,8 +29,8 @@ DIR=$PWD
 #toolchain
 . "${DIR}/version.sh"
 
-if [ -d ~/dl/gcc/ ] ; then
-	gcc_dir="~/dl/gcc"
+if [ -d $HOME/dl/gcc/ ] ; then
+	gcc_dir="$HOME/dl/gcc"
 else
 	gcc_dir="${DIR}/dl"
 fi
