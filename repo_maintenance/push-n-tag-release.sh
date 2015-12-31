@@ -38,7 +38,7 @@ if [ -e ${DIR}/version.sh ]; then
 	git push origin ${BRANCH} --tags
 
 	cd ${DIR}/KERNEL/
-	make ARCH=arm distclean
+	make ARCH=${KERNEL_ARCH} distclean
 
 	cp ${DIR}/patches/defconfig ${DIR}/KERNEL/.config
 	make ARCH=${KERNEL_ARCH} savedefconfig
