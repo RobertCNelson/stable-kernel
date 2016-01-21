@@ -60,11 +60,11 @@ cleanup () {
 	exit 2
 }
 
-pick () {
-	if [ ! -d ../patches/${pick_dir} ] ; then
-		mkdir -p ../patches/${pick_dir}
+cherrypick () {
+	if [ ! -d ../patches/${cherrypick_dir} ] ; then
+		mkdir -p ../patches/${cherrypick_dir}
 	fi
-	git format-patch -1 ${SHA} --start-number ${num} -o ../patches/${pick_dir}
+	git format-patch -1 ${SHA} --start-number ${num} -o ../patches/${cherrypick_dir}
 	num=$(($num+1))
 }
 
