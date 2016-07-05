@@ -330,6 +330,10 @@ debian_regs () {
 			#Debian 10
 			deb_distro="sid"
 			;;
+		bullseye)
+			#Debian 11
+			deb_distro="sid"
+			;;
 		esac
 
 		#https://wiki.ubuntu.com/Releases
