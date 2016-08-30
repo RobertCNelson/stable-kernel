@@ -23,6 +23,8 @@
 DIR=$PWD
 CORES=$(getconf _NPROCESSORS_ONLN)
 debian_stable_git="2.1.4"
+#git hard requirements:
+#git: --no-edit
 
 build_git () {
 	echo "-----------------------------"
@@ -64,7 +66,7 @@ git_kernel_stable () {
 git_kernel_torvalds () {
 	echo "-----------------------------"
 	echo "scripts/git: pulling from: ${torvalds_linux}"
-	${git_bin} pull "${git_opts}" "${torvalds_linux}" master --tags || true
+	${git_bin} pull --no-edit "${torvalds_linux}" master --tags || true
 	${git_bin} tag | grep v"${KERNEL_TAG}" >/dev/null 2>&1 || git_kernel_stable
 }
 
@@ -165,7 +167,7 @@ git_kernel () {
 	${git_bin} reset --hard HEAD
 	${git_bin} checkout master -f
 
-	${git_bin} pull "${git_opts}" || true
+	${git_bin} pull --no-edit || true
 
 	${git_bin} tag | grep "v${KERNEL_TAG}" | grep -v rc >/dev/null 2>&1 || git_kernel_torvalds
 
@@ -193,8 +195,8 @@ git_kernel () {
 	fi
 
 	if [ "${TOPOFTREE}" ] ; then
-		${git_bin} pull "${git_opts}" "${torvalds_linux}" master || true
-		${git_bin} pull "${git_opts}" "${torvalds_linux}" master --tags || true
+		${git_bin} pull --no-edit "${torvalds_linux}" master || true
+		${git_bin} pull --no-edit "${torvalds_linux}" master --tags || true
 	fi
 
 	${git_bin} describe
@@ -247,13 +249,6 @@ elif [ "${git_major}" -eq "${compare_major}" ] ; then
 fi
 
 echo "scripts/git: [`LC_ALL=C ${git_bin} --version`]"
-
-#Debian 7 (Wheezy): git version 1.7.10.4 and later needs "--no-edit"
-unset git_opts
-git_no_edit=$(LC_ALL=C ${git_bin} help pull | grep -m 1 -e "--no-edit" || true)
-if [ ! "x${git_no_edit}" = "x" ] ; then
-	git_opts="--no-edit"
-fi
 
 #CentOS 6.4: git version 1.7.1 (no --local option)
 unset git_has_local

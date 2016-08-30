@@ -27,13 +27,8 @@ if [ -f ${DIR}/system.sh ] ; then
 	. ${DIR}/system.sh
 fi
 git_bin=$(which git)
-
-#Debian 7 (Wheezy): git version 1.7.10.4 and later needs "--no-edit"
-unset git_opts
-git_no_edit=$(LC_ALL=C ${git_bin} help pull | grep -m 1 -e "--no-edit" || true)
-if [ ! "x${git_no_edit}" = "x" ] ; then
-	git_opts="--no-edit"
-fi
+#git hard requirements:
+#git: --no-edit
 
 git="${git_bin} am"
 #git_patchset=""
@@ -77,7 +72,7 @@ cherrypick () {
 external_git () {
 	git_tag=""
 	echo "pulling: ${git_tag}"
-	${git_bin} pull ${git_opts} ${git_patchset} ${git_tag}
+	${git_bin} pull --no-edit ${git_patchset} ${git_tag}
 }
 
 aufs_fail () {
