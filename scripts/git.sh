@@ -188,6 +188,8 @@ git_shallow () {
 . "${DIR}/version.sh"
 . "${DIR}/system.sh"
 
+echo "git version: [`git --version`]"
+
 #Debian 7 (Wheezy): git version 1.7.10.4 and later needs "--no-edit"
 unset git_opts
 git_no_edit=$(LC_ALL=C git help pull | grep -m 1 -e "--no-edit" || true)
