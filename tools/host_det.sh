@@ -3,6 +3,8 @@
 #opensuse support added by: Antonio Cavallo
 #https://launchpad.net/~a.cavallo
 
+git_bin=$(which git)
+
 warning () { echo "! $@" >&2; }
 error () { echo "* $@" >&2; exit 1; }
 info () { echo "+ $@" >&2; }
@@ -472,7 +474,7 @@ debian_regs () {
 		echo "-----------------------------"
 		echo "Please cut, paste and email to: bugs@rcn-ee.com"
 		echo "-----------------------------"
-		echo "git: [$(git rev-parse HEAD)]"
+		echo "git: [$(${git_bin} rev-parse HEAD)]"
 		echo "git: [$(cat .git/config | grep url | sed 's/\t//g' | sed 's/ //g')]"
 		echo "uname -m: [$(uname -m)]"
 		echo "lsb_release -a:"
@@ -498,11 +500,11 @@ BUILD_HOST=${BUILD_HOST:="$( detect_host )"}
 if [ "$(which lsb_release)" ] ; then
 	info "Detected build host [$(lsb_release -sd)]"
 	info "host: [$(uname -m)]"
-	info "git HEAD commit: [$(git rev-parse HEAD)]"
+	info "git HEAD commit: [$(${git_bin} rev-parse HEAD)]"
 else
 	info "Detected build host [$BUILD_HOST]"
 	info "host: [$(uname -m)]"
-	info "git HEAD commit: [$(git rev-parse HEAD)]"
+	info "git HEAD commit: [$(${git_bin} rev-parse HEAD)]"
 fi
 
 DIR=$PWD
