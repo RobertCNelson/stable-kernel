@@ -142,6 +142,9 @@ debian_regs () {
 	check_dpkg
 	pkg="man-db"
 	check_dpkg
+	#git
+	pkg="gettext"
+	check_dpkg
 
 	unset warn_dpkg_ia32
 	unset stop_pkg_search
@@ -416,9 +419,23 @@ debian_regs () {
 		wheezy|precise)
 			pkg="libncurses5-dev"
 			check_dpkg
+			#git
+			pkg="libcurl4-gnutls-dev"
+			check_dpkg
+			pkg="libexpat1-dev"
+			check_dpkg
+			pkg="libssl-dev"
+			check_dpkg
 			;;
 		*)
 			pkg="libncurses5-dev:${deb_arch}"
+			check_dpkg
+			#git
+			pkg="libcurl4-gnutls-dev:${deb_arch}"
+			check_dpkg
+			pkg="libexpat1-dev:${deb_arch}"
+			check_dpkg
+			pkg="libssl-dev:${deb_arch}"
 			check_dpkg
 			;;
 		esac
