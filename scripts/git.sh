@@ -32,18 +32,26 @@ build_git () {
 	if [ -f "${DIR}/ignore/git-${debian_stable_git}.tar.gz" ] ; then
 		cd "${DIR}/ignore/" || true
 		tar xf git-${debian_stable_git}.tar.gz
-		cd git-${debian_stable_git}
-		echo "scripts/git: [${debian_stable_git}]"
+		if [ -d git-${debian_stable_git} ] ; then
+			cd ./git-${debian_stable_git}/ || true
+			echo "scripts/git: [${debian_stable_git}]"
 
-		echo "scripts/git: [make -j${CORES} prefix=/usr/local all]"
-		make -j${CORES} prefix=/usr/local all &> /dev/null
+			echo "scripts/git: [make -j${CORES} prefix=/usr/local all]"
+			make -j${CORES} prefix=/usr/local all &> /dev/null
 
-		echo "scripts/git: [sudo make prefix=/usr/local install]"
-		sudo make prefix=/usr/local install &> /dev/null
+			echo "scripts/git: [sudo make prefix=/usr/local install]"
+			sudo make prefix=/usr/local install &> /dev/null
 
-		cd "${DIR}/ignore/" || true
-		rm -rf git-${debian_stable_git}/ || true
-		git_bin=$(which git)
+			cd "${DIR}/ignore/" || true
+			rm -rf git-${debian_stable_git}/ || true
+			git_bin=$(which git)
+		else
+			echo "scripts/git: failure to build: git-${debian_stable_git}.tar.gz"
+			exit 2
+		fi
+	else
+		echo "scripts/git: failure to download: git-${debian_stable_git}.tar.gz"
+		exit 2
 	fi
 }
 
