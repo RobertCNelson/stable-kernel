@@ -434,7 +434,7 @@ debian_regs () {
 			check_dpkg
 			if [ "x${build_git}" = "xtrue" ] ; then
 				#git
-				pkg_one="libcurl4-gnutls-dev:${deb_arch}"
+				pkg="libcurl4-gnutls-dev:${deb_arch}"
 				check_dpkg
 				pkg="libexpat1-dev:${deb_arch}"
 				check_dpkg
