@@ -270,7 +270,7 @@ backports () {
 #backports
 
 git_clone_dtc () {
-	${git_bin} clone -b master https://git.kernel.org/pub/scm/utils/dtc/dtc.git --depth=10
+	${git_bin} clone -b master https://git.kernel.org/pub/scm/utils/dtc/dtc.git --depth=20
 	#dtc: Bump version to v1.4.4
 	cd ./dtc
 	${git_bin} checkout 558cd81bdd432769b59bff01240c44f82cfb1a9d -b tmp
