@@ -1,6 +1,6 @@
 #!/bin/sh -e
 #
-# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2017 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,113 +21,138 @@
 # THE SOFTWARE.
 
 DIR=$PWD
+git_bin=$(which git)
 
-mkdir -p ${DIR}/deploy/
+mkdir -p "${DIR}/deploy/"
 
 patch_kernel () {
-	cd ${DIR}/KERNEL
+	cd "${DIR}/KERNEL" || exit
 
-	export DIR GIT_OPTS
-	/bin/sh -e ${DIR}/patch.sh || { git add . ; exit 1 ; }
+	export DIR
+	/bin/bash -e "${DIR}/patch.sh" || { ${git_bin} add . ; exit 1 ; }
 
-	if [ ! "${RUN_BISECT}" ] ; then
-		git add .
-		git commit --allow-empty -a -m "${KERNEL_TAG}-${BUILD} patchset"
+	if [ ! -f "${DIR}/.yakbuild" ] ; then
+		if [ ! "${RUN_BISECT}" ] ; then
+			${git_bin} add --all
+			${git_bin} commit --allow-empty -a -m "${KERNEL_TAG}${BUILD} patchset"
+		fi
 	fi
 
-	cd ${DIR}/
+	cd "${DIR}/" || exit
 }
 
 copy_defconfig () {
-	cd ${DIR}/KERNEL/
-	make ARCH=arm CROSS_COMPILE=${CC} distclean
-	make ARCH=arm CROSS_COMPILE=${CC} ${config}
-	cp -v .config ${DIR}/patches/ref_${config}
-	cp -v ${DIR}/patches/defconfig .config
-	cd ${DIR}/
+	cd "${DIR}/KERNEL" || exit
+	make ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" distclean
+	if [ ! -f "${DIR}/.yakbuild" ] ; then
+		make ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" "${config}"
+		cp -v .config "${DIR}/patches/ref_${config}"
+		cp -v "${DIR}/patches/defconfig" .config
+	else
+		make ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" rcn-ee_defconfig
+	fi
+	cd "${DIR}/" || exit
 }
 
 make_menuconfig () {
-	cd ${DIR}/KERNEL/
-	make ARCH=arm CROSS_COMPILE=${CC} menuconfig
-	cp -v .config ${DIR}/patches/defconfig
-	cd ${DIR}/
+	cd "${DIR}/KERNEL" || exit
+	make ARCH=${KERNEL_ARCH} CROSS_COMPILE="${CC}" menuconfig
+	if [ ! -f "${DIR}/.yakbuild" ] ; then
+		cp -v .config "${DIR}/patches/defconfig"
+	fi
+	cd "${DIR}/" || exit
 }
 
 make_kernel () {
-	cd ${DIR}/KERNEL/
+	if [ "x${KERNEL_ARCH}" = "xarm" ] ; then
+		image="zImage"
+	else
+		image="Image"
+	fi
+
+	unset address
+
+	##uImage, if you really really want a uImage, zreladdr needs to be defined on the build line going forward...
+	##make sure to install your distro's version of mkimage
+	#image="uImage"
+	#address="LOADADDR=${ZRELADDR}"
+
+	cd "${DIR}/KERNEL" || exit
 	echo "-----------------------------"
-	echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" zImage modules"
+	echo "make -j${CORES} ARCH=${KERNEL_ARCH} LOCALVERSION=${BUILD} CROSS_COMPILE=\"${CC}\" ${address} ${image} modules"
 	echo "-----------------------------"
-	make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" zImage modules
+	make -j${CORES} ARCH=${KERNEL_ARCH} LOCALVERSION=${BUILD} CROSS_COMPILE="${CC}" ${address} ${image} modules
+	echo "-----------------------------"
 
-	unset DTBS
-	cat ${DIR}/KERNEL/arch/arm/Makefile | grep "dtbs:" >/dev/null 2>&1 && DTBS=1
-	if [ "x${DTBS}" != "x" ] ; then
+	if grep -q dtbs "${DIR}/KERNEL/arch/${KERNEL_ARCH}/Makefile"; then
+		echo "make -j${CORES} ARCH=${KERNEL_ARCH} LOCALVERSION=${BUILD} CROSS_COMPILE=\"${CC}\" dtbs"
 		echo "-----------------------------"
-		echo "make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE=\"${CC}\" dtbs"
+		make -j${CORES} ARCH=${KERNEL_ARCH} LOCALVERSION=${BUILD} CROSS_COMPILE="${CC}" dtbs
 		echo "-----------------------------"
-		make -j${CORES} ARCH=arm LOCALVERSION=-${BUILD} CROSS_COMPILE="${CC}" dtbs
-		ls arch/arm/boot/* | grep dtb >/dev/null 2>&1 || unset DTBS
 	fi
 
-	KERNEL_UTS=$(cat ${DIR}/KERNEL/include/generated/utsrelease.h | awk '{print $3}' | sed 's/\"//g' )
+	KERNEL_UTS=$(cat "${DIR}/KERNEL/include/generated/utsrelease.h" | awk '{print $3}' | sed 's/\"//g' )
 
-	deployfile=".zImage"
-	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
-		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
-		rm -rf "${DIR}/deploy/${KERNEL_UTS}.config" || true
+	if [ -f "${DIR}/deploy/${KERNEL_UTS}.${image}" ] ; then
+		rm -rf "${DIR}/deploy/${KERNEL_UTS}.${image}" || true
+		rm -rf "${DIR}/deploy/config-${KERNEL_UTS}" || true
 	fi
 
-	if [ -f ./arch/arm/boot/zImage ] ; then
-		cp -v arch/arm/boot/zImage "${DIR}/deploy/${KERNEL_UTS}.zImage"
-		cp -v .config "${DIR}/deploy/${KERNEL_UTS}.config"
+	if [ -f ./arch/${KERNEL_ARCH}/boot/${image} ] ; then
+		cp -v arch/${KERNEL_ARCH}/boot/${image} "${DIR}/deploy/${KERNEL_UTS}.${image}"
+		cp -v .config "${DIR}/deploy/config-${KERNEL_UTS}"
 	fi
 
-	cd ${DIR}/
+	cd "${DIR}/" || exit
 
-	if [ ! -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
-		export ERROR_MSG="File Generation Failure: [${KERNEL_UTS}${deployfile}]"
+	if [ ! -f "${DIR}/deploy/${KERNEL_UTS}.${image}" ] ; then
+		export ERROR_MSG="File Generation Failure: [${KERNEL_UTS}.${image}]"
 		/bin/sh -e "${DIR}/scripts/error.sh" && { exit 1 ; }
 	else
-		ls -lh "${DIR}/deploy/${KERNEL_UTS}${deployfile}"
+		ls -lh "${DIR}/deploy/${KERNEL_UTS}.${image}"
 	fi
 }
 
 make_pkg () {
-	cd ${DIR}/KERNEL/
+	cd "${DIR}/KERNEL" || exit
 
 	deployfile="-${pkg}.tar.gz"
+	tar_options="--create --gzip --file"
+
 	if [ -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		rm -rf "${DIR}/deploy/${KERNEL_UTS}${deployfile}" || true
 	fi
 
-	if [ -d ${DIR}/deploy/tmp ] ; then
-		rm -rf ${DIR}/deploy/tmp || true
+	if [ -d "${DIR}/deploy/tmp" ] ; then
+		rm -rf "${DIR}/deploy/tmp" || true
 	fi
-	mkdir -p ${DIR}/deploy/tmp
+	mkdir -p "${DIR}/deploy/tmp"
 
 	echo "-----------------------------"
 	echo "Building ${pkg} archive..."
 
 	case "${pkg}" in
 	modules)
-		make -s ARCH=arm CROSS_COMPILE=${CC} modules_install INSTALL_MOD_PATH=${DIR}/deploy/tmp
+		make -s ARCH=${KERNEL_ARCH} LOCALVERSION=${BUILD} CROSS_COMPILE="${CC}" modules_install INSTALL_MOD_PATH="${DIR}/deploy/tmp"
 		;;
 	firmware)
-		make -s ARCH=arm CROSS_COMPILE=${CC} firmware_install INSTALL_FW_PATH=${DIR}/deploy/tmp
+		make -s ARCH=${KERNEL_ARCH} LOCALVERSION=${BUILD} CROSS_COMPILE="${CC}" firmware_install INSTALL_FW_PATH="${DIR}/deploy/tmp"
 		;;
 	dtbs)
-		find ./arch/arm/boot/ -iname "*.dtb" -exec cp -v '{}' ${DIR}/deploy/tmp/ \;
+		if grep -q dtbs_install "${DIR}/KERNEL/arch/${KERNEL_ARCH}/Makefile"; then
+			make -s ARCH=${KERNEL_ARCH} LOCALVERSION=${BUILD} CROSS_COMPILE="${CC}" dtbs_install INSTALL_DTBS_PATH="${DIR}/deploy/tmp"
+		else
+			find ./arch/${KERNEL_ARCH}/boot/ -iname "*.dtb" -exec cp -v '{}' "${DIR}/deploy/tmp/" \;
+		fi
 		;;
 	esac
 
 	echo "Compressing ${KERNEL_UTS}${deployfile}..."
-	cd ${DIR}/deploy/tmp
-	tar czf ../${KERNEL_UTS}${deployfile} *
+	cd "${DIR}/deploy/tmp" || true
+	tar ${tar_options} "../${KERNEL_UTS}${deployfile}" ./*
 
-	cd ${DIR}/
-	rm -rf ${DIR}/deploy/tmp || true
+	cd "${DIR}/" || exit
+	rm -rf "${DIR}/deploy/tmp" || true
 
 	if [ ! -f "${DIR}/deploy/${KERNEL_UTS}${deployfile}" ] ; then
 		export ERROR_MSG="File Generation Failure: [${KERNEL_UTS}${deployfile}]"
@@ -152,25 +177,40 @@ make_dtbs_pkg () {
 	make_pkg
 }
 
-/bin/sh -e ${DIR}/tools/host_det.sh || { exit 1 ; }
+if [  -f "${DIR}/.yakbuild" ] ; then
+	if [ -f "${DIR}/recipe.sh.sample" ] ; then
+		if [ ! -f "${DIR}/recipe.sh" ] ; then
+			cp -v "${DIR}/recipe.sh.sample" "${DIR}/recipe.sh"
+		fi
+	fi
+fi
 
-if [ ! -f ${DIR}/system.sh ] ; then
-	cp ${DIR}/system.sh.sample ${DIR}/system.sh
-else
-	#fixes for bash -> sh conversion...
-	sed -i 's/bash/sh/g' ${DIR}/system.sh
-	sed -i 's/==/=/g' ${DIR}/system.sh
+/bin/sh -e "${DIR}/tools/host_det.sh" || { exit 1 ; }
+
+if [ ! -f "${DIR}/system.sh" ] ; then
+	cp -v "${DIR}/system.sh.sample" "${DIR}/system.sh"
 fi
 
 unset CC
 unset LINUX_GIT
-. ${DIR}/system.sh
+. "${DIR}/system.sh"
+if [  -f "${DIR}/.yakbuild" ] ; then
+	. "${DIR}/recipe.sh"
+fi
 /bin/sh -e "${DIR}/scripts/gcc.sh" || { exit 1 ; }
-. ${DIR}/.CC
-echo "debug: CC=${CC}"
+. "${DIR}/.CC"
+echo "CROSS_COMPILE=${CC}"
+if [ -f /usr/bin/ccache ] ; then
+	echo "ccache [enabled]"
+	CC="ccache ${CC}"
+fi
 
-. ${DIR}/version.sh
+. "${DIR}/version.sh"
 export LINUX_GIT
+
+if [ ! "${CORES}" ] ; then
+	CORES=$(getconf _NPROCESSORS_ONLN)
+fi
 
 unset FULL_REBUILD
 #FULL_REBUILD=1
@@ -184,16 +224,20 @@ if [ "${FULL_REBUILD}" ] ; then
 	patch_kernel
 	copy_defconfig
 fi
-if [ ! ${AUTO_BUILD} ] ; then
+if [ ! "${AUTO_BUILD}" ] ; then
 	make_menuconfig
+fi
+if [  -f "${DIR}/.yakbuild" ] ; then
+	BUILD=$(echo ${kernel_tag} | sed 's/[^-]*//'|| true)
 fi
 make_kernel
 make_modules_pkg
 make_firmware_pkg
-if [ "x${DTBS}" != "x" ] ; then
+if grep -q dtbs "${DIR}/KERNEL/arch/${KERNEL_ARCH}/Makefile"; then
 	make_dtbs_pkg
 fi
 echo "-----------------------------"
 echo "Script Complete"
+echo "${KERNEL_UTS}" > kernel_version
 echo "eewiki.net: [user@localhost:~$ export kernel_version=${KERNEL_UTS}]"
 echo "-----------------------------"

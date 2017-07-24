@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash -e
 #
-# Copyright (c) 2009-2013 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2017 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +22,75 @@
 
 # Split out, so build_kernel.sh and build_deb.sh can share..
 
-git="git am"
+shopt -s nullglob
 
+. ${DIR}/version.sh
 if [ -f ${DIR}/system.sh ] ; then
 	. ${DIR}/system.sh
 fi
+git_bin=$(which git)
+#git hard requirements:
+#git: --no-edit
+
+git="${git_bin} am"
+#git_patchset=""
+#git_opts
 
 if [ "${RUN_BISECT}" ] ; then
-	git="git apply"
+	git="${git_bin} apply"
 fi
 
 echo "Starting patch.sh"
 
 git_add () {
-	git add .
-	git commit -a -m 'testing patchset'
+	${git_bin} add .
+	${git_bin} commit -a -m 'testing patchset'
 }
 
 start_cleanup () {
-	git="git am --whitespace=fix"
+	git="${git_bin} am --whitespace=fix"
 }
 
 cleanup () {
 	if [ "${number}" ] ; then
-		git format-patch -${number} -o ${DIR}/patches/
+		if [ "x${wdir}" = "x" ] ; then
+			${git_bin} format-patch -${number} -o ${DIR}/patches/
+		else
+			if [ ! -d ${DIR}/patches/${wdir}/ ] ; then
+				mkdir -p ${DIR}/patches/${wdir}/
+			fi
+			${git_bin} format-patch -${number} -o ${DIR}/patches/${wdir}/
+			unset wdir
+		fi
 	fi
-	exit
+	exit 2
+}
+
+dir () {
+	wdir="$1"
+	if [ -d "${DIR}/patches/$wdir" ]; then
+		echo "dir: $wdir"
+
+		if [ "x${regenerate}" = "xenable" ] ; then
+			start_cleanup
+		fi
+
+		number=
+		for p in "${DIR}/patches/$wdir/"*.patch; do
+			${git} "$p"
+			number=$(( $number + 1 ))
+		done
+
+		if [ "x${regenerate}" = "xenable" ] ; then
+			cleanup
+		fi
+	fi
+	unset wdir
+}
+
+local_patch () {
+	echo "dir: dir"
+	${git} "${DIR}/patches/dir/0001-patch.patch"
 }
 
 bugs_trivial () {

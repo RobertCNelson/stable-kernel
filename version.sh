@@ -2,41 +2,45 @@
 #
 ARCH=$(uname -m)
 
-#Dual/Quad Core arms are now more prevalent, so just don't limit it x86:
-check_cpuinfo=$(cat /proc/cpuinfo | grep "^processor" | awk '{print $1}' | head -n 1)
-if [ "x${check_cpuinfo}" = "xprocessor" ] ; then
-	CORES=$(cat /proc/cpuinfo | grep "^processor" | wc -l)
-else
-	CORES=1
-fi
-
-#Debian 7 (Wheezy): git version 1.7.10.4 and later needs "--no-edit"
-unset GIT_OPTS
-unset GIT_NOEDIT
-LC_ALL=C git help pull | grep -m 1 -e "--no-edit" >/dev/null 2>&1 && GIT_NOEDIT=1
-
-if [ "${GIT_NOEDIT}" ] ; then
-	GIT_OPTS="${GIT_OPTS} --no-edit"
-fi
-
 config="omap2plus_defconfig"
 
-#linaro_toolchain="arm9_gcc_4_7"
-#linaro_toolchain="cortex_gcc_4_6"
-linaro_toolchain="cortex_gcc_4_7"
-#linaro_toolchain="cortex_gcc_4_8"
+build_prefix="-armv7-x"
+branch_prefix="v"
+branch_postfix=".x"
+
+#arm
+KERNEL_ARCH=arm
+#toolchain="gcc_linaro_eabi_4_8"
+#toolchain="gcc_linaro_eabi_4_9"
+#toolchain="gcc_linaro_eabi_5"
+#toolchain="gcc_linaro_eabi_6"
+#toolchain="gcc_linaro_eabi_7"
+#toolchain="gcc_linaro_gnueabi_4_6"
+toolchain="gcc_linaro_gnueabihf_4_7"
+#toolchain="gcc_linaro_gnueabihf_4_8"
+#toolchain="gcc_linaro_gnueabihf_4_9"
+#toolchain="gcc_linaro_gnueabihf_5"
+#toolchain="gcc_linaro_gnueabihf_6"
+#toolchain="gcc_linaro_gnueabihf_7"
+#arm64
+#KERNEL_ARCH=arm64
+#toolchain="gcc_linaro_aarch64_gnu_5"
+#toolchain="gcc_linaro_aarch64_gnu_6"
+#toolchain="gcc_linaro_aarch64_gnu_7"
 
 #Kernel/Build
 KERNEL_REL=3.1
 KERNEL_TAG=${KERNEL_REL}.10
-BUILD=x7
+BUILD=${build_prefix}7
+kernel_rt=".X-rtY"
 
-#v3.X-rcX + upto SHA
+#v4.X-rcX + upto SHA
+#prev_KERNEL_SHA=""
 #KERNEL_SHA=""
 
 #git branch
-BRANCH=v3.1.x
+BRANCH="${branch_prefix}${KERNEL_REL}${branch_postfix}"
 
-BUILDREV=1.0
 DISTRO=cross
 DEBARCH=armhf
+#
