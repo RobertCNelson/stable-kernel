@@ -1,6 +1,6 @@
 #!/bin/sh -e
 #
-# Copyright (c) 2009-2016 Robert Nelson <robertcnelson@gmail.com>
+# Copyright (c) 2009-2017 Robert Nelson <robertcnelson@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -117,11 +117,12 @@ gcc_toolchain () {
 	gcc_linaro_eabi_5)
 		#
 		#https://releases.linaro.org/components/toolchain/binaries/5.4-2017.05/arm-eabi/gcc-linaro-5.4.1-2017.05-x86_64_arm-eabi.tar.xz
+		#https://releases.linaro.org/components/toolchain/binaries/5.5-2017.10/arm-eabi/gcc-linaro-5.5.0-2017.10-x86_64_arm-eabi.tar.xz
 		#
 
-		gcc_version="5.4"
-		gcc_minor=".1"
-		release="17.05"
+		gcc_version="5.5"
+		gcc_minor=".0"
+		release="17.10"
 		target="arm-eabi"
 
 		version="components/toolchain/binaries/${gcc_version}-20${release}/${target}"
@@ -258,11 +259,12 @@ gcc_toolchain () {
 	gcc_linaro_gnueabihf_5)
 		#
 		#https://releases.linaro.org/components/toolchain/binaries/5.4-2017.05/arm-linux-gnueabihf/gcc-linaro-5.4.1-2017.05-x86_64_arm-linux-gnueabihf.tar.xz
+		#https://releases.linaro.org/components/toolchain/binaries/5.5-2017.10/arm-linux-gnueabihf/gcc-linaro-5.5.0-2017.10-x86_64_arm-linux-gnueabihf.tar.xz
 		#
 
-		gcc_version="5.4"
-		gcc_minor=".1"
-		release="17.05"
+		gcc_version="5.5"
+		gcc_minor=".0"
+		release="17.10"
 		target="arm-linux-gnueabihf"
 
 		version="components/toolchain/binaries/${gcc_version}-20${release}/${target}"
@@ -315,11 +317,12 @@ gcc_toolchain () {
 	gcc_linaro_aarch64_gnu_5)
 		#
 		#https://releases.linaro.org/components/toolchain/binaries/5.4-2017.05/aarch64-linux-gnu/gcc-linaro-5.4.1-2017.05-x86_64_aarch64-linux-gnu.tar.xz
+		#https://releases.linaro.org/components/toolchain/binaries/5.5-2017.10/aarch64-linux-gnu/gcc-linaro-5.5.0-2017.10-x86_64_aarch64-linux-gnu.tar.xz
 		#
 
-		gcc_version="5.4"
-		gcc_minor=".1"
-		release="17.05"
+		gcc_version="5.5"
+		gcc_minor=".0"
+		release="17.10"
 		target="aarch64-linux-gnu"
 
 		version="components/toolchain/binaries/${gcc_version}-20${release}/${target}"
