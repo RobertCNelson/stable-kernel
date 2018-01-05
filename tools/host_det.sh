@@ -380,14 +380,14 @@ debian_regs () {
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
-		zesty|artful|bionic)
-			#17.04 zesty: (EOL: January 2018)
+		artful|bionic)
 			#17.10 artful: (EOL: July 2018)
 			#18.04 bionic: (EOL:) lts: bionic -> xyz
 			unset warn_eol_distro
 			;;
-		yakkety)
+		yakkety|zesty)
 			#16.10 yakkety: (EOL: July 20, 2017)
+			#17.04 zesty: (EOL: January 2018)
 			warn_eol_distro=1
 			stop_pkg_search=1
 			;;
