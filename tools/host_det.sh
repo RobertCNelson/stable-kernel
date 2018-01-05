@@ -132,10 +132,6 @@ debian_regs () {
 	check_dpkg
 	pkg="build-essential"
 	check_dpkg
-	if ! type dtc >/dev/null; then
-		pkg="device-tree-compiler"
-		check_dpkg
-	fi
 	pkg="fakeroot"
 	check_dpkg
 	pkg="lsb-release"
