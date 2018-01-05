@@ -428,7 +428,7 @@ debian_regs () {
 		
 		#Libs; starting with jessie/sid, lib<pkg_name>-dev:<arch>
 		case "${deb_distro}" in
-		wheezy|precise)
+		wheezy)
 			pkg="libncurses5-dev"
 			check_dpkg
 			if [ "x${build_git}" = "xtrue" ] ; then
@@ -463,27 +463,17 @@ debian_regs () {
 		#pkg: ia32-libs
 		if [ "x${deb_arch}" = "xamd64" ] ; then
 			unset dpkg_multiarch
-			case "${deb_distro}" in
-			precise)
-				if [ "x${ignore_32bit}" = "xfalse" ] ; then
-					pkg="ia32-libs"
-					check_dpkg
-				fi
-				;;
-			*)
-				if [ "x${ignore_32bit}" = "xfalse" ] ; then
-					pkg="libc6:i386"
-					check_dpkg
-					pkg="libncurses5:i386"
-					check_dpkg
-					pkg="libstdc++6:i386"
-					check_dpkg
-					pkg="zlib1g:i386"
-					check_dpkg
-					dpkg_multiarch=1
-				fi
-				;;
-			esac
+			if [ "x${ignore_32bit}" = "xfalse" ] ; then
+				pkg="libc6:i386"
+				check_dpkg
+				pkg="libncurses5:i386"
+				check_dpkg
+				pkg="libstdc++6:i386"
+				check_dpkg
+				pkg="zlib1g:i386"
+				check_dpkg
+				dpkg_multiarch=1
+			fi
 
 			if [ "${dpkg_multiarch}" ] ; then
 				unset check_foreign
