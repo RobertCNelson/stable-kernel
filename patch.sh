@@ -249,6 +249,42 @@ wireguard () {
 	${git} "${DIR}/patches/WireGuard/0001-merge-WireGuard.patch"
 }
 
+ti_pm_firmware () {
+	echo "dir: drivers/ti/firmware"
+	#regenerate="enable"
+	if [ "x${regenerate}" = "xenable" ] ; then
+
+		cd ../
+		if [ ! -d ./ti-amx3-cm3-pm-firmware ] ; then
+			${git_bin} clone -b ti-v4.1.y-next git://git.ti.com/processor-firmware/ti-amx3-cm3-pm-firmware.git --depth=1
+		else
+			rm -rf ./ti-amx3-cm3-pm-firmware || true
+			${git_bin} clone -b ti-v4.1.y-next git://git.ti.com/processor-firmware/ti-amx3-cm3-pm-firmware.git --depth=1
+		fi
+		cd ./KERNEL/
+
+		cp -v ../ti-amx3-cm3-pm-firmware/bin/am* ./firmware/
+
+		${git_bin} add -f ./firmware/am*
+		${git_bin} commit -a -m 'add am33x firmware' -s
+		${git_bin} format-patch -1 -o ../patches/drivers/ti/firmware/
+
+		rm -rf ../ti-amx3-cm3-pm-firmware/ || true
+
+		${git_bin} reset --hard HEAD^
+
+		start_cleanup
+
+		${git} "${DIR}/patches/drivers/ti/firmware/0001-add-am33x-firmware.patch"
+
+		wdir="drivers/ti/firmware"
+		number=1
+		cleanup
+	fi
+
+	${git} "${DIR}/patches/drivers/ti/firmware/0001-add-am33x-firmware.patch"
+}
+
 local_patch () {
 	echo "dir: dir"
 	${git} "${DIR}/patches/dir/0001-patch.patch"
@@ -258,6 +294,7 @@ local_patch () {
 #aufs4
 #rt
 #wireguard
+ti_pm_firmware
 #local_patch
 
 pre_backports () {
@@ -318,6 +355,7 @@ packaging () {
 	echo "dir: packaging"
 	#regenerate="enable"
 	if [ "x${regenerate}" = "xenable" ] ; then
+		cp -v "${DIR}/3rdparty/packaging/Makefile" "${DIR}/KERNEL/scripts/package"
 		cp -v "${DIR}/3rdparty/packaging/builddeb" "${DIR}/KERNEL/scripts/package"
 		#Needed for v4.11.x and less
 		patch -p1 < "${DIR}/patches/packaging/0002-Revert-deb-pkg-Remove-the-KBUILD_IMAGE-workaround.patch"
